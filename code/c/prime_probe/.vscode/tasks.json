@@ -1,0 +1,19 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build eviction_set_finder",
+            "type": "shell",
+            "command": "gcc",
+            "args": [
+                "-g", "l3.c", "timestats.c", "vlist.c", "eviction_set_finder.c", "-o", "eviction_set_finder"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
