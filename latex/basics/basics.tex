@@ -1,0 +1,97 @@
+\chapter{Grundlagen}
+\label{chapter:basics}
+
+Im folgenden sollen Verfahren und Techniken erläutert werden, welche für das Verständnis der späteren Kapitel essenziell sind.
+
+\section{Virtuelle Speicherverwaltung}
+
+Virtuelle Speicherverwaltung stellt eine Abstraktion für die vorhandenen physikalischen Speichermedien wie etwa dem Hauptspeicher oder der Festplatte bereit.
+Das Betriebssystem übersetzt virtuelle Adressen, welche von Prozessen genutzt werden, mit Hilfe der Hardware in physikalische Adressen. Jedem Prozess steht der gleiche virtuelle Adressraum zur Verfügung, wobei das Betriebssystem dafür Sorge trägt für jeden Prozess die richtige Zuordnung von virtueller zu physikalischer Adresse sicherzustellen.
+Die Vorteile der virtuellen Speicherverwaltung sind erhöhte Sicherheit durch die Speicherisolierung aller Prozesse. So kann eine fehlerhafte Schreiboperation eines Prozesses keinen Fehler in anderen Prozessen verursachen, da gleiche virtuelle Adressen vom Betriebssystem auf unterschiedliche physikalische Adressen abgebildet werden. Des Weiteren kann ein Prozess mehr Hauptspeicher nutzen als physikalisch vorhanden ist, indem Daten vom Betriebssystem auf andere Speichermedien wie die Festplatte ausgelagert werden.
+
+\section{Caches}
+
+Die Geschwindigkeitsentwicklung des Hauptspeichers konnte in den letzten Jahren nicht mit der des Prozessors Schritt halten. Der Cache ist ein Vergleich zum Hauptspeicher kleinerer, aber schnellerer Pufferspeicher, welcher im aktuellen Kontext häufig benötigte Daten vorhält. Ohne Caches wäre ein Prozessor häufig gezwungen auf Daten des langsamen Hauptspeichers zu warten und würde in seiner Verarbeitungsgeschwindigkeit ausgebremst. Auch in anderen Ebenen sind Caches sinnvoll, wie etwa im Browser, wobei in dieser Arbeit vor allem die Caches im Prozessor relevant sind. Die Testrechner verwenden Intel-Prozessoren mit der Core-Architektur, weshalb diese in folgenden Erklärungen häufig als Beispiel dient.
+
+\subsection{Cache-Organisation}
+
+Ein CPU-Cache enthält mehrere Einträge, welche folgende Bestandteile besitzen:
+\begin{enum}
+\item Cache-Line: Die gecacheten Daten, wobei die Länge in der Core-Architektur etwa 64 Bytes beträgt.
+\item Address-Tag: Die Adresse im Hauptspeicher von der die Daten in der Cache-Line stammen.
+\item Flag-Bits: Etwa das "Dirty"-Bit welches anzeigt ob die Daten der Cache-Line noch mit denen im Hauptspeicher übereinstimmen.
+\end{enum}
+
+
+\subsection{Assoziativität}
+
+Die Ersetzungsstrategie entscheidet in welchem Cache-Eintrag die zu chachenden Daten einer bestimmten Adresse aus dem Hauptspeicher landen. Sofern die Auswahl des Cache-Eintrags keinerlei Beschränkung unterliegt, wird von einem voll-assoziativen Cache gesprochen. Das andere Extrem wäre ein einfach-assoziativer Cache bzw. eine direkte Abbildung, wobei die Adresse des Hauptspeichers von der die Daten stammen den zu wählenden Cache-Eintrag eindeutig festlegt.
+
+\subsection{Flush and Reload}
+
+\subsection{Prime + Probe}
+
+Ein Eviction-Set sei eine Menge, welche es vermag einen Cache-Eintrag aus einem Cache zu verdrängen. D.h. ein Eviction-Set welches einen Eintrag aus dem L3-Cache löscht, würde den gleichen Zweck wie der clflush-Assemblerbefehl im Flush + Reload Angriff erfüllen. Um einen Eintrag aus dem Cache zu verdrängen, müssen mehrere Adressen der Daten aus dem Eviction-Set von der CPU auf die gleiche Cache-Set wie der zu verdrängende Eintrag abgebildet werden, sodass die Größe eines Eviction-Sets mindestens die Assoziativität des Caches erreichen sollte.
+
+Die Idee beim Prime + Probe Angriff besteht darin, in einer sich wiederholenden Abfolge zuerst den Cache zu Primen, dann das Opferprogramm Berechnungen durchführen zu lassen und anschließend zu Proben. In der Priming-Phase werden mittels der Eviction-Set gezielt Cache-Sets vollständig mit den Daten aus dem Eviction-Set belegt. In der anschließenden Berechnungsphase werden einige Einträge aus den geprimten Cache-Sets vom Opferprogramm verdrängt. Abschließend berechnet die Angreiferin die Summe der Zugriffszeiten auf alle Einträge in einem Eviction-Set. Sofern das Opferprogramm in dem zum Eviction-Set korrelierenden Cache-Set Einträge verdrängt hat, kann die Angreiferin eine Abweichung nach oben in ihrer Messung feststellen, da die verdrängten Einträge eine erhöhte Zugriffszeit beisteuern.
+
+Die zur Durchführung essenziellen Eviction-Set sind nicht immer leicht zu finden, da manche Umgebungen nur eingeschränkte Adressräume zu Verfügung stellen. So sind beim später näher beleuchteten Web-Assembly maximal die untersten 12-Bit der Adressen mit den physikalischen Adressen identisch, welche die CPU nutzt um Adressen in Cache-Sets abzubilden.
+In solchen Fällen müssen die Eviction-Sets in einem Trial-and-Error Verfahren ermittelt wie es der Algorithmus %\ref[alg:evictionSet}
+beschreibt.
+
+%Beschreibe Algorithmus
+%Hierfür werden zuerst wiederholt Speicherblöcke angefordert, wobei solche in einer Menge gesammelt werden, welche 
+
+\SetKwProg{Fn}{Function}{}{}
+
+\begin{algorithm}[h]
+\DontPrintSemicolon
+\caption{Psuedo-Code für Eviction-Set Algorithmus}
+\label{alg:evictionSet}
+
+\Fn{$EvictionSetFinder(memoryBlocks)$}{
+    groups \leftarrow empty\;
+    \While{size(memoryBlocks > 0}{
+        evictionSet $\leftarrow$ empty\;
+		witness $\leftarrow$ expand(evictionSet, memoryBlocks)\;
+		
+		\If{witness != failed}{
+    		contract(evictionSet, memoryBlocks, witness)\;
+    		witnessSet $\leftarrow$ collect(evictionSet, memoryBlocks, witnessSet)\;
+    		groups.add(union(evictionSet, witness, witnessSet))\;
+		}
+    }
+}
+
+\Fn{$Expand(evictionSet, memoryBlocks)$}{
+	\While{size(candidateSet) > 0}{
+		witnesss = SelectRandomItem(candidateSet)\;
+		\If{checkevict(evictionSet, witnesss)}{
+			\Return witnesss
+		}
+		evictionSet.add(witnesss)\;
+	}
+	\Return failed;
+}
+
+\Fn{$Contract(evictionSet, memoryBlocks, witness)$}{
+	\ForEach{candidate in evictionSet}{
+		\If{checkevict(evictionSet, witness)}{
+			mermoryBlocks.add(candidate)\;
+			evictionSet.add(candidate)\;	
+		}		
+	}
+}
+
+\Fn{$Collect(evictionSet, memoryBlocks)$}{
+	witnessSet = empty\;
+	\ForEach{candidate in mermoryBlocks}{
+		\If{checkevict(evictionSet, candidate)}{
+			memoryBlocks.delete(candidate)\;
+			witnessSet.add(candidate)\;
+		}
+	}
+	\Return witnessSet;
+}
+
+\end{algorithm}

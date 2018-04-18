@@ -1,0 +1,184 @@
+% =========================================
+% == Latex-Template for Theses
+% == by René Schönfelder
+% == schoenfr@isp.uni-luebeck.de
+% =========================================
+% 
+% This latex project serves as a template for theses in the MINT section of the
+% University of Lübeck. The first version was created during the authors
+% master's and steadily evolved from there on.
+% 
+% The template may be used and distributed freely. In the case of questions or
+% suggestions just send an email to schoenfr@isp.uni-luebeck.de. This document
+% is in english so that international students may also profit from this
+% template. However, the content is written in german because the guidelines
+% expect german theses and most students are writing in german..
+
+% The document class ``scrbook'' describes books:
+\documentclass[
+  a4paper,               % a4 paper
+  twoside,               % two-sided
+  headings=small,        % make headings smaller
+  DIV=12,                % divide the paper in 12 parts
+  BCOR=8mm,              % 8mm binding correction
+  headinclude=true,      % use a header
+  footinclude=false,     % do not use a footer
+  numbers=noenddot,      % no dot after last number in headings
+  11pt]{scrbook}         % font size 11pt
+
+% Encodings
+\usepackage[T1]{fontenc}
+% Use this for UTF8 input in .tex-files
+\usepackage[utf8]{inputenc}
+% You can use english alternatively
+\usepackage[ngerman]{babel}
+
+% PDF properties
+\usepackage{hyperref}
+\hypersetup{
+  pdfauthor={Moritz Krebbel},
+  pdfsubject={Drive-by cache attacks},
+  pdftitle={Ausnutzung spekulativer Ausführung durch drive-by Cache-Angriffe},
+  pdfkeywords={chache attacks, drive-by attacks, speculative execution}
+}
+
+% Color for Corporate Design
+\usepackage{xcolor}
+\definecolor{oceangreen}{cmyk}{1,.0,.20,.78}
+
+% If you want to color the headings, then you can use the following command. It
+% makes most of your pages colored. Please notice, that printing colored pages
+% may be a lot more expensive than printing gray scale.
+%\addtokomafont{sectioning}{\rmfamily\color{oceangreen}}
+
+% We use the font family ``Palatino'', which does not correspond to the
+% guidelines but is still valid. You could also use \usepackage{times}.
+\usepackage{palatino}
+\fontfamily{ppl}
+\selectfont
+
+% General packages
+\usepackage{blindtext}
+\usepackage{graphicx}               % Include graphics
+\usepackage{appendix}               % Use an appendix
+\usepackage{textpos}                % Easy text positioning
+\usepackage{typearea}               % Standard for defining geometry
+\usepackage{tikz}                   % TikZ pictures
+\usepackage{amsmath,amssymb,amsthm} % Math
+\usepackage{scrhack}
+\usepackage{listings}               % Listings
+\usepackage[ruled,vlined,linesnumbered]{algorithm2e} % Algorithms
+\usepackage{stmaryrd}               % Lightning arrow \lightning
+\usepackage{url}                    % Formatting URLs
+\usepackage{rotating}               % Rotation of figures
+\usepackage{todonotes}              % Make TODO-notes
+% This package is used for the following spacing options
+\usepackage{setspace}
+\usepackage[linguistics]{forest}
+\usepackage{breqn}
+
+\usepackage{chngcntr}               % Do not reset the counter for footnotes
+\counterwithout{footnote}{chapter}  % on every new chapter
+
+\usepackage{eurosym}
+\usepackage{newunicodechar}
+\newunicodechar{€}{\euro}
+
+% Listing style
+\lstset{
+  basicstyle={\ttfamily \footnotesize},
+  language = Java,
+  numbers=left, numberstyle=\tiny,
+  frame=tb, framerule=1pt,
+  xleftmargin=0.2cm, linewidth=1\textwidth,
+  %backgroundcolor=\color{bg},
+  keywordstyle=\bf\color{oceangreen},
+  morecomment=[l][\color{blue}]{\/*, \*/},
+  %emph={for,end,while,function,if,else},
+  emphstyle={\color{blue}}
+}
+
+% If you want to list your bib as a usual section listed in the table of
+% contents, you can use the following commands.
+%\makeatletter
+%\renewcommand*\bib@heading{%
+%  \chapter{\refname}
+%  \@mkboth{\refname}{\refname}
+%}
+%\makeatother
+
+% Prevent warnings ``hbox badness'' in the bibliography
+\usepackage{etoolbox}
+\apptocmd{\sloppy}{\hbadness 10000\relax}{}{}
+
+% Prevent a lot of ``hbox badness'' warnings
+\setlength{\emergencystretch}{1em}
+
+% 1.5 line spacing (the guidelines say at most 1.2, but we decided to allow
+% up to 1.5)
+\setstretch{1.5}
+
+% No indentation in the beginning of a paragraph
+\setlength{\parindent}{0pt}
+
+% The space between two paragraphs
+%\setlength{\parskip}{1em}
+
+% More space inside of tables
+% \renewcommand*\arraystretch{1.5}
+
+% Do not number subsubsections
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+
+% Load macros and hyphenations
+\input{mathmacros}
+\input{hyphenations}
+
+% The actual document starts here
+\begin{document}
+
+  % The pages in the front are numbered with roman numerals.
+  \frontmatter
+  \include{front/titlepage}
+  %\include{front/abstract}
+  %\include{front/declaration}
+  %\include{front/acknowledgements}
+  \tableofcontents
+
+  % In the main matter the pages are numbered with arabic numerals.
+  \mainmatter
+  %\include{introduction/introduction}
+  \include{basics/basics}
+  %\include{methods/methods}
+  %\include{results/results}
+  %\include{discussion/discussion}
+  %\include{conclusions/conclusions}
+  
+  % The appendix chapters are labeled using the latin alphabet.
+  %\appendix
+  %\include{appendix/appendix}
+  
+  % You will usually want to avoid a notation section. If you really need it,
+  % then you should think about placing it in the appendix. It is a far better
+  % style to develop the required notation thoroughly within your thesis (and
+  % use the notation section in the appendix just for a quick reference).
+  % \include{front/notation}
+
+  % The back contains the bibliography and maybe an overview over tables and
+  % figures.
+  \backmatter
+
+  % The guidelines say, you should use 'cell'. Using cell in latex is quite
+  % buggy, so you might want to use 'apalike' instead. Cell is based on apalike
+  % and very similar. You may also try out amsalpha, alpha and plain.
+  \bibliographystyle{apalike}
+  
+  % The following includes the bibliography
+  \bibliography{ref}
+
+  % This is a list of your TODOs at the end of the document
+  % Remember: You may need to compile your document twice to see everything
+  \listoftodos
+
+\end{document}
