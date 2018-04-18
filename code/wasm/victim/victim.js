@@ -1729,7 +1729,7 @@ var ASM_CONSTS = [];
 
 STATIC_BASE = GLOBAL_BASE;
 
-STATICTOP = STATIC_BASE + 5504;
+STATICTOP = STATIC_BASE + 5536;
 /* global initializers */  __ATINIT__.push();
 
 
@@ -1738,7 +1738,7 @@ STATICTOP = STATIC_BASE + 5504;
 
 
 
-var STATIC_BUMP = 5504;
+var STATIC_BUMP = 5536;
 Module["STATIC_BASE"] = STATIC_BASE;
 Module["STATIC_BUMP"] = STATIC_BUMP;
 
@@ -1899,6 +1899,51 @@ function copyTempDouble(ptr) {
       else Module.printErr('failed to set errno from JS');
       return value;
     } 
+
+  function _shared_array_counter_add_value()
+      {
+          Atomics.add(sharedArray, 0, 10);
+      }
+
+  function _shared_array_counter_get_value()
+      {
+          var val = Atomics.load(sharedArray, 0);
+          console.log(val);
+          return val;
+      }
+
+  function _shared_array_counter_init()
+      {
+          console.log("start shared array counter\n");
+          const sharedBuffer = new SharedArrayBuffer(Uint32Array.BYTES_PER_ELEMENT*2);
+          sharedArray = new Uint32Array(sharedBuffer);
+          sharedArray[1] = 42;
+          workerCounter = new Worker('worker.js');
+          workerCounter.postMessage(sharedBuffer);
+  
+          while(1){
+              if(Atomics.load(sharedArray, 0) > 0){
+                  console.log(Atomics.load(sharedArray, 0));
+                  break;
+              }
+          }
+  
+          var a;
+          setTimeout(function() {
+              var before = Atomics.load(sharedArray, 0);
+              for(var i=0; i<10000; i++)
+              {
+                  a+=3;
+              }
+              var after = Atomics.load(sharedArray, 0);
+              var diff = after - before;
+              var nsPerTick = get_resolution_shared_array_buffer(sharedArray, 10);
+              console.log("sharedBuffer resolution: " + nsPerTick + " ns");
+              console.log("sharedBuffer diff: " + diff);
+              console.log("sharedBuffer ns: " + diff*nsPerTick);
+          }, 3000)
+          return a;
+      }
 DYNAMICTOP_PTR = staticAlloc(4);
 
 STACK_BASE = STACKTOP = alignMemory(STATICTOP);
@@ -1969,7 +2014,7 @@ function invoke_iiii(index,a1,a2,a3) {
 
 Module.asmGlobalArg = {};
 
-Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "invoke_ii": invoke_ii, "invoke_iiii": invoke_iiii, "___lock": ___lock, "___setErrNo": ___setErrNo, "___syscall140": ___syscall140, "___syscall146": ___syscall146, "___syscall54": ___syscall54, "___syscall6": ___syscall6, "___unlock": ___unlock, "_emscripten_memcpy_big": _emscripten_memcpy_big, "flush_NO_FILESYSTEM": flush_NO_FILESYSTEM, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
+Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "invoke_ii": invoke_ii, "invoke_iiii": invoke_iiii, "___lock": ___lock, "___setErrNo": ___setErrNo, "___syscall140": ___syscall140, "___syscall146": ___syscall146, "___syscall54": ___syscall54, "___syscall6": ___syscall6, "___unlock": ___unlock, "_emscripten_memcpy_big": _emscripten_memcpy_big, "_shared_array_counter_add_value": _shared_array_counter_add_value, "_shared_array_counter_get_value": _shared_array_counter_get_value, "_shared_array_counter_init": _shared_array_counter_init, "flush_NO_FILESYSTEM": flush_NO_FILESYSTEM, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
 // EMSCRIPTEN_START_ASM
 var asm =Module["asm"]// EMSCRIPTEN_END_ASM
 (Module.asmGlobalArg, Module.asmLibraryArg, buffer);
@@ -2016,16 +2061,16 @@ var real__llvm_bswap_i32 = asm["_llvm_bswap_i32"]; asm["_llvm_bswap_i32"] = func
   return real__llvm_bswap_i32.apply(null, arguments);
 };
 
+var real__main = asm["_main"]; asm["_main"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return real__main.apply(null, arguments);
+};
+
 var real__malloc = asm["_malloc"]; asm["_malloc"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return real__malloc.apply(null, arguments);
-};
-
-var real__memalign = asm["_memalign"]; asm["_memalign"] = function() {
-  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
-  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
-  return real__memalign.apply(null, arguments);
 };
 
 var real__read_mem = asm["_read_mem"]; asm["_read_mem"] = function() {
@@ -2110,14 +2155,14 @@ var _llvm_bswap_i32 = Module["_llvm_bswap_i32"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return Module["asm"]["_llvm_bswap_i32"].apply(null, arguments) };
+var _main = Module["_main"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["_main"].apply(null, arguments) };
 var _malloc = Module["_malloc"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return Module["asm"]["_malloc"].apply(null, arguments) };
-var _memalign = Module["_memalign"] = function() {
-  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
-  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
-  return Module["asm"]["_memalign"].apply(null, arguments) };
 var _memcpy = Module["_memcpy"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
@@ -2272,6 +2317,52 @@ dependenciesFulfilled = function runCaller() {
   if (!Module['calledRun']) dependenciesFulfilled = runCaller; // try this again later, after new deps are fulfilled
 }
 
+Module['callMain'] = function callMain(args) {
+  assert(runDependencies == 0, 'cannot call main when async dependencies remain! (listen on __ATMAIN__)');
+  assert(__ATPRERUN__.length == 0, 'cannot call main when preRun functions remain to be called');
+
+  args = args || [];
+
+  ensureInitRuntime();
+
+  var argc = args.length+1;
+  var argv = stackAlloc((argc + 1) * 4);
+  HEAP32[argv >> 2] = allocateUTF8OnStack(Module['thisProgram']);
+  for (var i = 1; i < argc; i++) {
+    HEAP32[(argv >> 2) + i] = allocateUTF8OnStack(args[i - 1]);
+  }
+  HEAP32[(argv >> 2) + argc] = 0;
+
+
+  try {
+
+    var ret = Module['_main'](argc, argv, 0);
+
+
+    // if we're not running an evented main loop, it's time to exit
+      exit(ret, /* implicit = */ true);
+  }
+  catch(e) {
+    if (e instanceof ExitStatus) {
+      // exit() throws this once it's done to make sure execution
+      // has been stopped completely
+      return;
+    } else if (e == 'SimulateInfiniteLoop') {
+      // running an evented main loop, don't immediately exit
+      Module['noExitRuntime'] = true;
+      return;
+    } else {
+      var toLog = e;
+      if (e && typeof e === 'object' && e.stack) {
+        toLog = [e, e.stack];
+      }
+      Module.printErr('exception thrown: ' + toLog);
+      Module['quit'](1, e);
+    }
+  } finally {
+    calledMain = true;
+  }
+}
 
 
 
@@ -2303,7 +2394,7 @@ function run(args) {
 
     if (Module['onRuntimeInitialized']) Module['onRuntimeInitialized']();
 
-    assert(!Module['_main'], 'compiled without a main, but one is present. if you added it from JS, use Module["onRuntimeInitialized"]');
+    if (Module['_main'] && shouldRunNow) Module['callMain'](args);
 
     postRun();
   }
@@ -2424,6 +2515,11 @@ if (Module['preInit']) {
   }
 }
 
+// shouldRunNow refers to calling main(), not run().
+var shouldRunNow = true;
+if (Module['noInitialRun']) {
+  shouldRunNow = false;
+}
 
 Module["noExitRuntime"] = true;
 

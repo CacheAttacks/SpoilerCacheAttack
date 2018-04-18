@@ -10,6 +10,11 @@
 #define ARRAYS 100
 #define MMAPSIZE 4096
 
+extern int testExternalJSMethod();
+extern void shared_array_counter_init();
+extern int shared_array_counter_get_value();
+extern void shared_array_counter_add_value();
+
       // console.log(exports);
       // console.log(exports._int_sqrt(9));
       
@@ -60,7 +65,6 @@ int read_mem(int *buf){
   return *buf;
 }
 
-
 int test(){
   int a=0;
   for(int i=0; i< 10000; i++){
@@ -77,12 +81,32 @@ void bla(int *buf){
   printf("diff %i", diff);
 }
 
+void test_javascript_call(){
+  int a = 0;
+  
+  for(int i=0; i< 1000000000; i++)
+    a += testExternalJSMethod();
 
-
-
+  printf("i %i\n",a);
+  printf("finish\n");
+}
 
 int main(int argc, char ** argv) {
-  printf("start\n");
+  printf("start c code\n");
+
+  //test_javascript_call()
+
+  shared_array_counter_init();
+  shared_array_counter_add_value();
+
+  //sleep(3);
+
+  for(int i=0; i< 1; i++)
+  {
+    int value = shared_array_counter_get_value();
+    if(value != 0)
+    printf("value:%i\n",value);
+  }
 
   //int *arr = calloc(SIZE, sizeof(int));
   //int *arr2 = calloc(4096, sizeof(int));
@@ -96,15 +120,15 @@ int main(int argc, char ** argv) {
   //printf("arr: %p\n", arr);  
   //printf("arr: %p\n", arr2);
 
-  emscripten_run_script("alert('hi')");
-  while(global_buf == 0 || *global_buf == 42){}
+  // emscripten_run_script("alert('hi')");
+  // while(global_buf == 0 || *global_buf == 42){}
 
-  printf("*global_buf != 42");
+  // printf("*global_buf != 42");
 
-  char **buffers = calloc(sizeof(void*), ARRAYS);
-  for(int i=0; i<ARRAYS; i++){
-    buffers[i] = mmap(NULL, MMAPSIZE, PROT_READ|PROT_WRITE, MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
-  }
+  // char **buffers = calloc(sizeof(void*), ARRAYS);
+  // for(int i=0; i<ARRAYS; i++){
+  //   buffers[i] = mmap(NULL, MMAPSIZE, PROT_READ|PROT_WRITE, MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
+  // }
   
 
   // while(1){
