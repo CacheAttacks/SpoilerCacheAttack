@@ -15,6 +15,7 @@ extern void shared_array_counter_init();
 extern int shared_array_counter_get_value();
 extern void shared_array_counter_add_value();
 extern void terminate_counter_sub_worker();
+extern float get_resolution_shared_array_buffer_ns(int samples);
 
       // console.log(exports);
       // console.log(exports._int_sqrt(9));
@@ -92,38 +93,55 @@ void test_javascript_call(){
   printf("finish\n");
 }
 
-void init_counter(){
-  int x = EM_ASM_INT({
-  Module.print('I received: ' + $0);
-  var a = 1001;
-  return $0 + 1;
-  }, 100);
-  printf("%i\n", x);
+//test results:
+//lib call is faster than EM_ASM
+//direct call of measure_func do not improve performance
+
+void test_resolution_SAB(int (*measure_func)(), float resolution_ns){
+  for(int i = 0; i< 20; i++) {
+    int v1 = (*measure_func)();
+    int v2 = (*measure_func)();
+    float diff_ns = (v2-v1)*resolution_ns;
+    printf("%i(%0.1fns), ", v2-v1, diff_ns);
+  }
+  putchar('\n');
 }
 
-void get_counter(){
-  int a = EM_ASM_INT(
-    return a;
-  );
-  printf("a is %i\n",a);
+int get_counter_value_SAB_lib(){
+  return shared_array_counter_get_value();
+}
+
+int get_counter_value_SAB_EM_ASM(){
+  return EM_ASM_INT({
+    return Module['sharedArrayCounter'][0];
+  });
+}
+
+// void test_resolution_SAB_direct(float resolution_ns){
+//   for(int i = 0; i< 20; i++) {
+//     int v1 = shared_array_counter_get_value();
+//     int v2 = shared_array_counter_get_value();
+//     float diff_ns = (v2-v1)*resolution_ns;
+//     printf("%i(%0.1fns), ", v2-v1, diff_ns);
+//   }
+//   putchar('\n');
+// }
+
+void bench_SAB(){
+  float resolution_ns = get_resolution_shared_array_buffer_ns(100);
+  printf("resolution SAB: %f ns\n", resolution_ns);
+  printf("function call get_counter_value_SAB_lib:\n");
+  test_resolution_SAB(&get_counter_value_SAB_lib, resolution_ns);
+  printf("function call get_counter_value_SAB_EM_ASM:\n");
+  test_resolution_SAB(&get_counter_value_SAB_EM_ASM, resolution_ns);
+
+  //test_resolution_SAB_direct(resolution_ns);
 }
 
 int main(int argc, char ** argv) {
   printf("start c code\n");
 
-  int *value = (int*)malloc(sizeof(int)*10);
-  int a = 0;
-  for(int i=0; i<10;i++)
-  {
-    value[i] = shared_array_counter_get_value();
-    // for(int b=0; b<1000; b++)
-    //  a+=3;
-  }
-  for(int i=0; i<10;i++)
-  {
-    printf("value:%i\n",value[i]);
-  }
-  printf("%i\n",a);
+  bench_SAB();
 
   terminate_counter_sub_worker();
 

@@ -1721,15 +1721,18 @@ integrateWasmJS();
 
 // === Body ===
 
-var ASM_CONSTS = [];
+var ASM_CONSTS = [function() { return Module['sharedArrayCounter'][0]; }];
 
+function _emscripten_asm_const_i(code) {
+  return ASM_CONSTS[code]();
+}
 
 
 
 
 STATIC_BASE = GLOBAL_BASE;
 
-STATICTOP = STATIC_BASE + 5536;
+STATICTOP = STATIC_BASE + 5696;
 /* global initializers */  __ATINIT__.push();
 
 
@@ -1738,7 +1741,7 @@ STATICTOP = STATIC_BASE + 5536;
 
 
 
-var STATIC_BUMP = 5536;
+var STATIC_BUMP = 5696;
 Module["STATIC_BASE"] = STATIC_BASE;
 Module["STATIC_BUMP"] = STATIC_BUMP;
 
@@ -1883,6 +1886,24 @@ function copyTempDouble(ptr) {
 
   function ___unlock() {}
 
+  var _emscripten_asm_const_int=true;
+
+  function _get_resolution_shared_array_buffer_ns(samples)
+      {
+          var nsPerTick = 0;
+          for(var i=0; i<samples; i++)
+          {
+              var start = wait_edge();
+              var start_count = Atomics.load(Module['sharedArrayCounter'], 0);
+              var end = wait_edge();
+              var end_count = Atomics.load(Module['sharedArrayCounter'], 0);
+              nsPerTick += (end - start) / (end_count - start_count) ;
+          }
+          nsPerTick /= samples;
+          //convert from ms to ns
+          return nsPerTick * 1000 * 1000;
+      }
+
    
 
   
@@ -1902,6 +1923,7 @@ function copyTempDouble(ptr) {
 
   function _shared_array_counter_get_value()
       {
+          //return Module['sharedArrayCounter'][0];
           return Atomics.load(Module['sharedArrayCounter'], 0);
       }
 
@@ -1951,13 +1973,24 @@ function intArrayToString(array) {
 
 
 
+function nullFunc_i(x) { Module["printErr"]("Invalid function pointer called with signature 'i'. Perhaps this is an invalid value (e.g. caused by calling a virtual method on a NULL pointer)? Or calling a function with an incorrect type, which will fail? (it is worth building your source files with -Werror (warnings are errors), as warnings can indicate undefined behavior which can cause this)");  Module["printErr"]("Build with ASSERTIONS=2 for more info.");abort(x) }
+
 function nullFunc_ii(x) { Module["printErr"]("Invalid function pointer called with signature 'ii'. Perhaps this is an invalid value (e.g. caused by calling a virtual method on a NULL pointer)? Or calling a function with an incorrect type, which will fail? (it is worth building your source files with -Werror (warnings are errors), as warnings can indicate undefined behavior which can cause this)");  Module["printErr"]("Build with ASSERTIONS=2 for more info.");abort(x) }
 
 function nullFunc_iiii(x) { Module["printErr"]("Invalid function pointer called with signature 'iiii'. Perhaps this is an invalid value (e.g. caused by calling a virtual method on a NULL pointer)? Or calling a function with an incorrect type, which will fail? (it is worth building your source files with -Werror (warnings are errors), as warnings can indicate undefined behavior which can cause this)");  Module["printErr"]("Build with ASSERTIONS=2 for more info.");abort(x) }
 
-Module['wasmTableSize'] = 10;
+Module['wasmTableSize'] = 18;
 
-Module['wasmMaxTableSize'] = 10;
+Module['wasmMaxTableSize'] = 18;
+
+function invoke_i(index) {
+  try {
+    return Module["dynCall_i"](index);
+  } catch(e) {
+    if (typeof e !== 'number' && e !== 'longjmp') throw e;
+    Module["setThrew"](1, 0);
+  }
+}
 
 function invoke_ii(index,a1) {
   try {
@@ -1979,7 +2012,7 @@ function invoke_iiii(index,a1,a2,a3) {
 
 Module.asmGlobalArg = {};
 
-Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "invoke_ii": invoke_ii, "invoke_iiii": invoke_iiii, "___lock": ___lock, "___setErrNo": ___setErrNo, "___syscall140": ___syscall140, "___syscall146": ___syscall146, "___syscall54": ___syscall54, "___syscall6": ___syscall6, "___unlock": ___unlock, "_emscripten_memcpy_big": _emscripten_memcpy_big, "_shared_array_counter_get_value": _shared_array_counter_get_value, "_terminate_counter_sub_worker": _terminate_counter_sub_worker, "flush_NO_FILESYSTEM": flush_NO_FILESYSTEM, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
+Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "nullFunc_i": nullFunc_i, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "invoke_i": invoke_i, "invoke_ii": invoke_ii, "invoke_iiii": invoke_iiii, "___lock": ___lock, "___setErrNo": ___setErrNo, "___syscall140": ___syscall140, "___syscall146": ___syscall146, "___syscall54": ___syscall54, "___syscall6": ___syscall6, "___unlock": ___unlock, "_emscripten_asm_const_i": _emscripten_asm_const_i, "_emscripten_memcpy_big": _emscripten_memcpy_big, "_get_resolution_shared_array_buffer_ns": _get_resolution_shared_array_buffer_ns, "_shared_array_counter_get_value": _shared_array_counter_get_value, "_terminate_counter_sub_worker": _terminate_counter_sub_worker, "flush_NO_FILESYSTEM": flush_NO_FILESYSTEM, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
 // EMSCRIPTEN_START_ASM
 var asm =Module["asm"]// EMSCRIPTEN_END_ASM
 (Module.asmGlobalArg, Module.asmLibraryArg, buffer);
@@ -2176,6 +2209,10 @@ var stackSave = Module["stackSave"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return Module["asm"]["stackSave"].apply(null, arguments) };
+var dynCall_i = Module["dynCall_i"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["dynCall_i"].apply(null, arguments) };
 var dynCall_ii = Module["dynCall_ii"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');

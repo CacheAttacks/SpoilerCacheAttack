@@ -1217,6 +1217,7 @@
     <textarea id="output" rows="8"></textarea>
 
     <!--<script type="text/javascript" src="myLibrary.js"></script>!-->
+    <script type="text/javascript" src="timer_SAB.js"></script>
     <script type="text/javascript" src="timer.js"></script>
     <script type='text/javascript'>
 
@@ -1315,6 +1316,8 @@
       const sharedArray = new Uint32Array(sharedBuffer);
       Module['sharedArrayCounter'] = sharedArray;
       Module['timerWorker'] = shared_array_counter_init(sharedArray);
+
+      get_resolution_shared_array_buffer()
 
     </script>
     <script type="text/javascript" src="victim.js"></script>
