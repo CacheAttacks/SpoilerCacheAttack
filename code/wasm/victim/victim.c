@@ -14,6 +14,7 @@ extern int testExternalJSMethod();
 extern void shared_array_counter_init();
 extern int shared_array_counter_get_value();
 extern void shared_array_counter_add_value();
+extern void terminate_counter_sub_worker();
 
       // console.log(exports);
       // console.log(exports._int_sqrt(9));
@@ -91,22 +92,40 @@ void test_javascript_call(){
   printf("finish\n");
 }
 
+void init_counter(){
+  int x = EM_ASM_INT({
+  Module.print('I received: ' + $0);
+  var a = 1001;
+  return $0 + 1;
+  }, 100);
+  printf("%i\n", x);
+}
+
+void get_counter(){
+  int a = EM_ASM_INT(
+    return a;
+  );
+  printf("a is %i\n",a);
+}
+
 int main(int argc, char ** argv) {
   printf("start c code\n");
 
-  //test_javascript_call()
-
-  shared_array_counter_init();
-  shared_array_counter_add_value();
-
-  //sleep(3);
-
-  for(int i=0; i< 1; i++)
+  int *value = (int*)malloc(sizeof(int)*10);
+  int a = 0;
+  for(int i=0; i<10;i++)
   {
-    int value = shared_array_counter_get_value();
-    if(value != 0)
-    printf("value:%i\n",value);
+    value[i] = shared_array_counter_get_value();
+    // for(int b=0; b<1000; b++)
+    //  a+=3;
   }
+  for(int i=0; i<10;i++)
+  {
+    printf("value:%i\n",value[i]);
+  }
+  printf("%i\n",a);
+
+  terminate_counter_sub_worker();
 
   //int *arr = calloc(SIZE, sizeof(int));
   //int *arr2 = calloc(4096, sizeof(int));

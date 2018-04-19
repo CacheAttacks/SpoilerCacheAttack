@@ -2,6 +2,10 @@
     "files.associations": {
         "thread": "cpp",
         "chrono": "cpp",
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "ratio": "c",
+        "system_error": "c",
+        "type_traits": "c",
+        "cmath": "c"
     }
 }

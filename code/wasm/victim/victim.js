@@ -1900,49 +1900,14 @@ function copyTempDouble(ptr) {
       return value;
     } 
 
-  function _shared_array_counter_add_value()
-      {
-          Atomics.add(sharedArray, 0, 10);
-      }
-
   function _shared_array_counter_get_value()
       {
-          var val = Atomics.load(sharedArray, 0);
-          console.log(val);
-          return val;
+          return Atomics.load(Module['sharedArrayCounter'], 0);
       }
 
-  function _shared_array_counter_init()
+  function _terminate_counter_sub_worker()
       {
-          console.log("start shared array counter\n");
-          const sharedBuffer = new SharedArrayBuffer(Uint32Array.BYTES_PER_ELEMENT*2);
-          sharedArray = new Uint32Array(sharedBuffer);
-          sharedArray[1] = 42;
-          workerCounter = new Worker('worker.js');
-          workerCounter.postMessage(sharedBuffer);
-  
-          while(1){
-              if(Atomics.load(sharedArray, 0) > 0){
-                  console.log(Atomics.load(sharedArray, 0));
-                  break;
-              }
-          }
-  
-          var a;
-          setTimeout(function() {
-              var before = Atomics.load(sharedArray, 0);
-              for(var i=0; i<10000; i++)
-              {
-                  a+=3;
-              }
-              var after = Atomics.load(sharedArray, 0);
-              var diff = after - before;
-              var nsPerTick = get_resolution_shared_array_buffer(sharedArray, 10);
-              console.log("sharedBuffer resolution: " + nsPerTick + " ns");
-              console.log("sharedBuffer diff: " + diff);
-              console.log("sharedBuffer ns: " + diff*nsPerTick);
-          }, 3000)
-          return a;
+          Module['timerWorker'].terminate();
       }
 DYNAMICTOP_PTR = staticAlloc(4);
 
@@ -2014,7 +1979,7 @@ function invoke_iiii(index,a1,a2,a3) {
 
 Module.asmGlobalArg = {};
 
-Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "invoke_ii": invoke_ii, "invoke_iiii": invoke_iiii, "___lock": ___lock, "___setErrNo": ___setErrNo, "___syscall140": ___syscall140, "___syscall146": ___syscall146, "___syscall54": ___syscall54, "___syscall6": ___syscall6, "___unlock": ___unlock, "_emscripten_memcpy_big": _emscripten_memcpy_big, "_shared_array_counter_add_value": _shared_array_counter_add_value, "_shared_array_counter_get_value": _shared_array_counter_get_value, "_shared_array_counter_init": _shared_array_counter_init, "flush_NO_FILESYSTEM": flush_NO_FILESYSTEM, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
+Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "invoke_ii": invoke_ii, "invoke_iiii": invoke_iiii, "___lock": ___lock, "___setErrNo": ___setErrNo, "___syscall140": ___syscall140, "___syscall146": ___syscall146, "___syscall54": ___syscall54, "___syscall6": ___syscall6, "___unlock": ___unlock, "_emscripten_memcpy_big": _emscripten_memcpy_big, "_shared_array_counter_get_value": _shared_array_counter_get_value, "_terminate_counter_sub_worker": _terminate_counter_sub_worker, "flush_NO_FILESYSTEM": flush_NO_FILESYSTEM, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
 // EMSCRIPTEN_START_ASM
 var asm =Module["asm"]// EMSCRIPTEN_END_ASM
 (Module.asmGlobalArg, Module.asmLibraryArg, buffer);

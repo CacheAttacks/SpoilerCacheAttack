@@ -59,12 +59,13 @@ function sleep(ms) {
 //https://interactive-examples.mdn.mozilla.net/pages/js/sharedarraybuffer-constructor.html
 //disabled by default, enable firefox => about:config => javascript.options.shared_memory;true
 
-function shared_array_counter_init()
+function shared_array_counter_init(sharedArray)
 {
-    const sharedBuffer = new SharedArrayBuffer(Uint32Array.BYTES_PER_ELEMENT);
-    const sharedArray = new Uint32Array(sharedBuffer);
-    const workerCounter = new Worker('worker.js');
-    workerCounter.postMessage(sharedBuffer);
+    //const sharedBuffer = new SharedArrayBuffer(Uint32Array.BYTES_PER_ELEMENT);
+    //const sharedArray = new Uint32Array(sharedBuffer);
+    const counterWorker = new Worker('worker.js');
+    counterWorker.postMessage(sharedBuffer);
+    return counterWorker;
 }
 
 function shared_arry_counter_get_value(){
