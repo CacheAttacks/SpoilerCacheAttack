@@ -1317,19 +1317,17 @@
       Module['sharedArrayCounter'] = sharedArray;
       Module['timerWorker'] = shared_array_counter_init(sharedArray);
 
-      get_resolution_shared_array_buffer()
+
 
     </script>
     <script type="text/javascript" src="victim.js"></script>
     <script type='text/javascript'>
-      var v1 = Atomics.load(Module['sharedArrayCounter'],0);
-      var v2 = Atomics.load(Module['sharedArrayCounter'],0);
-      console.log(v1);
-      console.log(v2);
-      for(var i = 0; i<10;i++)
-      {
-        console.log("value" + Atomics.load(Module['sharedArrayCounter'],0));
-      }
+    Module['myFuncPtr'] = addFunction(function() {
+      return Module['sharedArrayCounter'][0];
+      //return Atomics.load(Module['sharedArrayCounter'], 0);
+    });
+    console.log(Module['myFuncPtr']);
+
     console.log(Module['asm']);
     </script>
   </body>

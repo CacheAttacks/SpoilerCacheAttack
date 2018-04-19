@@ -16,6 +16,7 @@ extern int shared_array_counter_get_value();
 extern void shared_array_counter_add_value();
 extern void terminate_counter_sub_worker();
 extern float get_resolution_shared_array_buffer_ns(int samples);
+extern int get_func_ptr();
 
       // console.log(exports);
       // console.log(exports._int_sqrt(9));
@@ -94,7 +95,8 @@ void test_javascript_call(){
 }
 
 //test results:
-//lib call is faster than EM_ASM
+//lib call is faster than EM_ASM and direct function pointers
+//direct funcion pointers and EM_ASM are nearly the same speed wise
 //direct call of measure_func do not improve performance
 
 void test_resolution_SAB(int (*measure_func)(), float resolution_ns){
@@ -127,13 +129,15 @@ int get_counter_value_SAB_EM_ASM(){
 //   putchar('\n');
 // }
 
-void bench_SAB(){
+void bench_SAB(int (*javascript_func_ptr_measurement)()){
   float resolution_ns = get_resolution_shared_array_buffer_ns(100);
   printf("resolution SAB: %f ns\n", resolution_ns);
   printf("function call get_counter_value_SAB_lib:\n");
   test_resolution_SAB(&get_counter_value_SAB_lib, resolution_ns);
   printf("function call get_counter_value_SAB_EM_ASM:\n");
   test_resolution_SAB(&get_counter_value_SAB_EM_ASM, resolution_ns);
+  printf("function call javascript_func_ptr_measurement:\n");
+  test_resolution_SAB(javascript_func_ptr_measurement, resolution_ns);
 
   //test_resolution_SAB_direct(resolution_ns);
 }
@@ -141,7 +145,10 @@ void bench_SAB(){
 int main(int argc, char ** argv) {
   printf("start c code\n");
 
-  bench_SAB();
+  //get javascript function pointer
+  int (*measure_func)() = (int (*)())get_func_ptr();
+
+  bench_SAB(measure_func);
 
   terminate_counter_sub_worker();
 

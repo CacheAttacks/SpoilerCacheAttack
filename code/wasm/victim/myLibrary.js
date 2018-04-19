@@ -18,8 +18,8 @@ if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
 if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
     shared_array_counter_get_value: function()
     {
-        //return Module['sharedArrayCounter'][0];
-        return Atomics.load(Module['sharedArrayCounter'], 0);
+        return Module['sharedArrayCounter'][0];
+        //return Atomics.load(Module['sharedArrayCounter'], 0);
     }
 });
 
@@ -48,3 +48,8 @@ if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
     }
 });
 
+if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
+    get_func_ptr: function() {
+        return Module['myFuncPtr'];
+    }
+});
