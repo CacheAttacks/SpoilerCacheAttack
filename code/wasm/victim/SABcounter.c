@@ -1,5 +1,8 @@
 #include "SABcounter.h"
 
+//used for SAB_wasmMemory_write_counter_value 
+int *SAB_global_counter_buffer = 0;
+
 void SAB_test_resolution(int (*measure_func)(), float resolution_ns){
   for(int i = 0; i< 20; i++) {
     int v1 = (*measure_func)();
@@ -20,6 +23,44 @@ int wrapper_SAB_EM_ASM_get_counter_value(){
   });
 }
 
+int wrapper_SAB_wasmMemory_get_counter_value(){
+    SAB_wasmMemory_write_counter_value();
+    return SAB_global_counter_buffer[0];
+}
+
+int* wasmMemory_get_buffer(int size){
+  SAB_global_counter_buffer = (int*)malloc(sizeof(int)*size);
+  for(int i=0; i<size;i++)
+  {
+    SAB_global_counter_buffer[i] = 42;
+  }
+  //printf("buf add: %#010x\n", (unsigned int)SAB_global_counter_buffer);
+  return SAB_global_counter_buffer;
+}
+
+int read_mem(int *buf){
+  printf("offset %#010x\n", (unsigned int)buf);
+  printf("buf[0]: %i\n", *buf);
+  printf("buf[1]: %i\n", buf[1]);
+  return *buf;
+}
+
+void bla(int *buf){
+  int before = *SAB_global_counter_buffer;
+  doSomething();
+  int after = *SAB_global_counter_buffer;
+  int diff = after - before;
+  printf("diff %i", diff);
+}
+
+int doSomething(){
+  int a=0;
+  for(int i=0; i< 10000; i++){
+    a++;
+  }
+  return a;
+}
+
 // void SAB_test_resolution_direct(float resolution_ns){
 //   for(int i = 0; i< 20; i++) {
 //     int v1 = shared_array_counter_get_value();
@@ -34,17 +75,18 @@ void SAB_bench_call_methods(){
   float resolution_ns = SAB_get_resolution_ns(100);
   printf("resolution SAB: %f ns\n", resolution_ns);
 
-  printf("call get_counter_value_SAB_lib:\n");
+  printf("call SAB_lib_get_counter_value:\n");
   SAB_test_resolution(&wrapper_SAB_lib_get_counter_value, resolution_ns);
 
-  printf("call get_counter_value_SAB_EM_ASM:\n");
+  printf("call SAB_EM_ASM_get_counter_value:\n");
   SAB_test_resolution(&wrapper_SAB_EM_ASM_get_counter_value, resolution_ns);
 
-  int (*SAB_func_ptr)() = (int (*)())SAB_func_ptr_get_counter_value();
-  printf("call javascript_func_ptr_measurement:\n");
-  SAB_test_resolution(SAB_func_ptr, resolution_ns);
+  printf("call SAB_func_ptr_get_counter_value:\n");
+  SAB_test_resolution((int (*)())SAB_func_ptr_get_counter_value(), resolution_ns);
 
-
+  printf("call SAB_wasmMemory_get_counter_value:\n");
+  SAB_wasmMemory_init_buffer();
+  SAB_test_resolution(&wrapper_SAB_wasmMemory_get_counter_value, resolution_ns);
 
   //SAB_test_resolution_direct(resolution_ns);
 }

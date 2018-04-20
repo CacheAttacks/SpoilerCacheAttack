@@ -1,3 +1,9 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <unistd.h>
 #include <emscripten.h>
 
 //javascript function stubs
@@ -5,7 +11,10 @@ extern int SAB_lib_get_counter_value(); //uses lib call to get counter value
 extern void SAB_terminate_counter_sub_worker(); //call at end of c code, otherwise sub worker do not terminate
 extern float SAB_get_resolution_ns(int samples); //determine possible resolution of SAB counter 
 extern int SAB_func_ptr_get_counter_value(); //func ptr for direct function call from c
+
+extern void SAB_wasmMemory_init_buffer();
 extern void SAB_wasmMemory_write_counter_value(); //write counter value in Module['wasmMemory']
+
 
 //input measurement function, printf resolution 
 void test_resolution_SAB(int (*measure_func)(), float resolution_ns);
@@ -15,6 +24,15 @@ int wrapper_SAB_lib_get_counter_value();
 
 //wrapper for EM_ASM code
 int wrapper_SAB_EM_ASM_get_counter_value();
+
+//wrapper for SAB_wasmMemory_write_counter_value
+int wrapper_SAB_wasmMemory_get_counter_value();
+
+//called by javascript
+int* wasmMemory_get_buffer(int size);
+int read_mem(int *buf);
+void bla(int *buf);
+int doSomething();
 
 //test if direct call improves performance compared to wrapper call
 //void SAB_test_resolution_direct(float resolution_ns);

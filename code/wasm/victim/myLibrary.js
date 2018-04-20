@@ -50,3 +50,22 @@ if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
         Module['sharedArrayCounter'][0];
     }
 });
+
+if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
+    SAB_wasmMemory_init_buffer: function() {
+        var size = 1;
+        var offset = Module['asm']._wasmMemory_get_buffer(size);
+        //console.log("offset:" + offset);
+
+        //c returns address offset, we need int array offset (sizeof(int)==4)
+        Module['wasmMemoryArrayCounterOffset'] = offset/4;
+        Module['wasmMemoryArray'] = new Uint32Array(Module['wasmMemory'].buffer);
+
+        // for (var i = 0; i < size; i++) {
+        // console.log(Module['wasmMemoryArray'][i+offset/4]);
+        // Module['wasmMemoryArray'][i+offset/4] = i;
+        // }
+        // var value = Module['asm']._read_mem(offset);
+        // console.log("value:" + value);
+    }
+});

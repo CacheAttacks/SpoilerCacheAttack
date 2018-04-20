@@ -1732,7 +1732,7 @@ function _emscripten_asm_const_i(code) {
 
 STATIC_BASE = GLOBAL_BASE;
 
-STATICTOP = STATIC_BASE + 5712;
+STATICTOP = STATIC_BASE + 5728;
 /* global initializers */  __ATINIT__.push();
 
 
@@ -1741,7 +1741,7 @@ STATICTOP = STATIC_BASE + 5712;
 
 
 
-var STATIC_BUMP = 5712;
+var STATIC_BUMP = 5728;
 Module["STATIC_BASE"] = STATIC_BASE;
 Module["STATIC_BUMP"] = STATIC_BUMP;
 
@@ -1821,6 +1821,28 @@ function copyTempDouble(ptr) {
   function _SAB_terminate_counter_sub_worker()
       {
           Module['timerWorker'].terminate();
+      }
+
+  function _SAB_wasmMemory_init_buffer() {
+          var size = 1;
+          var offset = Module['asm']._wasmMemory_get_buffer(size);
+          //console.log("offset:" + offset);
+  
+          //c returns address offset, we need int array offset (sizeof(int)==4)
+          Module['wasmMemoryArrayCounterOffset'] = offset/4;
+          Module['wasmMemoryArray'] = new Uint32Array(Module['wasmMemory'].buffer);
+  
+          // for (var i = 0; i < size; i++) {
+          // console.log(Module['wasmMemoryArray'][i+offset/4]);
+          // Module['wasmMemoryArray'][i+offset/4] = i;
+          // }
+          // var value = Module['asm']._read_mem(offset);
+          // console.log("value:" + value);
+      }
+
+  function _SAB_wasmMemory_write_counter_value() {
+          Module['wasmMemoryArray'][Module['wasmMemoryArrayCounterOffset']] = 
+          Module['sharedArrayCounter'][0];
       }
 
   function ___lock() {}
@@ -1990,9 +2012,9 @@ function nullFunc_ii(x) { Module["printErr"]("Invalid function pointer called wi
 
 function nullFunc_iiii(x) { Module["printErr"]("Invalid function pointer called with signature 'iiii'. Perhaps this is an invalid value (e.g. caused by calling a virtual method on a NULL pointer)? Or calling a function with an incorrect type, which will fail? (it is worth building your source files with -Werror (warnings are errors), as warnings can indicate undefined behavior which can cause this)");  Module["printErr"]("Build with ASSERTIONS=2 for more info.");abort(x) }
 
-Module['wasmTableSize'] = 64;
+Module['wasmTableSize'] = 80;
 
-Module['wasmMaxTableSize'] = 64;
+Module['wasmMaxTableSize'] = 80;
 
 function invoke_i(index) {
   try {
@@ -2035,7 +2057,7 @@ function jsCall_iiii(index,a1,a2,a3) {
 
 Module.asmGlobalArg = {};
 
-Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "nullFunc_i": nullFunc_i, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "invoke_i": invoke_i, "jsCall_i": jsCall_i, "invoke_ii": invoke_ii, "jsCall_ii": jsCall_ii, "invoke_iiii": invoke_iiii, "jsCall_iiii": jsCall_iiii, "_SAB_func_ptr_get_counter_value": _SAB_func_ptr_get_counter_value, "_SAB_get_resolution_ns": _SAB_get_resolution_ns, "_SAB_lib_get_counter_value": _SAB_lib_get_counter_value, "_SAB_terminate_counter_sub_worker": _SAB_terminate_counter_sub_worker, "___lock": ___lock, "___setErrNo": ___setErrNo, "___syscall140": ___syscall140, "___syscall146": ___syscall146, "___syscall54": ___syscall54, "___syscall6": ___syscall6, "___unlock": ___unlock, "_emscripten_asm_const_i": _emscripten_asm_const_i, "_emscripten_memcpy_big": _emscripten_memcpy_big, "flush_NO_FILESYSTEM": flush_NO_FILESYSTEM, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
+Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "nullFunc_i": nullFunc_i, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "invoke_i": invoke_i, "jsCall_i": jsCall_i, "invoke_ii": invoke_ii, "jsCall_ii": jsCall_ii, "invoke_iiii": invoke_iiii, "jsCall_iiii": jsCall_iiii, "_SAB_func_ptr_get_counter_value": _SAB_func_ptr_get_counter_value, "_SAB_get_resolution_ns": _SAB_get_resolution_ns, "_SAB_lib_get_counter_value": _SAB_lib_get_counter_value, "_SAB_terminate_counter_sub_worker": _SAB_terminate_counter_sub_worker, "_SAB_wasmMemory_init_buffer": _SAB_wasmMemory_init_buffer, "_SAB_wasmMemory_write_counter_value": _SAB_wasmMemory_write_counter_value, "___lock": ___lock, "___setErrNo": ___setErrNo, "___syscall140": ___syscall140, "___syscall146": ___syscall146, "___syscall54": ___syscall54, "___syscall6": ___syscall6, "___unlock": ___unlock, "_emscripten_asm_const_i": _emscripten_asm_const_i, "_emscripten_memcpy_big": _emscripten_memcpy_big, "flush_NO_FILESYSTEM": flush_NO_FILESYSTEM, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
 // EMSCRIPTEN_START_ASM
 var asm =Module["asm"]// EMSCRIPTEN_END_ASM
 (Module.asmGlobalArg, Module.asmLibraryArg, buffer);
@@ -2062,12 +2084,6 @@ var real__free = asm["_free"]; asm["_free"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return real__free.apply(null, arguments);
-};
-
-var real__get_mem = asm["_get_mem"]; asm["_get_mem"] = function() {
-  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
-  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
-  return real__get_mem.apply(null, arguments);
 };
 
 var real__int_sqrt = asm["_int_sqrt"]; asm["_int_sqrt"] = function() {
@@ -2104,6 +2120,12 @@ var real__sbrk = asm["_sbrk"]; asm["_sbrk"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return real__sbrk.apply(null, arguments);
+};
+
+var real__wasmMemory_get_buffer = asm["_wasmMemory_get_buffer"]; asm["_wasmMemory_get_buffer"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return real__wasmMemory_get_buffer.apply(null, arguments);
 };
 
 var real_establishStackSpace = asm["establishStackSpace"]; asm["establishStackSpace"] = function() {
@@ -2164,10 +2186,6 @@ var _free = Module["_free"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return Module["asm"]["_free"].apply(null, arguments) };
-var _get_mem = Module["_get_mem"] = function() {
-  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
-  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
-  return Module["asm"]["_get_mem"].apply(null, arguments) };
 var _int_sqrt = Module["_int_sqrt"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
@@ -2200,6 +2218,10 @@ var _sbrk = Module["_sbrk"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return Module["asm"]["_sbrk"].apply(null, arguments) };
+var _wasmMemory_get_buffer = Module["_wasmMemory_get_buffer"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["_wasmMemory_get_buffer"].apply(null, arguments) };
 var establishStackSpace = Module["establishStackSpace"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');

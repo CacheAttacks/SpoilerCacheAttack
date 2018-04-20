@@ -82,7 +82,7 @@ function shared_test(){
 
 function SAB_wasmMemory_init_buffer(){
     var size = 2;
-    var offset = exports._get_mem(size);
+    var offset = Module['asm']._wasmMemory_get_buffer(size);
     console.log("offset:" + offset);
     Module['wasmMemoryArrayCounterOffset'] = offset;
     Module['wasmMemoryArray'] = new Uint32Array(Module['wasmMemory'].buffer);
@@ -90,6 +90,6 @@ function SAB_wasmMemory_init_buffer(){
     console.log(Module['wasmMemoryArray'][i+offset/4]);
     Module['wasmMemoryArray'][i+offset/4] = i;
     }
-    var value = exports._read_mem(offset);
+    var value = Module['asm']._read_mem(offset);
     console.log("value:" + value);
 }

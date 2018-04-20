@@ -1317,10 +1317,28 @@
       Module['sharedArrayCounter'] = sharedArray;
       Module['timerWorker'] = shared_array_counter_init(sharedArray);
 
-      SAB_wasmMemory_init_buffer();
     </script>
     <script type="text/javascript" src="victim.js"></script>
     <script type='text/javascript'>
+
+
+
+    //     var size = 2;
+    // var offset = Module['asm']._wasmMemory_get_buffer(size);
+    // console.log("offset:" + offset);
+    // Module['wasmMemoryArrayCounterOffset'] = offset;
+    // Module['wasmMemoryArray'] = new Uint32Array(Module['wasmMemory'].buffer);
+    // for (var i = 0; i < size; i++) {
+    // console.log(Module['wasmMemoryArray'][i+offset/4]);
+    // Module['wasmMemoryArray'][i+offset/4] = i;
+    // }
+    // var value = Module['asm']._read_mem(offset);
+    // console.log("value:" + value);
+    //SAB_wasmMemory_init_buffer();
+
+
+
+    
     console.log(Module['asm']);
     </script>
   </body>
