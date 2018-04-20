@@ -1317,17 +1317,10 @@
       Module['sharedArrayCounter'] = sharedArray;
       Module['timerWorker'] = shared_array_counter_init(sharedArray);
 
-
-
+      SAB_wasmMemory_init_buffer();
     </script>
     <script type="text/javascript" src="victim.js"></script>
     <script type='text/javascript'>
-    Module['myFuncPtr'] = addFunction(function() {
-      return Module['sharedArrayCounter'][0];
-      //return Atomics.load(Module['sharedArrayCounter'], 0);
-    });
-    console.log(Module['myFuncPtr']);
-
     console.log(Module['asm']);
     </script>
   </body>

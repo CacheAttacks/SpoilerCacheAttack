@@ -5,18 +5,11 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <emscripten.h>
+#include "SABcounter.h"
 
 #define SIZE 2048
 #define ARRAYS 100
 #define MMAPSIZE 4096
-
-extern int testExternalJSMethod();
-extern void shared_array_counter_init();
-extern int shared_array_counter_get_value();
-extern void shared_array_counter_add_value();
-extern void terminate_counter_sub_worker();
-extern float get_resolution_shared_array_buffer_ns(int samples);
-extern int get_func_ptr();
 
       // console.log(exports);
       // console.log(exports._int_sqrt(9));
@@ -84,108 +77,50 @@ void bla(int *buf){
   printf("diff %i", diff);
 }
 
-void test_javascript_call(){
-  int a = 0;
-  
-  for(int i=0; i< 1000000000; i++)
-    a += testExternalJSMethod();
-
-  printf("i %i\n",a);
-  printf("finish\n");
-}
-
-//test results:
-//lib call is faster than EM_ASM and direct function pointers
-//direct funcion pointers and EM_ASM are nearly the same speed wise
-//direct call of measure_func do not improve performance
-
-void test_resolution_SAB(int (*measure_func)(), float resolution_ns){
-  for(int i = 0; i< 20; i++) {
-    int v1 = (*measure_func)();
-    int v2 = (*measure_func)();
-    float diff_ns = (v2-v1)*resolution_ns;
-    printf("%i(%0.1fns), ", v2-v1, diff_ns);
-  }
-  putchar('\n');
-}
-
-int get_counter_value_SAB_lib(){
-  return shared_array_counter_get_value();
-}
-
-int get_counter_value_SAB_EM_ASM(){
-  return EM_ASM_INT({
-    return Module['sharedArrayCounter'][0];
-  });
-}
-
-// void test_resolution_SAB_direct(float resolution_ns){
-//   for(int i = 0; i< 20; i++) {
-//     int v1 = shared_array_counter_get_value();
-//     int v2 = shared_array_counter_get_value();
-//     float diff_ns = (v2-v1)*resolution_ns;
-//     printf("%i(%0.1fns), ", v2-v1, diff_ns);
-//   }
-//   putchar('\n');
-// }
-
-void bench_SAB(int (*javascript_func_ptr_measurement)()){
-  float resolution_ns = get_resolution_shared_array_buffer_ns(100);
-  printf("resolution SAB: %f ns\n", resolution_ns);
-  printf("function call get_counter_value_SAB_lib:\n");
-  test_resolution_SAB(&get_counter_value_SAB_lib, resolution_ns);
-  printf("function call get_counter_value_SAB_EM_ASM:\n");
-  test_resolution_SAB(&get_counter_value_SAB_EM_ASM, resolution_ns);
-  printf("function call javascript_func_ptr_measurement:\n");
-  test_resolution_SAB(javascript_func_ptr_measurement, resolution_ns);
-
-  //test_resolution_SAB_direct(resolution_ns);
-}
 
 int main(int argc, char ** argv) {
   printf("start c code\n");
 
-  //get javascript function pointer
-  int (*measure_func)() = (int (*)())get_func_ptr();
+  SAB_bench_call_methods();
 
-  bench_SAB(measure_func);
-
-  terminate_counter_sub_worker();
-
-  //int *arr = calloc(SIZE, sizeof(int));
-  //int *arr2 = calloc(4096, sizeof(int));
-  // printf("ŝqrt(3): %i\n", int_sqrt(3));  
-
-  // for(int i=0; i<SIZE; i+=1024)
-  // {
-  //   printf("arr+%i: %p\n", i, arr+i);
-  // }
-
-  //printf("arr: %p\n", arr);  
-  //printf("arr: %p\n", arr2);
-
-  // emscripten_run_script("alert('hi')");
-  // while(global_buf == 0 || *global_buf == 42){}
-
-  // printf("*global_buf != 42");
-
-  // char **buffers = calloc(sizeof(void*), ARRAYS);
-  // for(int i=0; i<ARRAYS; i++){
-  //   buffers[i] = mmap(NULL, MMAPSIZE, PROT_READ|PROT_WRITE, MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
-  // }
-  
-
-  // while(1){
-  //  arr_access(buffers, ARRAYS);
-  //  sleep(1);
-  // }
-
-  // char *buffer = mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
-  // printf("buffer: %p\n", buffer); 
-  // while(1){
-  //   buffer[1] |= buffer[2];
-  // }
+  SAB_terminate_counter_sub_worker();
 }
 
 //http://webassembly.org/docs/semantics/#linear-memory
 //A linear memory can be considered to be an untyped array of bytes, and it is unspecified how embedders map this array into their process’ own virtual memory.
+
+// void test(){
+//   int *arr = calloc(SIZE, sizeof(int));
+//   int *arr2 = calloc(4096, sizeof(int));
+//   printf("ŝqrt(3): %i\n", int_sqrt(3));  
+
+//   for(int i=0; i<SIZE; i+=1024)
+//   {
+//     printf("arr+%i: %p\n", i, arr+i);
+//   }
+
+//   printf("arr: %p\n", arr);  
+//   printf("arr: %p\n", arr2);
+
+//   emscripten_run_script("alert('hi')");
+//   while(global_buf == 0 || *global_buf == 42){}
+
+//   printf("*global_buf != 42");
+
+//   char **buffers = calloc(sizeof(void*), ARRAYS);
+//   for(int i=0; i<ARRAYS; i++){
+//     buffers[i] = mmap(NULL, MMAPSIZE, PROT_READ|PROT_WRITE, MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
+//   }
+  
+
+//   while(1){
+//    arr_access(buffers, ARRAYS);
+//    sleep(1);
+//   }
+
+//   char *buffer = mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_ANONYMOUS|MAP_PRIVATE, -1, 0);
+//   printf("buffer: %p\n", buffer); 
+//   while(1){
+//     buffer[1] |= buffer[2];
+//   }
+// }

@@ -1732,7 +1732,7 @@ function _emscripten_asm_const_i(code) {
 
 STATIC_BASE = GLOBAL_BASE;
 
-STATICTOP = STATIC_BASE + 5744;
+STATICTOP = STATIC_BASE + 5712;
 /* global initializers */  __ATINIT__.push();
 
 
@@ -1741,7 +1741,7 @@ STATICTOP = STATIC_BASE + 5744;
 
 
 
-var STATIC_BUMP = 5744;
+var STATIC_BUMP = 5712;
 Module["STATIC_BASE"] = STATIC_BASE;
 Module["STATIC_BUMP"] = STATIC_BUMP;
 
@@ -1784,6 +1784,44 @@ function copyTempDouble(ptr) {
 
 // {{PRE_LIBRARY}}
 
+
+  function _SAB_func_ptr_get_counter_value() {
+          if(Module['SABFuncPtr'] == null){
+              Module['SABFuncPtr'] = addFunction(function() {
+                  return Module['sharedArrayCounter'][0];
+                  //return Atomics.load(Module['sharedArrayCounter'], 0);
+              });
+              console.log(Module['SABFuncPtr']);
+          }
+          return Module['SABFuncPtr'];
+      }
+
+  function _SAB_get_resolution_ns(samples)
+      {
+          var nsPerTick = 0;
+          for(var i=0; i<samples; i++)
+          {
+              var start = wait_edge();
+              var start_count = Atomics.load(Module['sharedArrayCounter'], 0);
+              var end = wait_edge();
+              var end_count = Atomics.load(Module['sharedArrayCounter'], 0);
+              nsPerTick += (end - start) / (end_count - start_count) ;
+          }
+          nsPerTick /= samples;
+          //convert from ms to ns
+          return nsPerTick * 1000 * 1000;
+      }
+
+  function _SAB_lib_get_counter_value()
+      {
+          return Module['sharedArrayCounter'][0];
+          //return Atomics.load(Module['sharedArrayCounter'], 0);
+      }
+
+  function _SAB_terminate_counter_sub_worker()
+      {
+          Module['timerWorker'].terminate();
+      }
 
   function ___lock() {}
 
@@ -1888,26 +1926,6 @@ function copyTempDouble(ptr) {
 
   var _emscripten_asm_const_int=true;
 
-  function _get_func_ptr() {
-          return Module['myFuncPtr'];
-      }
-
-  function _get_resolution_shared_array_buffer_ns(samples)
-      {
-          var nsPerTick = 0;
-          for(var i=0; i<samples; i++)
-          {
-              var start = wait_edge();
-              var start_count = Atomics.load(Module['sharedArrayCounter'], 0);
-              var end = wait_edge();
-              var end_count = Atomics.load(Module['sharedArrayCounter'], 0);
-              nsPerTick += (end - start) / (end_count - start_count) ;
-          }
-          nsPerTick /= samples;
-          //convert from ms to ns
-          return nsPerTick * 1000 * 1000;
-      }
-
    
 
   
@@ -1924,17 +1942,6 @@ function copyTempDouble(ptr) {
       else Module.printErr('failed to set errno from JS');
       return value;
     } 
-
-  function _shared_array_counter_get_value()
-      {
-          return Module['sharedArrayCounter'][0];
-          //return Atomics.load(Module['sharedArrayCounter'], 0);
-      }
-
-  function _terminate_counter_sub_worker()
-      {
-          Module['timerWorker'].terminate();
-      }
 DYNAMICTOP_PTR = staticAlloc(4);
 
 STACK_BASE = STACKTOP = alignMemory(STATICTOP);
@@ -2028,7 +2035,7 @@ function jsCall_iiii(index,a1,a2,a3) {
 
 Module.asmGlobalArg = {};
 
-Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "nullFunc_i": nullFunc_i, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "invoke_i": invoke_i, "jsCall_i": jsCall_i, "invoke_ii": invoke_ii, "jsCall_ii": jsCall_ii, "invoke_iiii": invoke_iiii, "jsCall_iiii": jsCall_iiii, "___lock": ___lock, "___setErrNo": ___setErrNo, "___syscall140": ___syscall140, "___syscall146": ___syscall146, "___syscall54": ___syscall54, "___syscall6": ___syscall6, "___unlock": ___unlock, "_emscripten_asm_const_i": _emscripten_asm_const_i, "_emscripten_memcpy_big": _emscripten_memcpy_big, "_get_func_ptr": _get_func_ptr, "_get_resolution_shared_array_buffer_ns": _get_resolution_shared_array_buffer_ns, "_shared_array_counter_get_value": _shared_array_counter_get_value, "_terminate_counter_sub_worker": _terminate_counter_sub_worker, "flush_NO_FILESYSTEM": flush_NO_FILESYSTEM, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
+Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "nullFunc_i": nullFunc_i, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "invoke_i": invoke_i, "jsCall_i": jsCall_i, "invoke_ii": invoke_ii, "jsCall_ii": jsCall_ii, "invoke_iiii": invoke_iiii, "jsCall_iiii": jsCall_iiii, "_SAB_func_ptr_get_counter_value": _SAB_func_ptr_get_counter_value, "_SAB_get_resolution_ns": _SAB_get_resolution_ns, "_SAB_lib_get_counter_value": _SAB_lib_get_counter_value, "_SAB_terminate_counter_sub_worker": _SAB_terminate_counter_sub_worker, "___lock": ___lock, "___setErrNo": ___setErrNo, "___syscall140": ___syscall140, "___syscall146": ___syscall146, "___syscall54": ___syscall54, "___syscall6": ___syscall6, "___unlock": ___unlock, "_emscripten_asm_const_i": _emscripten_asm_const_i, "_emscripten_memcpy_big": _emscripten_memcpy_big, "flush_NO_FILESYSTEM": flush_NO_FILESYSTEM, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
 // EMSCRIPTEN_START_ASM
 var asm =Module["asm"]// EMSCRIPTEN_END_ASM
 (Module.asmGlobalArg, Module.asmLibraryArg, buffer);

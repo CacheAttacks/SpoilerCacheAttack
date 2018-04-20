@@ -79,3 +79,17 @@ function shared_test(){
         console.log("sharedArray[1] = " + sharedArray[1]);
     }, 5000)
 }
+
+function SAB_wasmMemory_init_buffer(){
+    var size = 2;
+    var offset = exports._get_mem(size);
+    console.log("offset:" + offset);
+    Module['wasmMemoryArrayCounterOffset'] = offset;
+    Module['wasmMemoryArray'] = new Uint32Array(Module['wasmMemory'].buffer);
+    for (var i = 0; i < size; i++) {
+    console.log(Module['wasmMemoryArray'][i+offset/4]);
+    Module['wasmMemoryArray'][i+offset/4] = i;
+    }
+    var value = exports._read_mem(offset);
+    console.log("value:" + value);
+}

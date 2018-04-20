@@ -1,22 +1,5 @@
-function makeAlert(text) {
-    alert(text);
-}
-
 if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
-    testExternalJSMethod: function() {
-        return 1;
-    }
-});
-
-if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
-    shared_array_counter_add_value: function()
-    {
-        Atomics.add(sharedArray, 1, 10);
-    }
-});
-
-if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
-    shared_array_counter_get_value: function()
+    SAB_lib_get_counter_value: function()
     {
         return Module['sharedArrayCounter'][0];
         //return Atomics.load(Module['sharedArrayCounter'], 0);
@@ -24,14 +7,14 @@ if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
 });
 
 if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
-    terminate_counter_sub_worker: function()
+    SAB_terminate_counter_sub_worker: function()
     {
         Module['timerWorker'].terminate();
     }
 });
 
 if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
-    get_resolution_shared_array_buffer_ns: function(samples)
+    SAB_get_resolution_ns: function(samples)
     {
         var nsPerTick = 0;
         for(var i=0; i<samples; i++)
@@ -49,7 +32,21 @@ if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
 });
 
 if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
-    get_func_ptr: function() {
-        return Module['myFuncPtr'];
+    SAB_func_ptr_get_counter_value: function() {
+        if(Module['SABFuncPtr'] == null){
+            Module['SABFuncPtr'] = addFunction(function() {
+                return Module['sharedArrayCounter'][0];
+                //return Atomics.load(Module['sharedArrayCounter'], 0);
+            });
+            console.log(Module['SABFuncPtr']);
+        }
+        return Module['SABFuncPtr'];
+    }
+});
+
+if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
+    SAB_wasmMemory_write_counter_value: function() {
+        Module['wasmMemoryArray'][Module['wasmMemoryArrayCounterOffset']] = 
+        Module['sharedArrayCounter'][0];
     }
 });
