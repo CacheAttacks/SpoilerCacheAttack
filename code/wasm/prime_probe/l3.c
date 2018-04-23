@@ -285,7 +285,7 @@ static int timedwalk(void *list, register void *candidate, int size_es) {
   ts_t ts = ts_alloc();
   void *c2 = (void *)((uintptr_t)candidate ^ 0x200);
   LNEXT(c2) = candidate;
-  clflush(c2);
+  //clflush(c2);
   memaccess(candidate);
   for (int i = 0; i < CHECKTIMES * (debug ? 20 : 1); i++) {
     //walk(list,20); was default why???
@@ -327,7 +327,7 @@ static int timedwalk_print(void *list, register void *candidate, int walk_size) 
   ts_t ts = ts_alloc();
   void *c2 = (void *)((uintptr_t)candidate ^ 0x200);
   LNEXT(c2) = candidate;
-  clflush(c2);
+  //clflush(c2);
   memaccess(candidate);
   //printf("time:");
   for (int i = 0; i < CHECKTIMES * (debug ? 20 : 10); i++) {
@@ -382,7 +382,7 @@ static void *expand(vlist_t es, vlist_t candidates) {
   while (vl_len(candidates) > 0) {
     void *current = vl_poprand(candidates);
     if (checkevict(es, current)){
-      //printf("found es! size:%i\n", vl_len(es));
+      printf("found es! size:%i\n", vl_len(es));
       //checkevict_print(es, current);
       return current;
     }
@@ -395,7 +395,9 @@ static void contract(vlist_t es, vlist_t candidates, void *current) {
   for (int i = 0; i < vl_len(es);) {
     void *cand = vl_get(es, i);
     vl_del(es, i);
-    clflush(current);
+    //TODO fix code
+    printf("fix contract code");
+    //clflush(current);
     if (checkevict(es, current))
       vl_push(candidates, cand);
     else {
@@ -421,7 +423,7 @@ static void collect(vlist_t es, vlist_t candidates, vlist_t set) {
 //tries to find evicitions sets
 static vlist_t map(l3pp_t l3, vlist_t lines) {
 #ifdef DEBUG
-  printf("%d lines\n", vl_len(lines));
+  printf("lines aka memory-blocks %d\n", vl_len(lines));
 #endif // DEBUG
   vlist_t groups = vl_new();
   vlist_t es = vl_new();
@@ -510,6 +512,8 @@ static int probemap(l3pp_t l3) {
   if ((l3->l3info.flags & L3FLAG_NOPROBE) != 0)
     return 0;
   printf("l3info.bufsize:%i\n",l3->l3info.bufsize);
+  printf("l3->groupsize: %i\n", l3->groupsize);
+  printf("L3_CACHELINE: %i\n", L3_CACHELINE);
   vlist_t pages = vl_new();
   for (int i = 0; i < l3->l3info.bufsize; i+= l3->groupsize * L3_CACHELINE) 
     vl_push(pages, l3->buffer + i);
@@ -549,6 +553,7 @@ static int probemap(l3pp_t l3) {
 // }
 
 l3pp_t l3_prepare(l3info_t l3info) {
+  int allocatedMem = sizeof(struct l3pp);
   // Setup
   l3pp_t l3 = (l3pp_t)malloc(sizeof(struct l3pp));
   bzero(l3, sizeof(struct l3pp));
@@ -564,13 +569,13 @@ l3pp_t l3_prepare(l3info_t l3info) {
   // Allocate cache buffer
   int bufsize;
   char *buffer = MAP_FAILED;
-#ifdef HUGEPAGES
-  if ((l3->l3info.flags & L3FLAG_NOHUGEPAGES) == 0) {
-    bufsize = (l3->l3info.bufsize + HUGEPAGESIZE - 1) & ~HUGEPAGEMASK;
-    l3->groupsize = L3_GROUPSIZE_FOR_HUGEPAGES;	
-    buffer = mmap(NULL, bufsize, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE|HUGEPAGES, -1, 0);
-  }
-#endif
+// #ifdef HUGEPAGES
+//   if ((l3->l3info.flags & L3FLAG_NOHUGEPAGES) == 0) {
+//     bufsize = (l3->l3info.bufsize + HUGEPAGESIZE - 1) & ~HUGEPAGEMASK;
+//     l3->groupsize = L3_GROUPSIZE_FOR_HUGEPAGES;	
+//     buffer = mmap(NULL, bufsize, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE|HUGEPAGES, -1, 0);
+//   }
+// #endif
 
   if (buffer == MAP_FAILED) {
     bufsize = l3->l3info.bufsize;
@@ -603,11 +608,16 @@ l3pp_t l3_prepare(l3info_t l3info) {
   // Allocate monitored set info
   //2 * sizeof(uint32_t) per eviction_set
   l3->monitoredbitmap = (uint32_t *)calloc(l3->ngroups*l3->groupsize/32, sizeof(uint32_t));
+  allocatedMem += l3->ngroups*l3->groupsize/32*sizeof(uint32_t);
 
   //L3_SETS_PER_PAGE * sizeof(var) per eviction set
   l3->monitoredset = (int *)malloc(l3->ngroups * l3->groupsize * sizeof(int));
+  allocatedMem += l3->ngroups * l3->groupsize * sizeof(int);
   l3->monitoredhead = (void **)malloc(l3->ngroups * l3->groupsize * sizeof(void *));
+  allocatedMem += l3->ngroups * l3->groupsize * sizeof(void *);
   l3->nmonitored = 0;
+
+  printf("allocated %i Bytes\n", allocatedMem);
 
   return l3;
 }

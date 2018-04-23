@@ -1721,7 +1721,8 @@ integrateWasmJS();
 
 // === Body ===
 
-var ASM_CONSTS = [function() { return Module['sharedArrayCounter'][0]; }];
+var ASM_CONSTS = [function() { return Module['sharedArrayCounter'][0]; },
+ function() { Module['wasmMemoryArray'][Module['wasmMemoryArrayCounterOffset']] = Module['sharedArrayCounter'][0]; }];
 
 function _emscripten_asm_const_i(code) {
   return ASM_CONSTS[code]();
@@ -1732,7 +1733,7 @@ function _emscripten_asm_const_i(code) {
 
 STATIC_BASE = GLOBAL_BASE;
 
-STATICTOP = STATIC_BASE + 5728;
+STATICTOP = STATIC_BASE + 5936;
 /* global initializers */  __ATINIT__.push();
 
 
@@ -1741,7 +1742,7 @@ STATICTOP = STATIC_BASE + 5728;
 
 
 
-var STATIC_BUMP = 5728;
+var STATIC_BUMP = 5936;
 Module["STATIC_BASE"] = STATIC_BASE;
 Module["STATIC_BUMP"] = STATIC_BUMP;
 
@@ -1786,14 +1787,24 @@ function copyTempDouble(ptr) {
 
 
   function _SAB_func_ptr_get_counter_value() {
-          if(Module['SABFuncPtr'] == null){
-              Module['SABFuncPtr'] = addFunction(function() {
+          if(Module['SABFuncPtrGetValue'] == null){
+              Module['SABFuncPtrGetValue'] = addFunction(function() {
                   return Module['sharedArrayCounter'][0];
                   //return Atomics.load(Module['sharedArrayCounter'], 0);
-              });
-              console.log(Module['SABFuncPtr']);
+              }, "SABFuncPtrGetValue");
+              //console.log(Module['SABFuncPtrGetValue']);
           }
-          return Module['SABFuncPtr'];
+          return Module['SABFuncPtrGetValue'];
+      }
+
+  function _SAB_func_ptr_write_counter_value() {
+          if(Module['SABFuncPtrWriteValue'] == null){
+              Module['SABFuncPtrWriteValue'] = addFunction(function() {
+                  Module['wasmMemoryArray'][Module['wasmMemoryArrayCounterOffset']] = 
+                  Module['sharedArrayCounter'][0];
+              }, "SABFuncPtrWriteValue");
+          }
+          return Module['SABFuncPtrWriteValue'];
       }
 
   function _SAB_get_resolution_ns(samples)
@@ -1818,12 +1829,7 @@ function copyTempDouble(ptr) {
           //return Atomics.load(Module['sharedArrayCounter'], 0);
       }
 
-  function _SAB_terminate_counter_sub_worker()
-      {
-          Module['timerWorker'].terminate();
-      }
-
-  function _SAB_wasmMemory_init_buffer() {
+  function _SAB_lib_wasmMemory_init_buffer() {
           var size = 1;
           var offset = Module['asm']._wasmMemory_get_buffer(size);
           //console.log("offset:" + offset);
@@ -1840,9 +1846,14 @@ function copyTempDouble(ptr) {
           // console.log("value:" + value);
       }
 
-  function _SAB_wasmMemory_write_counter_value() {
+  function _SAB_lib_wasmMemory_write_counter_value() {
           Module['wasmMemoryArray'][Module['wasmMemoryArrayCounterOffset']] = 
           Module['sharedArrayCounter'][0];
+      }
+
+  function _SAB_terminate_counter_sub_worker()
+      {
+          Module['timerWorker'].terminate();
       }
 
   function ___lock() {}
@@ -2057,7 +2068,7 @@ function jsCall_iiii(index,a1,a2,a3) {
 
 Module.asmGlobalArg = {};
 
-Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "nullFunc_i": nullFunc_i, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "invoke_i": invoke_i, "jsCall_i": jsCall_i, "invoke_ii": invoke_ii, "jsCall_ii": jsCall_ii, "invoke_iiii": invoke_iiii, "jsCall_iiii": jsCall_iiii, "_SAB_func_ptr_get_counter_value": _SAB_func_ptr_get_counter_value, "_SAB_get_resolution_ns": _SAB_get_resolution_ns, "_SAB_lib_get_counter_value": _SAB_lib_get_counter_value, "_SAB_terminate_counter_sub_worker": _SAB_terminate_counter_sub_worker, "_SAB_wasmMemory_init_buffer": _SAB_wasmMemory_init_buffer, "_SAB_wasmMemory_write_counter_value": _SAB_wasmMemory_write_counter_value, "___lock": ___lock, "___setErrNo": ___setErrNo, "___syscall140": ___syscall140, "___syscall146": ___syscall146, "___syscall54": ___syscall54, "___syscall6": ___syscall6, "___unlock": ___unlock, "_emscripten_asm_const_i": _emscripten_asm_const_i, "_emscripten_memcpy_big": _emscripten_memcpy_big, "flush_NO_FILESYSTEM": flush_NO_FILESYSTEM, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
+Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "nullFunc_i": nullFunc_i, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "invoke_i": invoke_i, "jsCall_i": jsCall_i, "invoke_ii": invoke_ii, "jsCall_ii": jsCall_ii, "invoke_iiii": invoke_iiii, "jsCall_iiii": jsCall_iiii, "_SAB_func_ptr_get_counter_value": _SAB_func_ptr_get_counter_value, "_SAB_func_ptr_write_counter_value": _SAB_func_ptr_write_counter_value, "_SAB_get_resolution_ns": _SAB_get_resolution_ns, "_SAB_lib_get_counter_value": _SAB_lib_get_counter_value, "_SAB_lib_wasmMemory_init_buffer": _SAB_lib_wasmMemory_init_buffer, "_SAB_lib_wasmMemory_write_counter_value": _SAB_lib_wasmMemory_write_counter_value, "_SAB_terminate_counter_sub_worker": _SAB_terminate_counter_sub_worker, "___lock": ___lock, "___setErrNo": ___setErrNo, "___syscall140": ___syscall140, "___syscall146": ___syscall146, "___syscall54": ___syscall54, "___syscall6": ___syscall6, "___unlock": ___unlock, "_emscripten_asm_const_i": _emscripten_asm_const_i, "_emscripten_memcpy_big": _emscripten_memcpy_big, "flush_NO_FILESYSTEM": flush_NO_FILESYSTEM, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
 // EMSCRIPTEN_START_ASM
 var asm =Module["asm"]// EMSCRIPTEN_END_ASM
 (Module.asmGlobalArg, Module.asmLibraryArg, buffer);

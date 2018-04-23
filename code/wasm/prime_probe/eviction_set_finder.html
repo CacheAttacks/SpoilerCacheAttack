@@ -1216,23 +1216,7 @@
     </div>
     <textarea id="output" rows="8"></textarea>
 
-    <!--<script type="text/javascript" src="myLibrary.js"></script>!-->
-    <script type="text/javascript" src="timer_SAB.js"></script>
-    <script type="text/javascript" src="timer.js"></script>
     <script type='text/javascript'>
-
-      //shared_array_counter(bla);
-
-    // var size = 1000;
-    // var arr = new Array(size);
-    // for(var i=0; i< size;i++)
-    //   arr[i] = performance.now();
-
-    // for(var i=0; i< size;i++)
-    //   console.log(arr[i]);
-
-    //for(var i=0; i< 10;i++)
-    //  console.log(measure(bla));
       var statusElement = document.getElementById('status');
       var progressElement = document.getElementById('progress');
       var spinnerElement = document.getElementById('spinner');
@@ -1310,17 +1294,7 @@
           if (text) Module.printErr('[post-exception status] ' + text);
         };
       };
-
-      //init sharedArrayBuffer counter
-      const sharedBuffer = new SharedArrayBuffer(Uint32Array.BYTES_PER_ELEMENT);
-      const sharedArray = new Uint32Array(sharedBuffer);
-      Module['sharedArrayCounter'] = sharedArray;
-      Module['timerWorker'] = shared_array_counter_init(sharedArray);
-
     </script>
-    <script type="text/javascript" src="victim.js"></script>
-    <script type='text/javascript'>
-    console.log(Module['asm']);
-    </script>
+    <script async type="text/javascript" src="eviction_set_finder.js"></script>
   </body>
 </html>

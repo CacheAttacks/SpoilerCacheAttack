@@ -20,6 +20,8 @@
 #ifndef __LOW_H__
 #define __LOW_H__
 
+#include "SABcounter.h"
+
 
 
 #define L3_THRESHOLD 140
@@ -31,9 +33,10 @@
 
 
 static inline int memaccess(void *v) {
-  int rv;
-  asm volatile("mov (%1), %0": "+r" (rv): "r" (v):);
-  return rv;
+  // int rv;
+  // asm volatile("mov (%1), %0": "+r" (rv): "r" (v):);
+  // return rv;
+  return *((int*)v);
 }
 
 // static inline uint32_t memaccesstime_old(void *v) {
@@ -50,57 +53,77 @@ static inline int memaccess(void *v) {
 //   return rv;
 // }
 
+static inline void warmuptimer(){
+  while(1)
+  {
+    int before = SAB_lib_get_counter_value();
+    int after = SAB_lib_get_counter_value();
+    if(after-before > 0 && after-before < 100){
+      break;
+    }
+  }
+}
+
 
 //add lfence instructions between rdtsc instructions
 //rdtscp seems not working as intented (i7-4770)
-static inline uint32_t memaccesstime(void *v) {
-  uint32_t rv;
-  asm volatile (
-      "mfence\n"
-      "lfence\n" //serializing operation on all load-from-memory instructions that were issued prior the LFENCE instruction
-      "rdtsc\n" //get cpu-cycles in EDX(high 32 bit) and EAX(low 32 bit)
-      "lfence\n"
-      "mov %%eax, %%esi\n" //save EAX(low 32 bit) in ESI
-      "mov (%1), %%eax\n" //EAX = *p;
-      "lfence\n"
-      "rdtsc\n" //get cpu-cycles in EDX(high 32 bit) and EAX(low 32 bit)
-      "sub %%esi, %%eax\n" //rv = rdtsc_new.low - rdtsc_old.new
-      : "=&a" (rv) //output
-      : "r" (v) //input
-      : "ecx", "edx", "esi" //clobbered register
-      );   
-  return rv;
+static inline int memaccesstime(void *v) {
+
+  warmuptimer();
+
+  int before = SAB_lib_get_counter_value();
+  int a = *((int*)v);
+  int after = SAB_lib_get_counter_value();
+  //printf("%i ", after-before);
+  return after-before;
+
+  // uint32_t rv;
+  // asm volatile (
+  //     "mfence\n"
+  //     "lfence\n" //serializing operation on all load-from-memory instructions that were issued prior the LFENCE instruction
+  //     "rdtsc\n" //get cpu-cycles in EDX(high 32 bit) and EAX(low 32 bit)
+  //     "lfence\n"
+  //     "mov %%eax, %%esi\n" //save EAX(low 32 bit) in ESI
+  //     "mov (%1), %%eax\n" //EAX = *p;
+  //     "lfence\n"
+  //     "rdtsc\n" //get cpu-cycles in EDX(high 32 bit) and EAX(low 32 bit)
+  //     "sub %%esi, %%eax\n" //rv = rdtsc_new.low - rdtsc_old.new
+  //     : "=&a" (rv) //output
+  //     : "r" (v) //input
+  //     : "ecx", "edx", "esi" //clobbered register
+  //     );   
+  // return rv;
 }
 
-static inline void clflush(void *v) {
-#ifdef WASM
-  printf("clflush not possible!\n");
-  exit(1);
-#else
-  asm volatile ("clflush 0(%0)": : "r" (v):);
-#endif
-}
+// static inline void clflush(void *v) {
+// #ifdef WASM
+//   printf("clflush not possible!\n");
+//   exit(1);
+// #else
+//   asm volatile ("clflush 0(%0)": : "r" (v):);
+// #endif
+// }
 
 static inline uint32_t rdtscp() {
-#ifdef WASM
+//#ifdef WASM
   printf("rdtscp not possible!\n");
   exit(1);
-#else
-  uint32_t rv;
-  asm volatile ("rdtscp": "=a" (rv) :: "edx", "ecx");
-  return rv;
-#endif
+// #else
+//   uint32_t rv;
+//   asm volatile ("rdtscp": "=a" (rv) :: "edx", "ecx");
+//   return rv;
+// #endif
 }
 
 static inline uint64_t rdtscp64() {
-#ifdef WASM
+// #ifdef WASM
   printf("rdtscp not possible!\n");
   exit(1);
-#else
-  uint32_t low, high;
-  asm volatile ("rdtsc": "=a" (low), "=d" (high) :: "ecx");
-  return (((uint64_t)high) << 32) | low;
-#endif
+// #else
+//   uint32_t low, high;
+//   asm volatile ("rdtsc": "=a" (low), "=d" (high) :: "ecx");
+//   return (((uint64_t)high) << 32) | low;
+// #endif
 }
 
 static inline void mfence() {
@@ -134,6 +157,16 @@ static inline void walk(void *p, int count) {
   if (p == NULL)
     return;
 
+  do{
+    void* old_p = p;
+    p = *((void **)p);
+    if(p == old_p)
+    {
+      break;
+    }
+    count--;
+  }while(count > 0);
+
   //pseudo-code of asm
   //do{
   //  %%rsi = p;
@@ -143,15 +176,15 @@ static inline void walk(void *p, int count) {
   //  count--;
   //} while(count > 0);
 
-  asm volatile(
-    "movq %0, %%rsi\n" //Move quadword p to %%rsi
-    "1:\n"
-    "movq (%0), %0\n" //Move quadword to *p to p
-    "cmpq %0, %%rsi\n" //Compare quadword p (is now *p) with %%rsi (is now p) 
-    "jnz 1b\n" //Jump to 1b if not zero (*p != p)
-    "decl %1\n" //decrement count
-    "jnz 1b\n" //while(count > 0)
-    : "+r" (p), "+r" (count)::"rsi"); //define p and count as output and rsi as clobbered register
+  // asm volatile(
+  //   "movq %0, %%rsi\n" //Move quadword p to %%rsi
+  //   "1:\n"
+  //   "movq (%0), %0\n" //Move quadword to *p to p
+  //   "cmpq %0, %%rsi\n" //Compare quadword p (is now *p) with %%rsi (is now p) 
+  //   "jnz 1b\n" //Jump to 1b if not zero (*p != p)
+  //   "decl %1\n" //decrement count
+  //   "jnz 1b\n" //while(count > 0)
+  //   : "+r" (p), "+r" (count)::"rsi"); //define p and count as output and rsi as clobbered register
 }
 
 
