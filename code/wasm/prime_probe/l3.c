@@ -291,7 +291,7 @@ static int timedwalk(void *list, register void *candidate, int size_es) {
     //walk(list,20); was default why???
     walk(list, size_es);
     // void *p = LNEXT(c2);
-    uint32_t time = memaccesstime_diff_double_access(candidate);
+    uint32_t time = memaccesstime_abs_double_access(candidate);
     ts_add(ts, time);
     //printf("%i ", time);
   }
@@ -390,7 +390,7 @@ static void expand_test(vlist_t es, void* current){
   for(int a=0; a<10; a++){
     access_es(es);
     for(int i=0; i< 2; i++){
-      printf("diff%i: %i ",i, memaccesstime_diff_double_access(current));
+      printf("diff%i: %" PRIu32 " ",i, memaccesstime_abs_double_access(current));
     }
     putchar('\n');
   }

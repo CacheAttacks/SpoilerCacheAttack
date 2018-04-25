@@ -4,7 +4,7 @@ self.addEventListener('message', (m) => {
     //console.log("worker online\n");
 
     while(1){
-        //sharedArray[0]++;
-        Atomics.add(sharedArray, 0, 1);
+        sharedArray[0]++;
+        //Atomics.add(sharedArray, 0, 1);
     }
 });

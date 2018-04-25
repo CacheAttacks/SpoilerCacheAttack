@@ -23,13 +23,26 @@
 #include "SABcounter.h"
 
 
-
-#define L3_THRESHOLD 3
+#define L3_THRESHOLD 30
 
 #ifdef PAGE_SIZE
 #undef PAGE_SIZE
 #endif
 #define PAGE_SIZE 4096
+
+
+static inline uint32_t get_diff(uint32_t before, uint32_t after)
+{
+  if(after >= before){
+    return after-before;
+  } else if (after+100 >= before){
+    //assume measurment error
+    return 0; 
+  } else {
+    //assume uint32_t overflow
+    return after + (UINT32_MAX - before);
+  }
+}
 
 
 static inline int memaccess(void *v) {
@@ -54,12 +67,11 @@ static inline int memaccess(void *v) {
 // }
 
 static inline void warmup(int counts){
-  if(counts >= INT32_MAX){
+  if(counts >= UINT32_MAX){
     printf("warmup value to high!");
   }
   uint32_t before = SAB_lib_get_counter_value();
-  uint32_t goal = (SAB_lib_get_counter_value() + counts) % INT32_MAX;
-  while(SAB_lib_get_counter_value() > goal){}
+  while(get_diff(before,SAB_lib_get_counter_value()) < counts){}
 }
 
 static inline void warmuptimer(){
@@ -89,9 +101,9 @@ static inline void warmuptimer(){
 //   uint32_t c = *((uint32_t*)v);
 //   uint32_t after3nd = SAB_lib_get_counter_value();
 
-//   uint32_t diff1st = after1st-before;
-//   uint32_t diff2nd = after2nd-after1st;
-//   uint32_t diff3nd = after3nd-after2nd;
+//   uint32_t diff1st = get_diff(before, after1st);
+//   uint32_t diff2nd = get_diff(after1st, after2nd);
+//   uint32_t diff3nd = get_diffafter2nd, after3nd);
 
 //   printf("1st:%" PRIu32 " ", diff1st);
 //   printf("2nd:%" PRIu32 " ", diff2nd);
@@ -108,7 +120,7 @@ static inline void warmuptimer(){
 
 //add lfence instructions between rdtsc instructions
 //rdtscp seems not working as intented (i7-4770)
-static inline uint32_t memaccesstime_diff_double_access(void *v) {
+static inline uint32_t memaccesstime_abs_double_access(void *v) {
 
   warmuptimer();
 
@@ -118,9 +130,13 @@ static inline uint32_t memaccesstime_diff_double_access(void *v) {
   uint32_t b = *((uint32_t*)v);
   uint32_t after2nd = SAB_lib_get_counter_value();
 
-  uint32_t diff1st = after1st-before;
-  uint32_t diff2nd = after2nd-after1st;
-  return diff1st - diff2nd;
+  uint32_t diff1st = get_diff(before,after1st);
+  uint32_t diff2nd = get_diff(after1st,after2nd);
+  if(diff1st < diff2nd) {
+    return 0;
+  } else {
+    return diff1st - diff2nd;
+  }
 }
 
 static inline uint32_t memaccesstime(void *v) {
@@ -131,7 +147,7 @@ static inline uint32_t memaccesstime(void *v) {
   uint32_t a = *((uint32_t*)v);
   uint32_t after = SAB_lib_get_counter_value();
 
-  return after - before;
+  return get_diff(before,after);
 
   // uint32_t rv;
   // asm volatile (
