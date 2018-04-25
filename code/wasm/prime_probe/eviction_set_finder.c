@@ -33,7 +33,7 @@ void test_mem_access(int random)
   srand(32);   // should only be called once
   void *randomPtr;
   int randomIndex;
-  for(int i=0; i<17; i++)
+  for(int i=0; i<10; i++)
   {
     randomIndex = i;
     if(random){
@@ -41,8 +41,8 @@ void test_mem_access(int random)
     }
     randomPtr = (void*)(&buffer[randomIndex]);
     printf("index: %p \n", randomPtr);
-    uint32_t diff1 = memaccesstime_abs_double_access(randomPtr);
-    uint32_t diff2 = memaccesstime_abs_double_access(randomPtr);
+    uint32_t diff1 = memaccesstime(randomPtr);
+    uint32_t diff2 = memaccesstime(randomPtr);
     printf("diff1: %" PRIu32 ", diff2: %" PRIu32 "\n", diff1, diff2);
     //memaccesstime_test(randomPtr);
     //memaccesstime_test(randomPtr);
@@ -52,7 +52,7 @@ void test_mem_access(int random)
 
 int main(int ac, char **av) {
   //l3-cache i7-4770: 16-way-ass, 8192sets => 4+13+6=23bits (8MiB)
-  warmup(1024*1024*1); //warm up 2^30 counts operations ~ 8*2^30 cycles
+  warmup(1024*1024*128); //warm up 2^27 counts operations ~ 2^30 cycles
 
   float resolution_ns = 101;
   while(resolution_ns > 100){
@@ -60,14 +60,17 @@ int main(int ac, char **av) {
   } 
   printf("resolution SAB-timer: %f ns\n", resolution_ns);
 
-  test_mem_access(0);
+  // printf("random access\n");
+  // test_mem_access(1);
+  // printf("linear access\n");
+  // test_mem_access(0);
 
-  // l3pp_t l3 = l3_prepare(NULL);
+  l3pp_t l3 = l3_prepare(NULL);
   
-  // int nsets = l3_getSets(l3);
-  // int nmonitored = nsets/64;
-  // printf("nmonitored: %i\n",nmonitored);
-  // printf("alloc %i Bytes\n", SAMPLES * nmonitored * sizeof(uint16_t));
+  int nsets = l3_getSets(l3);
+  int nmonitored = nsets/64;
+  printf("nmonitored: %i\n",nmonitored);
+  printf("alloc %i Bytes\n", SAMPLES * nmonitored * sizeof(uint16_t));
   
   SAB_terminate_counter_sub_worker();
   

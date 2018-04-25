@@ -291,7 +291,7 @@ static int timedwalk(void *list, register void *candidate, int size_es) {
     //walk(list,20); was default why???
     walk(list, size_es);
     // void *p = LNEXT(c2);
-    uint32_t time = memaccesstime_abs_double_access(candidate);
+    uint32_t time = memaccesstime(candidate);
     ts_add(ts, time);
     //printf("%i ", time);
   }
@@ -364,6 +364,8 @@ static int checkevict(vlist_t es, void *candidate) {
   for (int i = 0; i < vl_len(es); i++) 
     LNEXT(vl_get(es, i)) = vl_get(es, (i + 1) % vl_len(es));
   int timecur = timedwalk(vl_get(es, 0), candidate, vl_len(es));
+  // if(timecur > L3_THRESHOLD)
+  // printf("timecur %i\n",timecur);
   return timecur > L3_THRESHOLD;
 }
 
@@ -400,10 +402,12 @@ static void expand_test(vlist_t es, void* current){
 static void *expand(vlist_t es, vlist_t candidates) {
   while (vl_len(candidates) > 0) {
     void *current = vl_poprand(candidates);
-    if (checkevict(es, current)){
+    if (checkevict(es, current) && checkevict(es, current)){
       printf("found es! size:%i\n", vl_len(es));
       //expand_test(es, current);
-      //checkevict_print(es, current);
+      checkevict_print(es, current, vl_len(es));
+      checkevict_print(es, current, vl_len(es));
+      checkevict_print(es, current, vl_len(es));
       return current;
     }
     vl_push(es, current);
@@ -454,7 +458,7 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
     #ifdef DEBUG
     int d_l1 = vl_len(lines);
     #endif // DEBUG
-    if (fail > 10) 
+    if (fail > 5) 
       break;
 
     void *c = expand(es, lines);
@@ -474,9 +478,13 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
       continue;
     }
 
+    while(vl_len(es) > 100){
+      contract(es, lines, c);
+      printf("vl_len(es):%i\n",vl_len(es));
+    }
     contract(es, lines, c);
-    //contract(es, lines, c);
-    //contract(es, lines, c);
+    contract(es, lines, c);
+    contract(es, lines, c);
 
     if(vl_len(es) < l3->l3info.associativity){
       printf("warning vl_len(es)=%i < ass=%i!\n", vl_len(es), l3->l3info.associativity);
@@ -497,7 +505,8 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
     #endif //DEBUG
 
     //rewind if size(es) do not match associativity
-    if (vl_len(es) > l3->l3info.associativity || vl_len(es) < l3->l3info.associativity - 3) {
+    if (vl_len(es) > l3->l3info.associativity+20 ||
+    vl_len(es) < l3->l3info.associativity - 3) {
       while (vl_len(es))
 	      vl_push(lines, vl_del(es, 0));
       #ifdef DEBUG

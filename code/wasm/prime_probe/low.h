@@ -23,7 +23,7 @@
 #include "SABcounter.h"
 
 
-#define L3_THRESHOLD 30
+#define L3_THRESHOLD 40
 
 #ifdef PAGE_SIZE
 #undef PAGE_SIZE
@@ -49,7 +49,8 @@ static inline int memaccess(void *v) {
   // int rv;
   // asm volatile("mov (%1), %0": "+r" (rv): "r" (v):);
   // return rv;
-  return *((int*)v);
+  int a = *((int*)v);
+  return a;
 }
 
 // static inline uint32_t memaccesstime_old(void *v) {
@@ -72,6 +73,14 @@ static inline void warmup(int counts){
   }
   uint32_t before = SAB_lib_get_counter_value();
   while(get_diff(before,SAB_lib_get_counter_value()) < counts){}
+}
+
+static inline void warmuprounds(int rounds){
+  while(rounds > 0)
+  {
+    uint32_t before = SAB_lib_get_counter_value();
+    rounds--;
+  }
 }
 
 static inline void warmuptimer(){
@@ -123,6 +132,7 @@ static inline void warmuptimer(){
 static inline uint32_t memaccesstime_abs_double_access(void *v) {
 
   warmuptimer();
+  warmuprounds(10);
 
   uint32_t before = SAB_lib_get_counter_value();
   uint32_t a = *((uint32_t*)v);
@@ -142,6 +152,7 @@ static inline uint32_t memaccesstime_abs_double_access(void *v) {
 static inline uint32_t memaccesstime(void *v) {
 
   warmuptimer();
+  warmuprounds(10);
 
   uint32_t before = SAB_lib_get_counter_value();
   uint32_t a = *((uint32_t*)v);
