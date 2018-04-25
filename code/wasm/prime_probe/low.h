@@ -53,28 +53,48 @@ static inline int memaccess(void *v) {
 //   return rv;
 // }
 
-// static inline void warmuptimer(){
-//   while(1)
-//   {
-//     int before = SAB_lib_get_counter_value();
-//     int after = SAB_lib_get_counter_value();
-//     if(after-before > 0 && after-before < 100){
-//       break;
-//     }
-//   }
-// }
+static inline void warmuptimer(){
+  while(1)
+  {
+    int before = SAB_lib_get_counter_value();
+    int after = SAB_lib_get_counter_value();
+    if(after-before > 0 && after-before < 100){
+      break;
+    }
+  }
+}
+
+static inline int memaccesstime_test(void *v) {
+
+  warmuptimer();
+
+  int before = SAB_lib_get_counter_value();
+  int a = *((int*)v);
+  int after1st = SAB_lib_get_counter_value();
+  int b = *((int*)v);
+  int after2nd = SAB_lib_get_counter_value();
+  int diff1st = after1st-before;
+  int diff2nd = after2nd-after1st;
+  printf("1st:%i ", diff1st);
+  printf("2nd:%i", diff2nd);
+  if(diff1st-diff2nd > 10){
+    printf(" !!!!!!!!!!!!!!\n");
+  } else{
+    printf("\n");
+  }
+  return after1st-before;
+}
 
 
 //add lfence instructions between rdtsc instructions
 //rdtscp seems not working as intented (i7-4770)
 static inline int memaccesstime(void *v) {
 
-  //warmuptimer();
+  warmuptimer();
 
   int before = SAB_lib_get_counter_value();
-  int a = *((int*)v);
+  *((int*)v);
   int after = SAB_lib_get_counter_value();
-  //printf("%i ", after-before);
   return after-before;
 
   // uint32_t rv;
