@@ -53,23 +53,23 @@ static inline int memaccess(void *v) {
 //   return rv;
 // }
 
-static inline void warmuptimer(){
-  while(1)
-  {
-    int before = SAB_lib_get_counter_value();
-    int after = SAB_lib_get_counter_value();
-    if(after-before > 0 && after-before < 100){
-      break;
-    }
-  }
-}
+// static inline void warmuptimer(){
+//   while(1)
+//   {
+//     int before = SAB_lib_get_counter_value();
+//     int after = SAB_lib_get_counter_value();
+//     if(after-before > 0 && after-before < 100){
+//       break;
+//     }
+//   }
+// }
 
 
 //add lfence instructions between rdtsc instructions
 //rdtscp seems not working as intented (i7-4770)
 static inline int memaccesstime(void *v) {
 
-  warmuptimer();
+  //warmuptimer();
 
   int before = SAB_lib_get_counter_value();
   int a = *((int*)v);
