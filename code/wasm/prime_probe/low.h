@@ -57,45 +57,45 @@ static inline void warmup(int counts){
   if(counts >= INT32_MAX){
     printf("warmup value to high!");
   }
-  int before = SAB_lib_get_counter_value();
-  int goal = (SAB_lib_get_counter_value() + counts) % INT32_MAX;
+  uint32_t before = SAB_lib_get_counter_value();
+  uint32_t goal = (SAB_lib_get_counter_value() + counts) % INT32_MAX;
   while(SAB_lib_get_counter_value() > goal){}
 }
 
 static inline void warmuptimer(){
   while(1)
   {
-    int before = SAB_lib_get_counter_value();
-    int after = SAB_lib_get_counter_value();
+    uint32_t before = SAB_lib_get_counter_value();
+    uint32_t after = SAB_lib_get_counter_value();
     if(after-before > 0 && after-before < 100){
       break;
     }
   }
 }
 
-// static inline int memaccesstime_test(void *v) {
+// static inline uint32_t memaccesstime_test(void *v) {
 
 //   warmuptimer();
 
-//   int before = SAB_lib_get_counter_value();
+//   uint32_t before = SAB_lib_get_counter_value();
 //   before = SAB_lib_get_counter_value();
 
-//   int a = *((int*)v);
-//   int after1st = SAB_lib_get_counter_value();
+//   uint32_t a = *((uint32_t*)v);
+//   uint32_t after1st = SAB_lib_get_counter_value();
 
-//   int b = *((int*)v);
-//   int after2nd = SAB_lib_get_counter_value();
+//   uint32_t b = *((uint32_t*)v);
+//   uint32_t after2nd = SAB_lib_get_counter_value();
 
-//   int c = *((int*)v);
-//   int after3nd = SAB_lib_get_counter_value();
+//   uint32_t c = *((uint32_t*)v);
+//   uint32_t after3nd = SAB_lib_get_counter_value();
 
-//   int diff1st = after1st-before;
-//   int diff2nd = after2nd-after1st;
-//   int diff3nd = after3nd-after2nd;
+//   uint32_t diff1st = after1st-before;
+//   uint32_t diff2nd = after2nd-after1st;
+//   uint32_t diff3nd = after3nd-after2nd;
 
-//   printf("1st:%i ", diff1st);
-//   printf("2nd:%i ", diff2nd);
-//   printf("3nd:%i", diff3nd);
+//   printf("1st:%" PRIu32 " ", diff1st);
+//   printf("2nd:%" PRIu32 " ", diff2nd);
+//   printf("3nd:%" PRIu32 "", diff3nd);
 //   if(diff1st-diff2nd > 10){
 //     printf(" !!!!!!!!!!!!!!\n");
 //   } else{
@@ -108,28 +108,28 @@ static inline void warmuptimer(){
 
 //add lfence instructions between rdtsc instructions
 //rdtscp seems not working as intented (i7-4770)
-static inline int memaccesstime_diff_double_access(void *v) {
+static inline uint32_t memaccesstime_diff_double_access(void *v) {
 
   warmuptimer();
 
-  int before = SAB_lib_get_counter_value();
-  int a = *((int*)v);
-  int after1st = SAB_lib_get_counter_value();
-  int b = *((int*)v);
-  int after2nd = SAB_lib_get_counter_value();
+  uint32_t before = SAB_lib_get_counter_value();
+  uint32_t a = *((uint32_t*)v);
+  uint32_t after1st = SAB_lib_get_counter_value();
+  uint32_t b = *((uint32_t*)v);
+  uint32_t after2nd = SAB_lib_get_counter_value();
 
-  int diff1st = after1st-before;
-  int diff2nd = after2nd-after1st;
+  uint32_t diff1st = after1st-before;
+  uint32_t diff2nd = after2nd-after1st;
   return diff1st - diff2nd;
 }
 
-static inline int memaccesstime(void *v) {
+static inline uint32_t memaccesstime(void *v) {
 
   warmuptimer();
 
-  int before = SAB_lib_get_counter_value();
-  int a = *((int*)v);
-  int after = SAB_lib_get_counter_value();
+  uint32_t before = SAB_lib_get_counter_value();
+  uint32_t a = *((uint32_t*)v);
+  uint32_t after = SAB_lib_get_counter_value();
 
   return after - before;
 
@@ -171,14 +171,14 @@ static inline uint32_t rdtscp() {
 // #endif
 }
 
-static inline int rdtscp64() {
+static inline uint64_t rdtscp64() {
 // #ifdef WASM
-  printf("rdtscp not possible!\n");
+  printf("rdtscp64 not possible at all!\n");
   exit(1);
 // #else
 //   uint32_t low, high;
 //   asm volatile ("rdtsc": "=a" (low), "=d" (high) :: "ecx");
-//   return (((int)high) << 32) | low;
+//   return (((uint32_t)high) << 32) | low;
 // #endif
 }
 
@@ -289,7 +289,7 @@ union cpuid {
 //   asm volatile ("cpuid": "+a" (c->regs.eax), "+b" (c->regs.ebx), "+c" (c->regs.ecx), "+d" (c->regs.edx));
 // }
 
-static inline int slotwait(int slotend) {
+static inline int slotwait(uint32_t slotend) {
   if (rdtscp64() > slotend)
     return 1;
   while (rdtscp64() < slotend)
