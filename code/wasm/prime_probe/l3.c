@@ -293,6 +293,7 @@ static int timedwalk(void *list, register void *candidate, int size_es) {
     // void *p = LNEXT(c2);
     uint32_t time = memaccesstime_diff_double_access(candidate);
     ts_add(ts, time);
+    //printf("%i ", time);
   }
   int rv = ts_median(ts);
 #ifdef DEBUG
@@ -389,7 +390,7 @@ static void expand_test(vlist_t es, void* current){
   for(int a=0; a<10; a++){
     access_es(es);
     for(int i=0; i< 2; i++){
-      printf("diff%i: %i ",i, memaccesstime_diff_double_access(current));
+      printf("diff%i: %" PRIu64 " ",i, memaccesstime_diff_double_access(current));
     }
     putchar('\n');
   }
@@ -401,7 +402,7 @@ static void *expand(vlist_t es, vlist_t candidates) {
     void *current = vl_poprand(candidates);
     if (checkevict(es, current)){
       printf("found es! size:%i\n", vl_len(es));
-      expand_test(es, current);
+      //expand_test(es, current);
       //checkevict_print(es, current);
       return current;
     }
@@ -415,7 +416,7 @@ static void contract(vlist_t es, vlist_t candidates, void *current) {
     void *cand = vl_get(es, i);
     vl_del(es, i);
     //load each element in evection set instead of clflush
-    access_es(es);
+    //access_es(es);
     //clflush(current);
     if (checkevict(es, current))
       vl_push(candidates, cand);
@@ -453,7 +454,7 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
     #ifdef DEBUG
     int d_l1 = vl_len(lines);
     #endif // DEBUG
-    if (fail > 5) 
+    if (fail > 10) 
       break;
 
     void *c = expand(es, lines);

@@ -1298,8 +1298,8 @@
       };
 
       //init sharedArrayBuffer counter
-      const sharedBuffer = new SharedArrayBuffer(Uint32Array.BYTES_PER_ELEMENT);
-      const sharedArray = new Uint32Array(sharedBuffer);
+      const sharedBuffer = new SharedArrayBuffer(Uint64Array.BYTES_PER_ELEMENT);
+      const sharedArray = new Uint64Array(sharedBuffer);
       Module['sharedArrayCounter'] = sharedArray;
       Module['timerWorker'] = shared_array_counter_init(sharedArray);
     </script>
