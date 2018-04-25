@@ -283,15 +283,15 @@ static int timedwalk(void *list, register void *candidate, int size_es) {
     return 0;
   void *start = list;
   ts_t ts = ts_alloc();
-  void *c2 = (void *)((uintptr_t)candidate ^ 0x200);
-  LNEXT(c2) = candidate;
+  // void *c2 = (void *)((uintptr_t)candidate ^ 0x200);
+  // LNEXT(c2) = candidate;
   //clflush(c2);
-  memaccess(candidate);
+  int a = memaccess(candidate);
   for (int i = 0; i < CHECKTIMES * (debug ? 20 : 1); i++) {
     //walk(list,20); was default why???
-    walk(list, 20);
-    void *p = LNEXT(c2);
-    uint32_t time = memaccesstime(p);
+    walk(list, size_es);
+    // void *p = LNEXT(c2);
+    uint32_t time = memaccesstime_diff_double_access(candidate);
     ts_add(ts, time);
   }
   int rv = ts_median(ts);
@@ -377,12 +377,31 @@ static int checkevict_print(vlist_t es, void *candidate, int walk_size) {
   return timecur > L3_THRESHOLD;
 }
 
+static void access_es(vlist_t es) {
+  if (vl_len(es) == 0)
+    return;
+  for (int i = 0; i < vl_len(es); i++) 
+    LNEXT(vl_get(es, i)) = vl_get(es, (i + 1) % vl_len(es));
+  walk(vl_get(es,0), vl_len(es));
+}
+
+static void expand_test(vlist_t es, void* current){
+  for(int a=0; a<10; a++){
+    access_es(es);
+    for(int i=0; i< 2; i++){
+      printf("diff%i: %i ",i, memaccesstime_diff_double_access(current));
+    }
+    putchar('\n');
+  }
+}
+
 
 static void *expand(vlist_t es, vlist_t candidates) {
   while (vl_len(candidates) > 0) {
     void *current = vl_poprand(candidates);
     if (checkevict(es, current)){
       printf("found es! size:%i\n", vl_len(es));
+      expand_test(es, current);
       //checkevict_print(es, current);
       return current;
     }
@@ -395,8 +414,8 @@ static void contract(vlist_t es, vlist_t candidates, void *current) {
   for (int i = 0; i < vl_len(es);) {
     void *cand = vl_get(es, i);
     vl_del(es, i);
-    //TODO fix code
-    printf("fix contract code");
+    //load each element in evection set instead of clflush
+    access_es(es);
     //clflush(current);
     if (checkevict(es, current))
       vl_push(candidates, cand);
@@ -454,11 +473,9 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
       continue;
     }
 
-
-
     contract(es, lines, c);
-    contract(es, lines, c);
-    contract(es, lines, c);
+    //contract(es, lines, c);
+    //contract(es, lines, c);
 
     if(vl_len(es) < l3->l3info.associativity){
       printf("warning vl_len(es)=%i < ass=%i!\n", vl_len(es), l3->l3info.associativity);

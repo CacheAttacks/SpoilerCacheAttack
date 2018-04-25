@@ -9,23 +9,43 @@
 #include "l3.h"
 #include "SABcounter.h"
 
-#define PAGESIZE 4096
+#define BLOCK_SIZE 8
 #define SAMPLES 1000
 #define LNEXT(t) (*(void **)(t))
 
-void test_mem_access()
-{
+void flush_l3(void * buffer, int pages){
+  for(int i=0; i<pages; i++){
+    int a = *((int*)((int)buffer+i*BLOCK_SIZE));
+  }
+}
 
-  int pages = 1024*20;
-  int bufsize = PAGESIZE*pages;
+void test_mem_access(int random)
+{
+  int pages = 1024*1024*2;
+  int bufsize = BLOCK_SIZE*pages;
+  if(bufsize > 1024*1024*200){
+    printf("bufsize to big!");
+    exit(1);
+  }
   char *buffer = mmap(NULL, bufsize, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
+  flush_l3(buffer, pages);
   srand(32);   // should only be called once
+  void *randomPtr;
   int randomIndex;
-  for(int i=0; i<10; i++)
+  for(int i=0; i<17; i++)
   {
-    randomIndex = rand() % pages;
-    printf("index: %i ", randomIndex);
-    memaccesstime_test((void*)(randomIndex*PAGESIZE));
+    randomIndex = i;
+    if(random){
+      randomIndex = rand() % pages * BLOCK_SIZE;
+    }
+    randomPtr = (void*)(&buffer[randomIndex]);
+    printf("index: %p \n", randomPtr);
+    int diff1 = memaccesstime_diff_double_access(randomPtr);
+    int diff2 = memaccesstime_diff_double_access(randomPtr);
+    printf("diff 1: %i, diff 2: %i\n", diff1, diff2);
+    //memaccesstime_test(randomPtr);
+    //memaccesstime_test(randomPtr);
+    //memaccesstime_test(randomPtr);
   }
 }
 
@@ -38,14 +58,14 @@ int main(int ac, char **av) {
   } 
   printf("resolution SAB-timer: %f ns\n", resolution_ns);
 
-  test_mem_access();
+  //test_mem_access(0);
 
-  // l3pp_t l3 = l3_prepare(NULL);
+  l3pp_t l3 = l3_prepare(NULL);
   
-  // int nsets = l3_getSets(l3);
-  // int nmonitored = nsets/64;
-  // printf("nmonitored: %i\n",nmonitored);
-  // printf("alloc %i Bytes\n", SAMPLES * nmonitored * sizeof(uint16_t));
+  int nsets = l3_getSets(l3);
+  int nmonitored = nsets/64;
+  printf("nmonitored: %i\n",nmonitored);
+  printf("alloc %i Bytes\n", SAMPLES * nmonitored * sizeof(uint16_t));
   
   SAB_terminate_counter_sub_worker();
   
