@@ -5,8 +5,8 @@
 
 function shared_array_counter_init(sharedArray)
 {
-    //const sharedBuffer = new SharedArrayBuffer(Uint64Array.BYTES_PER_ELEMENT);
-    //const sharedArray = new Uint64Array(sharedBuffer);
+    //const sharedBuffer = new SharedArrayBuffer(Uint32Array.BYTES_PER_ELEMENT);
+    //const sharedArray = new Uint32Array(sharedBuffer);
     const counterWorker = new Worker('worker.js');
     counterWorker.postMessage(sharedBuffer);
     return counterWorker;
@@ -19,8 +19,8 @@ function shared_arry_counter_get_value(){
 function shared_array_counter_test(fnc)
 {
     console.log("call shared_array_counter_test");
-    const sharedBuffer = new SharedArrayBuffer(Uint64Array.BYTES_PER_ELEMENT);
-    const arr = new Uint64Array(sharedBuffer);
+    const sharedBuffer = new SharedArrayBuffer(Uint32Array.BYTES_PER_ELEMENT);
+    const arr = new Uint32Array(sharedBuffer);
     const counter = new Worker('worker.js');
     counter.postMessage(sharedBuffer);
 
@@ -62,10 +62,10 @@ function shared_test(){
     const length = 10;
 
     // Creating a shared buffer
-    const sharedBuffer = new SharedArrayBuffer(Uint64Array.BYTES_PER_ELEMENT * length)
+    const sharedBuffer = new SharedArrayBuffer(Uint32Array.BYTES_PER_ELEMENT * length)
 
     // Creating a data structure on top of that shared memory area
-    const sharedArray = new Uint64Array(sharedBuffer)
+    const sharedArray = new Uint32Array(sharedBuffer)
 
     // Let's build an array with 10 even numbers
     for (let i = 0; i < length; i++) sharedArray[i] = i && sharedArray[i - 1] + 2
@@ -85,7 +85,7 @@ function SAB_wasmMemory_init_buffer(){
     var offset = Module['asm']._wasmMemory_get_buffer(size);
     console.log("offset:" + offset);
     Module['wasmMemoryArrayCounterOffset'] = offset;
-    Module['wasmMemoryArray'] = new Uint64Array(Module['wasmMemory'].buffer);
+    Module['wasmMemoryArray'] = new Uint32Array(Module['wasmMemory'].buffer);
     for (var i = 0; i < size; i++) {
     console.log(Module['wasmMemoryArray'][i+offset/4]);
     Module['wasmMemoryArray'][i+offset/4] = i;

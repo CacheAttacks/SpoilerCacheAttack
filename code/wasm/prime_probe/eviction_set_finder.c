@@ -41,9 +41,9 @@ void test_mem_access(int random)
     }
     randomPtr = (void*)(&buffer[randomIndex]);
     printf("index: %p \n", randomPtr);
-    uint64_t diff1 = memaccesstime_diff_double_access(randomPtr);
-    uint64_t diff2 = memaccesstime_diff_double_access(randomPtr);
-    printf("diff 1: %" PRIu64 ", diff 2: %" PRIu64 "\n", diff1, diff2);
+    int diff1 = memaccesstime_diff_double_access(randomPtr);
+    int diff2 = memaccesstime_diff_double_access(randomPtr);
+    printf("diff 1: %i, diff 2: %i\n", diff1, diff2);
     //memaccesstime_test(randomPtr);
     //memaccesstime_test(randomPtr);
     //memaccesstime_test(randomPtr);

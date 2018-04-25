@@ -3,32 +3,32 @@
 //used for SAB_wasmMemory_write_counter_value 
 int *SAB_global_counter_buffer = 0;
 
-void SAB_test_resolution(uint64_t (*measure_func)(), float resolution_ns){
+void SAB_test_resolution(int (*measure_func)(), float resolution_ns){
   for(int i = 0; i< 20; i++) {
-    uint64_t v1 = (*measure_func)();
-    uint64_t v2 = (*measure_func)();
+    int v1 = (*measure_func)();
+    int v2 = (*measure_func)();
     float diff_ns = (v2-v1)*resolution_ns;
-    printf("%" PRIu64 "(%0.1fns), ", v2-v1, diff_ns);
+    printf("%i(%0.1fns), ", v2-v1, diff_ns);
   }
   putchar('\n');
 }
 
-uint64_t wrapper_SAB_lib_get_counter_value(){
+int wrapper_SAB_lib_get_counter_value(){
   return SAB_lib_get_counter_value();
 }
 
-uint64_t wrapper_SAB_EM_ASM_get_counter_value(){
+int wrapper_SAB_EM_ASM_get_counter_value(){
   return EM_ASM_INT({
     return Module['sharedArrayCounter'][0];
   });
 }
 
-uint64_t wrapper_SAB_lib_wasmMemory_get_counter_value(){
+int wrapper_SAB_lib_wasmMemory_get_counter_value(){
     SAB_lib_wasmMemory_write_counter_value();
     return SAB_global_counter_buffer[0];
 }
 
-uint64_t wrapper_SAB_EM_ASM_wasmMemory_get_counter_value(){
+int wrapper_SAB_EM_ASM_wasmMemory_get_counter_value(){
   EM_ASM({
     Module['wasmMemoryArray'][Module['wasmMemoryArrayCounterOffset']] = 
         Module['sharedArrayCounter'][0];
@@ -36,7 +36,7 @@ uint64_t wrapper_SAB_EM_ASM_wasmMemory_get_counter_value(){
   return SAB_global_counter_buffer[0];
 }
 
-uint64_t wrapper_SAB_func_ptr_wasmMemory_get_counter_value(){
+int wrapper_SAB_func_ptr_wasmMemory_get_counter_value(){
   (*((int (*)())SAB_func_ptr_write_counter_value()))();
   return SAB_global_counter_buffer[0];
 }
@@ -96,7 +96,7 @@ void SAB_bench_call_methods(){
   SAB_test_resolution(&wrapper_SAB_EM_ASM_get_counter_value, resolution_ns);
 
   printf("call SAB_func_ptr_get_counter_value:\n");
-  SAB_test_resolution((uint64_t (*)())SAB_func_ptr_get_counter_value(), resolution_ns);
+  SAB_test_resolution((int (*)())SAB_func_ptr_get_counter_value(), resolution_ns);
 
 
   SAB_lib_wasmMemory_init_buffer();

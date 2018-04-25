@@ -52,7 +52,7 @@ if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
 
         //c returns address offset, we need int array offset (sizeof(int)==4)
         Module['wasmMemoryArrayCounterOffset'] = offset/4;
-        Module['wasmMemoryArray'] = new Uint64Array(Module['wasmMemory'].buffer);
+        Module['wasmMemoryArray'] = new Uint32Array(Module['wasmMemory'].buffer);
 
         // for (var i = 0; i < size; i++) {
         // console.log(Module['wasmMemoryArray'][i+offset/4]);

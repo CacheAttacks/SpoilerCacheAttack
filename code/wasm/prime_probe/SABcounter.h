@@ -11,7 +11,7 @@
 extern int SAB_lib_get_counter_value(); //uses lib call to get counter value
 extern void SAB_terminate_counter_sub_worker(); //call at end of c code, otherwise sub worker do not terminate
 extern float SAB_get_resolution_ns(int samples); //determine possible resolution of SAB counter 
-extern uint64_t SAB_func_ptr_get_counter_value(); //func ptr for direct function call from c
+extern int SAB_func_ptr_get_counter_value(); //func ptr for direct function call from c
 
 extern void SAB_lib_wasmMemory_init_buffer();
 extern void SAB_lib_wasmMemory_write_counter_value(); //write counter value in Module['wasmMemory']
@@ -22,16 +22,16 @@ extern int SAB_func_ptr_write_counter_value(); //func ptr for direct function ca
 void test_resolution_SAB(int (*measure_func)(), float resolution_ns);
 
 //wrapper for SAB_counter_lib_get_value
-uint64_t wrapper_SAB_lib_get_counter_value();
+int wrapper_SAB_lib_get_counter_value();
 
 //wrapper for EM_ASM code
-uint64_t wrapper_SAB_EM_ASM_get_counter_value();
+int wrapper_SAB_EM_ASM_get_counter_value();
 
 //wrapper for SAB_wasmMemory_write_counter_value
-uint64_t wrapper_SAB_lib_wasmMemory_get_counter_value();
+int wrapper_SAB_lib_wasmMemory_get_counter_value();
 
 //wrapper for EM_ASM code
-uint64_t wrapper_SAB_EM_ASM_wasmMemory_get_counter_value();
+int wrapper_SAB_EM_ASM_wasmMemory_get_counter_value();
 
 //called by javascript
 int* wasmMemory_get_buffer(int size);

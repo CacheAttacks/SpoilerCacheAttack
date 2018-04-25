@@ -390,7 +390,7 @@ static void expand_test(vlist_t es, void* current){
   for(int a=0; a<10; a++){
     access_es(es);
     for(int i=0; i< 2; i++){
-      printf("diff%i: %" PRIu64 " ",i, memaccesstime_diff_double_access(current));
+      printf("diff%i: %i ",i, memaccesstime_diff_double_access(current));
     }
     putchar('\n');
   }
