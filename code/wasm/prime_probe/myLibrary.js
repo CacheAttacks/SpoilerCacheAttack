@@ -1,8 +1,8 @@
 if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
     SAB_lib_get_counter_value: function()
     {
-        //return Module['sharedArrayCounter'][0];
-        return Atomics.load(Module['sharedArrayCounter'], 0);
+        return Module['sharedArrayCounter'][0];
+        //return Atomics.load(Module['sharedArrayCounter'], 0);
     }
 });
 
@@ -23,7 +23,11 @@ if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
             var start_count = Atomics.load(Module['sharedArrayCounter'], 0);
             var end = wait_edge();
             var end_count = Atomics.load(Module['sharedArrayCounter'], 0);
+            if(end_count - start_count == 0){
+                break;
+            }
             nsPerTick += (end - start) / (end_count - start_count) ;
+            //console.log(start_count + " " + end_count);
         }
         nsPerTick /= samples;
         //convert from ms to ns

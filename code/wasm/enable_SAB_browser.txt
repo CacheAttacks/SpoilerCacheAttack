@@ -1,0 +1,5 @@
+firefox: 
+about:config => javascript.options.shared_memory => true
+
+chrome:
+chrome://flags/ => shared-array-buffer => true

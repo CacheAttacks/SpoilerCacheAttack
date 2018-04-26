@@ -152,7 +152,11 @@ static inline uint32_t memaccesstime_abs_double_access(void *v) {
 static inline uint32_t memaccesstime(void *v) {
 
   warmuptimer();
-  warmuprounds(10);
+  //warmuprounds(100);
+  for(int i=0; i<10; i++)
+  {
+    uint32_t before = SAB_lib_get_counter_value();
+  }
 
   uint32_t before = SAB_lib_get_counter_value();
   uint32_t a = *((uint32_t*)v);

@@ -22,13 +22,14 @@ void flush_l3(void * buffer, int pages){
 
 void test_mem_access(int random)
 {
-  int pages = 1024*1024*2;
+  int pages = 1024*1024*20;
   int bufsize = BLOCK_SIZE*pages;
   if(bufsize > 1024*1024*200){
     printf("bufsize to big!");
     exit(1);
   }
   char *buffer = mmap(NULL, bufsize, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
+  //char *buffer = (char*)calloc(bufsize,1);
   flush_l3(buffer, pages);
   srand(32);   // should only be called once
   void *randomPtr;
@@ -42,12 +43,38 @@ void test_mem_access(int random)
     randomPtr = (void*)(&buffer[randomIndex]);
     printf("index: %p \n", randomPtr);
     uint32_t diff1 = memaccesstime(randomPtr);
+    memaccesstime((void*)((int)randomPtr+1));
     uint32_t diff2 = memaccesstime(randomPtr);
-    printf("diff1: %" PRIu32 ", diff2: %" PRIu32 "\n", diff1, diff2);
+    flush_l3(buffer, pages);
+    uint32_t diff3 = memaccesstime(randomPtr);
+    uint32_t diff4 = memaccesstime(randomPtr);
+    printf("%" PRIu32 ", %" PRIu32 ", flush L3, %" PRIu32 ", %" PRIu32 "\n", diff1, diff2, diff3, diff4);
     //memaccesstime_test(randomPtr);
     //memaccesstime_test(randomPtr);
     //memaccesstime_test(randomPtr);
   }
+}
+
+void counter_consistency_test(){
+    for(int i=0; i<10000; i++){
+    uint32_t a = SAB_lib_get_counter_value();
+    uint32_t b = SAB_lib_get_counter_value();
+    printf("%i ",b-a);
+    if(i % 1000 == 999){
+      putchar('\n');
+    }
+  }
+  SAB_terminate_counter_sub_worker();
+  exit(1);
+}
+
+void mem_access_testing(){
+  printf("random access\n");
+  test_mem_access(1);
+  printf("linear access\n");
+  test_mem_access(0);
+  SAB_terminate_counter_sub_worker();
+  exit(1);
 }
 
 int main(int ac, char **av) {
@@ -55,15 +82,15 @@ int main(int ac, char **av) {
   warmup(1024*1024*128); //warm up 2^27 counts operations ~ 2^30 cycles
 
   float resolution_ns = 101;
-  while(resolution_ns > 100){
+  //while(resolution_ns > 100){
     resolution_ns = SAB_get_resolution_ns(1000);
-  } 
+  //} 
   printf("resolution SAB-timer: %f ns\n", resolution_ns);
 
-  // printf("random access\n");
-  // test_mem_access(1);
-  // printf("linear access\n");
-  // test_mem_access(0);
+  //counter_consistency_test();
+
+  mem_access_testing();
+
 
   l3pp_t l3 = l3_prepare(NULL);
   

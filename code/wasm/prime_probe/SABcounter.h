@@ -8,14 +8,14 @@
 #include <inttypes.h>
 
 //javascript function stubs
-extern uint32_t SAB_lib_get_counter_value(); //uses lib call to get counter value
-extern void SAB_terminate_counter_sub_worker(); //call at end of c code, otherwise sub worker do not terminate
+extern uint32_t SAB_lib_get_counter_value(void); //uses lib call to get counter value
+extern void SAB_terminate_counter_sub_worker(void); //call at end of c code, otherwise sub worker do not terminate
 extern float SAB_get_resolution_ns(int samples); //determine possible resolution of SAB counter 
-extern uint32_t SAB_func_ptr_get_counter_value(); //func ptr for direct function call from c
+extern uint32_t SAB_func_ptr_get_counter_value(void); //func ptr for direct function call from c
 
-extern void SAB_lib_wasmMemory_init_buffer();
-extern void SAB_lib_wasmMemory_write_counter_value(); //write counter value in Module['wasmMemory']
-extern uint32_t SAB_func_ptr_write_counter_value(); //func ptr for direct function call from c
+extern void SAB_lib_wasmMemory_init_buffer(void);
+extern void SAB_lib_wasmMemory_write_counter_value(void); //write counter value in Module['wasmMemory']
+extern uint32_t SAB_func_ptr_write_counter_value(void); //func ptr for direct function call from c
 
 
 //input measurement function, printf resolution 

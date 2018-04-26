@@ -169,7 +169,7 @@ static void fillL3Info(l3pp_t l3) {
   l3->l3info.setsperslice = l3->cpuidInfo.cacheInfo.sets / l3->l3info.slices;
   l3->l3info.bufsize = l3->l3info.associativity * l3->l3info.slices * l3->l3info.setsperslice * L3_CACHELINE * 2;
   if (l3->l3info.bufsize < 10 * 1024 * 1024)
-        l3->l3info.bufsize = 10 * 1024 * 1024;
+        l3->l3info.bufsize = 100 * 1024 * 1024;
 
   //loadL3cpuidInfo(l3);
   // if (l3->l3info.associativity == 0)
@@ -326,19 +326,19 @@ static int timedwalk_print(void *list, register void *candidate, int walk_size) 
     return 0;
   void *start = list;
   ts_t ts = ts_alloc();
-  void *c2 = (void *)((uintptr_t)candidate ^ 0x200);
-  LNEXT(c2) = candidate;
+  //void *c2 = (void *)((uintptr_t)candidate ^ 0x200);
+  //LNEXT(c2) = candidate;
   //clflush(c2);
   memaccess(candidate);
-  //printf("time:");
+  printf("time:");
   for (int i = 0; i < CHECKTIMES * (debug ? 20 : 10); i++) {
     walk(list, walk_size);
-    void *p = LNEXT(c2);
-    uint32_t time = memaccesstime(p);
+    //void *p = LNEXT(c2);
+    uint32_t time = memaccesstime(candidate);
     ts_add(ts, time);
-    //printf("%i ", time);
+    printf("%i ", time);
   }
-  //putchar('\n');
+  putchar('\n');
   int rv = ts_median(ts);
   printf("mean:%i\n",rv);
 #ifdef DEBUG
@@ -422,6 +422,8 @@ static void contract(vlist_t es, vlist_t candidates, void *current) {
     //load each element in evection set instead of clflush
     //access_es(es);
     //clflush(current);
+    if(checkevict_print(es, current, vl_len(es)))
+      printf("drop\n");
     if (checkevict(es, current))
       vl_push(candidates, cand);
     else {
@@ -478,13 +480,16 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
       continue;
     }
 
-    while(vl_len(es) > 100){
-      contract(es, lines, c);
-      printf("vl_len(es):%i\n",vl_len(es));
-    }
+    // while(vl_len(es) > 100){
+    //   contract(es, lines, c);
+    //   printf("vl_len(es):%i\n",vl_len(es));
+    // }
+    contract(es, lines, c);
+    exit(1);
     contract(es, lines, c);
     contract(es, lines, c);
-    contract(es, lines, c);
+
+    
 
     if(vl_len(es) < l3->l3info.associativity){
       printf("warning vl_len(es)=%i < ass=%i!\n", vl_len(es), l3->l3info.associativity);

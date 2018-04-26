@@ -1107,7 +1107,7 @@ function enlargeMemory() {
 
 
 var TOTAL_STACK = Module['TOTAL_STACK'] || 5242880;
-var TOTAL_MEMORY = Module['TOTAL_MEMORY'] || 268435456;
+var TOTAL_MEMORY = Module['TOTAL_MEMORY'] || 536870912;
 if (TOTAL_MEMORY < TOTAL_STACK) Module.printErr('TOTAL_MEMORY should be larger than TOTAL_STACK, was ' + TOTAL_MEMORY + '! (TOTAL_STACK=' + TOTAL_STACK + ')');
 
 // Initialize the runtime's memory
@@ -1711,7 +1711,7 @@ var ASM_CONSTS = [];
 
 STATIC_BASE = GLOBAL_BASE;
 
-STATICTOP = STATIC_BASE + 6272;
+STATICTOP = STATIC_BASE + 6208;
 /* global initializers */  __ATINIT__.push();
 
 
@@ -1720,7 +1720,7 @@ STATICTOP = STATIC_BASE + 6272;
 
 
 
-var STATIC_BUMP = 6272;
+var STATIC_BUMP = 6208;
 Module["STATIC_BASE"] = STATIC_BASE;
 Module["STATIC_BUMP"] = STATIC_BUMP;
 
@@ -1773,7 +1773,11 @@ function copyTempDouble(ptr) {
               var start_count = Atomics.load(Module['sharedArrayCounter'], 0);
               var end = wait_edge();
               var end_count = Atomics.load(Module['sharedArrayCounter'], 0);
+              if(end_count - start_count == 0){
+                  break;
+              }
               nsPerTick += (end - start) / (end_count - start_count) ;
+              //console.log(start_count + " " + end_count);
           }
           nsPerTick /= samples;
           //convert from ms to ns
@@ -1782,8 +1786,8 @@ function copyTempDouble(ptr) {
 
   function _SAB_lib_get_counter_value()
       {
-          //return Module['sharedArrayCounter'][0];
-          return Atomics.load(Module['sharedArrayCounter'], 0);
+          return Module['sharedArrayCounter'][0];
+          //return Atomics.load(Module['sharedArrayCounter'], 0);
       }
 
   function _SAB_terminate_counter_sub_worker()
@@ -4993,6 +4997,19 @@ function copyTempDouble(ptr) {
 
   function ___unlock() {}
 
+  function _abort() {
+      Module['abort']();
+    }
+
+  
+  function __exit(status) {
+      // void _exit(int status);
+      // http://pubs.opengroup.org/onlinepubs/000095399/functions/exit.html
+      Module['exit'](status);
+    }function _exit(status) {
+      __exit(status);
+    }
+
    
 
   
@@ -5053,11 +5070,9 @@ function nullFunc_ii(x) { Module["printErr"]("Invalid function pointer called wi
 
 function nullFunc_iiii(x) { Module["printErr"]("Invalid function pointer called with signature 'iiii'. Perhaps this is an invalid value (e.g. caused by calling a virtual method on a NULL pointer)? Or calling a function with an incorrect type, which will fail? (it is worth building your source files with -Werror (warnings are errors), as warnings can indicate undefined behavior which can cause this)");  Module["printErr"]("Build with ASSERTIONS=2 for more info.");abort(x) }
 
-function nullFunc_viii(x) { Module["printErr"]("Invalid function pointer called with signature 'viii'. Perhaps this is an invalid value (e.g. caused by calling a virtual method on a NULL pointer)? Or calling a function with an incorrect type, which will fail? (it is worth building your source files with -Werror (warnings are errors), as warnings can indicate undefined behavior which can cause this)");  Module["printErr"]("Build with ASSERTIONS=2 for more info.");abort(x) }
+Module['wasmTableSize'] = 10;
 
-Module['wasmTableSize'] = 11;
-
-Module['wasmMaxTableSize'] = 11;
+Module['wasmMaxTableSize'] = 10;
 
 function invoke_ii(index,a1) {
   try {
@@ -5077,18 +5092,9 @@ function invoke_iiii(index,a1,a2,a3) {
   }
 }
 
-function invoke_viii(index,a1,a2,a3) {
-  try {
-    Module["dynCall_viii"](index,a1,a2,a3);
-  } catch(e) {
-    if (typeof e !== 'number' && e !== 'longjmp') throw e;
-    Module["setThrew"](1, 0);
-  }
-}
-
 Module.asmGlobalArg = {};
 
-Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "nullFunc_viii": nullFunc_viii, "invoke_ii": invoke_ii, "invoke_iiii": invoke_iiii, "invoke_viii": invoke_viii, "_SAB_get_resolution_ns": _SAB_get_resolution_ns, "_SAB_lib_get_counter_value": _SAB_lib_get_counter_value, "_SAB_terminate_counter_sub_worker": _SAB_terminate_counter_sub_worker, "___assert_fail": ___assert_fail, "___lock": ___lock, "___setErrNo": ___setErrNo, "___syscall140": ___syscall140, "___syscall146": ___syscall146, "___syscall192": ___syscall192, "___syscall54": ___syscall54, "___syscall6": ___syscall6, "___unlock": ___unlock, "_emscripten_memcpy_big": _emscripten_memcpy_big, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
+Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "invoke_ii": invoke_ii, "invoke_iiii": invoke_iiii, "_SAB_get_resolution_ns": _SAB_get_resolution_ns, "_SAB_lib_get_counter_value": _SAB_lib_get_counter_value, "_SAB_terminate_counter_sub_worker": _SAB_terminate_counter_sub_worker, "___assert_fail": ___assert_fail, "___lock": ___lock, "___setErrNo": ___setErrNo, "___syscall140": ___syscall140, "___syscall146": ___syscall146, "___syscall192": ___syscall192, "___syscall54": ___syscall54, "___syscall6": ___syscall6, "___unlock": ___unlock, "__exit": __exit, "_abort": _abort, "_emscripten_memcpy_big": _emscripten_memcpy_big, "_exit": _exit, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
 // EMSCRIPTEN_START_ASM
 var asm =Module["asm"]// EMSCRIPTEN_END_ASM
 (Module.asmGlobalArg, Module.asmLibraryArg, buffer);
@@ -5263,10 +5269,6 @@ var dynCall_iiii = Module["dynCall_iiii"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return Module["asm"]["dynCall_iiii"].apply(null, arguments) };
-var dynCall_viii = Module["dynCall_viii"] = function() {
-  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
-  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
-  return Module["asm"]["dynCall_viii"].apply(null, arguments) };
 ;
 
 
