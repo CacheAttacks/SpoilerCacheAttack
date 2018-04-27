@@ -22,7 +22,8 @@
 
 #include "SABcounter.h"
 
-
+#define L3_CACHELINE_BITS 6
+#define L3_CACHELINE 64
 #define L3_THRESHOLD 40
 
 #ifdef PAGE_SIZE
@@ -152,11 +153,7 @@ static inline uint32_t memaccesstime_abs_double_access(void *v) {
 static inline uint32_t memaccesstime(void *v) {
 
   warmuptimer();
-  //warmuprounds(100);
-  for(int i=0; i<10; i++)
-  {
-    uint32_t before = SAB_lib_get_counter_value();
-  }
+  warmuprounds(10);
 
   uint32_t before = SAB_lib_get_counter_value();
   uint32_t a = *((uint32_t*)v);

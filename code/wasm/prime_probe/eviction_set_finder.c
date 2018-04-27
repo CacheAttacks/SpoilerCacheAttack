@@ -14,6 +14,13 @@
 #define SAMPLES 1000
 #define LNEXT(t) (*(void **)(t))
 
+
+//TODO fix ideen:
+//random zugriff auf es oder rückwärts durchlauf
+//debug ausgaben von zeiten
+//debug adresse von rausgeworfenen add aus es
+//change add offset
+
 void flush_l3(void * buffer, int pages){
   for(int i=0; i<pages; i++){
     int a = *((int*)((int)buffer+i*BLOCK_SIZE));
@@ -34,7 +41,7 @@ void test_mem_access(int random)
   srand(32);   // should only be called once
   void *randomPtr;
   int randomIndex;
-  for(int i=0; i<10; i++)
+  for(int i=0; i<20; i++)
   {
     randomIndex = i;
     if(random){
@@ -45,7 +52,7 @@ void test_mem_access(int random)
     uint32_t diff1 = memaccesstime(randomPtr);
     memaccesstime((void*)((int)randomPtr+1));
     uint32_t diff2 = memaccesstime(randomPtr);
-    flush_l3(buffer, pages);
+    //flush_l3(buffer, pages);
     uint32_t diff3 = memaccesstime(randomPtr);
     uint32_t diff4 = memaccesstime(randomPtr);
     printf("%" PRIu32 ", %" PRIu32 ", flush L3, %" PRIu32 ", %" PRIu32 "\n", diff1, diff2, diff3, diff4);
