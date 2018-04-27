@@ -129,23 +129,6 @@ static uintptr_t getphysaddr(void *p) {
   return 0;
 #endif
 }
-
-
-// static int loadL3cpuidInfo(l3pp_t l3) {
-
-//   for (int i = 0; ; i++) {
-//     l3->cpuidInfo.regs.eax = CPUID_CACHEINFO;
-//     l3->cpuidInfo.regs.ecx = i;
-//     cpuid(&l3->cpuidInfo);
-//     if (l3->cpuidInfo.cacheInfo.type == 0)
-//       return 0;
-//     if (l3->cpuidInfo.cacheInfo.level == 3)
-//       return 1;
-//   }
-//   printf("No L3-Cache found!\n");
-//   exit(1);
-// }
-
 static void fillL3Info(l3pp_t l3) {
 //l3-cache i7-4770: 16-way-ass, 8192sets, 4slices => 4(ass)+13(sets)+6(line)=23bits (8MiB)
 //works also for other CPUs
@@ -275,11 +258,22 @@ static int timedwalk(void *list, register void *candidate, int walk_size, int pr
   //clflush(c2);
   if(print)
     printf("time:");
+  int *buffer;
+  int pages, block_size;
+  if(print){
+    pages = 1024*1024*2;
+    block_size = 64;
+    buffer = mmap(NULL, block_size*pages, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
+  }
   int a = memaccess(candidate);
-  for (int i = 0; i < CHECKTIMES * (debug ? 20 : 1); i++) {
+  for (int i = 0; i < CHECKTIMES * (debug ? 20 : (print ? 20 : 1)); i++) {
+    if(print)
+      flush_l3(buffer,pages,block_size);
+
     //walk(list,20); was default why???
     walk(list, walk_size);
     // void *p = LNEXT(c2);
+
     uint32_t time = memaccesstime(candidate);
     ts_add(ts, time);
     if(print)
@@ -297,7 +291,7 @@ static int timedwalk(void *list, register void *candidate, int walk_size, int pr
     printf("--------------------\n");
     for (int i = 0; i < TIME_MAX; i++) 
       if (ts_get(ts, i) != 0)
-	printf("++ %4d: %4d\n", i, ts_get(ts, i));
+	      printf("++ %4d: %4d\n", i, ts_get(ts, i));
     debug--;
   }
 #endif //DEBUG
@@ -343,8 +337,9 @@ static void *expand(vlist_t es, vlist_t candidates) {
       printf("found es! size:%i\n", vl_len(es));
       //expand_test(es, current);
       checkevict(es, current, vl_len(es), 1);
-      checkevict(es, current, vl_len(es), 1);
-      checkevict(es, current, vl_len(es), 1);
+      exit(1);
+      //checkevict(es, current, vl_len(es), 0);
+      //checkevict(es, current, vl_len(es), 0);
       return current;
     }
     vl_push(es, current);

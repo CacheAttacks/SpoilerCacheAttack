@@ -1786,8 +1786,9 @@ function copyTempDouble(ptr) {
 
   function _SAB_lib_get_counter_value()
       {
-          return Module['sharedArrayCounter'][0];
-          //return Atomics.load(Module['sharedArrayCounter'], 0);
+          //return Module['sharedArrayCounter'][0];
+          //far more consistent
+          return Atomics.load(Module['sharedArrayCounter'], 0);
       }
 
   function _SAB_terminate_counter_sub_worker()

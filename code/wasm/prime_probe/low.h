@@ -24,13 +24,29 @@
 
 #define L3_CACHELINE_BITS 6
 #define L3_CACHELINE 64
-#define L3_THRESHOLD 40
+#define L3_THRESHOLD 50
 
 #ifdef PAGE_SIZE
 #undef PAGE_SIZE
 #endif
 #define PAGE_SIZE 4096
 
+static inline void flush_l3(void *buffer, int pages, int block_size){
+  int free_buf = 0;
+  if(buffer == 0) {
+    pages = 1024*1024*2;
+    int bufsize = 64*pages;
+    buffer = mmap(NULL, bufsize, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
+    free_buf = 1;
+  }
+
+  for(int i=0; i<pages; i++){
+    int a = *((int*)((int)buffer + i * block_size));
+  }
+
+  if(free_buf)
+    free(buffer);
+}
 
 static inline uint32_t get_diff(uint32_t before, uint32_t after)
 {

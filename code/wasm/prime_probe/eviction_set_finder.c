@@ -21,13 +21,7 @@
 //debug adresse von rausgeworfenen add aus es
 //change add offset
 
-void flush_l3(void * buffer, int pages){
-  for(int i=0; i<pages; i++){
-    int a = *((int*)((int)buffer+i*BLOCK_SIZE));
-  }
-}
-
-void test_mem_access(int random)
+int test_mem_access(int random, int rounds, int print)
 {
   int pages = 1024*1024*20;
   int bufsize = BLOCK_SIZE*pages;
@@ -37,29 +31,52 @@ void test_mem_access(int random)
   }
   char *buffer = mmap(NULL, bufsize, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
   //char *buffer = (char*)calloc(bufsize,1);
-  flush_l3(buffer, pages);
+  flush_l3(buffer, pages, BLOCK_SIZE);
   srand(32);   // should only be called once
   void *randomPtr;
   int randomIndex;
-  for(int i=0; i<20; i++)
+  int sum = 0;
+  int flush = 0;
+  uint32_t *counter = malloc(sizeof(uint32_t) * rounds * 4);
+  for(int i=0; i<rounds; i++)
   {
     randomIndex = i;
     if(random){
       randomIndex = rand() % pages * BLOCK_SIZE;
     }
     randomPtr = (void*)(&buffer[randomIndex]);
-    printf("index: %p \n", randomPtr);
-    uint32_t diff1 = memaccesstime(randomPtr);
+
+    counter[i*4] = memaccesstime(randomPtr);
     memaccesstime((void*)((int)randomPtr+1));
-    uint32_t diff2 = memaccesstime(randomPtr);
-    //flush_l3(buffer, pages);
-    uint32_t diff3 = memaccesstime(randomPtr);
-    uint32_t diff4 = memaccesstime(randomPtr);
-    printf("%" PRIu32 ", %" PRIu32 ", flush L3, %" PRIu32 ", %" PRIu32 "\n", diff1, diff2, diff3, diff4);
+    counter[i*4+1] = memaccesstime(randomPtr);
+
+    if(flush)
+     flush_l3(buffer, pages, BLOCK_SIZE);
+
+    counter[i*4+2] = memaccesstime(randomPtr);
+    counter[i*4+3] = memaccesstime(randomPtr);
+
     //memaccesstime_test(randomPtr);
     //memaccesstime_test(randomPtr);
     //memaccesstime_test(randomPtr);
+    sum += counter[i*4];
   }
+
+  if(print) {
+    for(int i=0; i<rounds; i++)
+    {
+      printf("index: %p ,", randomPtr);
+      printf("%" PRIu32 ", %" PRIu32 ", ", counter[i*4], counter[i*4+1]);
+      
+      if(flush)
+      printf("flush L3, ");
+
+      printf("%" PRIu32 ", %" PRIu32 "\n",  counter[i*4+2], counter[i*4+3]);
+    }
+  }
+
+  free(buffer);
+  return sum/rounds;
 }
 
 void counter_consistency_test(){
@@ -75,13 +92,13 @@ void counter_consistency_test(){
   exit(1);
 }
 
-void mem_access_testing(){
+void mem_access_testing(int rounds, int print){
   printf("random access\n");
-  test_mem_access(1);
+  printf("mean:%i\n", test_mem_access(1, rounds, print));
   printf("linear access\n");
-  test_mem_access(0);
-  SAB_terminate_counter_sub_worker();
-  exit(1);
+  printf("mean:%i\n", test_mem_access(0, rounds, print));
+  //SAB_terminate_counter_sub_worker();
+  //exit(1);
 }
 
 int main(int ac, char **av) {
@@ -96,7 +113,7 @@ int main(int ac, char **av) {
 
   //counter_consistency_test();
 
-  mem_access_testing();
+  mem_access_testing(100, 0);
 
 
   l3pp_t l3 = l3_prepare(NULL);
