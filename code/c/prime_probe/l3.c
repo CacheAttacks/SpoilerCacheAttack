@@ -295,6 +295,7 @@ static int timedwalk(void *list, register void *candidate, int size_es) {
     ts_add(ts, time);
   }
   int rv = ts_median(ts);
+  //printf("%i(%i) ",rv, size_es);
 #ifdef DEBUG
   if (!--debugl) {
     debugl=1000;
@@ -335,11 +336,11 @@ static int timedwalk_print(void *list, register void *candidate, int walk_size) 
     void *p = LNEXT(c2);
     uint32_t time = memaccesstime(p);
     ts_add(ts, time);
-    printf("%i ", time);
+    //printf("%i ", time);
   }
   //putchar('\n');
   int rv = ts_median(ts);
-  printf("mean:%i\n",rv);
+  printf("%i ",rv);
 #ifdef DEBUG
   if (!--debugl) {
     debugl=1000;
@@ -366,6 +367,17 @@ static int checkevict(vlist_t es, void *candidate) {
   return timecur > L3_THRESHOLD;
 }
 
+
+static int checkevict_safe(vlist_t es, void *candidate, int proofs) {
+    int counter = 0;
+    for(int i=0; i<proofs; i++){
+        if(checkevict(es, candidate) == 0)
+            break;
+        counter++;
+    }
+    return counter == proofs;
+}
+
 static int checkevict_print(vlist_t es, void *candidate, int walk_size) {
   //printf("size(es):%i\n", vl_len(es));
   if (vl_len(es) == 0)
@@ -381,11 +393,13 @@ static int checkevict_print(vlist_t es, void *candidate, int walk_size) {
 static void *expand(vlist_t es, vlist_t candidates) {
   while (vl_len(candidates) > 0) {
     void *current = vl_poprand(candidates);
-    if (checkevict(es, current)){
+
+    if(vl_len(es) >= 16 && checkevict_safe(es, current, 10)){
       //printf("found es! size:%i\n", vl_len(es));
       //checkevict_print(es, current);
       return current;
     }
+
     vl_push(es, current);
   }
   return NULL;
@@ -396,7 +410,7 @@ static void contract(vlist_t es, vlist_t candidates, void *current) {
     void *cand = vl_get(es, i);
     vl_del(es, i);
     clflush(current);
-    if (checkevict(es, current))
+    if (checkevict_safe(es, current, 5))
       vl_push(candidates, cand);
     else {
       vl_insert(es, i, cand);
@@ -452,9 +466,25 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
       continue;
     }
 
+    printf("after expand es size:%i\n", vl_len(es));
+    for(int i=0;i<10;i++)
+      printf("evict: %i, ", checkevict(es, c));
+    putchar('\n');
 
+    //exit(1);
 
-    contract(es, lines, c);
+    int size_old = INT32_MAX;
+    while(vl_len(es) > 30){
+        contract(es, lines, c);
+        printf("es size: %i\n", vl_len(es));
+        if(size_old - vl_len(es) < 3)
+        {
+          printf("diff to last step <3\n");
+          break;
+        }
+        size_old = vl_len(es);
+    }
+    
     contract(es, lines, c);
     contract(es, lines, c);
 
@@ -462,19 +492,24 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
       printf("warning vl_len(es)=%i < ass=%i!\n", vl_len(es), l3->l3info.associativity);
     }
 
-    // printf("after contract es size:%i\n", vl_len(es));
-    // for(int i=0;i<10;i++)
-    //   printf("mean: %i\n", checkevict(es, c));
-    //  for(int i=0;vl_len(es)>0;i++){
-    //    checkevict_print(es, c, 0);
-    //    vl_del(es, 0);
-    //  }
-
-    // exit(1);
-
     #ifdef DEBUG
     int d_l3 = vl_len(es);
     #endif //DEBUG
+
+    printf("after contract es size:%i\n", vl_len(es));
+    for(int i=0;i<10;i++)
+      printf("evict: %i, ", checkevict(es, c));
+    putchar('\n');
+
+    // for(int i=0;vl_len(es)>0;i++){
+    //    checkevict_print(es, c, 0);
+    //    vl_del(es, 0);
+    //  }
+    //  printf("\n");
+
+    // exit(1);
+
+
 
     //rewind if size(es) do not match associativity
     if (vl_len(es) > l3->l3info.associativity || vl_len(es) < l3->l3info.associativity - 3) {
@@ -781,4 +816,3 @@ int l3_repeatedprobecount(l3pp_t l3, int nrecords, uint16_t *results, int slot) 
   }
   return nrecords;
 }
-

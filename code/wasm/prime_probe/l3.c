@@ -63,6 +63,8 @@
 //between 0 and 4000
 #define ADDRESS_OFFSET 1024 
 
+int L3_THRESHOLD = 10000;
+
 #define LNEXT(t) (*(void **)(t))
 #define OFFSET(p, o) ((void *)((uintptr_t)(p) + (o)))
 #define NEXTPTR(p) (OFFSET((p), sizeof(void *)))
@@ -240,7 +242,7 @@ int bprobecount(void *pp) {
 }
 
 
-static int timedwalk(void *list, register void *candidate, int walk_size, int print) {
+static int timedwalk(void *list, register void *candidate, int walk_size, int print, vlist_t es) {
 #ifdef DEBUG
   static int debug = 100;
   static int debugl = 1000;
@@ -260,28 +262,40 @@ static int timedwalk(void *list, register void *candidate, int walk_size, int pr
     printf("time:");
   int *buffer;
   int pages, block_size;
+  int or_flush, or_walk;
   if(print){
     pages = 1024*1024*2;
     block_size = 64;
     buffer = mmap(NULL, block_size*pages, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
   }
   int a = memaccess(candidate);
-  for (int i = 0; i < CHECKTIMES * (debug ? 20 : (print ? 20 : 1)); i++) {
-    if(print)
-      flush_l3(buffer,pages,block_size);
+  for (int i = 0; i < CHECKTIMES * (debug ? 20 : (print ? 10 : 3)); i++) {
+
+
+    // if(i % 10 == 0){
+    //     for (int i = 0; i < vl_len(es); i++) 
+    //       LNEXT(vl_get(es, i)) = vl_get(es, (i + 1) % vl_len(es));
+    // }
+
+    // if(print)
+    //   or_flush = flush_l3(buffer,pages,block_size);
+
+      
 
     //walk(list,20); was default why???
-    walk(list, walk_size);
+    or_walk = walk(list, walk_size);
     // void *p = LNEXT(c2);
-
     uint32_t time = memaccesstime(candidate);
+    
     ts_add(ts, time);
     if(print)
       printf("%i ", time);
   }
   int rv = ts_median(ts);
-  if(print)
+  if(print){
     printf("mean:%i\n",rv);
+    free(buffer);
+  }
 #ifdef DEBUG
   if (!--debugl) {
     debugl=1000;
@@ -306,10 +320,28 @@ static int checkevict(vlist_t es, void *candidate, int walk_size, int print) {
     printf("walk_size == 0\n");
   for (int i = 0; i < vl_len(es); i++) 
     LNEXT(vl_get(es, i)) = vl_get(es, (i + 1) % vl_len(es));
-  int timecur = timedwalk(vl_get(es, 0), candidate, walk_size, print);
+  int timecur = timedwalk(vl_get(es, 0), candidate, walk_size, print, es);
   // if(timecur > L3_THRESHOLD)
-  // printf("timecur %i\n",timecur);
+   //printf("timecur %i\n",timecur);
   return timecur > L3_THRESHOLD;
+}
+
+static int checkevict_safe(vlist_t es, void *candidate, int walk_size, int print, int proofs) {
+  if(proofs <= 0){
+    printf("proofs <= 0. set proofs = 1\n");
+    proofs = 1;
+  }
+  int counter = 0;
+  for(int i=0; i<proofs; i++){
+      if(checkevict(es, candidate, walk_size, print) == 0)
+          break;
+      counter++;
+      if(i >= 1)
+      {
+        //checkevict(es, candidate, walk_size, 1);
+      }
+  }
+  return counter == proofs;
 }
 
 static void access_es(vlist_t es) {
@@ -333,13 +365,14 @@ static void expand_test(vlist_t es, void* current){
 static void *expand(vlist_t es, vlist_t candidates) {
   while (vl_len(candidates) > 0) {
     void *current = vl_poprand(candidates);
-    if (checkevict(es, current, vl_len(es), 0) && checkevict(es, current, vl_len(es), 0)){
+    if (checkevict_safe(es, current, vl_len(es), 0, 10)){
       printf("found es! size:%i\n", vl_len(es));
       //expand_test(es, current);
-      checkevict(es, current, vl_len(es), 1);
-      exit(1);
-      //checkevict(es, current, vl_len(es), 0);
-      //checkevict(es, current, vl_len(es), 0);
+      //checkevict(es, current, vl_len(es), 1);
+      //checkevict(es, current, vl_len(es), 1);
+      //checkevict(es, current, vl_len(es), 1);
+      //exit(1);
+
       return current;
     }
     vl_push(es, current);
@@ -354,9 +387,7 @@ static void contract(vlist_t es, vlist_t candidates, void *current) {
     //load each element in evection set instead of clflush
     //access_es(es);
     //clflush(current);
-    if(checkevict(es, current, vl_len(es), 1))
-      printf("drop\n");
-    if (checkevict(es, current, vl_len(es), 0))
+    if (checkevict_safe(es, current, vl_len(es), 0, 2))
       vl_push(candidates, cand);
     else {
       vl_insert(es, i, cand);
@@ -368,7 +399,7 @@ static void contract(vlist_t es, vlist_t candidates, void *current) {
 static void collect(vlist_t es, vlist_t candidates, vlist_t set) {
   for (int i = vl_len(candidates); i--; ) {
     void *p = vl_del(candidates, i);
-    if (checkevict(es, p, vl_len(es), 0))
+    if (checkevict_safe(es, p, vl_len(es), 0, 2))
       vl_push(set, p);
     else
       vl_push(candidates, p);
@@ -412,12 +443,18 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
       continue;
     }
 
-    // while(vl_len(es) > 100){
-    //   contract(es, lines, c);
-    //   printf("vl_len(es):%i\n",vl_len(es));
-    // }
-    contract(es, lines, c);
-    exit(1);
+    int size_old = INT32_MAX;
+    while(vl_len(es) > 30){
+        contract(es, lines, c);
+        printf("es size: %i\n", vl_len(es));
+        if(size_old - vl_len(es) < 3)
+        {
+          printf("diff to last step <3\n");
+          break;
+        }
+        size_old = vl_len(es);
+    }
+
     contract(es, lines, c);
     contract(es, lines, c);
 
@@ -426,14 +463,6 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
     if(vl_len(es) < l3->l3info.associativity){
       printf("warning vl_len(es)=%i < ass=%i!\n", vl_len(es), l3->l3info.associativity);
     }
-
-    // printf("after contract es size:%i\n", vl_len(es));
-    // for(int i=0;i<10;i++)
-    //   printf("mean: %i\n", checkevict(es, c));
-    // for(int i=0;vl_len(es)>0;i++){
-    //   checkevict_print(es, c, 0);
-    //   vl_del(es, 0);
-    // }
 
     // exit(1);
 
@@ -452,6 +481,14 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
       fail++;
       continue;
     } 
+
+        printf("after contract es size:%i\n", vl_len(es));
+     for(int i=0;i<10;i++)
+       printf("mean: %i\n", checkevict(es, c, vl_len(es), 0));
+    for(int i=0;vl_len(es)>0;i++){
+      checkevict(es, c, vl_len(es), 1);
+      vl_del(es, 0);
+    }
 
     fail = 0;
     vlist_t set = vl_new();
@@ -493,7 +530,7 @@ static int probemap(l3pp_t l3) {
   return 1;
 }
 
-l3pp_t l3_prepare(l3info_t l3info) {
+l3pp_t l3_prepare(l3info_t l3info, int l3_threshold) {
   int allocatedMem = sizeof(struct l3pp);
   // Setup
   l3pp_t l3 = (l3pp_t)malloc(sizeof(struct l3pp));
@@ -502,6 +539,8 @@ l3pp_t l3_prepare(l3info_t l3info) {
   //if (l3info != NULL)
   //  bcopy(l3info, &l3->l3info, sizeof(struct l3info));
   fillL3Info(l3);
+  l3->l3info.l3_threshold = L3_THRESHOLD;
+  L3_THRESHOLD = l3_threshold;
 
   printf("associativity:%i\n",l3->l3info.associativity);
   printf("slices:%i\n",l3->l3info.slices);

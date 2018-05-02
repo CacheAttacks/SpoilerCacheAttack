@@ -92,18 +92,29 @@ void counter_consistency_test(){
   exit(1);
 }
 
-void mem_access_testing(int rounds, int print){
-  printf("random access\n");
-  printf("mean:%i\n", test_mem_access(1, rounds, print));
+int mem_access_testing(int rounds, int print){
+  printf("random access %i rounds\n", rounds);
+  int mean_random = test_mem_access(1, rounds, print);
+  printf("mean:%i\n", mean_random);
   printf("linear access\n");
-  printf("mean:%i\n", test_mem_access(0, rounds, print));
+  int mean_linear = test_mem_access(0, rounds, print);
+  printf("mean:%i\n", mean_linear);
   //SAB_terminate_counter_sub_worker();
   //exit(1);
+  if(mean_random < mean_linear - 10){
+    printf("cannot differ random/linear accesses!\n");
+  }
+  int threshold = mean_linear + (((mean_random - mean_linear)/2));
+  printf("random/linear threshold: %i\n", threshold);
+  return threshold;
 }
 
 int main(int ac, char **av) {
   //l3-cache i7-4770: 16-way-ass, 8192sets => 4+13+6=23bits (8MiB)
   warmup(1024*1024*128); //warm up 2^27 counts operations ~ 2^30 cycles
+  printf("warm-up finished\n");
+
+  //counter_consistency_test();
 
   float resolution_ns = 101;
   //while(resolution_ns > 100){
@@ -111,12 +122,16 @@ int main(int ac, char **av) {
   //} 
   printf("resolution SAB-timer: %f ns\n", resolution_ns);
 
-  //counter_consistency_test();
+  
 
-  mem_access_testing(100, 0);
+  int l3_threshold = mem_access_testing(100, 0);
+  // printf("hallo\n");
+  // flush_l3(0,0,0);
+  // l3_threshold = mem_access_testing(100, 0);
+  //exit(1);
 
 
-  l3pp_t l3 = l3_prepare(NULL);
+  l3pp_t l3 = l3_prepare(NULL, l3_threshold);
   
   int nsets = l3_getSets(l3);
   int nmonitored = nsets/64;

@@ -24,28 +24,31 @@
 
 #define L3_CACHELINE_BITS 6
 #define L3_CACHELINE 64
-#define L3_THRESHOLD 50
+//#define L3_THRESHOLD 50
 
 #ifdef PAGE_SIZE
 #undef PAGE_SIZE
 #endif
 #define PAGE_SIZE 4096
 
-static inline void flush_l3(void *buffer, int pages, int block_size){
+static inline int flush_l3(void *buffer, int pages, int block_size){
   int free_buf = 0;
   if(buffer == 0) {
-    pages = 1024*1024*2;
+    pages = 1024*1024*4;
     int bufsize = 64*pages;
     buffer = mmap(NULL, bufsize, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
     free_buf = 1;
   }
 
+  int or = 0;
   for(int i=0; i<pages; i++){
-    int a = *((int*)((int)buffer + i * block_size));
+    or |= (int)*((int*)((int)buffer + i * block_size));
   }
 
   if(free_buf)
     free(buffer);
+
+  return or;
 }
 
 static inline uint32_t get_diff(uint32_t before, uint32_t after)
@@ -171,11 +174,25 @@ static inline uint32_t memaccesstime(void *v) {
   warmuptimer();
   warmuprounds(10);
 
+  uint32_t a;
+  uint32_t after;
   uint32_t before = SAB_lib_get_counter_value();
-  uint32_t a = *((uint32_t*)v);
-  uint32_t after = SAB_lib_get_counter_value();
+  if(before > 0){
+    before++;
+    a = *((uint32_t*)v);
+  }
+  if(a == 0){
+    after = SAB_lib_get_counter_value();
+    after++;
+  } else {
+    after = SAB_lib_get_counter_value();
+    if(before > 0)
+    before--;
+  }
 
   return get_diff(before,after);
+  
+  
 
   // uint32_t rv;
   // asm volatile (
@@ -253,19 +270,23 @@ static inline void mfence() {
 
 //walks through eviction-set count steps or 
 //stopps beforehand if size(eviction-set) < count
-static inline void walk(void *p, int count) {
+static inline int walk(void *p, int count) {
   if (p == NULL)
-    return;
+    return 0;
 
+  int or = 0;
   do{
     void* old_p = p;
     p = *((void **)p);
+    or |= (int)p;
     if(p == old_p)
     {
       break;
     }
     count--;
   }while(count > 0);
+
+  return or;
 
   //pseudo-code of asm
   //do{
