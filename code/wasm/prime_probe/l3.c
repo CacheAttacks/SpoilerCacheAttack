@@ -258,8 +258,8 @@ static int timedwalk(void *list, register void *candidate, int walk_size, int pr
   // void *c2 = (void *)((uintptr_t)candidate ^ 0x200);
   // LNEXT(c2) = candidate;
   //clflush(c2);
-  if(print)
-    printf("time:");
+  //if(print)
+  //  printf("time:");
   int *buffer;
   int pages, block_size;
   int or_flush, or_walk;
@@ -288,12 +288,13 @@ static int timedwalk(void *list, register void *candidate, int walk_size, int pr
     uint32_t time = memaccesstime(candidate);
     
     ts_add(ts, time);
-    if(print)
-      printf("%i ", time);
+    //if(print)
+    //  printf("%i ", time);
   }
   int rv = ts_median(ts);
+  //printf("mean:%i\n",rv);
   if(print){
-    printf("mean:%i\n",rv);
+    printf("mean:%i ",rv);
     free(buffer);
   }
 #ifdef DEBUG
@@ -446,16 +447,17 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
     int size_old = INT32_MAX;
     while(vl_len(es) > 30){
         contract(es, lines, c);
-        printf("es size: %i\n", vl_len(es));
+        printf("CONTRACT: es size: %i\n", vl_len(es));
         if(size_old - vl_len(es) < 3)
         {
-          printf("diff to last step <3\n");
+          printf("diff to last step <3 => break\n");
           break;
         }
         size_old = vl_len(es);
     }
 
     contract(es, lines, c);
+    printf("CONTRACT: es size: %i\n", vl_len(es));
     contract(es, lines, c);
 
     
@@ -472,7 +474,7 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
 
     //rewind if size(es) do not match associativity
     if (vl_len(es) > l3->l3info.associativity+20 ||
-    vl_len(es) < l3->l3info.associativity - 3) {
+    vl_len(es) < l3->l3info.associativity) {
       while (vl_len(es))
 	      vl_push(lines, vl_del(es, 0));
       #ifdef DEBUG
@@ -482,13 +484,19 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
       continue;
     } 
 
-        printf("after contract es size:%i\n", vl_len(es));
-     for(int i=0;i<10;i++)
-       printf("mean: %i\n", checkevict(es, c, vl_len(es), 0));
-    for(int i=0;vl_len(es)>0;i++){
+    printf("after contract es size:%i\n", vl_len(es));
+    printf("evict ");
+    for(int i=0;i<10;i++){
       checkevict(es, c, vl_len(es), 1);
-      vl_del(es, 0);
+      //printf("%i ", checkevict(es, c, vl_len(es), 0));
     }
+    printf("\n 1 out test \n");
+    for(int i=0;i<vl_len(es);i++){
+      void *element = vl_del(es, i);
+      checkevict(es, c, vl_len(es), 1);
+      vl_insert(es, i, element);
+    }
+    putchar('\n');
 
     fail = 0;
     vlist_t set = vl_new();

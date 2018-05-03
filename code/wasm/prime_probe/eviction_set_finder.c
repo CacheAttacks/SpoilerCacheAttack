@@ -124,10 +124,10 @@ int main(int ac, char **av) {
 
   
 
-  int l3_threshold = mem_access_testing(100, 0);
-  // printf("hallo\n");
-  // flush_l3(0,0,0);
-  // l3_threshold = mem_access_testing(100, 0);
+  int l3_threshold = mem_access_testing(100000, 0);
+  printf("hallo\n");
+  flush_l3(0,0,0);
+  mem_access_testing(100000, 0);
   //exit(1);
 
 
