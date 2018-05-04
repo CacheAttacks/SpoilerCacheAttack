@@ -63,6 +63,10 @@
 //between 0 and 4000
 #define ADDRESS_OFFSET 2048 
 
+//buffer for memoryblocks is multiple of cache size
+//2 size enough, remember virtual
+#define CACHE_SIZE_MULTI 2
+
 int L3_THRESHOLD = 10000;
 
 #define LNEXT(t) (*(void **)(t))
@@ -141,9 +145,9 @@ static void fillL3Info(l3pp_t l3) {
   l3->cpuidInfo.cacheInfo.sets = 8192;
   l3->l3info.slices = 4;
   l3->l3info.setsperslice = l3->cpuidInfo.cacheInfo.sets / l3->l3info.slices;
-  l3->l3info.bufsize = l3->l3info.associativity * l3->l3info.slices * l3->l3info.setsperslice * L3_CACHELINE * 2;
-  if (l3->l3info.bufsize < 10 * 1024 * 1024)
-        l3->l3info.bufsize = 100 * 1024 * 1024;
+  l3->l3info.bufsize = l3->l3info.associativity * l3->l3info.slices * l3->l3info.setsperslice * L3_CACHELINE * CACHE_SIZE_MULTI;
+
+  //bufsize = cachesize * factor
 
   //loadL3cpuidInfo(l3);
   // if (l3->l3info.associativity == 0)
@@ -272,20 +276,20 @@ static int timedwalk(void *list, register void *candidate, int walk_size, int pr
   int a = memaccess(candidate);
   for (int i = 0; i < CHECKTIMES * (debug ? 20 : (print ? 10 : 3)); i++) {
 
-
-    // if(i % 10 == 0){
-    //     for (int i = 0; i < vl_len(es); i++) 
-    //       LNEXT(vl_get(es, i)) = vl_get(es, (i + 1) % vl_len(es));
-    // }
-
     // if(print)
-    //   or_flush = flush_l3(buffer,pages,block_size);
-
-      
+    //   or_flush = flush_l3(buffer,pages,block_size);      
 
     //walk(list,20); was default why???
     or_walk = walk(list, walk_size);
     // void *p = LNEXT(c2);
+
+    //try to reduce TLB noise (drive-by cache paper)
+    //access memory in the same page
+    //use page start (last 12 bits zero)
+    //maybe collide with ADDRESS_OFFSET
+    void *candiate_page = (void*)(((int)candidate >> 12) << 12);
+    memaccess(candiate_page);
+
     uint32_t time = memaccesstime(candidate, info);
     
     ts_add(ts, time);
@@ -367,7 +371,7 @@ static void expand_test(vlist_t es, void* current){
 static void *expand(vlist_t es, vlist_t candidates) {
   while (vl_len(candidates) > 0) {
     void *current = vl_poprand(candidates);
-    if (checkevict_safe(es, current, vl_len(es), 0, 10)){
+    if (vl_len(es) > 16 && checkevict_safe(es, current, vl_len(es), 0, 20)){
       printf("found es! size:%i\n", vl_len(es));
       //expand_test(es, current);
       //checkevict(es, current, vl_len(es), 1);
@@ -389,7 +393,7 @@ static void contract(vlist_t es, vlist_t candidates, void *current) {
     //load each element in evection set instead of clflush
     //access_es(es);
     //clflush(current);
-    if (checkevict_safe(es, current, vl_len(es), 0, 2))
+    if (checkevict_safe(es, current, vl_len(es), 0, 1))
       vl_push(candidates, cand);
     else {
       vl_insert(es, i, cand);
@@ -426,7 +430,7 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
     #ifdef DEBUG
     int d_l1 = vl_len(lines);
     #endif // DEBUG
-    if (fail > 5) 
+    if (fail > 50) 
       break;
 
     void *c = expand(es, lines);
@@ -446,14 +450,14 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
       continue;
     }
 
-    printf("CONTRACT (es size):\n");
+    printf("CONTRACT (es size step):");
     int size_old = INT32_MAX;
     while(vl_len(es) > 16){
         contract(es, lines, c);
          printf("%i ", vl_len(es));
         if(size_old - vl_len(es) < 3)
         {
-          printf("diff to last step <3 => break\n");
+          printf("diff to last step <3 => break");
           break;
         }
         size_old = vl_len(es);
@@ -537,6 +541,11 @@ static int probemap(l3pp_t l3) {
 }
 
 l3pp_t l3_prepare(l3info_t l3info, int l3_threshold) {
+  if(ADDRESS_OFFSET == 0){
+    printf("error ADDRESS_OFFSET 0 is used for TLB noise reduction");
+    exit(1);
+  }
+
   info = (struct timer_info*)malloc(sizeof(struct timer_info));
   bzero(info, sizeof(struct timer_info));
 

@@ -49,12 +49,17 @@ int test_mem_access(int random, int rounds, int print)
     }
     randomPtr = (void*)(&buffer[randomIndex]);
 
+    void *randomPtr_page = (void*)(((int)randomPtr >> 12) << 12);
+    memaccess(randomPtr_page);
+
     counter[i*4] = memaccesstime(randomPtr,info);
     memaccesstime((void*)((int)randomPtr+1), info);
     counter[i*4+1] = memaccesstime(randomPtr,info);
 
     if(flush)
      flush_l3(buffer, pages, BLOCK_SIZE);
+
+    memaccess(randomPtr_page);
 
     counter[i*4+2] = memaccesstime(randomPtr,info);
     counter[i*4+3] = memaccesstime(randomPtr,info);
