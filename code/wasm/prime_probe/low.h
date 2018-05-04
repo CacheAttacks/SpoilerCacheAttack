@@ -169,7 +169,16 @@ static inline uint32_t memaccesstime_abs_double_access(void *v) {
   }
 }
 
-static inline uint32_t memaccesstime(void *v) {
+#define TIME_ARR_SIZE 4096
+struct timer_info {
+  int time_arr[TIME_ARR_SIZE];
+  int time_arr_pos;
+  int time_arr_sum;
+  uint64_t time_arr_sum_sum;
+};
+typedef struct timer_info *timer_info_p;
+
+static inline uint32_t memaccesstime(void *v, struct timer_info *info) {
 
   warmuptimer();
   warmuprounds(10);
@@ -189,8 +198,28 @@ static inline uint32_t memaccesstime(void *v) {
     if(before > 0)
     before--;
   }
+  uint32_t ret = get_diff(before,after);
+  
+  // info->time_arr[info->time_arr_pos] = ret;
+  // info->time_arr_sum += ret;
+  // info->time_arr_pos = (info->time_arr_pos +1) % TIME_ARR_SIZE;
+  // info->time_arr_sum_sum++;
+  // if(info->time_arr_pos == 0){  
+  //   int mean = info->time_arr_sum/TIME_ARR_SIZE;
+  //   printf("mean timer %i, iterations sum %llu\n", mean, info->time_arr_sum_sum);
+  //   info->time_arr_sum = 0;
+  //   if(mean < 15){
+  //     int test_sum = 0;
+  //     for(int i=0; i<10000; i++){
+  //     uint32_t before = SAB_lib_get_counter_value();
+  //     uint32_t after = SAB_lib_get_counter_value();
+  //     test_sum += (after-before);
+  //     }
+  //     printf("mean test %i\n", test_sum/10000);
+  //   }
+  // }
 
-  return get_diff(before,after);
+  return ret;
   
   
 

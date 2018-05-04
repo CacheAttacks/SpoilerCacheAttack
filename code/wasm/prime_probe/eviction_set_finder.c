@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <inttypes.h>
+#include <strings.h>
 
 //#include <util.h>
 #include "low.h"
@@ -20,6 +21,8 @@
 //debug ausgaben von zeiten
 //debug adresse von rausgeworfenen add aus es
 //change add offset
+
+struct timer_info *info;
 
 int test_mem_access(int random, int rounds, int print)
 {
@@ -46,15 +49,15 @@ int test_mem_access(int random, int rounds, int print)
     }
     randomPtr = (void*)(&buffer[randomIndex]);
 
-    counter[i*4] = memaccesstime(randomPtr);
-    memaccesstime((void*)((int)randomPtr+1));
-    counter[i*4+1] = memaccesstime(randomPtr);
+    counter[i*4] = memaccesstime(randomPtr,info);
+    memaccesstime((void*)((int)randomPtr+1), info);
+    counter[i*4+1] = memaccesstime(randomPtr,info);
 
     if(flush)
      flush_l3(buffer, pages, BLOCK_SIZE);
 
-    counter[i*4+2] = memaccesstime(randomPtr);
-    counter[i*4+3] = memaccesstime(randomPtr);
+    counter[i*4+2] = memaccesstime(randomPtr,info);
+    counter[i*4+3] = memaccesstime(randomPtr,info);
 
     //memaccesstime_test(randomPtr);
     //memaccesstime_test(randomPtr);
@@ -79,13 +82,24 @@ int test_mem_access(int random, int rounds, int print)
   return sum/rounds;
 }
 
-void counter_consistency_test(){
-    for(int i=0; i<10000; i++){
+void counter_consistency_test(int mean, uint32_t counts, uint32_t range){
+  int sum = 0;
+  uint64_t iterations = 0;
+    for(uint32_t i=0; i<counts; i++){
     uint32_t a = SAB_lib_get_counter_value();
     uint32_t b = SAB_lib_get_counter_value();
-    printf("%i ",b-a);
+    iterations++;
+    sum += b-a;
+    if(!mean)
+      printf("%i ",b-a);
     if(i % 1000 == 999){
-      putchar('\n');
+      if(!mean)
+        putchar('\n');
+    }
+    if(i % range == range-1){
+      if(mean)
+        printf("mean last %i: %i, iterations %llu, last counter tick %"PRIu32"\n", range, sum/range, iterations, b);
+      sum = 0;
     }
   }
   SAB_terminate_counter_sub_worker();
@@ -111,10 +125,12 @@ int mem_access_testing(int rounds, int print){
 
 int main(int ac, char **av) {
   //l3-cache i7-4770: 16-way-ass, 8192sets => 4+13+6=23bits (8MiB)
+  info = (struct timer_info*)malloc(sizeof(struct timer_info));
+  bzero(info, sizeof(struct timer_info));
   warmup(1024*1024*128); //warm up 2^27 counts operations ~ 2^30 cycles
   printf("warm-up finished\n");
 
-  //counter_consistency_test();
+  //counter_consistency_test(1, 500000000, 1000000);
 
   float resolution_ns = 101;
   //while(resolution_ns > 100){
@@ -125,10 +141,11 @@ int main(int ac, char **av) {
   
 
   int l3_threshold = mem_access_testing(100000, 0);
-  printf("hallo\n");
-  flush_l3(0,0,0);
-  mem_access_testing(100000, 0);
+  // printf("hallo\n");
+  // flush_l3(0,0,0);
+  // mem_access_testing(100000, 0);
   //exit(1);
+  printf("----------------TESTS FINISHED------------------\n");
 
 
   l3pp_t l3 = l3_prepare(NULL, l3_threshold);

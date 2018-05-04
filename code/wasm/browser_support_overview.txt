@@ -1,0 +1,4 @@
+opera => unterstützt wasm, aber nicht SAB
+edge => unterstützt wasm, aber nicth SAB
+safari => leider keine aktuelle version für windows oder linux verfügbar, aber laut https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer auch nicht oder nur (fraglich?) unterstützt
+firefox => wasm ab version 52

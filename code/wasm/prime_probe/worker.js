@@ -4,6 +4,9 @@ self.addEventListener('message', (m) => {
     //console.log("worker online\n");
 
     while(1){
+        if(sharedArray[0] > 2000000000)
+            sharedArray[0] = 0;
+            
         sharedArray[0]++;
         //Atomics.add(sharedArray, 0, 1);
     }

@@ -61,7 +61,7 @@
 
 //offset for each address in the memory pool
 //between 0 and 4000
-#define ADDRESS_OFFSET 1024 
+#define ADDRESS_OFFSET 2048 
 
 int L3_THRESHOLD = 10000;
 
@@ -95,6 +95,8 @@ int L3_THRESHOLD = 10000;
 //   int nmonitored;
 //   void **monitoredhead;
 // };
+
+struct timer_info *info;
 
 
 static int parity(uint64_t v) {
@@ -224,7 +226,7 @@ int probecount(void *pp) {
   //cycle through all memory-blocks in the eviction-set once
   //remember LNEXT(p) point to memory-block[i+1]
   do {
-    uint32_t s = memaccesstime(p);
+    uint32_t s = memaccesstime(p, info);
     //uint32_t s = rdtscp();
     p = LNEXT(p);
     //s = rdtscp() - s;
@@ -240,7 +242,6 @@ int bprobecount(void *pp) {
   //remember memory_block[i].add + offset + 1 points to memory_block[i-1]
   return probecount(NEXTPTR(pp));
 }
-
 
 static int timedwalk(void *list, register void *candidate, int walk_size, int print, vlist_t es) {
 #ifdef DEBUG
@@ -285,7 +286,7 @@ static int timedwalk(void *list, register void *candidate, int walk_size, int pr
     //walk(list,20); was default why???
     or_walk = walk(list, walk_size);
     // void *p = LNEXT(c2);
-    uint32_t time = memaccesstime(candidate);
+    uint32_t time = memaccesstime(candidate, info);
     
     ts_add(ts, time);
     //if(print)
@@ -414,6 +415,7 @@ static void collect(vlist_t es, vlist_t candidates, vlist_t set) {
 static vlist_t map(l3pp_t l3, vlist_t lines) {
 #ifdef DEBUG
   printf("lines aka memory-blocks %d\n", vl_len(lines));
+  printf("---------------------INFO END--------------------------\n");
 #endif // DEBUG
   vlist_t groups = vl_new();
   vlist_t es = vl_new();
@@ -444,10 +446,11 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
       continue;
     }
 
+    printf("CONTRACT (es size):\n");
     int size_old = INT32_MAX;
-    while(vl_len(es) > 30){
+    while(vl_len(es) > 16){
         contract(es, lines, c);
-        printf("CONTRACT: es size: %i\n", vl_len(es));
+         printf("%i ", vl_len(es));
         if(size_old - vl_len(es) < 3)
         {
           printf("diff to last step <3 => break\n");
@@ -455,12 +458,7 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
         }
         size_old = vl_len(es);
     }
-
-    contract(es, lines, c);
-    printf("CONTRACT: es size: %i\n", vl_len(es));
-    contract(es, lines, c);
-
-    
+    putchar('\n');    
 
     if(vl_len(es) < l3->l3info.associativity){
       printf("warning vl_len(es)=%i < ass=%i!\n", vl_len(es), l3->l3info.associativity);
@@ -539,6 +537,9 @@ static int probemap(l3pp_t l3) {
 }
 
 l3pp_t l3_prepare(l3info_t l3info, int l3_threshold) {
+  info = (struct timer_info*)malloc(sizeof(struct timer_info));
+  bzero(info, sizeof(struct timer_info));
+
   int allocatedMem = sizeof(struct l3pp);
   // Setup
   l3pp_t l3 = (l3pp_t)malloc(sizeof(struct l3pp));
