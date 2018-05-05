@@ -639,12 +639,8 @@ l3pp_t l3_prepare(l3info_t l3info, int l3_threshold) {
   if (buffer == MAP_FAILED) {
     bufsize = l3->l3info.bufsize;
     l3->groupsize = L3_SETS_PER_PAGE; //cause 4096/64 = 64
-#ifdef WASM
-    printf("rewrite mmap function!\n");
-    exit(1);
-#else 
-    buffer = mmap(NULL, bufsize, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
-#endif
+
+  buffer = mmap(NULL, bufsize, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
   }
   if (buffer == MAP_FAILED) {
     free(l3);
