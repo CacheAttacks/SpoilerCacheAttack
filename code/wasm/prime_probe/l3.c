@@ -67,6 +67,15 @@
 //2 size enough, remember virtual
 #define CACHE_SIZE_MULTI 2
 
+//size(es) <= L3_ASSOCIATIVITY * MAX_L3_ASSOCIATIVITY_DIFF
+#define MAX_L3_ASSOCIATIVITY_DIFF 0
+
+//ifdef => test eviction set multiple times after contract phase
+#define AFTERCONTRACTTEST
+
+//ifdef => test correctness of conctract phase, test es without one member for each member
+#define ONEOUTTEST
+
 int L3_THRESHOLD = 10000;
 
 #define LNEXT(t) (*(void **)(t))
@@ -329,7 +338,7 @@ static int checkevict(vlist_t es, void *candidate, int walk_size, int print) {
   int timecur = timedwalk(vl_get(es, 0), candidate, walk_size, print, es);
   // if(timecur > L3_THRESHOLD)
    //printf("timecur %i\n",timecur);
-  return timecur > L3_THRESHOLD;
+  return timecur;
 }
 
 static int checkevict_safe(vlist_t es, void *candidate, int walk_size, int print, int proofs) {
@@ -339,7 +348,7 @@ static int checkevict_safe(vlist_t es, void *candidate, int walk_size, int print
   }
   int counter = 0;
   for(int i=0; i<proofs; i++){
-      if(checkevict(es, candidate, walk_size, print) == 0)
+      if(checkevict(es, candidate, walk_size, print) <= L3_THRESHOLD)
           break;
       counter++;
       if(i >= 1)
@@ -430,7 +439,7 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
     #ifdef DEBUG
     int d_l1 = vl_len(lines);
     #endif // DEBUG
-    if (fail > 50) 
+    if (fail > 1000) 
       break;
 
     void *c = expand(es, lines);
@@ -446,13 +455,13 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
       #ifdef DEBUG
       printf("set %3d: lines: %4d expanded: %4d c=NULL\n", vl_len(groups), d_l1, d_l2);
       #endif // DEBUG
-      fail++;
+      fail+=50;
       continue;
     }
 
     printf("CONTRACT (es size step):");
     int size_old = INT32_MAX;
-    while(vl_len(es) > 16){
+    while(vl_len(es) > l3->l3info.associativity){
         contract(es, lines, c);
          printf("%i ", vl_len(es));
         if(size_old - vl_len(es) < 3)
@@ -468,37 +477,53 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
       printf("warning vl_len(es)=%i < ass=%i!\n", vl_len(es), l3->l3info.associativity);
     }
 
-    // exit(1);
+    int test_failed = 0;
+    if (vl_len(es) <= l3->l3info.associativity + MAX_L3_ASSOCIATIVITY_DIFF &&
+    vl_len(es) >= l3->l3info.associativity){
+    #ifdef AFTERCONTRACTTEST
+      printf("after contract es size:%i\n", vl_len(es));
+      printf("evict ");
+      for(int i=0;i<10;i++){
+        if(checkevict(es, c, vl_len(es), 1) <= L3_THRESHOLD)
+          test_failed = 1;
+        //printf("%i ", checkevict(es, c, vl_len(es), 0));
+      }
+    #endif //AFTERCONTRACTTEST
+    #ifdef ONEOUTTEST
+      int oneouttest_failed = 0;
+      printf("\n 1 out test \n");  
+      for(int i=0;i<vl_len(es);i++){
+        void *element = vl_del(es, i);
+        if(checkevict(es, c, vl_len(es), 1) > L3_THRESHOLD)
+          oneouttest_failed++;
+        vl_insert(es, i, element);
+      }
+      if(oneouttest_failed > 3)
+        test_failed = 1;
+      putchar('\n');
+    #endif //ONEOUTTEST
+    }
 
     #ifdef DEBUG
     int d_l3 = vl_len(es);
     #endif //DEBUG
 
     //rewind if size(es) do not match associativity
-    if (vl_len(es) > l3->l3info.associativity+20 ||
-    vl_len(es) < l3->l3info.associativity) {
+    if (vl_len(es) > l3->l3info.associativity + MAX_L3_ASSOCIATIVITY_DIFF ||
+    vl_len(es) < l3->l3info.associativity ||
+    test_failed) {
       while (vl_len(es))
 	      vl_push(lines, vl_del(es, 0));
       #ifdef DEBUG
-      printf("set %3d: lines: %4d expanded: %4d contracted: %2d failed\n", vl_len(groups), d_l1, d_l2, d_l3);
+      printf("set %3d: lines: %4d expanded: %4d contracted: %2d ", vl_len(groups), d_l1, d_l2, d_l3);
+      if(test_failed)
+        printf("test failed\n");
+      else
+        printf("contract failed\n");
       #endif // DEBUG
       fail++;
       continue;
     } 
-
-    printf("after contract es size:%i\n", vl_len(es));
-    printf("evict ");
-    for(int i=0;i<10;i++){
-      checkevict(es, c, vl_len(es), 1);
-      //printf("%i ", checkevict(es, c, vl_len(es), 0));
-    }
-    printf("\n 1 out test \n");
-    for(int i=0;i<vl_len(es);i++){
-      void *element = vl_del(es, i);
-      checkevict(es, c, vl_len(es), 1);
-      vl_insert(es, i, element);
-    }
-    putchar('\n');
 
     fail = 0;
     vlist_t set = vl_new();
@@ -512,10 +537,50 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
     vl_push(groups, set);
     if (l3->l3info.progressNotification) 
       (*l3->l3info.progressNotification)(nlines - vl_len(lines), nlines, l3->l3info.progressNotificationData);
+    
+    break;
   }
 
   vl_free(es);
   return groups;
+}
+
+//background number of sets = 2^13, known bits for 12bit page = 6
+//physical = virtual bits for 12 page bits
+//optimal case: map function find 2^7 es
+//expand_group function expand these 2^7 es to 2^13 es
+//function uses knwon 6 bit from page
+//use property: a,b in same cache set => a + x,b + x in the same cache set
+static vlist_t expand_groups(vlist_t groups){
+  vlist_t all_groups = vl_new();
+  for(int group_index=0; group_index < vl_len(groups); group_index++){
+    vlist_t cur_group = (vlist_t)vl_get(groups, group_index);
+    for(int offset=0; offset < PAGE_SIZE/L3_CACHELINE; offset++){
+      int inner_page_add = offset << L3_CACHELINE_BITS;
+      vlist_t inner_page_group = vl_new();
+      for(int add_index = 0; add_index < vl_len(cur_group); add_index++){
+        void* add = vl_get(cur_group, add_index);
+        //printf("old add %p\n", add);
+        //set last 12 bits to zero
+        add = (void*)((((uint32_t)add) >> 12) << 12);
+        //printf("clear 12 bits add %p\n", add);
+        //set bits 11 to 6 to inner_page_add
+        add = (void*)((int)add | inner_page_add);
+        //printf("new add %p\n", add);
+        vl_push(inner_page_group, add);
+      }
+      // void* candidate = vl_poprand(inner_page_group);
+      // printf("size %i, offset %i:", vl_len(inner_page_group), offset);
+      // for(int i=0; i<10; i++)
+      //   checkevict(inner_page_group, candidate, vl_len(inner_page_group), 1);
+      // putchar('\n');
+      // vl_push(inner_page_group, candidate);
+
+      vl_push(all_groups, inner_page_group);
+    }
+    vl_free(cur_group);
+  }
+  return all_groups;
 }
 
 //take buffer in l3 struct and try to create eviction sets
@@ -529,13 +594,16 @@ static int probemap(l3pp_t l3) {
   for (int i = 0; i < l3->l3info.bufsize; i+= l3->groupsize * L3_CACHELINE) 
     vl_push(pages, l3->buffer + i + ADDRESS_OFFSET);
   vlist_t groups = map(l3, pages);
+  vlist_t all_groups = expand_groups(groups);
+  vl_free(groups);  
 
   //Store map results
-  l3->ngroups = vl_len(groups);
+  l3->ngroups = vl_len(all_groups);
   l3->groups = (vlist_t *)calloc(l3->ngroups, sizeof(vlist_t));
-  for (int i = 0; i < vl_len(groups); i++)
-    l3->groups[i] = vl_get(groups, i);
-  vl_free(groups);
+  for (int i = 0; i < vl_len(all_groups); i++)
+    l3->groups[i] = vl_get(all_groups, i);
+
+  vl_free(all_groups);
   vl_free(pages);
   return 1;
 }
