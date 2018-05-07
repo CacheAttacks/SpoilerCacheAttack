@@ -17,6 +17,8 @@ extern void SAB_lib_wasmMemory_init_buffer(void);
 extern void SAB_lib_wasmMemory_write_counter_value(void); //write counter value in Module['wasmMemory']
 extern uint32_t SAB_func_ptr_write_counter_value(void); //func ptr for direct function call from c
 
+extern uint32_t Performance_now(void);
+
 
 //input measurement function, printf resolution 
 void test_resolution_SAB(uint32_t (*measure_func)(), float resolution_ns);

@@ -123,6 +123,11 @@ int mem_access_testing(int rounds, int print){
   if(mean_random < mean_linear - 10){
     printf("cannot differ random/linear accesses!\n");
   }
+  if(mean_random - mean_linear <= 10){
+    printf("mean_random - mean_linear < 10\n");
+    exit(1);
+  }
+
   int threshold = mean_linear + (((mean_random - mean_linear)/2));
   printf("random/linear threshold: %i\n", threshold);
   return threshold;
@@ -145,15 +150,24 @@ int main(int ac, char **av) {
 
   
 
-  int l3_threshold = mem_access_testing(100000, 0);
+  //int l3_threshold = mem_access_testing(100000, 0);
+  int l3_threshold = 31;
   // printf("hallo\n");
   // flush_l3(0,0,0);
   // mem_access_testing(100000, 0);
   //exit(1);
   printf("----------------TESTS FINISHED------------------\n");
 
+l3pp_t l3;
+  for(int i=0; i<100; i++)
+  {
+    uint32_t timer_before = Performance_now();
+    l3 = l3_prepare(NULL, l3_threshold);
+    uint32_t timer_after = Performance_now();
 
-  l3pp_t l3 = l3_prepare(NULL, l3_threshold);
+    printf("Eviction set total time: %u sec\n", (timer_after-timer_before)/1000);
+  }
+  exit(1);
   
   int nsets = l3_getSets(l3);
   int nmonitored = nsets/64;

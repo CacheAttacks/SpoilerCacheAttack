@@ -514,6 +514,8 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
     test_failed) {
       while (vl_len(es))
 	      vl_push(lines, vl_del(es, 0));
+      
+      vl_push(lines, c);
       #ifdef DEBUG
       printf("set %3d: lines: %4d expanded: %4d contracted: %2d ", vl_len(groups), d_l1, d_l2, d_l3);
       if(test_failed)
@@ -538,7 +540,7 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
     if (l3->l3info.progressNotification) 
       (*l3->l3info.progressNotification)(nlines - vl_len(lines), nlines, l3->l3info.progressNotificationData);
     
-    break;
+    //break;
   }
 
   vl_free(es);
@@ -656,6 +658,8 @@ l3pp_t l3_prepare(l3info_t l3info, int l3_threshold) {
       return NULL;
     }
   printf("ngroups:%i\n", l3->ngroups);
+
+  return 0;
 
 
   // Allocate monitored set info

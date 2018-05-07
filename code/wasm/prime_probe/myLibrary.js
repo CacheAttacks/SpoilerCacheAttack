@@ -15,6 +15,13 @@ if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
 });
 
 if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
+    Performance_now: function()
+    {
+        return performance.now();
+    }
+});
+
+if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
     SAB_get_resolution_ns: function(samples)
     {
         var nsPerTick = 0;
