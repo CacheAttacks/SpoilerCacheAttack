@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 //#include <util.h>
 #include "low.h"
@@ -41,32 +42,51 @@ int main(int ac, char **av) {
   for (int i = 17; i < nsets; i += 64)
     l3_monitor(l3, i);
 
-  uint16_t *res = calloc(SAMPLES * nmonitored, sizeof(uint16_t));
-  for (int i = 0; i < SAMPLES * nmonitored; i+= 4096/sizeof(uint16_t))
-    res[i] = 1;
+  while(1){
+    printf("Enter log file name\n");
+    char *inputstr = (char*)calloc(100, sizeof(char));
+    fgets(inputstr, 100, stdin);
 
-  l3_repeatedprobe(l3, SAMPLES, res, 2500);
+    uint16_t *res = calloc(SAMPLES * nmonitored, sizeof(uint16_t));
+    for (int i = 0; i < SAMPLES * nmonitored; i+= 4096/sizeof(uint16_t))
+      res[i] = 1;
 
-  printf("size of eviction sets\n");
-  for(int i = 0; i < nmonitored; i++){
-    vlist_t list = l3->groups[l3->monitoredset[i] / l3->groupsize];
-    printf("%d ", list->len);
-  }
-  printf("\nnumber of accesses with access_time > L3_THRESHOLD in each evictionset\n");
-  printf("x-axis eviction-sets, y-axis sample\n");
+    l3_repeatedprobe(l3, SAMPLES, res, 0);
 
-  FILE *fp;
-  fp = fopen("/tmp/l3_timer_log.txt", "w+");
-   fprintf(fp, "This is testing for fprintf...\n");
-  for (int i = 0; i < SAMPLES; i++) {
-    for (int j = 0; j < nmonitored; j++) {
-      fprintf(fp, "%d ", res[i*nmonitored + j]);
+    // printf("size of eviction sets\n");
+    // for(int i = 0; i < nmonitored; i++){
+    //   vlist_t list = l3->groups[l3->monitoredset[i] / l3->groupsize];
+    //   printf("%d ", list->len);
+    // }
+    // printf("\nnumber of accesses with access_time > L3_THRESHOLD in each evictionset\n");
+    // printf("x-axis eviction-sets, y-axis sample\n");
+
+    char *path = (char*)calloc(256,sizeof(char));
+    strcat(path, "/tmp/");
+    strcat(path, inputstr);
+    for(int i=0; i<256; i++)
+    {
+      if(path[i] == '\0' && i>0){
+        path[i-1] = 0;
+        break;
+      }
     }
-    if(nmonitored > 0)
-      fprintf(fp, "\n");
-  }
+    printf("path: %s\n", path);
 
-  fclose(fp);
-  free(res);
+    FILE *fp;
+    fp = fopen(path, "w+");
+    for (int i = 0; i < SAMPLES; i++) {
+      for (int j = 0; j < nmonitored; j++) {
+        fprintf(fp, "%d ", res[i*nmonitored + j]);
+      }
+      if(nmonitored > 0)
+        fprintf(fp, "\n");
+    }
+
+    fclose(fp);
+    free(path);
+    free(res);
+    free(inputstr);
+  }
   l3_release(l3);
 }

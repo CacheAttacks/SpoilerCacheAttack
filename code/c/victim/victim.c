@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <math.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -20,8 +21,23 @@ void arr_access(char **buffer, int size){
   }
 }
 
-int main(int argc, char ** argv) {
+int flush_l3(int page_offset){
+  int pages = 2048;
+  int page_size = 4096;
+  int bufsize = pages * page_size;
+  void* buffer = mmap(NULL, bufsize, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
 
+  int or = 0;
+  while(1){
+    for(int i=0; i<pages; i++){
+      or |= *((int*)((uintptr_t)buffer + i * page_size + page_offset));
+    }
+  }
+
+  return or;
+}
+
+void test(){
   int *buffer = (int*)calloc(sizeof(int*), TABLESIZE);
   int access_indices[NUMBER_OF_ACCESESS] = {10,95,1024,1234,2083};
   int sleeptime = 10000;
@@ -33,6 +49,10 @@ int main(int argc, char ** argv) {
       usleep(sleeptime);
     }
   }
+}
+
+int main(int argc, char ** argv) {
+  flush_l3(3072);
 }
 
 //http://webassembly.org/docs/semantics/#linear-memory
