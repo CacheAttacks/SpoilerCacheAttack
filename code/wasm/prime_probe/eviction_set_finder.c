@@ -12,7 +12,7 @@
 #include "SABcounter.h"
 
 #define BLOCK_SIZE 8
-#define SAMPLES 1000
+#define SAMPLES 50
 #define LNEXT(t) (*(void **)(t))
 
 
@@ -159,15 +159,15 @@ int main(int ac, char **av) {
   printf("----------------TESTS FINISHED------------------\n");
 
 l3pp_t l3;
-  for(int i=0; i<100; i++)
-  {
+  //for(int i=0; i<100; i++)
+  //{
     uint32_t timer_before = Performance_now();
     l3 = l3_prepare(NULL, l3_threshold);
     uint32_t timer_after = Performance_now();
 
     printf("Eviction set total time: %u sec\n", (timer_after-timer_before)/1000);
-  }
-  exit(1);
+  //}
+  //exit(1);
   
   int nsets = l3_getSets(l3);
   int nmonitored = nsets/64;
@@ -183,14 +183,15 @@ l3pp_t l3;
   for (int i = 0; i < SAMPLES * nmonitored; i+= 4096/sizeof(uint16_t))
     res[i] = 1;
 
-  l3_repeatedprobe(l3, SAMPLES, res, 0);
+  //2500 counter iterations ~ 10us
+  l3_repeatedprobe(l3, SAMPLES, res, 4000);
 
   printf("size of eviction sets\n");
   for(int i = 0; i < nmonitored; i++){
     vlist_t list = l3->groups[l3->monitoredset[i] / l3->groupsize];
     printf("%d ", list->len);
   }
-  printf("\nnumber of accesses with access_time > L3_THRESHOLD in each evictionset\n");
+  printf("\naccess_time for each evictionset per timeslot\n");
   printf("x-axis eviction-sets, y-axis sample\n");
 
   for (int i = 0; i < SAMPLES; i++) {

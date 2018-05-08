@@ -20,7 +20,11 @@
 #ifndef __LOW_H__
 #define __LOW_H__
 
-#include "SABcounter.h"
+#define WASM
+
+#ifdef WASM
+  #include "SABcounter.h"
+#endif
 
 #define L3_CACHELINE_BITS 6
 #define L3_CACHELINE 64
@@ -32,8 +36,8 @@
 #define PAGE_SIZE_BITS 12
 #define PAGE_SIZE 4096
 
-#define WASM
 
+#ifdef WASM
 static inline int flush_l3(void *buffer, int pages, int block_size){
   int free_buf = 0;
   if(buffer == 0) {
@@ -53,6 +57,7 @@ static inline int flush_l3(void *buffer, int pages, int block_size){
 
   return or;
 }
+#endif
 
 static inline uint32_t get_diff(uint32_t before, uint32_t after)
 {
@@ -93,6 +98,7 @@ static inline int memaccess(void *v) {
 //   return rv;
 // }
 
+#ifdef WASM
 static inline void warmup(int counts){
   if(counts >= UINT32_MAX){
     printf("warmup value to high!");
@@ -119,6 +125,7 @@ static inline void warmuptimer(){
     }
   }
 }
+#endif
 
 // static inline uint32_t memaccesstime_test(void *v) {
 
@@ -278,7 +285,7 @@ static inline uint64_t rdtscp64() {
  #else
   uint32_t low, high;
   asm volatile ("rdtsc": "=a" (low), "=d" (high) :: "ecx");
-  return (((uint32_t)high) << 32) | low;
+  return (((uint64_t)high) << 32) | low;
 #endif
 }
 

@@ -4,17 +4,14 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include "SABcounter.h"
+#include <time.h>
 
 #define SIZE 2048
 #define ARRAYS 100
 #define MMAPSIZE 4096
 
 #define TABLESIZE 4096
-
-int int_sqrt(int x) {
-  return sqrt(x);
-}
+#define NUMBER_OF_ACCESESS 5
 
 //simulate page accesses
 void arr_access(char **buffer, int size){
@@ -24,22 +21,18 @@ void arr_access(char **buffer, int size){
 }
 
 int main(int argc, char ** argv) {
-  printf("start c code\n");
 
-  char *buffer = calloc(sizeof(int*), TABLESIZE);
-  int access_indices = {10,95,1024,1234,2083};
-  int number_of_access_indices = 5;
+  int *buffer = (int*)calloc(sizeof(int*), TABLESIZE);
+  int access_indices[NUMBER_OF_ACCESESS] = {10,95,1024,1234,2083};
+  int sleeptime = 10000;
 
   while(1){
-    for(int i=0; i<number_of_access_indices; i++)
+    for(int i=0; i<NUMBER_OF_ACCESESS; i++)
     {
-      buffer[access_indices] = buffer[access_indices] + 2;
+      buffer[access_indices[i]] = buffer[access_indices[i]] + 2;
+      usleep(sleeptime);
     }
   }
-
-  //SAB_bench_call_methods();
-
-  SAB_terminate_counter_sub_worker();
 }
 
 //http://webassembly.org/docs/semantics/#linear-memory

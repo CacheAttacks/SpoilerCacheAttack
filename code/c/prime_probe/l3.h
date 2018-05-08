@@ -29,6 +29,7 @@ struct l3info {
   int flags;
   l3progressNotification_t progressNotification;
   void *progressNotificationData;
+  int l3_threshold;
 };
 
 typedef struct l3pp *l3pp_t;
@@ -59,7 +60,7 @@ struct l3pp {
 #define L3FLAG_NOPROBE		0x04 
 
 
-l3pp_t l3_prepare(l3info_t l3info);
+l3pp_t l3_prepare(l3info_t l3info, int L3_THRESHOLD);
 void l3_release(l3pp_t l3);
 
 // Returns the number of probed sets in the LLC
@@ -85,7 +86,6 @@ void l3_bprobecount(l3pp_t l3, uint16_t *results);
 
 int l3_repeatedprobe(l3pp_t l3, int nrecords, uint16_t *results, int slot);
 int l3_repeatedprobecount(l3pp_t l3, int nrecords, uint16_t *results, int slot);
-
 
 #endif // __L3_H__
 

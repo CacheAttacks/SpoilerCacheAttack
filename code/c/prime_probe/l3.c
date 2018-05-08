@@ -27,6 +27,7 @@
 #include <strings.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <inttypes.h>
 #ifdef __APPLE__
 #include <mach/vm_statistics.h>
 #endif
@@ -37,6 +38,13 @@
 #include "timestats.h"
 
 #define CHECKTIMES 16
+#define FACTORDEBUG 20
+#define FACTORPRINT 10
+#ifdef WASM
+  #define FACTORNORMAL 3
+#else
+  #define FACTORNORMAL 1
+#endif
 
 /*
  * Intel documentation still mentiones one slice per core, but
@@ -55,12 +63,39 @@
  * the slice size we can get rid of this mess.
  */
 #define L3_SETS_PER_SLICE 2048
-#define L3_GROUPSIZE_FOR_HUGEPAGES 1024
 
 // The number of cache sets in each page
 #define L3_SETS_PER_PAGE 64
 
-#define L3_CACHELINE 64
+//offset for each address in the memory pool
+//between 0 and 4000
+#define ADDRESS_OFFSET 2048 
+
+//buffer for memoryblocks is multiple of cache size
+//2 size enough, remember virtual
+#define CACHE_SIZE_MULTI 2
+
+//size(es) <= L3_ASSOCIATIVITY * MAX_L3_ASSOCIATIVITY_DIFF
+#define MAX_L3_ASSOCIATIVITY_DIFF 0
+
+#ifdef WASM
+  //ifdef => test eviction set multiple times after contract phase
+  #define AFTERCONTRACTTEST
+
+  //ifdef => test correctness of conctract phase, test es without one member for each member
+  #define ONEOUTTEST
+
+  #define EXPAND_ITERATIONS 20
+  #define CONTRACT_ITERATIONS 1
+  #define COLLECT_ITERATIONS 2
+#else
+  #define EXPAND_ITERATIONS 1
+  #define CONTRACT_ITERATIONS 1
+  #define COLLECT_ITERATIONS 1
+#endif
+
+
+int L3_THRESHOLD = 10000;
 
 #define LNEXT(t) (*(void **)(t))
 #define OFFSET(p, o) ((void *)((uintptr_t)(p) + (o)))
@@ -69,20 +104,6 @@
 #define IS_MONITORED(monitored, setno) ((monitored)[(setno)>>5] & (1 << ((setno)&0x1f)))
 #define SET_MONITORED(monitored, setno) ((monitored)[(setno)>>5] |= (1 << ((setno)&0x1f)))
 #define UNSET_MONITORED(monitored, setno) ((monitored)[(setno)>>5] &= ~(1 << ((setno)&0x1f)))
-
-#ifdef MAP_HUGETLB
-#define HUGEPAGES MAP_HUGETLB
-#endif
-#ifdef VM_FLAGS_SUPERPAGE_SIZE_2MB
-#define HUGEPAGES VM_FLAGS_SUPERPAGE_SIZE_2MB
-#endif
-
-#ifdef HUGEPAGES
-#define HUGEPAGEBITS 21
-#define HUGEPAGESIZE (1<<HUGEPAGEBITS)
-#define HUGEPAGEMASK (HUGEPAGESIZE - 1)
-#endif
-
 
 #define SLICE_MASK_0 0x1b5f575440UL
 #define SLICE_MASK_1 0x2eb5faa880UL
@@ -106,6 +127,8 @@
 //   int nmonitored;
 //   void **monitoredhead;
 // };
+
+struct timer_info *info;
 
 
 static int parity(uint64_t v) {
@@ -142,34 +165,17 @@ static uintptr_t getphysaddr(void *p) {
   return 0;
 #endif
 }
-
-
-// static int loadL3cpuidInfo(l3pp_t l3) {
-
-//   for (int i = 0; ; i++) {
-//     l3->cpuidInfo.regs.eax = CPUID_CACHEINFO;
-//     l3->cpuidInfo.regs.ecx = i;
-//     cpuid(&l3->cpuidInfo);
-//     if (l3->cpuidInfo.cacheInfo.type == 0)
-//       return 0;
-//     if (l3->cpuidInfo.cacheInfo.level == 3)
-//       return 1;
-//   }
-//   printf("No L3-Cache found!\n");
-//   exit(1);
-// }
-
 static void fillL3Info(l3pp_t l3) {
 //l3-cache i7-4770: 16-way-ass, 8192sets, 4slices => 4(ass)+13(sets)+6(line)=23bits (8MiB)
-
+//works also for other CPUs
 
   l3->l3info.associativity = 16;
   l3->cpuidInfo.cacheInfo.sets = 8192;
   l3->l3info.slices = 4;
   l3->l3info.setsperslice = l3->cpuidInfo.cacheInfo.sets / l3->l3info.slices;
-  l3->l3info.bufsize = l3->l3info.associativity * l3->l3info.slices * l3->l3info.setsperslice * L3_CACHELINE * 2;
-  if (l3->l3info.bufsize < 10 * 1024 * 1024)
-        l3->l3info.bufsize = 10 * 1024 * 1024;
+  l3->l3info.bufsize = l3->l3info.associativity * l3->l3info.slices * l3->l3info.setsperslice * L3_CACHELINE * CACHE_SIZE_MULTI;
+
+  //bufsize = cachesize * factor
 
   //loadL3cpuidInfo(l3);
   // if (l3->l3info.associativity == 0)
@@ -252,7 +258,7 @@ int probecount(void *pp) {
   //cycle through all memory-blocks in the eviction-set once
   //remember LNEXT(p) point to memory-block[i+1]
   do {
-    uint32_t s = memaccesstime(p);
+    uint32_t s = memaccesstime(p, info);
     //uint32_t s = rdtscp();
     p = LNEXT(p);
     //s = rdtscp() - s;
@@ -269,8 +275,7 @@ int bprobecount(void *pp) {
   return probecount(NEXTPTR(pp));
 }
 
-
-static int timedwalk(void *list, register void *candidate, int size_es) {
+static int timedwalk(void *list, register void *candidate, int walk_size, int print, vlist_t es) {
 #ifdef DEBUG
   static int debug = 100;
   static int debugl = 1000;
@@ -283,19 +288,52 @@ static int timedwalk(void *list, register void *candidate, int size_es) {
     return 0;
   void *start = list;
   ts_t ts = ts_alloc();
-  void *c2 = (void *)((uintptr_t)candidate ^ 0x200);
-  LNEXT(c2) = candidate;
-  clflush(c2);
-  memaccess(candidate);
-  for (int i = 0; i < CHECKTIMES * (debug ? 20 : 1); i++) {
+  // void *c2 = (void *)((uintptr_t)candidate ^ 0x200);
+  // LNEXT(c2) = candidate;
+  //clflush(c2);
+  //if(print)
+  //  printf("time:");
+  int *buffer;
+  int pages, block_size;
+  int or_flush, or_walk;
+  if(print){
+    pages = 1024*1024*2;
+    block_size = 64;
+    buffer = mmap(NULL, block_size*pages, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
+  }
+  int a = memaccess(candidate);
+  for (int i = 0; i < CHECKTIMES * (debug ? FACTORDEBUG : (print ? FACTORPRINT : FACTORNORMAL)); i++) {
+
+    // if(print)
+    //   or_flush = flush_l3(buffer,pages,block_size);      
+
     //walk(list,20); was default why???
-    walk(list, 20);
-    void *p = LNEXT(c2);
-    uint32_t time = memaccesstime(p);
+  #ifdef WASM
+    or_walk = walk(list, walk_size);
+  #else
+    or_walk = walk(list, 20);
+  #endif
+    // void *p = LNEXT(c2);
+
+    //try to reduce TLB noise (drive-by cache paper)
+    //access memory in the same page
+    //use page start (last 12 bits zero)
+    //maybe collide with ADDRESS_OFFSET
+    void *candiate_page = (void*)(((uintptr_t)candidate >> 12) << 12);
+    memaccess(candiate_page);
+
+    uint32_t time = memaccesstime(candidate, info);
+    
     ts_add(ts, time);
+    //if(print)
+    //  printf("%i ", time);
   }
   int rv = ts_median(ts);
-  //printf("%i(%i) ",rv, size_es);
+  //printf("mean:%i\n",rv);
+  if(print){
+    printf("mean:%i ",rv);
+    free(buffer);
+  }
 #ifdef DEBUG
   if (!--debugl) {
     debugl=1000;
@@ -305,7 +343,7 @@ static int timedwalk(void *list, register void *candidate, int size_es) {
     printf("--------------------\n");
     for (int i = 0; i < TIME_MAX; i++) 
       if (ts_get(ts, i) != 0)
-	printf("++ %4d: %4d\n", i, ts_get(ts, i));
+	      printf("++ %4d: %4d\n", i, ts_get(ts, i));
     debug--;
   }
 #endif //DEBUG
@@ -313,93 +351,68 @@ static int timedwalk(void *list, register void *candidate, int size_es) {
   return rv;
 }
 
-static int timedwalk_print(void *list, register void *candidate, int walk_size) {
-#ifdef DEBUG
-  static int debug = 100;
-  static int debugl = 1000;
-#else
-#define debug 0
-#endif //DEBUG
-  if (list == NULL)
-    return 0;
-  if (LNEXT(list) == NULL)
-    return 0;
-  void *start = list;
-  ts_t ts = ts_alloc();
-  void *c2 = (void *)((uintptr_t)candidate ^ 0x200);
-  LNEXT(c2) = candidate;
-  clflush(c2);
-  memaccess(candidate);
-  //printf("time:");
-  for (int i = 0; i < CHECKTIMES * (debug ? 20 : 10); i++) {
-    walk(list, walk_size);
-    void *p = LNEXT(c2);
-    uint32_t time = memaccesstime(p);
-    ts_add(ts, time);
-    //printf("%i ", time);
-  }
-  //putchar('\n');
-  int rv = ts_median(ts);
-  printf("%i ",rv);
-#ifdef DEBUG
-  if (!--debugl) {
-    debugl=1000;
-    debug++;
-  }
-  if (debug) {
-    printf("--------------------\n");
-    for (int i = 0; i < TIME_MAX; i++) 
-      if (ts_get(ts, i) != 0)
-	printf("++ %4d: %4d\n", i, ts_get(ts, i));
-    debug--;
-  }
-#endif //DEBUG
-  ts_free(ts);
-  return rv;
-}
-
-static int checkevict(vlist_t es, void *candidate) {
+static int checkevict(vlist_t es, void *candidate, int walk_size, int print) {
   if (vl_len(es) == 0)
     return 0;
+  if(walk_size == 0)
+    printf("walk_size == 0\n");
   for (int i = 0; i < vl_len(es); i++) 
     LNEXT(vl_get(es, i)) = vl_get(es, (i + 1) % vl_len(es));
-  int timecur = timedwalk(vl_get(es, 0), candidate, vl_len(es));
-  return timecur > L3_THRESHOLD;
+  int timecur = timedwalk(vl_get(es, 0), candidate, walk_size, print, es);
+  // if(timecur > L3_THRESHOLD)
+   //printf("timecur %i\n",timecur);
+  return timecur;
 }
 
+static int checkevict_safe(vlist_t es, void *candidate, int walk_size, int print, int proofs) {
+  if(proofs <= 0){
+    printf("proofs <= 0. set proofs = 1\n");
+    proofs = 1;
+  }
+  int counter = 0;
+  for(int i=0; i<proofs; i++){
+      if(checkevict(es, candidate, walk_size, print) <= L3_THRESHOLD)
+          break;
+      counter++;
+      if(i >= 1)
+      {
+        //checkevict(es, candidate, walk_size, 1);
+      }
+  }
+  return counter == proofs;
+}
 
-static int checkevict_safe(vlist_t es, void *candidate, int proofs) {
-    int counter = 0;
-    for(int i=0; i<proofs; i++){
-        if(checkevict(es, candidate) == 0)
-            break;
-        counter++;
+static void access_es(vlist_t es) {
+  if (vl_len(es) == 0)
+    return;
+  for (int i = 0; i < vl_len(es); i++) 
+    LNEXT(vl_get(es, i)) = vl_get(es, (i + 1) % vl_len(es));
+  walk(vl_get(es,0), vl_len(es));
+}
+
+static void expand_test(vlist_t es, void* current){
+  for(int a=0; a<10; a++){
+    access_es(es);
+    for(int i=0; i< 2; i++){
+      printf("diff%i: %" PRIu32 " ",i, memaccesstime_abs_double_access(current));
     }
-    return counter == proofs;
+    putchar('\n');
+  }
 }
-
-static int checkevict_print(vlist_t es, void *candidate, int walk_size) {
-  //printf("size(es):%i\n", vl_len(es));
-  if (vl_len(es) == 0)
-    return 0;
-  for (int i = 0; i < vl_len(es); i++) 
-    LNEXT(vl_get(es, i)) = vl_get(es, (i + 1) % vl_len(es));
-
-  int timecur = timedwalk_print(vl_get(es, 0), candidate, (walk_size) ? walk_size : 20);
-  return timecur > L3_THRESHOLD;
-}
-
 
 static void *expand(vlist_t es, vlist_t candidates) {
   while (vl_len(candidates) > 0) {
     void *current = vl_poprand(candidates);
+    if (vl_len(es) > 16 && checkevict_safe(es, current, vl_len(es), 0, EXPAND_ITERATIONS)){
+      printf("found es! size:%i\n", vl_len(es));
+      //expand_test(es, current);
+      //checkevict(es, current, vl_len(es), 1);
+      //checkevict(es, current, vl_len(es), 1);
+      //checkevict(es, current, vl_len(es), 1);
+      //exit(1);
 
-    if(vl_len(es) >= 16 && checkevict_safe(es, current, 10)){
-      //printf("found es! size:%i\n", vl_len(es));
-      //checkevict_print(es, current);
       return current;
     }
-
     vl_push(es, current);
   }
   return NULL;
@@ -409,8 +422,10 @@ static void contract(vlist_t es, vlist_t candidates, void *current) {
   for (int i = 0; i < vl_len(es);) {
     void *cand = vl_get(es, i);
     vl_del(es, i);
-    clflush(current);
-    if (checkevict_safe(es, current, 5))
+    //load each element in evection set instead of clflush
+    //access_es(es);
+    //clflush(current);
+    if (checkevict_safe(es, current, vl_len(es), 0, CONTRACT_ITERATIONS))
       vl_push(candidates, cand);
     else {
       vl_insert(es, i, cand);
@@ -419,14 +434,20 @@ static void contract(vlist_t es, vlist_t candidates, void *current) {
   }
 }
 
-static void collect(vlist_t es, vlist_t candidates, vlist_t set) {
+//do not use collected memory blocks further
+static int collect(vlist_t es, vlist_t candidates/*, vlist_t set*/) {
+  int deleted = 0;
   for (int i = vl_len(candidates); i--; ) {
     void *p = vl_del(candidates, i);
-    if (checkevict(es, p))
-      vl_push(set, p);
-    else
+    if (checkevict_safe(es, p, vl_len(es), 0, COLLECT_ITERATIONS)) {
+      //vl_push(set, p);
+      deleted++;
+    }
+    else {
       vl_push(candidates, p);
+    }
   }
+  return deleted;
 }
 
 #define DEBUG
@@ -435,7 +456,8 @@ static void collect(vlist_t es, vlist_t candidates, vlist_t set) {
 //tries to find evicitions sets
 static vlist_t map(l3pp_t l3, vlist_t lines) {
 #ifdef DEBUG
-  printf("%d lines\n", vl_len(lines));
+  printf("lines aka memory-blocks %d\n", vl_len(lines));
+  printf("---------------------INFO END--------------------------\n");
 #endif // DEBUG
   vlist_t groups = vl_new();
   vlist_t es = vl_new();
@@ -446,7 +468,7 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
     #ifdef DEBUG
     int d_l1 = vl_len(lines);
     #endif // DEBUG
-    if (fail > 5) 
+    if (fail > 1000) 
       break;
 
     void *c = expand(es, lines);
@@ -462,61 +484,79 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
       #ifdef DEBUG
       printf("set %3d: lines: %4d expanded: %4d c=NULL\n", vl_len(groups), d_l1, d_l2);
       #endif // DEBUG
-      fail++;
+      fail+=50;
       continue;
     }
 
-    printf("after expand es size:%i\n", vl_len(es));
-    for(int i=0;i<10;i++)
-      printf("evict: %i, ", checkevict(es, c));
-    putchar('\n');
-
-    //exit(1);
-
+#ifdef WASM
+    printf("CONTRACT (es size step):");
     int size_old = INT32_MAX;
-    while(vl_len(es) > 30){
+    while(vl_len(es) > l3->l3info.associativity){
         contract(es, lines, c);
-        printf("es size: %i\n", vl_len(es));
+         printf("%i ", vl_len(es));
         if(size_old - vl_len(es) < 3)
         {
-          printf("diff to last step <3\n");
+          printf("diff to last step <3 => break");
           break;
         }
         size_old = vl_len(es);
     }
-    
-    contract(es, lines, c);
-    contract(es, lines, c);
+    putchar('\n');   
+#else
+  contract(es, lines, c);
+  contract(es, lines, c);
+  contract(es, lines, c);
+#endif 
 
     if(vl_len(es) < l3->l3info.associativity){
       printf("warning vl_len(es)=%i < ass=%i!\n", vl_len(es), l3->l3info.associativity);
+    }
+
+    int test_failed = 0;
+    if (vl_len(es) <= l3->l3info.associativity + MAX_L3_ASSOCIATIVITY_DIFF &&
+    vl_len(es) >= l3->l3info.associativity){
+    #ifdef AFTERCONTRACTTEST
+      printf("after contract es size:%i\n", vl_len(es));
+      printf("evict ");
+      for(int i=0;i<10;i++){
+        if(checkevict(es, c, vl_len(es), 1) <= L3_THRESHOLD)
+          test_failed = 1;
+        //printf("%i ", checkevict(es, c, vl_len(es), 0));
+      }
+    #endif //AFTERCONTRACTTEST
+    #ifdef ONEOUTTEST
+      int oneouttest_failed = 0;
+      printf("\n 1 out test \n");  
+      for(int i=0;i<vl_len(es);i++){
+        void *element = vl_del(es, i);
+        if(checkevict(es, c, vl_len(es), 1) > L3_THRESHOLD)
+          oneouttest_failed++;
+        vl_insert(es, i, element);
+      }
+      if(oneouttest_failed > 3)
+        test_failed = 1;
+      putchar('\n');
+    #endif //ONEOUTTEST
     }
 
     #ifdef DEBUG
     int d_l3 = vl_len(es);
     #endif //DEBUG
 
-    printf("after contract es size:%i\n", vl_len(es));
-    for(int i=0;i<10;i++)
-      printf("evict: %i, ", checkevict(es, c));
-    putchar('\n');
-
-    // for(int i=0;vl_len(es)>0;i++){
-    //    checkevict_print(es, c, 0);
-    //    vl_del(es, 0);
-    //  }
-    //  printf("\n");
-
-    // exit(1);
-
-
-
     //rewind if size(es) do not match associativity
-    if (vl_len(es) > l3->l3info.associativity || vl_len(es) < l3->l3info.associativity - 3) {
+    if (vl_len(es) > l3->l3info.associativity + MAX_L3_ASSOCIATIVITY_DIFF ||
+    vl_len(es) < l3->l3info.associativity ||
+    test_failed) {
       while (vl_len(es))
 	      vl_push(lines, vl_del(es, 0));
+      
+      vl_push(lines, c);
       #ifdef DEBUG
-      printf("set %3d: lines: %4d expanded: %4d contracted: %2d failed\n", vl_len(groups), d_l1, d_l2, d_l3);
+      printf("set %3d: lines: %4d expanded: %4d contracted: %2d ", vl_len(groups), d_l1, d_l2, d_l3);
+      if(test_failed)
+        printf("test failed\n");
+      else
+        printf("contract failed\n");
       #endif // DEBUG
       fail++;
       continue;
@@ -524,20 +564,62 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
 
     fail = 0;
     vlist_t set = vl_new();
-    vl_push(set, c);
-    collect(es, lines, set);
+    //do not add collected memory blocks to es
+    //vl_push(set, c);
+    int deleted = collect(es, lines/*, set*/);
     while (vl_len(es))
       vl_push(set, vl_del(es, 0));
     #ifdef DEBUG
-    printf("set %3d: lines: %4d expanded: %4d contracted: %2d collected: %d\n", vl_len(groups), d_l1, d_l2, d_l3, vl_len(set));
+    printf("set %3d: lines: %4d expanded: %4d contracted: %2d collected: %d\n", vl_len(groups), d_l1, d_l2, d_l3, vl_len(set)+1+deleted);
     #endif // DEBUG
     vl_push(groups, set);
     if (l3->l3info.progressNotification) 
       (*l3->l3info.progressNotification)(nlines - vl_len(lines), nlines, l3->l3info.progressNotificationData);
+    
+    if(vl_len(groups) > 10)
+     break;
   }
 
   vl_free(es);
   return groups;
+}
+
+//background number of sets = 2^13, known bits for 12bit page = 6
+//physical = virtual bits for 12 page bits
+//optimal case: map function find 2^7 es
+//expand_group function expand these 2^7 es to 2^13 es
+//function uses knwon 6 bit from page
+//use property: a,b in same cache set => a + x,b + x in the same cache set
+static vlist_t expand_groups(vlist_t groups){
+  vlist_t all_groups = vl_new();
+  for(int group_index=0; group_index < vl_len(groups); group_index++){
+    vlist_t cur_group = (vlist_t)vl_get(groups, group_index);
+    for(int offset=0; offset < PAGE_SIZE/L3_CACHELINE; offset++){
+      int inner_page_add = offset << L3_CACHELINE_BITS;
+      vlist_t inner_page_group = vl_new();
+      for(int add_index = 0; add_index < vl_len(cur_group); add_index++){
+        void* add = vl_get(cur_group, add_index);
+        //printf("old add %p\n", add);
+        //set last 12 bits to zero
+        add = (void*)((((uintptr_t)add) >> 12) << 12);
+        //printf("clear 12 bits add %p\n", add);
+        //set bits 11 to 6 to inner_page_add
+        add = (void*)((uintptr_t)add | inner_page_add);
+        //printf("new add %p\n", add);
+        vl_push(inner_page_group, add);
+      }
+      // void* candidate = vl_poprand(inner_page_group);
+      // printf("size %i, offset %i:", vl_len(inner_page_group), offset);
+      // for(int i=0; i<10; i++)
+      //   checkevict(inner_page_group, candidate, vl_len(inner_page_group), 1);
+      // putchar('\n');
+      // vl_push(inner_page_group, candidate);
+
+      vl_push(all_groups, inner_page_group);
+    }
+    vl_free(cur_group);
+  }
+  return all_groups;
 }
 
 //take buffer in l3 struct and try to create eviction sets
@@ -545,45 +627,36 @@ static int probemap(l3pp_t l3) {
   if ((l3->l3info.flags & L3FLAG_NOPROBE) != 0)
     return 0;
   printf("l3info.bufsize:%i\n",l3->l3info.bufsize);
+  printf("l3->groupsize: %i\n", l3->groupsize);
+  printf("L3_CACHELINE: %i\n", L3_CACHELINE);
   vlist_t pages = vl_new();
   for (int i = 0; i < l3->l3info.bufsize; i+= l3->groupsize * L3_CACHELINE) 
-    vl_push(pages, l3->buffer + i);
+    vl_push(pages, l3->buffer + i + ADDRESS_OFFSET);
   vlist_t groups = map(l3, pages);
+  vlist_t all_groups = expand_groups(groups);
+  vl_free(groups);  
 
   //Store map results
-  l3->ngroups = vl_len(groups);
+  l3->ngroups = vl_len(all_groups);
   l3->groups = (vlist_t *)calloc(l3->ngroups, sizeof(vlist_t));
-  for (int i = 0; i < vl_len(groups); i++)
-    l3->groups[i] = vl_get(groups, i);
-  vl_free(groups);
+  for (int i = 0; i < vl_len(all_groups); i++)
+    l3->groups[i] = vl_get(all_groups, i);
+
+  vl_free(all_groups);
   vl_free(pages);
   return 1;
 }
 
-// static int ptemap(l3pp_t l3) {
-//   printf("l3info.flags:%i\n", l3->l3info.flags);
-//   if ((l3->l3info.flags & L3FLAG_USEPTE) == 0)
-//     return 0;
-//   if (getphysaddr(l3->buffer) == 0)
-//     return 0;
-//   if (l3->l3info.slices & (l3->l3info.slices - 1)) // Cannot do non-linear for now
-//     return 0;
-//   l3->ngroups = l3->l3info.setsperslice * l3->l3info.slices / l3->groupsize;
-//   l3->groups = (vlist_t *)calloc(l3->ngroups, sizeof(vlist_t));
-//   for (int i = 0; i < l3->ngroups; i++)
-//     l3->groups[i] = vl_new();
+l3pp_t l3_prepare(l3info_t l3info, int l3_threshold) {
+  if(ADDRESS_OFFSET == 0){
+    printf("error ADDRESS_OFFSET 0 is used for TLB noise reduction");
+    exit(1);
+  }
 
-//   for (int i = 0; i < l3->l3info.bufsize; i+= l3->groupsize * L3_CACHELINE) {
-//     uintptr_t phys = getphysaddr(l3->buffer + i);
-//     int slice = addr2slice_linear(phys, l3->l3info.slices);
-//     int cacheindex = ((phys / L3_CACHELINE) & (l3->l3info.setsperslice - 1));
-//     vlist_t list = l3->groups[slice * (l3->l3info.setsperslice/l3->groupsize) + cacheindex/l3->groupsize];
-//     vl_push(list, l3->buffer + i);
-//   }
-//   return 1;
-// }
+  info = (struct timer_info*)malloc(sizeof(struct timer_info));
+  bzero(info, sizeof(struct timer_info));
 
-l3pp_t l3_prepare(l3info_t l3info) {
+  int allocatedMem = sizeof(struct l3pp);
   // Setup
   l3pp_t l3 = (l3pp_t)malloc(sizeof(struct l3pp));
   bzero(l3, sizeof(struct l3pp));
@@ -591,6 +664,8 @@ l3pp_t l3_prepare(l3info_t l3info) {
   //if (l3info != NULL)
   //  bcopy(l3info, &l3->l3info, sizeof(struct l3info));
   fillL3Info(l3);
+  l3->l3info.l3_threshold = L3_THRESHOLD;
+  L3_THRESHOLD = l3_threshold;
 
   printf("associativity:%i\n",l3->l3info.associativity);
   printf("slices:%i\n",l3->l3info.slices);
@@ -599,23 +674,12 @@ l3pp_t l3_prepare(l3info_t l3info) {
   // Allocate cache buffer
   int bufsize;
   char *buffer = MAP_FAILED;
-#ifdef HUGEPAGES
-  if ((l3->l3info.flags & L3FLAG_NOHUGEPAGES) == 0) {
-    bufsize = (l3->l3info.bufsize + HUGEPAGESIZE - 1) & ~HUGEPAGEMASK;
-    l3->groupsize = L3_GROUPSIZE_FOR_HUGEPAGES;	
-    buffer = mmap(NULL, bufsize, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE|HUGEPAGES, -1, 0);
-  }
-#endif
 
   if (buffer == MAP_FAILED) {
     bufsize = l3->l3info.bufsize;
     l3->groupsize = L3_SETS_PER_PAGE; //cause 4096/64 = 64
-#ifdef WASM
-    printf("rewrite mmap function!\n");
-    exit(1);
-#else 
-    buffer = mmap(NULL, bufsize, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
-#endif
+
+  buffer = mmap(NULL, bufsize, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
   }
   if (buffer == MAP_FAILED) {
     free(l3);
@@ -625,24 +689,29 @@ l3pp_t l3_prepare(l3info_t l3info) {
   l3->l3info.bufsize = bufsize;
 
   // Create the cache map
-  //if (!ptemap(l3)) {
     if (!probemap(l3)) {
       free(l3->buffer);
       free(l3);
       return NULL;
     }
-  //}
   printf("ngroups:%i\n", l3->ngroups);
+
+  //return 0;
 
 
   // Allocate monitored set info
   //2 * sizeof(uint32_t) per eviction_set
   l3->monitoredbitmap = (uint32_t *)calloc(l3->ngroups*l3->groupsize/32, sizeof(uint32_t));
+  allocatedMem += l3->ngroups*l3->groupsize/32*sizeof(uint32_t);
 
   //L3_SETS_PER_PAGE * sizeof(var) per eviction set
   l3->monitoredset = (int *)malloc(l3->ngroups * l3->groupsize * sizeof(int));
+  allocatedMem += l3->ngroups * l3->groupsize * sizeof(int);
   l3->monitoredhead = (void **)malloc(l3->ngroups * l3->groupsize * sizeof(void *));
+  allocatedMem += l3->ngroups * l3->groupsize * sizeof(void *);
   l3->nmonitored = 0;
+
+  printf("allocated %i Bytes\n", allocatedMem);
 
   return l3;
 }
@@ -816,3 +885,4 @@ int l3_repeatedprobecount(l3pp_t l3, int nrecords, uint16_t *results, int slot) 
   }
   return nrecords;
 }
+

@@ -27,6 +27,7 @@
 #include <strings.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <inttypes.h>
 #ifdef __APPLE__
 #include <mach/vm_statistics.h>
 #endif
@@ -37,6 +38,13 @@
 #include "timestats.h"
 
 #define CHECKTIMES 16
+#define FACTORDEBUG 20
+#define FACTORPRINT 10
+#ifdef WASM
+  #define FACTORNORMAL 3
+#else
+  #define FACTORNORMAL 1
+#endif
 
 /*
  * Intel documentation still mentiones one slice per core, but
@@ -70,11 +78,22 @@
 //size(es) <= L3_ASSOCIATIVITY * MAX_L3_ASSOCIATIVITY_DIFF
 #define MAX_L3_ASSOCIATIVITY_DIFF 0
 
-//ifdef => test eviction set multiple times after contract phase
-#define AFTERCONTRACTTEST
+#ifdef WASM
+  //ifdef => test eviction set multiple times after contract phase
+  #define AFTERCONTRACTTEST
 
-//ifdef => test correctness of conctract phase, test es without one member for each member
-#define ONEOUTTEST
+  //ifdef => test correctness of conctract phase, test es without one member for each member
+  #define ONEOUTTEST
+
+  #define EXPAND_ITERATIONS 20
+  #define CONTRACT_ITERATIONS 1
+  #define COLLECT_ITERATIONS 2
+#else
+  #define EXPAND_ITERATIONS 1
+  #define CONTRACT_ITERATIONS 1
+  #define COLLECT_ITERATIONS 1
+#endif
+
 
 int L3_THRESHOLD = 10000;
 
@@ -283,20 +302,24 @@ static int timedwalk(void *list, register void *candidate, int walk_size, int pr
     buffer = mmap(NULL, block_size*pages, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
   }
   int a = memaccess(candidate);
-  for (int i = 0; i < CHECKTIMES * (debug ? 20 : (print ? 10 : 3)); i++) {
+  for (int i = 0; i < CHECKTIMES * (debug ? FACTORDEBUG : (print ? FACTORPRINT : FACTORNORMAL)); i++) {
 
     // if(print)
     //   or_flush = flush_l3(buffer,pages,block_size);      
 
     //walk(list,20); was default why???
+  #ifdef WASM
     or_walk = walk(list, walk_size);
+  #else
+    or_walk = walk(list, 20);
+  #endif
     // void *p = LNEXT(c2);
 
     //try to reduce TLB noise (drive-by cache paper)
     //access memory in the same page
     //use page start (last 12 bits zero)
     //maybe collide with ADDRESS_OFFSET
-    void *candiate_page = (void*)(((int)candidate >> 12) << 12);
+    void *candiate_page = (void*)(((uintptr_t)candidate >> 12) << 12);
     memaccess(candiate_page);
 
     uint32_t time = memaccesstime(candidate, info);
@@ -380,7 +403,7 @@ static void expand_test(vlist_t es, void* current){
 static void *expand(vlist_t es, vlist_t candidates) {
   while (vl_len(candidates) > 0) {
     void *current = vl_poprand(candidates);
-    if (vl_len(es) > 16 && checkevict_safe(es, current, vl_len(es), 0, 20)){
+    if (vl_len(es) > 16 && checkevict_safe(es, current, vl_len(es), 0, EXPAND_ITERATIONS)){
       printf("found es! size:%i\n", vl_len(es));
       //expand_test(es, current);
       //checkevict(es, current, vl_len(es), 1);
@@ -402,7 +425,7 @@ static void contract(vlist_t es, vlist_t candidates, void *current) {
     //load each element in evection set instead of clflush
     //access_es(es);
     //clflush(current);
-    if (checkevict_safe(es, current, vl_len(es), 0, 1))
+    if (checkevict_safe(es, current, vl_len(es), 0, CONTRACT_ITERATIONS))
       vl_push(candidates, cand);
     else {
       vl_insert(es, i, cand);
@@ -411,14 +434,20 @@ static void contract(vlist_t es, vlist_t candidates, void *current) {
   }
 }
 
-static void collect(vlist_t es, vlist_t candidates, vlist_t set) {
+//do not use collected memory blocks further
+static int collect(vlist_t es, vlist_t candidates/*, vlist_t set*/) {
+  int deleted = 0;
   for (int i = vl_len(candidates); i--; ) {
     void *p = vl_del(candidates, i);
-    if (checkevict_safe(es, p, vl_len(es), 0, 2))
-      vl_push(set, p);
-    else
+    if (checkevict_safe(es, p, vl_len(es), 0, COLLECT_ITERATIONS)) {
+      //vl_push(set, p);
+      deleted++;
+    }
+    else {
       vl_push(candidates, p);
+    }
   }
+  return deleted;
 }
 
 #define DEBUG
@@ -459,6 +488,7 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
       continue;
     }
 
+#ifdef WASM
     printf("CONTRACT (es size step):");
     int size_old = INT32_MAX;
     while(vl_len(es) > l3->l3info.associativity){
@@ -471,7 +501,12 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
         }
         size_old = vl_len(es);
     }
-    putchar('\n');    
+    putchar('\n');   
+#else
+  contract(es, lines, c);
+  contract(es, lines, c);
+  contract(es, lines, c);
+#endif 
 
     if(vl_len(es) < l3->l3info.associativity){
       printf("warning vl_len(es)=%i < ass=%i!\n", vl_len(es), l3->l3info.associativity);
@@ -529,12 +564,13 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
 
     fail = 0;
     vlist_t set = vl_new();
-    vl_push(set, c);
-    collect(es, lines, set);
+    //do not add collected memory blocks to es
+    //vl_push(set, c);
+    int deleted = collect(es, lines/*, set*/);
     while (vl_len(es))
       vl_push(set, vl_del(es, 0));
     #ifdef DEBUG
-    printf("set %3d: lines: %4d expanded: %4d contracted: %2d collected: %d\n", vl_len(groups), d_l1, d_l2, d_l3, vl_len(set));
+    printf("set %3d: lines: %4d expanded: %4d contracted: %2d collected: %d\n", vl_len(groups), d_l1, d_l2, d_l3, vl_len(set)+1+deleted);
     #endif // DEBUG
     vl_push(groups, set);
     if (l3->l3info.progressNotification) 
@@ -564,10 +600,10 @@ static vlist_t expand_groups(vlist_t groups){
         void* add = vl_get(cur_group, add_index);
         //printf("old add %p\n", add);
         //set last 12 bits to zero
-        add = (void*)((((uint32_t)add) >> 12) << 12);
+        add = (void*)((((uintptr_t)add) >> 12) << 12);
         //printf("clear 12 bits add %p\n", add);
         //set bits 11 to 6 to inner_page_add
-        add = (void*)((int)add | inner_page_add);
+        add = (void*)((uintptr_t)add | inner_page_add);
         //printf("new add %p\n", add);
         vl_push(inner_page_group, add);
       }
@@ -659,7 +695,7 @@ l3pp_t l3_prepare(l3info_t l3info, int l3_threshold) {
     }
   printf("ngroups:%i\n", l3->ngroups);
 
-  return 0;
+  //return 0;
 
 
   // Allocate monitored set info

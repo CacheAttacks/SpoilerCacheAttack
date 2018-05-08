@@ -20,20 +20,66 @@
 #ifndef __LOW_H__
 #define __LOW_H__
 
+#ifdef WASM
+  #include "SABcounter.h"
+#endif
 
-
-#define L3_THRESHOLD 140
+#define L3_CACHELINE_BITS 6
+#define L3_CACHELINE 64
+//#define L3_THRESHOLD 50
 
 #ifdef PAGE_SIZE
 #undef PAGE_SIZE
 #endif
+#define PAGE_SIZE_BITS 12
 #define PAGE_SIZE 4096
 
 
+#ifdef WASM
+static inline int flush_l3(void *buffer, int pages, int block_size){
+  int free_buf = 0;
+  if(buffer == 0) {
+    pages = 1024*1024*4;
+    int bufsize = 64*pages;
+    buffer = mmap(NULL, bufsize, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
+    free_buf = 1;
+  }
+
+  int or = 0;
+  for(int i=0; i<pages; i++){
+    or |= (int)*((int*)((int)buffer + i * block_size));
+  }
+
+  if(free_buf)
+    free(buffer);
+
+  return or;
+}
+#endif
+
+static inline uint32_t get_diff(uint32_t before, uint32_t after)
+{
+  if(after >= before){
+    return after-before;
+  } else if (after+100 >= before){
+    //assume measurment error
+    return 0; 
+  } else {
+    //assume uint32_t overflow
+    return after + (UINT32_MAX - before);
+  }
+}
+
+
 static inline int memaccess(void *v) {
-  int rv;
-  asm volatile("mov (%1), %0": "+r" (rv): "r" (v):);
-  return rv;
+  #ifdef WASM
+    int a = *((int*)v);
+    return a;
+  #else
+    int rv;
+    asm volatile("mov (%1), %0": "+r" (rv): "r" (v):);
+    return rv;
+  #endif
 }
 
 // static inline uint32_t memaccesstime_old(void *v) {
@@ -50,10 +96,148 @@ static inline int memaccess(void *v) {
 //   return rv;
 // }
 
+#ifdef WASM
+static inline void warmup(int counts){
+  if(counts >= UINT32_MAX){
+    printf("warmup value to high!");
+  }
+  uint32_t before = SAB_lib_get_counter_value();
+  while(get_diff(before,SAB_lib_get_counter_value()) < counts){}
+}
+
+static inline void warmuprounds(int rounds){
+  while(rounds > 0)
+  {
+    uint32_t before = SAB_lib_get_counter_value();
+    rounds--;
+  }
+}
+
+static inline void warmuptimer(){
+  while(1)
+  {
+    uint32_t before = SAB_lib_get_counter_value();
+    uint32_t after = SAB_lib_get_counter_value();
+    if(after-before > 0 && after-before < 100){
+      break;
+    }
+  }
+}
+#endif
+
+// static inline uint32_t memaccesstime_test(void *v) {
+
+//   warmuptimer();
+
+//   uint32_t before = SAB_lib_get_counter_value();
+//   before = SAB_lib_get_counter_value();
+
+//   uint32_t a = *((uint32_t*)v);
+//   uint32_t after1st = SAB_lib_get_counter_value();
+
+//   uint32_t b = *((uint32_t*)v);
+//   uint32_t after2nd = SAB_lib_get_counter_value();
+
+//   uint32_t c = *((uint32_t*)v);
+//   uint32_t after3nd = SAB_lib_get_counter_value();
+
+//   uint32_t diff1st = get_diff(before, after1st);
+//   uint32_t diff2nd = get_diff(after1st, after2nd);
+//   uint32_t diff3nd = get_diffafter2nd, after3nd);
+
+//   printf("1st:%" PRIu32 " ", diff1st);
+//   printf("2nd:%" PRIu32 " ", diff2nd);
+//   printf("3nd:%" PRIu32 "", diff3nd);
+//   if(diff1st-diff2nd > 10){
+//     printf(" !!!!!!!!!!!!!!\n");
+//   } else{
+//     printf("\n");
+//   }
+
+//   return after1st-before;
+// }
+
 
 //add lfence instructions between rdtsc instructions
 //rdtscp seems not working as intented (i7-4770)
-static inline uint32_t memaccesstime(void *v) {
+static inline uint32_t memaccesstime_abs_double_access(void *v) {
+#ifdef WASM
+  warmuptimer();
+  warmuprounds(10);
+
+  uint32_t before = SAB_lib_get_counter_value();
+  uint32_t a = *((uint32_t*)v);
+  uint32_t after1st = SAB_lib_get_counter_value();
+  uint32_t b = *((uint32_t*)v);
+  uint32_t after2nd = SAB_lib_get_counter_value();
+
+  uint32_t diff1st = get_diff(before,after1st);
+  uint32_t diff2nd = get_diff(after1st,after2nd);
+  if(diff1st < diff2nd) {
+    return 0;
+  } else {
+    return diff1st - diff2nd;
+  }
+#else
+  printf("memaccesstime_abs_double_access not possible!\n");
+  exit(1);
+#endif
+}
+
+#define TIME_ARR_SIZE 4096
+struct timer_info {
+  int time_arr[TIME_ARR_SIZE];
+  int time_arr_pos;
+  int time_arr_sum;
+  uint64_t time_arr_sum_sum;
+};
+typedef struct timer_info *timer_info_p;
+
+static inline uint32_t memaccesstime(void *v, struct timer_info *info) {
+
+#ifdef WASM
+  warmuptimer();
+  warmuprounds(10);
+
+  uint32_t a;
+  uint32_t after;
+  uint32_t before = SAB_lib_get_counter_value();
+  if(before > 0){
+    before++;
+    a = *((uint32_t*)v);
+  }
+  if(a == 0){
+    after = SAB_lib_get_counter_value();
+    after++;
+  } else {
+    after = SAB_lib_get_counter_value();
+    if(before > 0)
+    before--;
+  }
+  uint32_t ret = get_diff(before,after);
+  
+  // info->time_arr[info->time_arr_pos] = ret;
+  // info->time_arr_sum += ret;
+  // info->time_arr_pos = (info->time_arr_pos +1) % TIME_ARR_SIZE;
+  // info->time_arr_sum_sum++;
+  // if(info->time_arr_pos == 0){  
+  //   int mean = info->time_arr_sum/TIME_ARR_SIZE;
+  //   printf("mean timer %i, iterations sum %llu\n", mean, info->time_arr_sum_sum);
+  //   info->time_arr_sum = 0;
+  //   if(mean < 15){
+  //     int test_sum = 0;
+  //     for(int i=0; i<10000; i++){
+  //     uint32_t before = SAB_lib_get_counter_value();
+  //     uint32_t after = SAB_lib_get_counter_value();
+  //     test_sum += (after-before);
+  //     }
+  //     printf("mean test %i\n", test_sum/10000);
+  //   }
+  // }
+
+  return ret;
+  
+#else
   uint32_t rv;
   asm volatile (
       "mfence\n"
@@ -70,6 +254,7 @@ static inline uint32_t memaccesstime(void *v) {
       : "ecx", "edx", "esi" //clobbered register
       );   
   return rv;
+#endif
 }
 
 static inline void clflush(void *v) {
@@ -83,8 +268,7 @@ static inline void clflush(void *v) {
 
 static inline uint32_t rdtscp() {
 #ifdef WASM
-  printf("rdtscp not possible!\n");
-  exit(1);
+  return (uint64_t)SAB_lib_get_counter_value();
 #else
   uint32_t rv;
   asm volatile ("rdtscp": "=a" (rv) :: "edx", "ecx");
@@ -93,10 +277,10 @@ static inline uint32_t rdtscp() {
 }
 
 static inline uint64_t rdtscp64() {
-#ifdef WASM
-  printf("rdtscp not possible!\n");
-  exit(1);
-#else
+  
+ #ifdef WASM
+  return (uint64_t)SAB_lib_get_counter_value();
+ #else
   uint32_t low, high;
   asm volatile ("rdtsc": "=a" (low), "=d" (high) :: "ecx");
   return (((uint64_t)high) << 32) | low;
@@ -130,10 +314,25 @@ static inline void mfence() {
 
 //walks through eviction-set count steps or 
 //stopps beforehand if size(eviction-set) < count
-static inline void walk(void *p, int count) {
+static inline int walk(void *p, int count) {
+#ifdef WASM
   if (p == NULL)
-    return;
+    return 0;
 
+  int or = 0;
+  do{
+    void* old_p = p;
+    p = *((void **)p);
+    or |= (int)p;
+    if(p == old_p)
+    {
+      break;
+    }
+    count--;
+  }while(count > 0);
+
+  return or;
+#else
   //pseudo-code of asm
   //do{
   //  %%rsi = p;
@@ -152,6 +351,7 @@ static inline void walk(void *p, int count) {
     "decl %1\n" //decrement count
     "jnz 1b\n" //while(count > 0)
     : "+r" (p), "+r" (count)::"rsi"); //define p and count as output and rsi as clobbered register
+#endif
 }
 
 
@@ -200,7 +400,7 @@ union cpuid {
 //   asm volatile ("cpuid": "+a" (c->regs.eax), "+b" (c->regs.ebx), "+c" (c->regs.ecx), "+d" (c->regs.edx));
 // }
 
-static inline int slotwait(uint64_t slotend) {
+static inline int slotwait(uint32_t slotend) {
   if (rdtscp64() > slotend)
     return 1;
   while (rdtscp64() < slotend)

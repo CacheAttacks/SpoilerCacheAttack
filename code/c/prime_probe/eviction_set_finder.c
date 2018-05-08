@@ -30,7 +30,8 @@ int main(int ac, char **av) {
 
   //l3-cache i7-4770: 16-way-ass, 8192sets => 4+13+6=23bits (8MiB)
 
-  l3pp_t l3 = l3_prepare(NULL);
+  int l3_threshold = 140;
+  l3pp_t l3 = l3_prepare(NULL, l3_threshold);
 
   
   int nsets = l3_getSets(l3);
@@ -44,7 +45,7 @@ int main(int ac, char **av) {
   for (int i = 0; i < SAMPLES * nmonitored; i+= 4096/sizeof(uint16_t))
     res[i] = 1;
 
-  l3_repeatedprobe(l3, SAMPLES, res, 0);
+  l3_repeatedprobe(l3, SAMPLES, res, 2500);
 
   printf("size of eviction sets\n");
   for(int i = 0; i < nmonitored; i++){
@@ -54,14 +55,18 @@ int main(int ac, char **av) {
   printf("\nnumber of accesses with access_time > L3_THRESHOLD in each evictionset\n");
   printf("x-axis eviction-sets, y-axis sample\n");
 
+  FILE *fp;
+  fp = fopen("/tmp/l3_timer_log.txt", "w+");
+   fprintf(fp, "This is testing for fprintf...\n");
   for (int i = 0; i < SAMPLES; i++) {
     for (int j = 0; j < nmonitored; j++) {
-      printf("%d ", res[i*nmonitored + j]);
+      fprintf(fp, "%d ", res[i*nmonitored + j]);
     }
     if(nmonitored > 0)
-      putchar('\n');
+      fprintf(fp, "\n");
   }
 
+  fclose(fp);
   free(res);
   l3_release(l3);
 }
