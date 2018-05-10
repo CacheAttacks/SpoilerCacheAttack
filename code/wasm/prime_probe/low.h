@@ -36,6 +36,8 @@
 #define PAGE_SIZE_BITS 12
 #define PAGE_SIZE 4096
 
+#define RES_TYPE uint16_t
+
 
 #ifdef WASM
 static inline int flush_l3(void *buffer, int pages, int block_size){

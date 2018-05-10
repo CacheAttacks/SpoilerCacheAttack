@@ -80,10 +80,10 @@
 
 #ifdef WASM
   //ifdef => test eviction set multiple times after contract phase
-  #define AFTERCONTRACTTEST
+  //#define AFTERCONTRACTTEST
 
   //ifdef => test correctness of conctract phase, test es without one member for each member
-  #define ONEOUTTEST
+  //#define ONEOUTTEST
 
   #define EXPAND_ITERATIONS 20
   #define CONTRACT_ITERATIONS 1
@@ -464,6 +464,8 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
   int nlines = vl_len(lines);
   int fail = 0;
   while (vl_len(lines)) {
+    //break;
+
     assert(vl_len(es) == 0);
     #ifdef DEBUG
     int d_l1 = vl_len(lines);
@@ -576,7 +578,8 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
     if (l3->l3info.progressNotification) 
       (*l3->l3info.progressNotification)(nlines - vl_len(lines), nlines, l3->l3info.progressNotificationData);
     
-    //break;
+    if(vl_len(groups) > 0)
+      break;
   }
 
   vl_free(es);
@@ -779,14 +782,14 @@ void l3_randomise(l3pp_t l3) {
   }
 }
 
-void l3_probe(l3pp_t l3, uint16_t *results) {
+void l3_probe(l3pp_t l3, RES_TYPE *results) {
   for (int i = 0; i < l3->nmonitored; i++) {
     int t = probetime(l3->monitoredhead[i]);
     results[i] = t > UINT16_MAX ? UINT16_MAX : t;
   }
 }
 
-void l3_bprobe(l3pp_t l3, uint16_t *results) {
+void l3_bprobe(l3pp_t l3, RES_TYPE *results) {
   for (int i = 0; i < l3->nmonitored; i++) {
     int t = bprobetime(l3->monitoredhead[i]);
     results[i] = t > UINT16_MAX ? UINT16_MAX : t;
@@ -794,12 +797,12 @@ void l3_bprobe(l3pp_t l3, uint16_t *results) {
 }
 
 
-void l3_probecount(l3pp_t l3, uint16_t *results) {
+void l3_probecount(l3pp_t l3, RES_TYPE *results) {
   for (int i = 0; i < l3->nmonitored; i++)
     results[i] = probecount(l3->monitoredhead[i]);
 }
 
-void l3_bprobecount(l3pp_t l3, uint16_t *results) {
+void l3_bprobecount(l3pp_t l3, RES_TYPE *results) {
   for (int i = 0; i < l3->nmonitored; i++)
     results[i] = bprobecount(l3->monitoredhead[i]);
 }
@@ -821,7 +824,7 @@ int l3_getAssociativity(l3pp_t l3) {
 }
 
 
-int l3_repeatedprobe(l3pp_t l3, int nrecords, uint16_t *results, int slot) {
+int l3_repeatedprobe(l3pp_t l3, int nrecords, RES_TYPE *results, int slot) {
   assert(l3 != NULL);
   assert(results != NULL);
 
@@ -854,7 +857,7 @@ int l3_repeatedprobe(l3pp_t l3, int nrecords, uint16_t *results, int slot) {
 
 //cycles through all memory-blocks in a eviction-set
 //access them and count accesses with (accesstime > L3_THRESHOLD)
-int l3_repeatedprobecount(l3pp_t l3, int nrecords, uint16_t *results, int slot) {
+int l3_repeatedprobecount(l3pp_t l3, int nrecords, RES_TYPE *results, int slot) {
   assert(l3 != NULL);
   assert(results != NULL);
 

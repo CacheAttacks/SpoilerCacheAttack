@@ -11,6 +11,11 @@
 #include "l3.h"
 #include "SABcounter.h"
 
+//tell javascript main thread ptr add from res array in wasm memory region
+extern void set_ptr_to_data(uint32_t);
+//submit es size to javascript main thread
+extern void set_es_sample_size(int, int);
+
 #define BLOCK_SIZE 8
 #define SAMPLES 50
 #define LNEXT(t) (*(void **)(t))
@@ -172,37 +177,43 @@ l3pp_t l3;
   int nsets = l3_getSets(l3);
   int nmonitored = nsets/64;
   printf("nmonitored: %i\n",nmonitored);
-  printf("alloc %i Bytes\n", SAMPLES * nmonitored * sizeof(uint16_t));
+  printf("alloc %i Bytes\n", SAMPLES * nmonitored * sizeof(uint32_t));
   
   //SAB_terminate_counter_sub_worker();
   
   for (int i = 17; i < nsets; i += 64)
     l3_monitor(l3, i);
 
-  uint16_t *res = calloc(SAMPLES * nmonitored, sizeof(uint16_t));
-  for (int i = 0; i < SAMPLES * nmonitored; i+= 4096/sizeof(uint16_t))
+  RES_TYPE *res = calloc(SAMPLES * nmonitored, sizeof(RES_TYPE));
+  for (int i = 0; i < SAMPLES * nmonitored; i+= 4096/sizeof(RES_TYPE))
     res[i] = 1;
 
   //2500 counter iterations ~ 10us
   l3_repeatedprobe(l3, SAMPLES, res, 4000);
 
-  printf("size of eviction sets\n");
-  for(int i = 0; i < nmonitored; i++){
-    vlist_t list = l3->groups[l3->monitoredset[i] / l3->groupsize];
-    printf("%d ", list->len);
-  }
-  printf("\naccess_time for each evictionset per timeslot\n");
-  printf("x-axis eviction-sets, y-axis sample\n");
+  set_es_sample_size(nmonitored, SAMPLES);
+  //update ptr
+  set_ptr_to_data((uint32_t)res);
 
-  for (int i = 0; i < SAMPLES; i++) {
-    for (int j = 0; j < nmonitored; j++) {
-      printf("%d ", res[i*nmonitored + j]);
-    }
-    if(nmonitored > 0)
-      putchar('\n');
-  }
+  printf("set_ptr_to_data: %p\n", res);
 
-  free(res);
+  // printf("size of eviction sets\n");
+  // for(int i = 0; i < nmonitored; i++){
+  //   vlist_t list = l3->groups[l3->monitoredset[i] / l3->groupsize];
+  //   printf("%d ", list->len);
+  // }
+  // printf("\naccess_time for each evictionset per timeslot\n");
+  // printf("x-axis eviction-sets, y-axis sample\n");
+
+  // for (int i = 0; i < SAMPLES; i++) {
+  //   for (int j = 0; j < nmonitored; j++) {
+  //     printf("%d ", res[i*nmonitored + j]);
+  //   }
+  //   if(nmonitored > 0)
+  //     putchar('\n');
+  // }
+
+  //free(res);
   l3_release(l3);
   SAB_terminate_counter_sub_worker();
 }

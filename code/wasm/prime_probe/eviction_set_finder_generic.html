@@ -1219,13 +1219,50 @@
     <script type="text/javascript" src="timer_SAB.js"></script>
     <script type="text/javascript" src="timer_clock_edge.js"></script>
     <script type='text/javascript'>
+      const testBuffer = new SharedArrayBuffer(Uint32Array.BYTES_PER_ELEMENT*2);
+      const testarr = new Uint32Array(testBuffer);
+
       var statusElement = document.getElementById('status');
       var progressElement = document.getElementById('progress');
       var spinnerElement = document.getElementById('spinner');
 
+      function createPOSTStr(arr, arr_offset, es_size, samples){
+        var POSTstr = "";
+        for(var i=0; i<samples; i++){
+          for(var j=0; j<es_size; j++){
+            POSTstr += arr[++arr_offset].toString() + " ";
+          }
+          POSTstr += "\n";
+        }
+        return POSTstr;
+      }
+
+      function postxhr(url, data){
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", url, true);
+        //xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(JSON.stringify({
+            newdata: data
+        }));
+      }
+
       var Module = {
         preRun: [],
-        postRun: [],
+        postRun: function(){
+          console.log("postRun\n");
+          console.log("ptr add to struct: " + Module['res'].toString(16));
+          console.log("es size: " + Module['esSize']);
+          console.log("sample size: " + Module['samples']);
+          const byteFactor = 2;
+          const wasmMemoryArr = new Uint16Array(Module['wasmMemory'].buffer);
+          console.log(wasmMemoryArr[testarr[0]/byteFactor]);
+          var POSTstr = createPOSTStr(wasmMemoryArr, Module['res']/byteFactor, Module['esSize'], Module['samples']);
+          console.log(POSTstr);
+          postxhr('http://localhost:8000/changedata', POSTstr);
+        },
+        onExit: function(status){
+          console.log("onExit\n");
+        },
         print: (function() {
           var element = document.getElementById('output');
           if (element) element.value = ''; // clear browser cache
@@ -1303,6 +1340,16 @@
       Module['sharedArrayCounter'] = sharedArray;
       Module['timerWorker'] = shared_array_counter_init(sharedArray);
     </script>
-    <script async type="text/javascript" src="eviction_set_finder.js"></script>
+    <script type="text/javascript" src="eviction_set_finder.js"></script>
+    <script type="text/javascript">
+    
+      document.getElementById('btn').onclick = function() {
+          var val = document.getElementById('imagename').value,
+              img = document.createElement('img');
+
+          img.src = val;
+          document.body.appendChild(img);
+      }
+    </script>
   </body>
 </html>

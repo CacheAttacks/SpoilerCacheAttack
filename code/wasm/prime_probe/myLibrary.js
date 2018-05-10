@@ -93,3 +93,16 @@ if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
         return Module['SABFuncPtrWriteValue'];
     }
 });
+
+if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
+    set_ptr_to_data: function(ptr) {
+        Module['res'] = ptr;
+    }
+});
+
+if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
+    set_es_sample_size: function(es_size, samples) {
+        Module['esSize'] = es_size;
+        Module['samples'] = samples;
+    }
+});
