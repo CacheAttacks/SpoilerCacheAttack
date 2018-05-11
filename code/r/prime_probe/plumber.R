@@ -75,6 +75,7 @@ function(newdata){
   data <<- newdata
 }
 
+#* @png (width=1000,height=1000)
 #* @get /plotdata
 visualize_times <- function(){
   #x-axis eviction sets, y-axis samples

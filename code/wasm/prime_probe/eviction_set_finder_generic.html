@@ -1201,21 +1201,31 @@
 <span id='controls'>
   <span><input type="checkbox" id="resize">Resize canvas</span>
   <span><input type="checkbox" id="pointerLock" checked>Lock/hide mouse pointer &nbsp;&nbsp;&nbsp;</span>
+  <span><input type="button" id="btn" value="Print"></span>
   <span><input type="button" value="Fullscreen" onclick="Module.requestFullscreen(document.getElementById('pointerLock').checked, 
-                                                                            document.getElementById('resize').checked)">
+                                                                              document.getElementById('resize').checked)">
   </span>
 </span>
 
     <div class="emscripten">
       <progress value="0" max="100" id="progress" hidden=1></progress>
     </div>
-
     
     <div class="emscripten_border">
       <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
     </div>
     <textarea id="output" rows="8"></textarea>
 
+    <script type="text/javascript">    
+      document.getElementById('btn').onclick = function() {
+        console.log("print");
+          var val = 'http://localhost:8000/plotdata',
+              img = document.createElement('img');
+
+          img.src = val;
+          document.body.appendChild(img);
+      }
+    </script>
     <script type="text/javascript" src="timer_SAB.js"></script>
     <script type="text/javascript" src="timer_clock_edge.js"></script>
     <script type='text/javascript'>
@@ -1341,15 +1351,5 @@
       Module['timerWorker'] = shared_array_counter_init(sharedArray);
     </script>
     <script type="text/javascript" src="eviction_set_finder.js"></script>
-    <script type="text/javascript">
-    
-      document.getElementById('btn').onclick = function() {
-          var val = document.getElementById('imagename').value,
-              img = document.createElement('img');
-
-          img.src = val;
-          document.body.appendChild(img);
-      }
-    </script>
   </body>
 </html>
