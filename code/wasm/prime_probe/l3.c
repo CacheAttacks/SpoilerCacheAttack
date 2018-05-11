@@ -296,11 +296,11 @@ static int timedwalk(void *list, register void *candidate, int walk_size, int pr
   int *buffer;
   int pages, block_size;
   int or_flush, or_walk;
-  if(print){
-    pages = 1024*1024*2;
-    block_size = 64;
-    buffer = mmap(NULL, block_size*pages, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
-  }
+  // if(print){
+  //   pages = 1024*1024*2;
+  //   block_size = 64;
+  //   buffer = mmap(NULL, block_size*pages, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
+  // }
   int a = memaccess(candidate);
   for (int i = 0; i < CHECKTIMES * (debug ? FACTORDEBUG : (print ? FACTORPRINT : FACTORNORMAL)); i++) {
 
@@ -422,6 +422,8 @@ static void contract(vlist_t es, vlist_t candidates, void *current) {
   for (int i = 0; i < vl_len(es);) {
     void *cand = vl_get(es, i);
     vl_del(es, i);
+    //why cflush??? we want to check if smaller set still evicts current
+    //we access current beforehand, access smaller set, check if current was evicted
     //load each element in evection set instead of clflush
     //access_es(es);
     //clflush(current);
@@ -698,8 +700,9 @@ l3pp_t l3_prepare(l3info_t l3info, int l3_threshold) {
     }
   printf("ngroups:%i\n", l3->ngroups);
 
-  //return 0;
-
+#ifdef BENCHMARKMODE
+  return 0;
+#endif
 
   // Allocate monitored set info
   //2 * sizeof(uint32_t) per eviction_set

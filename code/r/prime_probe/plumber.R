@@ -32,6 +32,12 @@ function(){
   hist(rand)
 }
 
+#* @png
+#* @get /dummy
+function(){
+  plot(1)
+}
+
 #* Return the sum of two numbers
 #* @param a The first number to add
 #* @param b The second number to add

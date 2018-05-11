@@ -95,14 +95,32 @@ if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
 });
 
 if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
-    set_ptr_to_data: function(ptr) {
+    set_ptr_to_data: function(ptr, nrow, ncol, type) {
         Module['res'] = ptr;
+        Module['nrow'] = nrow;
+        Module['ncol'] = ncol;
+        if(type == 0){//"UInt16"
+            Module['byteFactor'] = 2;
+            Module['wasmMemoryArr'] = new Uint16Array(Module['wasmMemory'].buffer);
+        } else if(type == 1){//"UInt32"
+            Module['byteFactor'] = 4;
+            Module['wasmMemoryArr'] = new Uint32Array(Module['wasmMemory'].buffer);
+        } else {
+            console.log("type: " + type + " not supported. Set byteFactor = 4");
+            Module['byteFactor'] = 4;
+            Module['wasmMemoryArr'] = new Uint32Array(Module['wasmMemory'].buffer);
+        }
     }
 });
 
 if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
-    set_es_sample_size: function(es_size, samples) {
-        Module['esSize'] = es_size;
-        Module['samples'] = samples;
+    print_plot_new_tab: function() {
+        if(Module['byteFactor'] != 0){
+            var POSTstr = Module['createPOSTStr'](Module['wasmMemoryArr'], Module['res']/Module['byteFactor'], Module['nrow'], Module['ncol']);
+            Module['postxhr']('http://localhost:8000/changedata', POSTstr);
+            
+            d = new Date();
+            Module['imgElement'].src = 'http://localhost:8000/plotdata?' + d.getTime();
+        }
     }
 });

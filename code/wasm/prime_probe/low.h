@@ -38,6 +38,10 @@
 
 #define RES_TYPE uint16_t
 
+//ifdef => try to find es repeatly
+//#define BENCHMARKMODE
+#define BENCHMARKRUNS 100
+
 
 #ifdef WASM
 static inline int flush_l3(void *buffer, int pages, int block_size){

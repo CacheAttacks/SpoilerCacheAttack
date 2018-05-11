@@ -5040,15 +5040,33 @@ function copyTempDouble(ptr) {
 
    
 
-   
-
-  function _set_es_sample_size(es_size, samples) {
-          Module['esSize'] = es_size;
-          Module['samples'] = samples;
+  function _print_plot_new_tab() {
+          if(Module['byteFactor'] != 0){
+              var POSTstr = Module['createPOSTStr'](Module['wasmMemoryArr'], Module['res']/Module['byteFactor'], Module['nrow'], Module['ncol']);
+              Module['postxhr']('http://localhost:8000/changedata', POSTstr);
+              
+              d = new Date();
+              Module['imgElement'].src = 'http://localhost:8000/plotdata?' + d.getTime();
+          }
       }
 
-  function _set_ptr_to_data(ptr) {
+   
+
+  function _set_ptr_to_data(ptr, nrow, ncol, type) {
           Module['res'] = ptr;
+          Module['nrow'] = nrow;
+          Module['ncol'] = ncol;
+          if(type == 0){//"UInt16"
+              Module['byteFactor'] = 2;
+              Module['wasmMemoryArr'] = new Uint16Array(Module['wasmMemory'].buffer);
+          } else if(type == 1){//"UInt32"
+              Module['byteFactor'] = 4;
+              Module['wasmMemoryArr'] = new Uint32Array(Module['wasmMemory'].buffer);
+          } else {
+              console.log("type: " + type + " not supported. Set byteFactor = 4");
+              Module['byteFactor'] = 4;
+              Module['wasmMemoryArr'] = new Uint32Array(Module['wasmMemory'].buffer);
+          }
       }
 FS.staticInit();__ATINIT__.unshift(function() { if (!Module["noFSInit"] && !FS.init.initialized) FS.init() });__ATMAIN__.push(function() { FS.ignorePermissions = false });__ATEXIT__.push(function() { FS.quit() });;
 __ATINIT__.unshift(function() { TTY.init() });__ATEXIT__.push(function() { TTY.shutdown() });;
@@ -5134,7 +5152,7 @@ function invoke_viii(index,a1,a2,a3) {
 
 Module.asmGlobalArg = {};
 
-Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "nullFunc_viii": nullFunc_viii, "invoke_ii": invoke_ii, "invoke_iiii": invoke_iiii, "invoke_viii": invoke_viii, "_Performance_now": _Performance_now, "_SAB_get_resolution_ns": _SAB_get_resolution_ns, "_SAB_lib_get_counter_value": _SAB_lib_get_counter_value, "_SAB_terminate_counter_sub_worker": _SAB_terminate_counter_sub_worker, "___assert_fail": ___assert_fail, "___lock": ___lock, "___setErrNo": ___setErrNo, "___syscall140": ___syscall140, "___syscall146": ___syscall146, "___syscall192": ___syscall192, "___syscall54": ___syscall54, "___syscall6": ___syscall6, "___syscall91": ___syscall91, "___unlock": ___unlock, "_abort": _abort, "_emscripten_memcpy_big": _emscripten_memcpy_big, "_set_es_sample_size": _set_es_sample_size, "_set_ptr_to_data": _set_ptr_to_data, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
+Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "nullFunc_viii": nullFunc_viii, "invoke_ii": invoke_ii, "invoke_iiii": invoke_iiii, "invoke_viii": invoke_viii, "_Performance_now": _Performance_now, "_SAB_get_resolution_ns": _SAB_get_resolution_ns, "_SAB_lib_get_counter_value": _SAB_lib_get_counter_value, "_SAB_terminate_counter_sub_worker": _SAB_terminate_counter_sub_worker, "___assert_fail": ___assert_fail, "___lock": ___lock, "___setErrNo": ___setErrNo, "___syscall140": ___syscall140, "___syscall146": ___syscall146, "___syscall192": ___syscall192, "___syscall54": ___syscall54, "___syscall6": ___syscall6, "___syscall91": ___syscall91, "___unlock": ___unlock, "_abort": _abort, "_emscripten_memcpy_big": _emscripten_memcpy_big, "_print_plot_new_tab": _print_plot_new_tab, "_set_ptr_to_data": _set_ptr_to_data, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
 // EMSCRIPTEN_START_ASM
 var asm =Module["asm"]// EMSCRIPTEN_END_ASM
 (Module.asmGlobalArg, Module.asmLibraryArg, buffer);

@@ -3,7 +3,9 @@
 <base href="http://localhost:8000/">
 <form>
     <input type="text" id="imagename" value="" />
-    <input type="button" id="btn" value="GO" />
+	<input type="button" id="btn" value="GO" />
+	<input type="button" id="btn2" value="Change" />
+	<input type="button" id="btn3" value="NewWindow" />
 </form>
     <script type="text/javascript">
 	function post(path, params, method) {
@@ -46,16 +48,42 @@
 		xhr.send();
 	}
 
+	function swipe() {
+		var largeImage = document.getElementById('largeImage');
+		largeImage.style.display = 'block';
+		largeImage.style.width=200+"px";
+		largeImage.style.height=200+"px";
+		var url='http://localhost:8000/plot';
+		window.open(url,'Image','width=largeImage.stylewidth,height=largeImage.style.height,resizable=1');
+	}
+
+	function imagePopup(myImage, myTitle, myCaption, mySource) {
+		var myWindow = window.open("", myTitle, "_blank", "toolbar=no,scrollbars=no,resizable=yes");
+		myWindow.document.write("<head><title>" + myTitle + "</title></head>");
+		//myWindow.document.write("<big><b>Figure Caption:</big></b>" + myCaption + "<p>");
+		//myWindow.document.write("<big><b>Figure Source:</big></b>" + mySource + "<p>");
+		myWindow.document.write("<img src=" + myImage + ">");
+		return myWindow;
+	};
+
 	//post('http://localhost:8000/changedata', {newdata: 'jo'});
 	postxhr('http://localhost:8000/changedata', 'jo');
 	//get('http://localhost:8000/changedataget?newdata=abcd');
+	img = document.createElement('img')
 
         document.getElementById('btn').onclick = function() {
-            var val = document.getElementById('imagename').value,
-                img = document.createElement('img');
+            var val = 'http://localhost:8000/plot';
 
             img.src = val;
             document.body.appendChild(img);
+		}
+		document.getElementById('btn2').onclick = function() {
+			d = new Date();
+			img.src = 'http://localhost:8000/plot?' + d.getTime();
+        }
+		document.getElementById('btn3').onclick = function() {
+			//swipe();
+			imagePopup('http://localhost:8000/plot',"sdjfkl","sdf","sdf");
         }
     </script>
 </body>

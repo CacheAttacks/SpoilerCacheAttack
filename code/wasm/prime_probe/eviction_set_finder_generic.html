@@ -1201,7 +1201,7 @@
 <span id='controls'>
   <span><input type="checkbox" id="resize">Resize canvas</span>
   <span><input type="checkbox" id="pointerLock" checked>Lock/hide mouse pointer &nbsp;&nbsp;&nbsp;</span>
-  <span><input type="button" id="btn" value="Print"></span>
+  <span><input type="button" id="btnPrint" value="Print"></span>
   <span><input type="button" value="Fullscreen" onclick="Module.requestFullscreen(document.getElementById('pointerLock').checked, 
                                                                               document.getElementById('resize').checked)">
   </span>
@@ -1216,16 +1216,6 @@
     </div>
     <textarea id="output" rows="8"></textarea>
 
-    <script type="text/javascript">    
-      document.getElementById('btn').onclick = function() {
-        console.log("print");
-          var val = 'http://localhost:8000/plotdata',
-              img = document.createElement('img');
-
-          img.src = val;
-          document.body.appendChild(img);
-      }
-    </script>
     <script type="text/javascript" src="timer_SAB.js"></script>
     <script type="text/javascript" src="timer_clock_edge.js"></script>
     <script type='text/javascript'>
@@ -1236,39 +1226,54 @@
       var progressElement = document.getElementById('progress');
       var spinnerElement = document.getElementById('spinner');
 
-      function createPOSTStr(arr, arr_offset, es_size, samples){
-        var POSTstr = "";
-        for(var i=0; i<samples; i++){
-          for(var j=0; j<es_size; j++){
-            POSTstr += arr[++arr_offset].toString() + " ";
-          }
-          POSTstr += "\n";
-        }
-        return POSTstr;
+      var img = document.createElement('img');
+
+      img.src = '';
+      document.body.insertBefore(img, document.body.firstChild);
+
+      function postRun(){
+        console.log("postRun\n");
+        console.log("ptr add to struct: " + Module['res'].toString(16));
+        console.log("es size: " + Module['nrow']);
+        console.log("sample size: " + Module['ncol']);
+        console.log(Module['wasmMemoryArr'][testarr[0]/Module['byteFactor']]);
+        var POSTstr = Module['createPOSTStr'](Module['wasmMemoryArr'], Module['res']/Module['byteFactor'], Module['nrow'], Module['ncol']);
+        //console.log(POSTstr);
+        Module['postxhr']('http://localhost:8000/changedata', POSTstr);
       }
 
-      function postxhr(url, data){
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", url, true);
-        //xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.send(JSON.stringify({
-            newdata: data
-        }));
+      //works only after user input, e.g. onclick
+      function imagePopup(myImage, myTitle, myCaption, mySource) {
+        var myWindow = Module['window'].open("", myTitle, "_blank", "toolbar=no,scrollbars=no,resizable=yes");
+        myWindow.document.write("<head><title>" + myTitle + "</title></head>");
+        //myWindow.document.write("<big><b>Figure Caption:</big></b>" + myCaption + "<p>");
+        //myWindow.document.write("<big><b>Figure Source:</big></b>" + mySource + "<p>");
+        myWindow.document.write("<img src=" + myImage + ">");
+        return myWindow;
       }
 
       var Module = {
+        imgElement: img,
+        postxhr: function(url, data){
+          var xhr = new XMLHttpRequest();
+          xhr.open("POST", url, true);
+          xhr.send(JSON.stringify({
+              newdata: data
+          }));
+        },
+        createPOSTStr: function(arr, arr_offset, nrow, ncol){
+          var POSTstr = "";
+          for(var i=0; i<nrow; i++){
+            for(var j=0; j<ncol; j++){
+              POSTstr += arr[++arr_offset].toString() + " ";
+            }
+            POSTstr += "\n";
+          }
+          return POSTstr;
+        },
         preRun: [],
         postRun: function(){
-          console.log("postRun\n");
-          console.log("ptr add to struct: " + Module['res'].toString(16));
-          console.log("es size: " + Module['esSize']);
-          console.log("sample size: " + Module['samples']);
-          const byteFactor = 2;
-          const wasmMemoryArr = new Uint16Array(Module['wasmMemory'].buffer);
-          console.log(wasmMemoryArr[testarr[0]/byteFactor]);
-          var POSTstr = createPOSTStr(wasmMemoryArr, Module['res']/byteFactor, Module['esSize'], Module['samples']);
-          console.log(POSTstr);
-          postxhr('http://localhost:8000/changedata', POSTstr);
+          postRun();
         },
         onExit: function(status){
           console.log("onExit\n");
@@ -1351,5 +1356,15 @@
       Module['timerWorker'] = shared_array_counter_init(sharedArray);
     </script>
     <script type="text/javascript" src="eviction_set_finder.js"></script>
+    <script type="text/javascript">  
+    	
+    
+      document.getElementById('btnPrint').onclick = function() {
+          d = new Date();
+          Module['imgElement'].src = 'http://localhost:8000/plotdata?' + d.getTime();
+
+          //imagePopup('http://localhost:8000/plotdata', 'myTitle', '', '');
+      }
+    </script>
   </body>
 </html>

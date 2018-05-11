@@ -12,9 +12,9 @@
 #include "SABcounter.h"
 
 //tell javascript main thread ptr add from res array in wasm memory region
-extern void set_ptr_to_data(uint32_t);
-//submit es size to javascript main thread
-extern void set_es_sample_size(int, int);
+extern void set_ptr_to_data(uint32_t, int, int, int);
+
+extern void print_plot_new_tab(void);
 
 #define BLOCK_SIZE 8
 #define SAMPLES 50
@@ -139,6 +139,13 @@ int mem_access_testing(int rounds, int print){
 }
 
 int main(int ac, char **av) {
+  // char str[100];
+  // printf( "Enter a value :");
+  // scanf("%s", str);
+  // printf("str: %s", str);
+  // exit(1);
+
+
   //l3-cache i7-4770: 16-way-ass, 8192sets => 4+13+6=23bits (8MiB)
   info = (struct timer_info*)malloc(sizeof(struct timer_info));
   bzero(info, sizeof(struct timer_info));
@@ -163,16 +170,24 @@ int main(int ac, char **av) {
   //exit(1);
   printf("----------------TESTS FINISHED------------------\n");
 
-l3pp_t l3;
-  //for(int i=0; i<100; i++)
-  //{
+  l3pp_t l3;
+#ifdef BENCHMARKMODE
+  uint32_t *timer_array = calloc(BENCHMARKRUNS, sizeof(uint32_t));
+  for(int i=0; i<BENCHMARKRUNS; i++)
+  {
+#endif
     uint32_t timer_before = Performance_now();
     l3 = l3_prepare(NULL, l3_threshold);
     uint32_t timer_after = Performance_now();
 
     printf("Eviction set total time: %u sec\n", (timer_after-timer_before)/1000);
-  //}
-  //exit(1);
+#ifdef BENCHMARKMODE
+    timer_array[i] = timer_after-timer_before;
+  }
+  l3_release(l3);
+  SAB_terminate_counter_sub_worker();
+  exit(1);
+#endif  
   
   int nsets = l3_getSets(l3);
   int nmonitored = nsets/64;
@@ -191,11 +206,12 @@ l3pp_t l3;
   //2500 counter iterations ~ 10us
   l3_repeatedprobe(l3, SAMPLES, res, 4000);
 
-  set_es_sample_size(nmonitored, SAMPLES);
-  //update ptr
-  set_ptr_to_data((uint32_t)res);
+  //update ptr, type = 0 => Uint16
+  set_ptr_to_data((uint32_t)res, nmonitored, SAMPLES, 0);
 
   printf("set_ptr_to_data: %p\n", res);
+
+  print_plot_new_tab();
 
   // printf("size of eviction sets\n");
   // for(int i = 0; i < nmonitored; i++){
