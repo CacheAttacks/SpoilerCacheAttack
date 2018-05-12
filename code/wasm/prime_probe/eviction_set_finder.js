@@ -5050,7 +5050,7 @@ function copyTempDouble(ptr) {
               Module['postxhr']('http://localhost:8000/changedata', POSTstr);
               
               d = new Date();
-              Module['imgElement'].src = 'http://localhost:8000/plotdata?select_es=' + document.getElementById('numberRangeEs').value; + "&" + d.getTime();
+              Module['imgElement'].src = 'http://localhost:8000/plotdata?selected_es=' + document.getElementById('numberRangeEs').value; + "&" + d.getTime();
           }
       }
 

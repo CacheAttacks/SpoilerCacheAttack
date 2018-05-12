@@ -86,19 +86,22 @@ function(){
   data
 }
 
+
+
+
 #* @png (width=1000,height=1000)
-#* @param select_es range for es e.g. 1:10
+#* @param selected_es select range e.g. 1:10
 #* @get /plotdata
-visualize_times <- function(select_es){
+visualize_times <- function(selected_es){
 
   #x-axis eviction sets, y-axis samples
   tbl <- read.table(text=data)
-  print(select_es)
+  print(selected_es)
   
-  if(grepl(":", select_es)){
-    es_vec <- strsplit(select_es,":")[[1]][1]:strsplit(select_es,":")[[1]][2]
-  } else if(grepl(",", select_es)){
-    es_vec <- as.numeric(strsplit(select_es, ",")[[1]])
+  if(grepl(":", selected_es)){
+    es_vec <- strsplit(selected_es,":")[[1]][1]:strsplit(selected_es,":")[[1]][2]
+  } else if(grepl(",", selected_es)){
+    es_vec <- as.numeric(strsplit(selected_es, ",")[[1]])
   } else{
     es_vec <- 1:ncol(tbl)
   }
