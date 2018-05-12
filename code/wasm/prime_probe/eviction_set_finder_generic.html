@@ -15,7 +15,7 @@
       div.emscripten { text-align: center; }      
       div.emscripten_border { border: 1px solid black; }
       /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
-      canvas.emscripten { border: 0px none; background-color: black; }
+      /*canvas.emscripten { border: 0px none; background-color: black; }*/
 
       #emscripten_logo {
         display: inline-block;
@@ -1202,22 +1202,35 @@
   <!--<span><input type="checkbox" id="resize">Resize canvas</span>
   <span><input type="checkbox" id="pointerLock" checked>Lock/hide mouse pointer &nbsp;&nbsp;&nbsp;</span>-->
   <span><input type="button" id="btnPrint" value="Print (new tab)"></span>
-  <span><input type="button" id="btnRunAgain" value="Run again"></span>
-  <span><input type="button" id="btnBuildEs" value="Build es"></span>
-  <span><input type="button" id="btnSampleEs" value="Sample es"></span>
-  <!--<span><input type="button" value="Fullscreen" onclick="Module.requestFullscreen(document.getElementById('pointerLock').checked, 
+      <!--<span><input type="button" value="Fullscreen" onclick="Module.requestFullscreen(document.getElementById('pointerLock').checked, 
                                                                               document.getElementById('resize').checked)">
   </span>-->
+</span></br>
+<span id='sampleEs'>
+  Plot select es
+  <span><input type="text" id="numberRangeEs" value="1:10" width="1"></span>
+  Samples
+  <span><input type="number" id="numberSamples" value="0" width="1"></span>
+  Time between samples
+  <span><input type="number" id="numberSlotTime" value="0" width="1"></span>
+  <span><input type="button" id="btnSampleEs" value="Sample es"></span>
+  
+
+</span></br>
+<span id='buildEs'>
+  upper limit es
+  <span><input type="number" id="upperLimitEs" value="1" width="1"></span>
+  <span><input type="button" id="btnBuildEs" value="Build es"></span>
 </span>
 
     <div class="emscripten">
       <progress value="0" max="100" id="progress" hidden=1></progress>
     </div>
     
-    <div class="emscripten_border">
+    <!--<div class="emscripten_border">
       <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
     </div>
-    <textarea id="output" rows="8"></textarea>
+    <textarea id="output" rows="8"></textarea>-->
 
     <script type="text/javascript" src="timer_SAB.js"></script>
     <script type="text/javascript" src="timer_clock_edge.js"></script>
@@ -1232,7 +1245,8 @@
       var img = document.createElement('img');
 
       img.src = '';
-      document.body.insertBefore(img, document.body.firstChild);
+      document.body.appendChild(img);
+      //document.body.insertBefore(img, document.body.firstChild);
 
       function postRun(){
         console.log("postRun\n");
@@ -1306,16 +1320,16 @@
             console.error(text);
           }
         },
-        canvas: (function() {
-          var canvas = document.getElementById('canvas');
+        // canvas: (function() {
+        //   var canvas = document.getElementById('canvas');
 
-          // As a default initial behavior, pop up an alert when webgl context is lost. To make your
-          // application robust, you may want to override this behavior before shipping!
-          // See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
-          canvas.addEventListener("webglcontextlost", function(e) { alert('WebGL context lost. You will need to reload the page.'); e.preventDefault(); }, false);
+        //   // As a default initial behavior, pop up an alert when webgl context is lost. To make your
+        //   // application robust, you may want to override this behavior before shipping!
+        //   // See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
+        //   canvas.addEventListener("webglcontextlost", function(e) { alert('WebGL context lost. You will need to reload the page.'); e.preventDefault(); }, false);
 
-          return canvas;
-        })(),
+        //   return canvas;
+        // })(),
         setStatus: function(text) {
           if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
           if (text === Module.setStatus.text) return;
@@ -1359,29 +1373,28 @@
       Module['timerWorker'] = shared_array_counter_init(sharedArray);
     </script>
     <script type="text/javascript" src="eviction_set_finder.js"></script>
-    <script type="text/javascript">  
-    	
-    
+    <script type="text/javascript">    
       document.getElementById('btnPrint').onclick = function() {
           // d = new Date();
           // Module['imgElement'].src = 'http://localhost:8000/plotdata?' + d.getTime();
 
-          imagePopup('http://localhost:8000/plotdata', 'myTitle', '', '');
+          imagePopup('http://localhost:8000/plotdata?range_es=' + document.getElementById('numberRangeEs').value, 
+          'myTitle', '', '');
       }
-
-      document.getElementById('btnRunAgain').onclick = function() {
-        //Module['callMain']('');
-      }
-      document.getElementById('btnBuildEs').onclick = function() {
+      document.getElementById('btnSampleEs').onclick = function() {
         if(Module['appStatePtr'] != 0){
-          Module['asm']._build_es(Module['appStatePtr']);
+          var numberOfSamples = document.getElementById('numberSamples').value;
+          console.log(numberOfSamples);
+          var slotTime = document.getElementById('numberSlotTime').value;
+          Module['asm']._sample_es(Module['appStatePtr'], numberOfSamples, slotTime);
         } else {
           console.log("Module['appStatePtr'] is null!");
         }
       }
-      document.getElementById('btnSampleEs').onclick = function() {
+      document.getElementById('btnBuildEs').onclick = function() {
         if(Module['appStatePtr'] != 0){
-          Module['asm']._sample_es(Module['appStatePtr']);
+          Module['asm']._build_es(Module['appStatePtr'], document.getElementById('upperLimitEs').value);
+          document.getElementById('btnBuildEs').value = "Rebuild es";
         } else {
           console.log("Module['appStatePtr'] is null!");
         }

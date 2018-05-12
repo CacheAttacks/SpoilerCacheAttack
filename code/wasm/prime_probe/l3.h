@@ -52,6 +52,7 @@ struct l3pp {
   int *monitoredset;
   int nmonitored;
   void **monitoredhead;
+  int max_es;
 };
 
 
@@ -60,7 +61,7 @@ struct l3pp {
 #define L3FLAG_NOPROBE		0x04 
 
 
-l3pp_t l3_prepare(l3info_t l3info, int L3_THRESHOLD);
+l3pp_t l3_prepare(l3info_t l3info, int L3_THRESHOLD, int max_es);
 void l3_release(l3pp_t l3);
 
 // Returns the number of probed sets in the LLC

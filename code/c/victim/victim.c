@@ -6,6 +6,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <time.h>
+#include <string.h>
+#include <inttypes.h>
 
 #define SIZE 2048
 #define ARRAYS 100
@@ -21,17 +23,41 @@ void arr_access(char **buffer, int size){
   }
 }
 
+static inline uint64_t rdtscp64() {
+  uint32_t low, high;
+  asm volatile ("rdtscp": "=a" (low), "=d" (high) :: "ecx");
+  return (((uint64_t)high) << 32) | low;
+}
+
 int flush_l3(int page_offset){
-  int pages = 2048;
+  int pages = 1024;
   int page_size = 4096;
   int bufsize = pages * page_size;
   void* buffer = mmap(NULL, bufsize, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, -1, 0);
 
   int or = 0;
+  int flip = 0;
+  char bitstr[] = "1000111001";
   while(1){
-    for(int i=0; i<pages; i++){
-      or |= *((int*)((uintptr_t)buffer + i * page_size + page_offset));
+    uint64_t before = rdtscp64();
+    for(int a=0; a<strlen(bitstr); a++){
+      if(bitstr[a] == '1') {
+        for(int i=0; i<pages; i++){
+          or |= *((int*)((uintptr_t)buffer + i * page_size + page_offset));
+          //or |= *((int*)((uintptr_t)buffer + i * page_size));
+        }
+      }
+      //if(flip % 5 == 0 || flip % 5 == 1)
+      for(int i=0;i<20000;i++){
+        or += 1;
+      }
+      //flip++;
     }
+    for(int i=0;i<50000;i++){
+        or += 1;
+    }
+    uint64_t after = rdtscp64();
+    //printf("cycles: %" PRId64 "\n", after-before);
   }
 
   return or;
@@ -52,7 +78,7 @@ void test(){
 }
 
 int main(int argc, char ** argv) {
-  flush_l3(3072);
+  flush_l3(2048);
 }
 
 //http://webassembly.org/docs/semantics/#linear-memory

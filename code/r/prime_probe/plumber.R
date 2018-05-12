@@ -81,18 +81,35 @@ function(newdata){
   data <<- newdata
 }
 
+#* @get /getdata
+function(){
+  data
+}
+
 #* @png (width=1000,height=1000)
+#* @param select_es range for es e.g. 1:10
 #* @get /plotdata
-visualize_times <- function(){
+visualize_times <- function(select_es){
+
   #x-axis eviction sets, y-axis samples
-  tbl <<- read.table(text=data)
-  #tbl <- tbl[,1:256]
-  tbl_melt <<- reshape2::melt(tbl)
-  tbl_melt[["sample"]] <<- rep(1:nrow(tbl), ncol(tbl))
-  colnames(tbl_melt)[1] <<- "es"
+  tbl <- read.table(text=data)
+  print(select_es)
+  
+  if(grepl(":", select_es)){
+    es_vec <- strsplit(select_es,":")[[1]][1]:strsplit(select_es,":")[[1]][2]
+  } else if(grepl(",", select_es)){
+    es_vec <- as.numeric(strsplit(select_es, ",")[[1]])
+  } else{
+    es_vec <- 1:ncol(tbl)
+  }
+  
+  tbl <- tbl[,es_vec]
+  tbl_melt <- reshape2::melt(tbl)
+  tbl_melt[["sample"]] <- rep(1:nrow(tbl), ncol(tbl))
+  colnames(tbl_melt)[1] <- "es"
   #cap at 3500
-  max_value <- 2000
-  tbl_melt[tbl_melt$value>max_value,"value"] <<- max_value
+  max_value <- 750
+  tbl_melt[tbl_melt$value>max_value,"value"] <- max_value
   
   plot <- ggplot2::ggplot(tbl_melt, ggplot2::aes(x=sample,y=es)) + 
     ggplot2::geom_tile(ggplot2::aes(fill = value)) +

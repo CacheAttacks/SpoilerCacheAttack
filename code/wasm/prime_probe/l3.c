@@ -81,6 +81,15 @@
 //should be MAX_INT, set lower for debugging purposes
 #define MAX_ES 1
 
+//experiments shows: valid es => after first contract => vl_len(es) < 900 
+#define MAX_SIZE_AFTER_FIRST_CONTRACT 900
+
+//experiments shows: valid es => after first contract => vl_len(es) < 100 
+#define MAX_SIZE_AFTER_SECOND_CONTRACT 100
+
+//experiments shows: valid es => max three contract calls
+#define MAX_CONTRACT_CALLS 3
+
 #ifdef WASM
   //ifdef => test eviction set multiple times after contract phase
   #define AFTERCONTRACTTEST
@@ -505,19 +514,23 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
 #ifdef WASM
     printf("CONTRACT (es size step):");
     int size_old = INT32_MAX;
-    while(vl_len(es) > l3->l3info.associativity){
+    for(int i=0; i<MAX_CONTRACT_CALLS && vl_len(es) > l3->l3info.associativity; i++){
       before = rdtscp();
       contract(es, lines, c);
       time_contract += (uint64_t)get_diff(before, rdtscp());
         printf("%i ", vl_len(es));
-      if(size_old - vl_len(es) < 3)
+      if(i==0 && vl_len(es) >= MAX_SIZE_AFTER_FIRST_CONTRACT)
       {
-        printf("diff to last step <3 => break");
+        printf("after first contract call => vl_len(es) >= %i => break\n", MAX_SIZE_AFTER_FIRST_CONTRACT);
+        break;
+      }
+      if(i==1 && vl_len(es) >= MAX_SIZE_AFTER_SECOND_CONTRACT)
+      {
+        printf("after first contract call => vl_len(es) >= %i => break\n", MAX_SIZE_AFTER_SECOND_CONTRACT);
         break;
       }
       size_old = vl_len(es);
     }
-    putchar('\n');   
 #else
   contract(es, lines, c);
   contract(es, lines, c);
@@ -599,8 +612,8 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
       (*l3->l3info.progressNotification)(nlines - vl_len(lines), nlines, l3->l3info.progressNotificationData);
     time_datahandling += (uint64_t)get_diff(before, rdtscp());
     
-    if(vl_len(groups) >= MAX_ES){
-      printf("forced break in map function, cause vl_len(group) >= MAX_ES\n");
+    if(vl_len(groups) >= l3->max_es){
+      printf("forced break in map function, cause vl_len(group) >= max_es(%i)\n", l3->max_es);
       break;
     }
   }
@@ -674,7 +687,7 @@ static int probemap(l3pp_t l3) {
   return 1;
 }
 
-l3pp_t l3_prepare(l3info_t l3info, int l3_threshold) {
+l3pp_t l3_prepare(l3info_t l3info, int l3_threshold, int max_es) {
   if(ADDRESS_OFFSET == 0){
     printf("error ADDRESS_OFFSET 0 is used for TLB noise reduction");
     exit(1);
@@ -687,6 +700,9 @@ l3pp_t l3_prepare(l3info_t l3info, int l3_threshold) {
   // Setup
   l3pp_t l3 = (l3pp_t)malloc(sizeof(struct l3pp));
   bzero(l3, sizeof(struct l3pp));
+  l3->max_es = max_es;
+
+  printf("l3->max_es %i\n", l3->max_es);
   
   //if (l3info != NULL)
   //  bcopy(l3info, &l3->l3info, sizeof(struct l3info));

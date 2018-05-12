@@ -5,6 +5,7 @@
 #include <inttypes.h>
 #include <strings.h>
 #include <stdbool.h>
+#include <limits.h>
 
 //#include <util.h>
 #include "low.h"
@@ -31,6 +32,7 @@ struct app_state {
   l3pp_t l3;
   RES_TYPE *res;
   int l3_threshold;
+  int number_of_samples_old;
 };
 
 int test_mem_access(int random, int rounds, int print)
@@ -151,7 +153,7 @@ float get_timer_resolution(){
   return resolution_ns;
 }
 
-void build_es(void* app_state_ptr){
+void build_es(void* app_state_ptr, int max_es){
   struct app_state* this_app_state = (struct app_state*)app_state_ptr;
 
   if(!this_app_state->l3_threshold){
@@ -167,6 +169,10 @@ void build_es(void* app_state_ptr){
     free(this_app_state->res);
   }
 
+  if(!max_es){
+    max_es = INT_MAX;
+  }
+
   warmup(1024*1024*128); //warm up 2^27 counts operations ~ 2^30 cycles
   printf("warm-up finished\n");
 
@@ -176,7 +182,7 @@ void build_es(void* app_state_ptr){
   {
 #endif
     uint32_t timer_before = Performance_now();
-    this_app_state->l3 = l3_prepare(NULL, this_app_state->l3_threshold);
+    this_app_state->l3 = l3_prepare(NULL, this_app_state->l3_threshold, max_es);
     uint32_t timer_after = Performance_now();
 
     printf("Eviction set total time: %u sec\n", (timer_after-timer_before)/1000);
@@ -199,13 +205,9 @@ void build_es(void* app_state_ptr){
   
   for (int i = 17; i < nsets; i += 64)
     l3_monitor(this_app_state->l3, i);
-
-  this_app_state->res = calloc(SAMPLES * nmonitored, sizeof(RES_TYPE));
-  for (int i = 0; i < SAMPLES * nmonitored; i+= 4096/sizeof(RES_TYPE))
-    this_app_state->res[i] = 1;
 }
 
-void sample_es(void* app_state_ptr){
+void sample_es(void* app_state_ptr, int number_of_samples, int slot_time){
   struct app_state* this_app_state = (struct app_state*)app_state_ptr;
   //2500 counter iterations ~ 10us
 
@@ -214,15 +216,32 @@ void sample_es(void* app_state_ptr){
     return;
   }
 
-  l3_repeatedprobe(this_app_state->l3, SAMPLES, this_app_state->res, 0);
+  if(number_of_samples <= 0){
+    number_of_samples = SAMPLES;
+  }
 
   int nmonitored = l3_getSets(this_app_state->l3)/64;
+
+  //avoid reallocation of res array if called with same parameter
+  if(this_app_state->number_of_samples_old != number_of_samples) {
+    if(this_app_state->res){
+      free(this_app_state->res);
+    }  
+    this_app_state->res = calloc(number_of_samples * nmonitored, sizeof(RES_TYPE));
+    for (int i = 0; i < SAMPLES * nmonitored; i+= 4096/sizeof(RES_TYPE))
+      this_app_state->res[i] = 1;
+  }
+
+  l3_repeatedprobe(this_app_state->l3, number_of_samples, this_app_state->res, 0);
+ 
   //update ptr, type = 0 => Uint16
-  set_ptr_to_data((uint32_t)this_app_state->res, SAMPLES, nmonitored, 0);
+  set_ptr_to_data((uint32_t)this_app_state->res, number_of_samples, nmonitored, slot_time);
 
   printf("set_ptr_to_data: %p\n", this_app_state->res);
 
   print_plot_data(); 
+
+  this_app_state->number_of_samples_old = number_of_samples;
 }
 
 void print_res(l3pp_t l3, RES_TYPE *res, int nmonitored){

@@ -6,7 +6,7 @@ visualize_times <- function(file_name){
   tbl_melt[["sample"]] <- rep(1:nrow(tbl), ncol(tbl))
   colnames(tbl_melt)[1] <- "es"
   #cap at 3500
-  max_value <- 2000
+  max_value <- 1000
   tbl_melt[tbl_melt$value>max_value,"value"] <- max_value
   
   ggplot2::ggplot(tbl_melt, ggplot2::aes(x=sample,y=es)) + 

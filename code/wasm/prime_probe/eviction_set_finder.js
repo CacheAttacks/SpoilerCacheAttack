@@ -1711,7 +1711,7 @@ var ASM_CONSTS = [];
 
 STATIC_BASE = GLOBAL_BASE;
 
-STATICTOP = STATIC_BASE + 6880;
+STATICTOP = STATIC_BASE + 6912;
 /* global initializers */  __ATINIT__.push();
 
 
@@ -1720,7 +1720,7 @@ STATICTOP = STATIC_BASE + 6880;
 
 
 
-var STATIC_BUMP = 6880;
+var STATIC_BUMP = 6912;
 Module["STATIC_BASE"] = STATIC_BASE;
 Module["STATIC_BUMP"] = STATIC_BUMP;
 
@@ -5050,7 +5050,7 @@ function copyTempDouble(ptr) {
               Module['postxhr']('http://localhost:8000/changedata', POSTstr);
               
               d = new Date();
-              Module['imgElement'].src = 'http://localhost:8000/plotdata?' + d.getTime();
+              Module['imgElement'].src = 'http://localhost:8000/plotdata?select_es=' + document.getElementById('numberRangeEs').value; + "&" + d.getTime();
           }
       }
 
