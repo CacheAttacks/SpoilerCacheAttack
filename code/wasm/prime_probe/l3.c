@@ -78,16 +78,19 @@
 //size(es) <= L3_ASSOCIATIVITY * MAX_L3_ASSOCIATIVITY_DIFF
 #define MAX_L3_ASSOCIATIVITY_DIFF 0
 
+//should be MAX_INT, set lower for debugging purposes
+#define MAX_ES 1
+
 #ifdef WASM
   //ifdef => test eviction set multiple times after contract phase
-  //#define AFTERCONTRACTTEST
+  #define AFTERCONTRACTTEST
 
   //ifdef => test correctness of conctract phase, test es without one member for each member
-  //#define ONEOUTTEST
+  #define ONEOUTTEST
 
   #define EXPAND_ITERATIONS 20
   #define CONTRACT_ITERATIONS 1
-  #define COLLECT_ITERATIONS 2
+  #define COLLECT_ITERATIONS 1
 #else
   #define EXPAND_ITERATIONS 1
   #define CONTRACT_ITERATIONS 1
@@ -461,6 +464,8 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
   printf("lines aka memory-blocks %d\n", vl_len(lines));
   printf("---------------------INFO END--------------------------\n");
 #endif // DEBUG
+  uint64_t time_expand=0, time_contract=0, time_collect=0, time_datahandling=0;
+  uint32_t before=0;
   vlist_t groups = vl_new();
   vlist_t es = vl_new();
   int nlines = vl_len(lines);
@@ -475,13 +480,17 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
     if (fail > 1000) 
       break;
 
+    before = rdtscp();
     void *c = expand(es, lines);
+    time_expand += (uint64_t)get_diff(before, rdtscp());
+
     #ifdef DEBUG
     int d_l2 = vl_len(es);
     #endif //DEBUG
 
     //rewind if no witness block was found by the expand operation
     if (c == NULL) {
+      before = rdtscp();
       //restore delete lines (in expand operation)
       while (vl_len(es))
 	      vl_push(lines, vl_del(es, 0));
@@ -490,20 +499,23 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
       #endif // DEBUG
       fail+=50;
       continue;
+      time_datahandling += (uint64_t)get_diff(before, rdtscp());
     }
 
 #ifdef WASM
     printf("CONTRACT (es size step):");
     int size_old = INT32_MAX;
     while(vl_len(es) > l3->l3info.associativity){
-        contract(es, lines, c);
-         printf("%i ", vl_len(es));
-        if(size_old - vl_len(es) < 3)
-        {
-          printf("diff to last step <3 => break");
-          break;
-        }
-        size_old = vl_len(es);
+      before = rdtscp();
+      contract(es, lines, c);
+      time_contract += (uint64_t)get_diff(before, rdtscp());
+        printf("%i ", vl_len(es));
+      if(size_old - vl_len(es) < 3)
+      {
+        printf("diff to last step <3 => break");
+        break;
+      }
+      size_old = vl_len(es);
     }
     putchar('\n');   
 #else
@@ -512,6 +524,7 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
   contract(es, lines, c);
 #endif 
 
+    before = rdtscp();
     if(vl_len(es) < l3->l3info.associativity){
       printf("warning vl_len(es)=%i < ass=%i!\n", vl_len(es), l3->l3info.associativity);
     }
@@ -565,12 +578,17 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
       fail++;
       continue;
     } 
+    time_datahandling += (uint64_t)get_diff(before, rdtscp());
 
     fail = 0;
     vlist_t set = vl_new();
     //do not add collected memory blocks to es
     //vl_push(set, c);
+    before = rdtscp();
     int deleted = collect(es, lines/*, set*/);
+    time_collect += (uint64_t)get_diff(before, rdtscp());
+
+    before = rdtscp();
     while (vl_len(es))
       vl_push(set, vl_del(es, 0));
     #ifdef DEBUG
@@ -579,12 +597,17 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
     vl_push(groups, set);
     if (l3->l3info.progressNotification) 
       (*l3->l3info.progressNotification)(nlines - vl_len(lines), nlines, l3->l3info.progressNotificationData);
+    time_datahandling += (uint64_t)get_diff(before, rdtscp());
     
-    if(vl_len(groups) > 0)
+    if(vl_len(groups) >= MAX_ES){
+      printf("forced break in map function, cause vl_len(group) >= MAX_ES\n");
       break;
+    }
   }
 
   vl_free(es);
+  uint64_t time_sum = time_expand + time_contract + time_collect + time_datahandling;
+  printf("runtime expand: %f, contract: %f, collect %f, datahandling %f(%lld)\n", (double)time_expand/time_sum, (double)time_contract/time_sum, (double)time_collect/time_sum, (double)time_datahandling/time_sum, time_datahandling);
   return groups;
 }
 

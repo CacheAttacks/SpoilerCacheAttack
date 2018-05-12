@@ -114,7 +114,7 @@ if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
 });
 
 if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
-    print_plot_new_tab: function() {
+    print_plot_data: function() {
         if(Module['byteFactor'] != 0){
             var POSTstr = Module['createPOSTStr'](Module['wasmMemoryArr'], Module['res']/Module['byteFactor'], Module['nrow'], Module['ncol']);
             Module['postxhr']('http://localhost:8000/changedata', POSTstr);
@@ -122,5 +122,12 @@ if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
             d = new Date();
             Module['imgElement'].src = 'http://localhost:8000/plotdata?' + d.getTime();
         }
+    }
+});
+
+
+if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
+    set_app_state_ptr: function(ptr) {
+        Module['appStatePtr'] = ptr;
     }
 });

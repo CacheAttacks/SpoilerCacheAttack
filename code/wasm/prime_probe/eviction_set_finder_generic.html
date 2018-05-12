@@ -1199,12 +1199,15 @@
     <div class="emscripten" id="status">Downloading...</div>
 
 <span id='controls'>
-  <span><input type="checkbox" id="resize">Resize canvas</span>
-  <span><input type="checkbox" id="pointerLock" checked>Lock/hide mouse pointer &nbsp;&nbsp;&nbsp;</span>
-  <span><input type="button" id="btnPrint" value="Print"></span>
-  <span><input type="button" value="Fullscreen" onclick="Module.requestFullscreen(document.getElementById('pointerLock').checked, 
+  <!--<span><input type="checkbox" id="resize">Resize canvas</span>
+  <span><input type="checkbox" id="pointerLock" checked>Lock/hide mouse pointer &nbsp;&nbsp;&nbsp;</span>-->
+  <span><input type="button" id="btnPrint" value="Print (new tab)"></span>
+  <span><input type="button" id="btnRunAgain" value="Run again"></span>
+  <span><input type="button" id="btnBuildEs" value="Build es"></span>
+  <span><input type="button" id="btnSampleEs" value="Sample es"></span>
+  <!--<span><input type="button" value="Fullscreen" onclick="Module.requestFullscreen(document.getElementById('pointerLock').checked, 
                                                                               document.getElementById('resize').checked)">
-  </span>
+  </span>-->
 </span>
 
     <div class="emscripten">
@@ -1244,7 +1247,7 @@
 
       //works only after user input, e.g. onclick
       function imagePopup(myImage, myTitle, myCaption, mySource) {
-        var myWindow = Module['window'].open("", myTitle, "_blank", "toolbar=no,scrollbars=no,resizable=yes");
+        var myWindow = window.open("", myTitle, "_blank", "toolbar=no,scrollbars=no,resizable=yes");
         myWindow.document.write("<head><title>" + myTitle + "</title></head>");
         //myWindow.document.write("<big><b>Figure Caption:</big></b>" + myCaption + "<p>");
         //myWindow.document.write("<big><b>Figure Source:</big></b>" + mySource + "<p>");
@@ -1360,11 +1363,34 @@
     	
     
       document.getElementById('btnPrint').onclick = function() {
-          d = new Date();
-          Module['imgElement'].src = 'http://localhost:8000/plotdata?' + d.getTime();
+          // d = new Date();
+          // Module['imgElement'].src = 'http://localhost:8000/plotdata?' + d.getTime();
 
-          //imagePopup('http://localhost:8000/plotdata', 'myTitle', '', '');
+          imagePopup('http://localhost:8000/plotdata', 'myTitle', '', '');
+      }
+
+      document.getElementById('btnRunAgain').onclick = function() {
+        //Module['callMain']('');
+      }
+      document.getElementById('btnBuildEs').onclick = function() {
+        if(Module['appStatePtr'] != 0){
+          Module['asm']._build_es(Module['appStatePtr']);
+        } else {
+          console.log("Module['appStatePtr'] is null!");
+        }
+      }
+      document.getElementById('btnSampleEs').onclick = function() {
+        if(Module['appStatePtr'] != 0){
+          Module['asm']._sample_es(Module['appStatePtr']);
+        } else {
+          console.log("Module['appStatePtr'] is null!");
+        }
       }
     </script>
   </body>
 </html>
+<!--call wasm from javascript main thraed, after es was found wait for user input:
+options:  1. sample es
+          2. renew es
+user input could not be handeled inside of wasm module, cause wasm is blocking, e.g. images on website will not be updated
+instead call wasm, get user input from website, call wasm again with user input args-->

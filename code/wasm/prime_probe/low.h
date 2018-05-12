@@ -22,6 +22,9 @@
 
 #define WASM
 
+//warm up timers before measurement operation
+#define WARMUP
+
 #ifdef WASM
   #include "SABcounter.h"
 #endif
@@ -133,45 +136,14 @@ static inline void warmuptimer(){
 }
 #endif
 
-// static inline uint32_t memaccesstime_test(void *v) {
-
-//   warmuptimer();
-
-//   uint32_t before = SAB_lib_get_counter_value();
-//   before = SAB_lib_get_counter_value();
-
-//   uint32_t a = *((uint32_t*)v);
-//   uint32_t after1st = SAB_lib_get_counter_value();
-
-//   uint32_t b = *((uint32_t*)v);
-//   uint32_t after2nd = SAB_lib_get_counter_value();
-
-//   uint32_t c = *((uint32_t*)v);
-//   uint32_t after3nd = SAB_lib_get_counter_value();
-
-//   uint32_t diff1st = get_diff(before, after1st);
-//   uint32_t diff2nd = get_diff(after1st, after2nd);
-//   uint32_t diff3nd = get_diffafter2nd, after3nd);
-
-//   printf("1st:%" PRIu32 " ", diff1st);
-//   printf("2nd:%" PRIu32 " ", diff2nd);
-//   printf("3nd:%" PRIu32 "", diff3nd);
-//   if(diff1st-diff2nd > 10){
-//     printf(" !!!!!!!!!!!!!!\n");
-//   } else{
-//     printf("\n");
-//   }
-
-//   return after1st-before;
-// }
-
-
 //add lfence instructions between rdtsc instructions
 //rdtscp seems not working as intented (i7-4770)
 static inline uint32_t memaccesstime_abs_double_access(void *v) {
 #ifdef WASM
+#ifdef WARMUP
   warmuptimer();
   warmuprounds(10);
+#endif
 
   uint32_t before = SAB_lib_get_counter_value();
   uint32_t a = *((uint32_t*)v);
@@ -204,8 +176,10 @@ typedef struct timer_info *timer_info_p;
 static inline uint32_t memaccesstime(void *v, struct timer_info *info) {
 
 #ifdef WASM
+#ifdef WARMUP
   warmuptimer();
-  warmuprounds(10);
+  //warmuprounds(10);
+#endif
 
   uint32_t a;
   uint32_t after;

@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <inttypes.h>
 #include <strings.h>
+#include <stdbool.h>
 
 //#include <util.h>
 #include "low.h"
@@ -14,20 +15,23 @@
 //tell javascript main thread ptr add from res array in wasm memory region
 extern void set_ptr_to_data(uint32_t, int, int, int);
 
-extern void print_plot_new_tab(void);
+extern void print_plot_data(void);
+
+//set ptr to app state for context switches between wasm and javascript
+//called by javascript
+extern void set_app_state_ptr(uint32_t);
 
 #define BLOCK_SIZE 8
 #define SAMPLES 50
 #define LNEXT(t) (*(void **)(t))
 
-
-//TODO fix ideen:
-//random zugriff auf es oder rückwärts durchlauf
-//debug ausgaben von zeiten
-//debug adresse von rausgeworfenen add aus es
-//change add offset
-
 struct timer_info *info;
+
+struct app_state {
+  l3pp_t l3;
+  RES_TYPE *res;
+  int l3_threshold;
+};
 
 int test_mem_access(int random, int rounds, int print)
 {
@@ -138,98 +142,132 @@ int mem_access_testing(int rounds, int print){
   return threshold;
 }
 
-int main(int ac, char **av) {
-  // char str[100];
-  // printf( "Enter a value :");
-  // scanf("%s", str);
-  // printf("str: %s", str);
-  // exit(1);
-
-
-  //l3-cache i7-4770: 16-way-ass, 8192sets => 4+13+6=23bits (8MiB)
-  info = (struct timer_info*)malloc(sizeof(struct timer_info));
-  bzero(info, sizeof(struct timer_info));
-  warmup(1024*1024*128); //warm up 2^27 counts operations ~ 2^30 cycles
-  printf("warm-up finished\n");
-
-  //counter_consistency_test(1, 500000000, 1000000);
-
-  float resolution_ns = 101;
+float get_timer_resolution(){
+    float resolution_ns = 101;
   //while(resolution_ns > 100){
     resolution_ns = SAB_get_resolution_ns(1000);
   //} 
   printf("resolution SAB-timer: %f ns\n", resolution_ns);
+  return resolution_ns;
+}
 
-  
+void build_es(void* app_state_ptr){
+  struct app_state* this_app_state = (struct app_state*)app_state_ptr;
 
-  //int l3_threshold = mem_access_testing(100000, 0);
-  int l3_threshold = 31;
-  // printf("hallo\n");
-  // flush_l3(0,0,0);
-  // mem_access_testing(100000, 0);
-  //exit(1);
-  printf("----------------TESTS FINISHED------------------\n");
+  if(!this_app_state->l3_threshold){
+    printf("l3_threshold not set!\n");
+    exit(1);
+  }
 
-  l3pp_t l3;
+  //if es is already present, clear allocated mem
+  if(this_app_state->l3){
+    l3_release(this_app_state->l3);
+  }
+  if(this_app_state->res){
+    free(this_app_state->res);
+  }
+
+  warmup(1024*1024*128); //warm up 2^27 counts operations ~ 2^30 cycles
+  printf("warm-up finished\n");
+
 #ifdef BENCHMARKMODE
   uint32_t *timer_array = calloc(BENCHMARKRUNS, sizeof(uint32_t));
   for(int i=0; i<BENCHMARKRUNS; i++)
   {
 #endif
     uint32_t timer_before = Performance_now();
-    l3 = l3_prepare(NULL, l3_threshold);
+    this_app_state->l3 = l3_prepare(NULL, this_app_state->l3_threshold);
     uint32_t timer_after = Performance_now();
 
     printf("Eviction set total time: %u sec\n", (timer_after-timer_before)/1000);
 #ifdef BENCHMARKMODE
     timer_array[i] = timer_after-timer_before;
   }
+  for(int i=0; i<BENCHMARKRUNS; i++){
+    printf("%u ", timer_array[i]);
+  }
+  printf("\n");
   l3_release(l3);
   SAB_terminate_counter_sub_worker();
   exit(1);
 #endif  
-  
-  int nsets = l3_getSets(l3);
+
+  int nsets = l3_getSets(this_app_state->l3);
   int nmonitored = nsets/64;
   printf("nmonitored: %i\n",nmonitored);
   printf("alloc %i Bytes\n", SAMPLES * nmonitored * sizeof(uint32_t));
   
-  //SAB_terminate_counter_sub_worker();
-  
   for (int i = 17; i < nsets; i += 64)
-    l3_monitor(l3, i);
+    l3_monitor(this_app_state->l3, i);
 
-  RES_TYPE *res = calloc(SAMPLES * nmonitored, sizeof(RES_TYPE));
+  this_app_state->res = calloc(SAMPLES * nmonitored, sizeof(RES_TYPE));
   for (int i = 0; i < SAMPLES * nmonitored; i+= 4096/sizeof(RES_TYPE))
-    res[i] = 1;
+    this_app_state->res[i] = 1;
+}
 
+void sample_es(void* app_state_ptr){
+  struct app_state* this_app_state = (struct app_state*)app_state_ptr;
   //2500 counter iterations ~ 10us
-  l3_repeatedprobe(l3, SAMPLES, res, 4000);
 
+  if(!this_app_state->l3){
+    printf("app_state_ptr->l3 is null! Already called build_es?\n");
+    return;
+  }
+
+  l3_repeatedprobe(this_app_state->l3, SAMPLES, this_app_state->res, 0);
+
+  int nmonitored = l3_getSets(this_app_state->l3)/64;
   //update ptr, type = 0 => Uint16
-  set_ptr_to_data((uint32_t)res, nmonitored, SAMPLES, 0);
+  set_ptr_to_data((uint32_t)this_app_state->res, SAMPLES, nmonitored, 0);
 
-  printf("set_ptr_to_data: %p\n", res);
+  printf("set_ptr_to_data: %p\n", this_app_state->res);
 
-  print_plot_new_tab();
+  print_plot_data(); 
+}
 
-  // printf("size of eviction sets\n");
-  // for(int i = 0; i < nmonitored; i++){
-  //   vlist_t list = l3->groups[l3->monitoredset[i] / l3->groupsize];
-  //   printf("%d ", list->len);
-  // }
-  // printf("\naccess_time for each evictionset per timeslot\n");
-  // printf("x-axis eviction-sets, y-axis sample\n");
+void print_res(l3pp_t l3, RES_TYPE *res, int nmonitored){
+  printf("size of eviction sets\n");
+  for(int i = 0; i < nmonitored; i++){
+    vlist_t list = l3->groups[l3->monitoredset[i] / l3->groupsize];
+    printf("%d ", list->len);
+  }
+  printf("\naccess_time for each evictionset per timeslot\n");
+  printf("x-axis eviction-sets, y-axis sample\n");
 
-  // for (int i = 0; i < SAMPLES; i++) {
-  //   for (int j = 0; j < nmonitored; j++) {
-  //     printf("%d ", res[i*nmonitored + j]);
-  //   }
-  //   if(nmonitored > 0)
-  //     putchar('\n');
-  // }
+  for (int i = 0; i < SAMPLES; i++) {
+    for (int j = 0; j < nmonitored; j++) {
+      printf("%d ", res[i*nmonitored + j]);
+    }
+    if(nmonitored > 0)
+      putchar('\n');
+  }
+}
 
-  //free(res);
-  l3_release(l3);
-  SAB_terminate_counter_sub_worker();
+int main(int ac, char **av) {
+  //save app state for switches between javascript and wasm
+  struct app_state* this_app_state = (struct app_state*)calloc(sizeof(struct app_state),1);
+  set_app_state_ptr((uint32_t)this_app_state);
+
+  //l3-cache i7-4770: 16-way-ass, 8192sets => 4+13+6=23bits (8MiB)
+
+  //counter_consistency_test(1, 500000000, 1000000);
+
+  float resolution_ns = get_timer_resolution();  
+
+  //this_app_state->l3_threshold = mem_access_testing(100000, 0);
+  this_app_state->l3_threshold = 31;
+  // flush_l3(0,0,0);
+  // mem_access_testing(100000, 0);
+  //exit(1);
+  printf("----------------TESTS FINISHED------------------\n");
+
+  //build_es((void*)this_app_state);
+
+  //sample_es((void*)this_app_state);
+
+  //print_res(l3, nmonitored);
+
+  //free(this_app_state->res);
+  //l3_release(this_app_state->l3);
+  //SAB_terminate_counter_sub_worker();
 }
