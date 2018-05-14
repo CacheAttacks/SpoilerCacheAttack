@@ -8,7 +8,7 @@
             "type": "shell",
             "command": "gcc",
             "args": [
-                "-g", "victim.c", "-o", "victim"
+                "-g", "victim.c", "l3.c", "es_management.c", "vlist.c", "timestats.c" "-o", "victim"
             ],
             "group": {
                 "kind": "build",

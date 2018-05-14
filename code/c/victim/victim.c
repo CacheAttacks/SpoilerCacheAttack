@@ -8,6 +8,12 @@
 #include <time.h>
 #include <string.h>
 #include <inttypes.h>
+#include <assert.h>
+
+#include "low.h"
+#include "vlist.h"
+#include "l3.h"
+#include "es_management.h"
 
 #define SIZE 2048
 #define ARRAYS 100
@@ -15,12 +21,6 @@
 
 #define TABLESIZE 4096
 #define NUMBER_OF_ACCESESS 5
-
-static inline uint64_t rdtscp64() {
-  uint32_t low, high;
-  asm volatile ("rdtscp": "=a" (low), "=d" (high) :: "ecx");
-  return (((uint64_t)high) << 32) | low;
-}
 
 static inline int waitcycles(uint64_t cycles){
   uint64_t slotend = rdtscp64() + cycles;
@@ -97,6 +97,21 @@ void test(){
 }
 
 int main(int argc, char ** argv) {
+  struct app_state* this_app_state = (struct app_state*)calloc(sizeof(struct app_state),1);
+  this_app_state->l3_threshold = 140;
+
+  build_es((void*)this_app_state, 1);
+
+  //set_monitored_es((void*)this_app_state, 0, 0);
+
+  sample_es((void*)this_app_state, 1, 0);
+
+  printf("probe %i es:\n", this_app_state->l3->nmonitored);
+
+  while(1){
+    l3_probe(this_app_state->l3, this_app_state->res);
+  }
+
   flush_l3(2048);
 }
 
