@@ -16,6 +16,21 @@
 #define TABLESIZE 4096
 #define NUMBER_OF_ACCESESS 5
 
+static inline uint64_t rdtscp64() {
+  uint32_t low, high;
+  asm volatile ("rdtscp": "=a" (low), "=d" (high) :: "ecx");
+  return (((uint64_t)high) << 32) | low;
+}
+
+static inline int waitcycles(uint64_t cycles){
+  uint64_t slotend = rdtscp64() + cycles;
+  if (rdtscp64() > slotend)
+    return 1;
+  while (rdtscp64() < slotend)
+    ;
+  return 0;
+}
+
 //simulate page accesses
 void arr_access(char **buffer, int size){
   for(int i=0; i<size; i++){
@@ -23,10 +38,24 @@ void arr_access(char **buffer, int size){
   }
 }
 
-static inline uint64_t rdtscp64() {
-  uint32_t low, high;
-  asm volatile ("rdtscp": "=a" (low), "=d" (high) :: "ecx");
-  return (((uint64_t)high) << 32) | low;
+int sendbitstr(void* buffer, char *bitstr, int pages, int page_size, int page_offset, int (*waitop)(uint64_t), uint64_t waittime, int length_on) {
+  int or = 0;
+  for(int a=0; a<strlen(bitstr); a++){
+    if(bitstr[a] == '1') {
+      for(int a=0; a<length_on; a++){
+        for(int i=0; i<pages; i++){
+          or |= *((int*)((uintptr_t)buffer + i * page_size + page_offset));
+        }
+      }
+    }
+    //if(flip % 5 == 0 || flip % 5 == 1)
+    // for(int i=0;i<20000;i++){
+    //   or += 1;
+    // }
+    //flip++;
+    (*waitop)(waittime);
+  }
+  return or;
 }
 
 int flush_l3(int page_offset){
@@ -40,22 +69,12 @@ int flush_l3(int page_offset){
   char bitstr[] = "1000111001";
   while(1){
     uint64_t before = rdtscp64();
-    for(int a=0; a<strlen(bitstr); a++){
-      if(bitstr[a] == '1') {
-        for(int i=0; i<pages; i++){
-          or |= *((int*)((uintptr_t)buffer + i * page_size + page_offset));
-          //or |= *((int*)((uintptr_t)buffer + i * page_size));
-        }
-      }
-      //if(flip % 5 == 0 || flip % 5 == 1)
-      for(int i=0;i<20000;i++){
-        or += 1;
-      }
-      //flip++;
-    }
-    for(int i=0;i<50000;i++){
-        or += 1;
-    }
+    // for(int i=0; i<pages; i++){
+    //     or |= *((int*)((uintptr_t)buffer + i * page_size + page_offset));
+    // }
+    //waitcycles(200000);
+    sendbitstr(buffer, bitstr, pages, page_size, page_offset, &waitcycles, 100000, 1);
+    usleep(300);
     uint64_t after = rdtscp64();
     //printf("cycles: %" PRId64 "\n", after-before);
   }

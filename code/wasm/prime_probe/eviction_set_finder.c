@@ -164,14 +164,19 @@ void build_es(void* app_state_ptr, int max_es){
   //if es is already present, clear allocated mem
   if(this_app_state->l3){
     l3_release(this_app_state->l3);
+    this_app_state->l3 = 0;
   }
   if(this_app_state->res){
     free(this_app_state->res);
+    this_app_state->res = 0;
   }
 
   if(!max_es){
     max_es = INT_MAX;
   }
+
+  //reset value to trigger reallocation of res array
+  this_app_state->number_of_samples_old = 0;
 
   warmup(1024*1024*128); //warm up 2^27 counts operations ~ 2^30 cycles
   printf("warm-up finished\n");
@@ -223,7 +228,7 @@ void sample_es(void* app_state_ptr, int number_of_samples, int slot_time){
   int nmonitored = l3_getSets(this_app_state->l3)/64;
 
   //avoid reallocation of res array if called with same parameter
-  if(this_app_state->number_of_samples_old != number_of_samples) {
+  if(!this_app_state->number_of_samples_old || this_app_state->number_of_samples_old != number_of_samples) {
     if(this_app_state->res){
       free(this_app_state->res);
     }  

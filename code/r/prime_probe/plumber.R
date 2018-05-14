@@ -89,7 +89,7 @@ function(){
 
 
 
-#* @png (width=1000,height=1000)
+#* @png (width=1300,height=950)
 #* @param selected_es select range e.g. 1:10
 #* @get /plotdata
 visualize_times <- function(selected_es){
@@ -98,15 +98,22 @@ visualize_times <- function(selected_es){
   tbl <- read.table(text=data)
   print(selected_es)
   
+  es_vec <- "none"
   if(grepl(":", selected_es)){
     es_vec <- strsplit(selected_es,":")[[1]][1]:strsplit(selected_es,":")[[1]][2]
   } else if(grepl(",", selected_es)){
     es_vec <- as.numeric(strsplit(selected_es, ",")[[1]])
-  } else{
-    es_vec <- 1:ncol(tbl)
+  } else {
+    selected_es <- as.numeric(selected_es)
+    if(!is.na(selected_es) && selected_es <= ncol(tbl) && selected_es > 0){
+      es_vec <- selected_es
+    }
   }
+  print(es_vec)
   
-  tbl <- tbl[,es_vec]
+  if(es_vec != "none")
+    tbl <- tbl[,es_vec, drop=F]
+  
   tbl_melt <- reshape2::melt(tbl)
   tbl_melt[["sample"]] <- rep(1:nrow(tbl), ncol(tbl))
   colnames(tbl_melt)[1] <- "es"
