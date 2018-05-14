@@ -224,9 +224,9 @@ void *sethead(l3pp_t l3, int set) { //vlist_t list, int count, int offset) {
   //}
   
   for (int i = 0; i < count; i++) {
-
+    //for probe
     LNEXT(OFFSET(vl_get(list, i), offset)) = OFFSET(vl_get(list, (i + 1) % count), offset);
-    //(i + count - 1) % count == (i - 1) % count ????
+    //for bprobe
     LNEXT(OFFSET(vl_get(list, i), offset+sizeof(void*))) = OFFSET(vl_get(list, (i + count - 1) % count), offset+sizeof(void *));
   }
 
@@ -798,6 +798,7 @@ int l3_unmonitor(l3pp_t l3, int line) {
 }
 
 void l3_unmonitorall(l3pp_t l3) {
+  bzero(l3->monitoredbitmap, l3->ngroups*l3->groupsize/32*sizeof(uint32_t));
   l3->nmonitored = 0;
   for (int i = 0; i < l3->ngroups * l3->groupsize / 32; i++)
     l3->monitoredset[i] = 0;

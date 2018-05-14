@@ -1217,6 +1217,13 @@
   
 
 </span></br>
+<span id='setMonitoredEs'>
+  lower limit monitored es
+  <span><input type="number" id="lowerLimitMonitoredEs" value="0" width="1"></span>
+  upper limit monitored es
+  <span><input type="number" id="upperLimitMonitoredEs" value="0" width="1"></span>
+  <span><input type="button" id="btnSetMonitoredEs" value="Set monitored es"></span>
+</span></br>
 <span id='buildEs'>
   upper limit es
   <span><input type="number" id="upperLimitEs" value="1" width="1"></span>
@@ -1399,6 +1406,15 @@
           console.log("Module['appStatePtr'] is null!");
         }
       }
+      document.getElementById('btnSetMonitoredEs').onclick = function() {
+        if(Module['appStatePtr'] != 0){
+          Module['asm']._set_monitored_es(Module['appStatePtr'], document.getElementById('lowerLimitMonitoredEs').value, document.getElementById('upperLimitMonitoredEs').value);
+        } else {
+          console.log("Module['appStatePtr'] is null!");
+        }
+      }
+
+      
     </script>
   </body>
 </html>
