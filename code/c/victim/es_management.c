@@ -42,7 +42,7 @@ void set_monitored_es(void* app_state_ptr, int min_index, int max_index){
 
   l3_unmonitorall(this_app_state->l3);
 
-  printf("monitor from %i to %i\n", min_index, max_index);
+  //printf("monitor from %i to %i\n", min_index, max_index);
 
   for (int i = min_index*64; i < (max_index+1)*64; i += 64)
     l3_monitor(this_app_state->l3, i);

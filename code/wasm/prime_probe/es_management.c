@@ -8,6 +8,8 @@
 #include "l3.h"
 #include "es_management.h"
 
+#define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
+
 uint32_t get_time_in_ms(){
 #ifdef WASM
   return Performance_now();
@@ -16,6 +18,38 @@ uint32_t get_time_in_ms(){
   clock_gettime(CLOCK_REALTIME, &spec);
   return spec.tv_nsec / 1.0e3;
 #endif
+}
+
+void set_monitored_es_lower_half(void* app_state_ptr){
+  struct app_state* this_app_state = (struct app_state*)app_state_ptr;
+  int nsets = l3_getSets(this_app_state->l3);
+  int nmonitored = nsets/64;
+  if(min_index == 0 && max_index == 0)
+  {
+    max_index = nmonitored-1;
+  }
+  if(min_index < 0){
+    printf("min_index < 0\n");
+    return;
+  }
+  if(max_index >= nmonitored){
+    printf("max_index >= number_of_es\n");
+    return;
+  }
+  if(max_index < min_index){
+    printf("max_index < min_index\n");
+    return;
+  }
+
+  l3_unmonitorall(this_app_state->l3);
+
+  printf("monitor from %i to %i\n", min_index, max_index);
+
+  for (int i = min_index*64; i < (max_index+1)*64; i += 64)
+    if(!CHECK_BIT(i/64, 5))
+      l3_monitor(this_app_state->l3, i);
+
+  this_app_state->monitored_es_changed = 1;
 }
 
 void set_monitored_es(void* app_state_ptr, int min_index, int max_index){

@@ -113,8 +113,18 @@ int (*waitop)(uint64_t), uint64_t wait_units){
   }
 }
 
-int main(int argc, char ** argv) {
+double mesure_mean_access_time(struct app_state* this_app_state, int samples){
+  sample_es((void*)this_app_state, samples, 0);
+  double access_time_mean = 0;
+  int res_size = this_app_state->l3->nmonitored * this_app_state->number_of_samples_old;
+  for(int i=0; i<res_size; i++) {
+    access_time_mean += this_app_state->res[i];
+  }
+  access_time_mean /= res_size;
+  return access_time_mean;
+}
 
+int main(int argc, char ** argv) {
   struct app_state* this_app_state = (struct app_state*)calloc(sizeof(struct app_state),1);
   this_app_state->l3_threshold = 140;
 
@@ -125,6 +135,11 @@ int main(int argc, char ** argv) {
   sample_es((void*)this_app_state, 1, 0);
 
   printf("probe %i es:\n", this_app_state->l3->nmonitored);
+
+  //measure idle noise to check wether listener is connected to channel
+  set_monitored_es((void*)this_app_state, 32, 63);
+  double idle_noise_mean = mesure_mean_access_time(this_app_state, 2000);
+  printf("idle_noise_mean %f\n", idle_noise_mean);
 
   // while(1){
   //   l3_probe(this_app_state->l3, this_app_state->res);
@@ -158,7 +173,40 @@ int main(int argc, char ** argv) {
       uint64_t start = get_time_in_ms();
       while(1){
         for(int i=0; i<100; i++){
-          print_bit_covert_channel(&probe_only, this_app_state->l3->monitoredhead, 0, 63, repeat_probe);
+          print_bit_covert_channel(&probe_only, this_app_state->l3->monitoredhead, 0, 31, repeat_probe);
+        }
+        if(get_time_in_ms() - start > wait_time_sec*1000){
+          break;
+        }
+      }
+    }
+    //-------------------------------------------OPEN CHANNEL-------------------------------------------
+    else if(command[0] == 'o'){
+      int wait_time_sec = atoi(command+2);
+      printf("open channel, break after %i sec\n", wait_time_sec);
+      uint64_t start = get_time_in_ms(), sec_switch = get_time_in_ms();
+      int send_noise = 0;
+      while(1){
+        if(send_noise % 2 == 0){
+          for(int i=0; i<100; i++){
+            print_bit_covert_channel(&probe_only, this_app_state->l3->monitoredhead, 0, 31, repeat_probe);
+          }
+        } else {
+          double access_time = mesure_mean_access_time(this_app_state, 2000);
+          //printf("access_time %f, idle_noise_mean %f\n", access_time, idle_noise_mean);
+          if(access_time > 2 * idle_noise_mean){
+            printf("listener seems connected!\n");
+            break;
+          }
+        }
+        if(get_time_in_ms() - sec_switch > 1000){
+          sec_switch = get_time_in_ms();
+          send_noise++;
+          if(send_noise % 2 == 0){
+            set_monitored_es((void*)this_app_state, 0, 0);
+          } else {
+            set_monitored_es((void*)this_app_state, 32, 63);
+          }
         }
         if(get_time_in_ms() - start > wait_time_sec*1000){
           break;

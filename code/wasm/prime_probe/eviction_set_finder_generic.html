@@ -1206,6 +1206,11 @@
                                                                               document.getElementById('resize').checked)">
   </span>-->
 </span></br>
+<span id='covertChannel'>
+  <span><input type="button" id="btnSearchForCovertChannel" value="Search covert channel"></span>
+  
+
+</span></br>
 <span id='sampleEs'>
   Plot select es
   <span><input type="text" id="numberRangeEs" value="all" width="1"></span>
@@ -1284,6 +1289,12 @@
           xhr.send(JSON.stringify({
               newdata: data
           }));
+        },
+        getxhr: function(url){
+          var xhr = new XMLHttpRequest();
+          xhr.open("GET", url, true);
+          xhr.send();
+          return xhr.responseText;
         },
         createPOSTStr: function(arr, arr_offset, nrow, ncol){
           var POSTstr = "";
@@ -1418,6 +1429,24 @@
           console.log("Module['appStatePtr'] is null!");
         }
       }
+      document.getElementById('btnSearchForCovertChannel').onclick = function() {
+        if(Module['appStatePtr'] != 0){
+          //first: scan all cache-super-sets but only the lower 32 sets
+          Module['asm']._set_monitored_es_lower_half(Module['appStatePtr']);
+          Module['asm']._sample_es(Module['appStatePtr'], 50, 0);
+          //mutiply by 2 to get index for all sets
+          noisy_start_cache_set = 2*parseInt(Module['getxhr']('http://localhost:8000/findnoisycacheset', POSTstr));
+
+          //noise the higher 32 sets of the found chache-super-set
+          Module['asm']._set_monitored_es(Module['appStatePtr'], noisy_start_cache_set, noisy_start_cache_set + 31);
+          //make noise for more than 1 sec => server switches between listening and sending every sec
+          Module['asm']._sample_es(Module['appStatePtr'], 2000, 0);
+        } else {
+          console.log("Module['appStatePtr'] is null!");
+        }
+      }
+
+      
 
       
     </script>

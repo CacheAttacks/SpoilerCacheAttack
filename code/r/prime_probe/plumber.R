@@ -86,11 +86,9 @@ function(){
   data
 }
 
-#* @png (width=1300,height=950)
-#* @param selected_es select range e.g. 1:10
-#* @get /findnoise
+#* @get /findnoisycacheset
 find_noise_es <- function() {
-  tbl <- read.table(text=data)
+  tbl <- data.table::fread(data)
   find_noise_es_gen(tbl)
 }
 
@@ -101,7 +99,7 @@ find_noise_es <- function() {
 visualize_times <- function(selected_es){
 a <- Sys.time()
   #x-axis eviction sets, y-axis samples
-  tbl <- read.table(text=data)
+  tbl <- data.table::fread(data)
   if(ncol(tbl)*nrow(tbl) > 1000000){
     warning("tbl to big!")
     return(0)
@@ -150,8 +148,9 @@ a <- Sys.time()
 
 find_noise_es_gen <- function(tbl) {
   mean_vec <- apply(tbl, 2, mean)
-  mean_vec_64_groups <- unlist(lapply(split(mean_vec, ceiling(seq_along(mean_vec)/64)), mean))
-  noise_es_index <- match(max(mean_vec_64_groups), mean_vec_64_groups)
-  print(paste0("es ", noise_es_index, " from ", (noise_es_index-1)*64, " to ", noise_es_index*64-1))
-  return(noise_es_index)
+  group_size <- 32
+  mean_vec_groups <- unlist(lapply(split(mean_vec, ceiling(seq_along(mean_vec)/group_size)), mean))
+  noise_es_index <- match(max(mean_vec_groups), mean_vec_groups)
+  print(paste0("es ", noise_es_index, " from ", (noise_es_index-1)*group_size, " to ", noise_es_index*group_size-1))
+  return((noise_es_index-1)*group_size)
 }
