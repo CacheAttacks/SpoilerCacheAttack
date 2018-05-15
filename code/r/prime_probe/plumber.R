@@ -91,11 +91,7 @@ function(){
 #* @get /findnoise
 find_noise_es <- function() {
   tbl <- read.table(text=data)
-  mean_vec <- apply(tbl, 2, mean)
-  mean_vec_64_groups <- unlist(lapply(split(mean_vec, ceiling(seq_along(mean_vec)/64)), mean))
-  noise_es_index <- match(max(mean_vec_64_groups), mean_vec_64_groups)
-  print(paste0("es ", noise_es_index, " from ", (noise_es_index-1)*64, " to ", noise_es_index*64-1))
-  return(noise_es_index)
+  find_noise_es_gen(tbl)
 }
 
 
@@ -110,6 +106,7 @@ a <- Sys.time()
     warning("tbl to big!")
     return(0)
   }
+  find_noise_es_gen(tbl)
   
   print(selected_es)
   
@@ -148,4 +145,13 @@ a <- Sys.time()
   d <- Sys.time()
   print(d-c)
   e
+}
+
+
+find_noise_es_gen <- function(tbl) {
+  mean_vec <- apply(tbl, 2, mean)
+  mean_vec_64_groups <- unlist(lapply(split(mean_vec, ceiling(seq_along(mean_vec)/64)), mean))
+  noise_es_index <- match(max(mean_vec_64_groups), mean_vec_64_groups)
+  print(paste0("es ", noise_es_index, " from ", (noise_es_index-1)*64, " to ", noise_es_index*64-1))
+  return(noise_es_index)
 }

@@ -133,7 +133,7 @@ int main(int argc, char ** argv) {
   char* command = calloc(sizeof(char), 128);
   int wait_cycles = 100000;
   int repeat_probe = 2;
-  int sync_repeat = 2000;
+  int sync_repeat = 100;
   while(1){
     printf("enter command e.g. w 10 , s 12:213 , c 100000 , r 3 , n 10 , y 2000 \n");
     fgets(command, 128, stdin);
@@ -187,7 +187,7 @@ int main(int argc, char ** argv) {
     }
     //-------------------------------------------SET REPEAT CYCLES-----------------------------------------------
     else if (command[0] == 'y'){
-      repeat_probe = atoi(command+2);
+      sync_repeat = atoi(command+2);
     }
   }
 
