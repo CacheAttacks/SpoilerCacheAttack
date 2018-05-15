@@ -13,6 +13,7 @@ extern void set_ptr_to_data(uint32_t, int, int, int);
 
 extern void print_plot_data(void);
 
+uint32_t get_time_in_ms();
 void set_monitored_es(void* app_state_ptr, int min_index, int max_index);
 void build_es(void* app_state_ptr, int max_es);
 void sample_es(void* app_state_ptr, int number_of_samples, int slot_time);

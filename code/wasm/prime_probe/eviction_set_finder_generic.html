@@ -1287,6 +1287,11 @@
         },
         createPOSTStr: function(arr, arr_offset, nrow, ncol){
           var POSTstr = "";
+          if(nrow*ncol > 2000000)
+          {
+            console.log("arr to big!");
+            return "";
+          }
           for(var i=0; i<nrow; i++){
             for(var j=0; j<ncol; j++){
               POSTstr += arr[++arr_offset].toString() + " ";

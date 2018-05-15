@@ -8,6 +8,16 @@
 #include "l3.h"
 #include "es_management.h"
 
+uint32_t get_time_in_ms(){
+#ifdef WASM
+  return Performance_now();
+#else
+  struct timespec spec;
+  clock_gettime(CLOCK_REALTIME, &spec);
+  return spec.tv_nsec / 1.0e3;
+#endif
+}
+
 void set_monitored_es(void* app_state_ptr, int min_index, int max_index){
   struct app_state* this_app_state = (struct app_state*)app_state_ptr;
   int nsets = l3_getSets(this_app_state->l3);
@@ -37,14 +47,6 @@ void set_monitored_es(void* app_state_ptr, int min_index, int max_index){
     l3_monitor(this_app_state->l3, i);
 
   this_app_state->monitored_es_changed = 1;
-}
-
-uint32_t get_time_in_ms(){
-#ifdef WASM
-    return Performance_now();
-#else
-    return 0;
-#endif
 }
 
 void build_es(void* app_state_ptr, int max_es){

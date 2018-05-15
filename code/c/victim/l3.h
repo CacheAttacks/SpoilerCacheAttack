@@ -60,6 +60,16 @@ struct l3pp {
 #define L3FLAG_USEPTE		0x02 
 #define L3FLAG_NOPROBE		0x04 
 
+#define LNEXT(t) (*(void **)(t))
+static inline void probe_only(void *pp) {
+  if (pp == NULL)
+    return;
+  int rv = 0;
+  void *p = (void *)pp;
+  do {
+    p = LNEXT(p);
+  } while (p != (void *) pp);
+}
 
 l3pp_t l3_prepare(l3info_t l3info, int L3_THRESHOLD, int max_es);
 void l3_release(l3pp_t l3);

@@ -86,16 +86,31 @@ function(){
   data
 }
 
-
+#* @png (width=1300,height=950)
+#* @param selected_es select range e.g. 1:10
+#* @get /findnoise
+find_noise_es <- function() {
+  tbl <- read.table(text=data)
+  mean_vec <- apply(tbl, 2, mean)
+  mean_vec_64_groups <- unlist(lapply(split(mean_vec, ceiling(seq_along(mean_vec)/64)), mean))
+  noise_es_index <- match(max(mean_vec_64_groups), mean_vec_64_groups)
+  print(paste0("es ", noise_es_index, " from ", (noise_es_index-1)*64, " to ", noise_es_index*64-1))
+  return(noise_es_index)
+}
 
 
 #* @png (width=1300,height=950)
 #* @param selected_es select range e.g. 1:10
 #* @get /plotdata
 visualize_times <- function(selected_es){
-
+a <- Sys.time()
   #x-axis eviction sets, y-axis samples
   tbl <- read.table(text=data)
+  if(ncol(tbl)*nrow(tbl) > 1000000){
+    warning("tbl to big!")
+    return(0)
+  }
+  
   print(selected_es)
   
   es_vec <- "none"
@@ -114,15 +129,23 @@ visualize_times <- function(selected_es){
   if(es_vec != "none")
     tbl <- tbl[,es_vec, drop=F]
   
+  tmp_tbl <<- tbl
   tbl_melt <- reshape2::melt(tbl)
   tbl_melt[["sample"]] <- rep(1:nrow(tbl), ncol(tbl))
   colnames(tbl_melt)[1] <- "es"
   #cap at 3500
   max_value <- 750
   tbl_melt[tbl_melt$value>max_value,"value"] <- max_value
+  b <- Sys.time()
+  print(b-a)
   
   plot <- ggplot2::ggplot(tbl_melt, ggplot2::aes(x=sample,y=es)) + 
     ggplot2::geom_tile(ggplot2::aes(fill = value)) +
     ggplot2::scale_fill_gradient(low = "white", high = "steelblue")
-  print(plot)
+  c <- Sys.time()
+  print(c-b)
+  e <- print(plot)
+  d <- Sys.time()
+  print(d-c)
+  e
 }

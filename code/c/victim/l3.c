@@ -674,6 +674,7 @@ static int probemap(l3pp_t l3) {
     vl_push(pages, l3->buffer + i + ADDRESS_OFFSET);
   vlist_t groups = map(l3, pages);
   vlist_t all_groups = expand_groups(groups);
+  //vlist_t all_groups = groups;
   vl_free(groups);  
 
   //Store map results

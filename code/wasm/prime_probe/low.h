@@ -390,6 +390,13 @@ static inline int slotwait(uint32_t slotend) {
   return 0;
 }
 
-
+static inline int waitcycles(uint64_t cycles){
+  uint64_t slotend = rdtscp64() + cycles;
+  if (rdtscp64() > slotend)
+    return 1;
+  while (rdtscp64() < slotend)
+    ;
+  return 0;
+}
 
 #endif //__LOW_H__

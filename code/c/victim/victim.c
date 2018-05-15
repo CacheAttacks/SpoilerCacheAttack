@@ -22,15 +22,6 @@
 #define TABLESIZE 4096
 #define NUMBER_OF_ACCESESS 5
 
-static inline int waitcycles(uint64_t cycles){
-  uint64_t slotend = rdtscp64() + cycles;
-  if (rdtscp64() > slotend)
-    return 1;
-  while (rdtscp64() < slotend)
-    ;
-  return 0;
-}
-
 //simulate page accesses
 void arr_access(char **buffer, int size){
   for(int i=0; i<size; i++){
@@ -96,20 +87,108 @@ void test(){
   }
 }
 
+void print_bit_covert_channel(void (*probe_operation)(void*), void** cacheset_head_arr, 
+int cacheset_index_min, int cacheset_index_max, int repeat_probe){
+  for(int i=0; i<=repeat_probe; i++) {
+    for(int cacheset_index=cacheset_index_min; cacheset_index<cacheset_index_max; cacheset_index++){
+      (*probe_operation)(cacheset_head_arr[cacheset_index]);
+    }
+  }    
+}
+
+void print_bitstr_covert_channel(char *bitstr, void (*probe_operation)(void*), 
+void** cacheset_head_arr, int cacheset_index_min, int cacheset_index_max, int repeat_probe, int snyc_repeat, 
+int (*waitop)(uint64_t), uint64_t wait_units){
+  for(int a=0; a<strlen(bitstr); a++){
+    if(a % 10 == 0){
+      print_bit_covert_channel(probe_operation, cacheset_head_arr, cacheset_index_min, cacheset_index_max, 
+      snyc_repeat);
+      (*waitop)(wait_units);
+    }
+    if(bitstr[a] == '1') {
+      print_bit_covert_channel(probe_operation, cacheset_head_arr, cacheset_index_min, cacheset_index_max, 
+      repeat_probe);
+    }
+    (*waitop)(wait_units);
+  }
+}
+
 int main(int argc, char ** argv) {
+
   struct app_state* this_app_state = (struct app_state*)calloc(sizeof(struct app_state),1);
   this_app_state->l3_threshold = 140;
 
   build_es((void*)this_app_state, 1);
 
-  //set_monitored_es((void*)this_app_state, 0, 0);
+  set_monitored_es((void*)this_app_state, 0, 0);
 
   sample_es((void*)this_app_state, 1, 0);
 
   printf("probe %i es:\n", this_app_state->l3->nmonitored);
 
+  // while(1){
+  //   l3_probe(this_app_state->l3, this_app_state->res);
+  // }
+
+  char* command = calloc(sizeof(char), 128);
+  int wait_cycles = 100000;
+  int repeat_probe = 2;
+  int sync_repeat = 2000;
   while(1){
-    l3_probe(this_app_state->l3, this_app_state->res);
+    printf("enter command e.g. w 10 , s 12:213 , c 100000 , r 3 , n 10 , y 2000 \n");
+    fgets(command, 128, stdin);
+    //-------------------------------------------PRINT BITSTR-------------------------------------------
+    if(command[0] == 'w'){
+      int wait_time_sec = atoi(command+2);
+      printf("wait %i sec\n", wait_time_sec);
+      char bitstr[] = "1000111001";
+      uint64_t start = get_time_in_ms();
+      while(1){
+        print_bitstr_covert_channel(bitstr, &probe_only, this_app_state->l3->monitoredhead, 0, 5, repeat_probe, sync_repeat,
+          &waitcycles, wait_cycles);
+        if(get_time_in_ms() - start > wait_time_sec*1000){
+          break;
+        }
+      }
+    } 
+    //-------------------------------------------NOISE-----------------------------------------------
+    else if(command[0] == 'n'){
+      int wait_time_sec = atoi(command+2);
+      printf("noise new %i sec\n", wait_time_sec);
+      uint64_t start = get_time_in_ms();
+      while(1){
+        for(int i=0; i<100; i++){
+          print_bit_covert_channel(&probe_only, this_app_state->l3->monitoredhead, 0, 63, repeat_probe);
+        }
+        if(get_time_in_ms() - start > wait_time_sec*1000){
+          break;
+        }
+      }
+    }
+    //-------------------------------------------SELECT ES-----------------------------------------------
+    else if (command[0] == 's'){
+      for(int i=0; i<128 && command[i] != '\n'; i++){
+        if(command[i] == ':'){
+          command[i] = '\0';
+          int min_index = atoi(command+2);
+          int max_index = atoi(command+i+1);
+          printf("selected es from %i to %i\n", min_index, max_index);
+          set_monitored_es((void*)this_app_state, min_index, max_index);
+        }
+      }
+    }
+    //-------------------------------------------SET WAIT CYCLES-----------------------------------------------
+    else if (command[0] == 'c'){
+      wait_cycles = atoi(command+2);
+    } 
+    //-------------------------------------------SET REPEAT CYCLES-----------------------------------------------
+    else if (command[0] == 'r'){
+      repeat_probe = atoi(command+2);
+    }
+    //-------------------------------------------SET REPEAT CYCLES-----------------------------------------------
+    else if (command[0] == 'y'){
+      repeat_probe = atoi(command+2);
+    }
   }
 
   flush_l3(2048);
