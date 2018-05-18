@@ -22,6 +22,13 @@
 #define TABLESIZE 4096
 #define NUMBER_OF_ACCESESS 5
 
+#define NOISY_CHANNEL_OFFSET_SEND_START 0
+#define NOISY_CHANNEL_OFFSET_SEND_END 31
+#define NOISY_CHANNEL_OFFSET_REC_START 34
+#define NOISY_CHANNEL_OFFSET_REC_END 63
+#define COMMUNICATION_CHANNEL_OFFSET_START 32
+#define COMMUNICATION_CHANNEL_OFFSET_END 33
+
 //simulate page accesses
 void arr_access(char **buffer, int size){
   for(int i=0; i<size; i++){
@@ -113,17 +120,6 @@ int (*waitop)(uint64_t), uint64_t wait_units){
   }
 }
 
-double mesure_mean_access_time(struct app_state* this_app_state, int samples){
-  sample_es((void*)this_app_state, samples, 0);
-  double access_time_mean = 0;
-  int res_size = this_app_state->l3->nmonitored * this_app_state->number_of_samples_old;
-  for(int i=0; i<res_size; i++) {
-    access_time_mean += this_app_state->res[i];
-  }
-  access_time_mean /= res_size;
-  return access_time_mean;
-}
-
 int main(int argc, char ** argv) {
   struct app_state* this_app_state = (struct app_state*)calloc(sizeof(struct app_state),1);
   this_app_state->l3_threshold = 140;
@@ -189,7 +185,7 @@ int main(int argc, char ** argv) {
       while(1){
         if(send_noise % 2 == 0){
           for(int i=0; i<100; i++){
-            print_bit_covert_channel(&probe_only, this_app_state->l3->monitoredhead, 0, 31, repeat_probe);
+            print_bit_covert_channel(&probe_only, this_app_state->l3->monitoredhead, NOISY_CHANNEL_OFFSET_SEND_START, NOISY_CHANNEL_OFFSET_SEND_END, repeat_probe);
           }
         } else {
           double access_time = mesure_mean_access_time(this_app_state, 2000);
@@ -205,7 +201,7 @@ int main(int argc, char ** argv) {
           if(send_noise % 2 == 0){
             set_monitored_es((void*)this_app_state, 0, 0);
           } else {
-            set_monitored_es((void*)this_app_state, 32, 63);
+            set_monitored_es((void*)this_app_state, NOISY_CHANNEL_OFFSET_REC_START, NOISY_CHANNEL_OFFSET_REC_END);
           }
         }
         if(get_time_in_ms() - start > wait_time_sec*1000){

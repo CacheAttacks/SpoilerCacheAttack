@@ -90,12 +90,23 @@
 //experiments shows: valid es => max three contract calls
 #define MAX_CONTRACT_CALLS 3
 
+//choose percentage of availible mem blocks in the pool before first es testing
+#define EXPAND_START_VALUE_FACTOR 0.3
+
+//try to delete mulipte elements from es in contract before es testing
+//e.g. vl_len(es) = 1000 & CONTRACT_FIRST_DEL_FACTOR=0.02 => del 20 elements at once
+#define CONTRACT_FIRST_DEL_FACTOR 0.02
+#define CONTRACT_SECOND_DEL_FACTOR 0.005
+
 #ifdef WASM
   //ifdef => test eviction set multiple times after contract phase
   #define AFTERCONTRACTTEST
 
   //ifdef => test correctness of conctract phase, test es without one member for each member
   #define ONEOUTTEST
+
+  //print debug stuff for one out test and after contract test
+  #define DEBUG_TEST_PRINT 0
 
   #define EXPAND_ITERATIONS 20
   #define CONTRACT_ITERATIONS 1
@@ -415,8 +426,10 @@ static void expand_test(vlist_t es, void* current){
 static void *expand(vlist_t es, vlist_t candidates) {
   while (vl_len(candidates) > 0) {
     void *current = vl_poprand(candidates);
-    if (vl_len(es) > 16 && checkevict_safe(es, current, vl_len(es), 0, EXPAND_ITERATIONS)){
-      printf("found es! size:%i\n", vl_len(es));
+    if (vl_len(es) > 16 && 
+    vl_len(es) > vl_len(candidates) * EXPAND_START_VALUE_FACTOR && 
+    checkevict_safe(es, current, vl_len(es), 0, EXPAND_ITERATIONS)){
+      //printf("found es! size:%i\n", vl_len(es));
       //expand_test(es, current);
       //checkevict(es, current, vl_len(es), 1);
       //checkevict(es, current, vl_len(es), 1);
@@ -439,6 +452,49 @@ static void contract(vlist_t es, vlist_t candidates, void *current) {
     //load each element in evection set instead of clflush
     //access_es(es);
     //clflush(current);
+    if (checkevict_safe(es, current, vl_len(es), 0, CONTRACT_ITERATIONS))
+      vl_push(candidates, cand);
+    else {
+      vl_insert(es, i, cand);
+      i++;
+    }
+  }
+}
+
+static void contract_multiple(vlist_t es, vlist_t candidates, void *current, int del_number){
+  vlist_t tmp_list = vl_new();
+  for (int i = 0; i < vl_len(es) ;) {
+    for(int j=0; j<del_number && i < vl_len(es); j++){
+      vl_push(tmp_list, vl_del(es, i));      
+    }
+    if (checkevict_safe(es, current, vl_len(es), 0, CONTRACT_ITERATIONS)){
+      while(vl_len(tmp_list) > 0){
+        vl_push(candidates, vl_pop(tmp_list));      
+      }
+    } else {
+      while(vl_len(tmp_list) > 0){
+        vl_insert(es, i, vl_pop(tmp_list));
+      }
+      i += del_number;
+    }
+  }
+}
+
+static void contract_advanced(vlist_t es, vlist_t candidates, void *current) {
+  int first_del_number = (int)(vl_len(es) * CONTRACT_FIRST_DEL_FACTOR);
+  int second_del_number = (int)(vl_len(es) * CONTRACT_SECOND_DEL_FACTOR);
+
+  if(first_del_number > 1) {
+    contract_multiple(es, candidates, current, first_del_number);
+    if(second_del_number > 1) {
+      contract_multiple(es, candidates, current, second_del_number);
+    }
+  }
+
+  for (int i = 0; i < vl_len(es);) {
+    void *cand = vl_get(es, i);
+    vl_del(es, i);
+
     if (checkevict_safe(es, current, vl_len(es), 0, CONTRACT_ITERATIONS))
       vl_push(candidates, cand);
     else {
@@ -512,21 +568,29 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
     }
 
 #ifdef WASM
+  #ifdef DEBUG_CONTRACT
     printf("CONTRACT (es size step):");
+  #endif
     int size_old = INT32_MAX;
     for(int i=0; i<MAX_CONTRACT_CALLS && vl_len(es) > l3->l3info.associativity; i++){
       before = rdtscp();
-      contract(es, lines, c);
+      contract_advanced(es, lines, c);
       time_contract += (uint64_t)get_diff(before, rdtscp());
+    #ifdef DEBUG_CONTRACT
         printf("%i ", vl_len(es));
+    #endif
       if(i==0 && vl_len(es) >= MAX_SIZE_AFTER_FIRST_CONTRACT)
       {
+    #ifdef DEBUG_CONTRACT
         printf("after first contract call => vl_len(es) >= %i => break\n", MAX_SIZE_AFTER_FIRST_CONTRACT);
+    #endif
         break;
       }
       if(i==1 && vl_len(es) >= MAX_SIZE_AFTER_SECOND_CONTRACT)
       {
+    #ifdef DEBUG_CONTRACT
         printf("after first contract call => vl_len(es) >= %i => break\n", MAX_SIZE_AFTER_SECOND_CONTRACT);
+    #endif
         break;
       }
       size_old = vl_len(es);
@@ -538,34 +602,41 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
 #endif 
 
     before = rdtscp();
-    if(vl_len(es) < l3->l3info.associativity){
-      printf("warning vl_len(es)=%i < ass=%i!\n", vl_len(es), l3->l3info.associativity);
-    }
-
+    // if(vl_len(es) < l3->l3info.associativity){
+    //   printf("warning vl_len(es)=%i < ass=%i!\n", vl_len(es), l3->l3info.associativity);
+    // }
     int test_failed = 0;
     if (vl_len(es) <= l3->l3info.associativity + MAX_L3_ASSOCIATIVITY_DIFF &&
     vl_len(es) >= l3->l3info.associativity){
     #ifdef AFTERCONTRACTTEST
+    #if DEBUG_TEST_PRINT == 1
       printf("after contract es size:%i\n", vl_len(es));
       printf("evict ");
+    #endif
       for(int i=0;i<10;i++){
-        if(checkevict(es, c, vl_len(es), 1) <= L3_THRESHOLD)
+        if(checkevict(es, c, vl_len(es), DEBUG_TEST_PRINT) <= L3_THRESHOLD)
           test_failed = 1;
-        //printf("%i ", checkevict(es, c, vl_len(es), 0));
+      #if DEBUG_TEST_PRINT == 1
+        printf("%i ", checkevict(es, c, vl_len(es), 0));
+      #endif
       }
     #endif //AFTERCONTRACTTEST
     #ifdef ONEOUTTEST
       int oneouttest_failed = 0;
-      printf("\n 1 out test \n");  
+    #if DEBUG_TEST_PRINT == 1
+      printf("\n 1 out test \n"); 
+    #endif
       for(int i=0;i<vl_len(es);i++){
         void *element = vl_del(es, i);
-        if(checkevict(es, c, vl_len(es), 1) > L3_THRESHOLD)
+        if(checkevict(es, c, vl_len(es), DEBUG_TEST_PRINT) > L3_THRESHOLD)
           oneouttest_failed++;
         vl_insert(es, i, element);
       }
       if(oneouttest_failed > 3)
         test_failed = 1;
+    #if DEBUG_TEST_PRINT == 1
       putchar('\n');
+    #endif
     #endif //ONEOUTTEST
     }
 

@@ -89,7 +89,7 @@ function(){
 #* @get /findnoisycacheset
 find_noise_es <- function() {
   tbl <- data.table::fread(data)
-  find_noise_es_gen(tbl)
+  find_noise_es_gen(tbl, 32)
 }
 
 
@@ -146,9 +146,8 @@ a <- Sys.time()
 }
 
 
-find_noise_es_gen <- function(tbl) {
+find_noise_es_gen <- function(tbl, group_size = 32) {
   mean_vec <- apply(tbl, 2, mean)
-  group_size <- 32
   mean_vec_groups <- unlist(lapply(split(mean_vec, ceiling(seq_along(mean_vec)/group_size)), mean))
   noise_es_index <- match(max(mean_vec_groups), mean_vec_groups)
   print(paste0("es ", noise_es_index, " from ", (noise_es_index-1)*group_size, " to ", noise_es_index*group_size-1))

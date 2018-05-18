@@ -1222,7 +1222,7 @@
   
 
 </span></br>
-<span id='setMonitoredEs'>
+<span id='setMonitoredEsGroup'>
   lower limit monitored es
   <span><input type="number" id="lowerLimitMonitoredEs" value="0" width="1"></span>
   upper limit monitored es
@@ -1409,7 +1409,7 @@
           var numberOfSamples = document.getElementById('numberSamples').value;
           console.log(numberOfSamples);
           var slotTime = document.getElementById('numberSlotTime').value;
-          Module['asm']._sample_es(Module['appStatePtr'], numberOfSamples, slotTime);
+          Module['asm']._sample_es(Module['appStatePtr'], numberOfSamples, slotTime, 1);
         } else {
           console.log("Module['appStatePtr'] is null!");
         }
@@ -1433,14 +1433,45 @@
         if(Module['appStatePtr'] != 0){
           //first: scan all cache-super-sets but only the lower 32 sets
           Module['asm']._set_monitored_es_lower_half(Module['appStatePtr']);
-          Module['asm']._sample_es(Module['appStatePtr'], 50, 0);
+          Module['asm']._sample_es(Module['appStatePtr'], 50, 0, 1);
           //mutiply by 2 to get index for all sets
           noisy_start_cache_set = 2*parseInt(Module['getxhr']('http://localhost:8000/findnoisycacheset', POSTstr));
+          console.log("possible noisy_start_cache_set:" + noisy_start_cache_set);
 
-          //noise the higher 32 sets of the found chache-super-set
           Module['asm']._set_monitored_es(Module['appStatePtr'], noisy_start_cache_set, noisy_start_cache_set + 31);
+          var access_time = Module['asm'].mesure_mean_access_time(Module['appStatePtr'], 2000);
+
+          //checks whether detected es seems valid and also
+          //noise the higher 30 sets of the detected cache-super-set
+          console.log("noise on set " + (noisy_start_cache_set + 34) + " to " + (noisy_start_cache_set + 63));
+          Module['asm']._set_monitored_es(Module['appStatePtr'], noisy_start_cache_set + 34, noisy_start_cache_set + 63);
           //make noise for more than 1 sec => server switches between listening and sending every sec
-          Module['asm']._sample_es(Module['appStatePtr'], 2000, 0);
+          var idle_noise_mean = Module['asm'].mesure_mean_access_time(Module['appStatePtr'], 2000);
+
+          if(access_time > 2 * idle_noise_mean) {
+            console.log("noisy_start_cache_set:" + noisy_start_cache_set + " seems valid");
+            Module['noisy_start_cache_set'] = noisy_start_cache_set;
+            new Promise(resolve => setTimeout(resolve, 1000));
+            console.log("search for covert channel successfully finished");
+          } else {
+            console.log("search for covert channel failed");
+          }
+
+
+        } else {
+          console.log("Module['appStatePtr'] is null!");
+        }
+      }
+      document.getElementById('btnListeningChannel').onclick = function() {
+        if(Module['appStatePtr'] != 0){
+          if (typeof Module['noisy_start_cache_set'] !== 'undefined') {
+            //wait for sending on channels 32 and 33
+            console.log("listen on " + (Module['noisy_start_cache_set'] + 32) + " and " + (Module['noisy_start_cache_set'] + 32));
+            Module['asm']._set_monitored_es(Module['appStatePtr'], Module['noisy_start_cache_set'] + 32, Module['noisy_start_cache_set'] + 33);
+            Module['asm']._sample_es(Module['appStatePtr'], 20000, 0, 1);
+          } else {
+            console.log("Module['noisy_start_cache_set'] is undefined! Searched for covert channel?");
+          }
         } else {
           console.log("Module['appStatePtr'] is null!");
         }

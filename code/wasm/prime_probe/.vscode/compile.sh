@@ -1,2 +1,2 @@
 #source ~/MA_2/webassembly/emsdk-portable/emsdk_env.sh
-emcc -O0 eviction_set_finder.c vlist.c timestats.c SABcounter.c es_management.c l3.c -s WASM=1 -o eviction_set_finder.html --js-library myLibrary.js -s TOTAL_MEMORY=512MB -g4 --source-map-base http://localhost:8080/ -s EXPORTED_FUNCTIONS='["_main", "_build_es", "_sample_es", "_set_monitored_es", "_set_monitored_es_lower_half"]'
+emcc -O0 eviction_set_finder.c vlist.c timestats.c SABcounter.c es_management.c l3.c -s WASM=1 -o eviction_set_finder.html --js-library myLibrary.js -s TOTAL_MEMORY=512MB -g4 --source-map-base http://localhost:8080/ -s EXPORTED_FUNCTIONS='["_main", "_build_es", "_sample_es", "_set_monitored_es", "_set_monitored_es_lower_half", "_mesure_mean_access_time"]'

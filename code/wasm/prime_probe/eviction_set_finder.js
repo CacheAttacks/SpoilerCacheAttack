@@ -1711,7 +1711,7 @@ var ASM_CONSTS = [];
 
 STATIC_BASE = GLOBAL_BASE;
 
-STATICTOP = STATIC_BASE + 6992;
+STATICTOP = STATIC_BASE + 6736;
 /* global initializers */  __ATINIT__.push();
 
 
@@ -1720,7 +1720,7 @@ STATICTOP = STATIC_BASE + 6992;
 
 
 
-var STATIC_BUMP = 6992;
+var STATIC_BUMP = 6736;
 Module["STATIC_BASE"] = STATIC_BASE;
 Module["STATIC_BUMP"] = STATIC_BUMP;
 
@@ -1794,6 +1794,11 @@ function copyTempDouble(ptr) {
           //return Module['sharedArrayCounter'][0];
           //far more consistent
           return Atomics.load(Module['sharedArrayCounter'], 0);
+      }
+
+  function _SAB_terminate_counter_sub_worker()
+      {
+          Module['timerWorker'].terminate();
       }
 
   function ___assert_fail(condition, filename, line, func) {
@@ -5160,7 +5165,7 @@ function invoke_viii(index,a1,a2,a3) {
 
 Module.asmGlobalArg = {};
 
-Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "nullFunc_viii": nullFunc_viii, "invoke_ii": invoke_ii, "invoke_iiii": invoke_iiii, "invoke_viii": invoke_viii, "_Performance_now": _Performance_now, "_SAB_get_resolution_ns": _SAB_get_resolution_ns, "_SAB_lib_get_counter_value": _SAB_lib_get_counter_value, "___assert_fail": ___assert_fail, "___lock": ___lock, "___setErrNo": ___setErrNo, "___syscall140": ___syscall140, "___syscall146": ___syscall146, "___syscall192": ___syscall192, "___syscall54": ___syscall54, "___syscall6": ___syscall6, "___syscall91": ___syscall91, "___unlock": ___unlock, "__exit": __exit, "_abort": _abort, "_emscripten_memcpy_big": _emscripten_memcpy_big, "_exit": _exit, "_print_plot_data": _print_plot_data, "_set_app_state_ptr": _set_app_state_ptr, "_set_ptr_to_data": _set_ptr_to_data, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
+Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "nullFunc_viii": nullFunc_viii, "invoke_ii": invoke_ii, "invoke_iiii": invoke_iiii, "invoke_viii": invoke_viii, "_Performance_now": _Performance_now, "_SAB_get_resolution_ns": _SAB_get_resolution_ns, "_SAB_lib_get_counter_value": _SAB_lib_get_counter_value, "_SAB_terminate_counter_sub_worker": _SAB_terminate_counter_sub_worker, "___assert_fail": ___assert_fail, "___lock": ___lock, "___setErrNo": ___setErrNo, "___syscall140": ___syscall140, "___syscall146": ___syscall146, "___syscall192": ___syscall192, "___syscall54": ___syscall54, "___syscall6": ___syscall6, "___syscall91": ___syscall91, "___unlock": ___unlock, "__exit": __exit, "_abort": _abort, "_emscripten_memcpy_big": _emscripten_memcpy_big, "_exit": _exit, "_print_plot_data": _print_plot_data, "_set_app_state_ptr": _set_app_state_ptr, "_set_ptr_to_data": _set_ptr_to_data, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
 // EMSCRIPTEN_START_ASM
 var asm =Module["asm"]// EMSCRIPTEN_END_ASM
 (Module.asmGlobalArg, Module.asmLibraryArg, buffer);
@@ -5213,6 +5218,12 @@ var real__memalign = asm["_memalign"]; asm["_memalign"] = function() {
   return real__memalign.apply(null, arguments);
 };
 
+var real__mesure_mean_access_time = asm["_mesure_mean_access_time"]; asm["_mesure_mean_access_time"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return real__mesure_mean_access_time.apply(null, arguments);
+};
+
 var real__sample_es = asm["_sample_es"]; asm["_sample_es"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
@@ -5229,6 +5240,12 @@ var real__set_monitored_es = asm["_set_monitored_es"]; asm["_set_monitored_es"] 
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return real__set_monitored_es.apply(null, arguments);
+};
+
+var real__set_monitored_es_lower_half = asm["_set_monitored_es_lower_half"]; asm["_set_monitored_es_lower_half"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return real__set_monitored_es_lower_half.apply(null, arguments);
 };
 
 var real_establishStackSpace = asm["establishStackSpace"]; asm["establishStackSpace"] = function() {
@@ -5313,6 +5330,10 @@ var _memset = Module["_memset"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return Module["asm"]["_memset"].apply(null, arguments) };
+var _mesure_mean_access_time = Module["_mesure_mean_access_time"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["_mesure_mean_access_time"].apply(null, arguments) };
 var _sample_es = Module["_sample_es"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
@@ -5325,6 +5346,10 @@ var _set_monitored_es = Module["_set_monitored_es"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return Module["asm"]["_set_monitored_es"].apply(null, arguments) };
+var _set_monitored_es_lower_half = Module["_set_monitored_es_lower_half"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["_set_monitored_es_lower_half"].apply(null, arguments) };
 var establishStackSpace = Module["establishStackSpace"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
