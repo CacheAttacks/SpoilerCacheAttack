@@ -62,12 +62,14 @@ void set_monitored_es(void* app_state_ptr, int min_index, int max_index){
   this_app_state->last_max_index == max_index){
     return;
   }
-
+  //printf("min_index:%i ,max_index:%i\n", min_index, max_index);
   int nsets = l3_getSets(this_app_state->l3);
   int nmonitored = nsets/64;
-  if(min_index == 0 && max_index == 0)
+  //printf("nmonitored: %i\n", nmonitored);
+  if(min_index == -1 && max_index == -1)
   {
     max_index = nmonitored-1;
+    min_index = 0;
   }
   if(min_index < 0){
     printf("min_index < 0\n");
@@ -135,6 +137,7 @@ void build_es(void* app_state_ptr, int max_es){
 
     printf("Eviction set total time: %u sec\n", (timer_after-timer_before)/1000);
 #ifdef BENCHMARKMODE
+    l3_release(this_app_state->l3);
     timer_array[i] = timer_after-timer_before;
   }
   for(int i=0; i<BENCHMARKRUNS; i++){
@@ -150,7 +153,9 @@ void build_es(void* app_state_ptr, int max_es){
   int nmonitored = nsets/64;
   printf("nmonitored: %i\n",nmonitored);
 
-  set_monitored_es(app_state_ptr, 0, 0);
+  set_monitored_es(app_state_ptr, -1, -1);
+
+  printf("ncol: %i\n", this_app_state->l3->nmonitored);
 }
 
 void sample_es(void* app_state_ptr, int number_of_samples, int slot_time
@@ -183,11 +188,11 @@ void sample_es(void* app_state_ptr, int number_of_samples, int slot_time
     //  this_app_state->res[i] = 1;
   }
 
-  l3_repeatedprobe(this_app_state->l3, number_of_samples, this_app_state->res, 0);
+  l3_repeatedprobe(this_app_state->l3, number_of_samples, this_app_state->res, slot_time);
  
 #ifdef WASM
   //update ptr, type = 0 => Uint16
-  set_ptr_to_data((uint32_t)this_app_state->res, number_of_samples, this_app_state->l3->nmonitored, slot_time);
+  set_ptr_to_data((uint32_t)this_app_state->res, number_of_samples, this_app_state->l3->nmonitored, 0);
 
   //printf("set_ptr_to_data: %p\n", this_app_state->res);
 

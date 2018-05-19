@@ -461,7 +461,8 @@ static void contract(vlist_t es, vlist_t candidates, void *current) {
   }
 }
 
-static void contract_multiple(vlist_t es, vlist_t candidates, void *current, int del_number){
+static int contract_multiple(vlist_t es, vlist_t candidates, void *current, int del_number){
+  int contract_at_least_once = 0;
   vlist_t tmp_list = vl_new();
   for (int i = 0; i < vl_len(es) ;) {
     for(int j=0; j<del_number && i < vl_len(es); j++){
@@ -476,16 +477,25 @@ static void contract_multiple(vlist_t es, vlist_t candidates, void *current, int
         vl_insert(es, i, vl_pop(tmp_list));
       }
       i += del_number;
+      contract_at_least_once = 1;
     }
   }
+  return contract_at_least_once;
 }
 
-static void contract_advanced(vlist_t es, vlist_t candidates, void *current) {
-  int first_del_number = (int)(vl_len(es) * CONTRACT_FIRST_DEL_FACTOR);
-  int second_del_number = (int)(vl_len(es) * CONTRACT_SECOND_DEL_FACTOR);
+static void contract_advanced(vlist_t es, vlist_t candidates, void *current, int associativity) {
+  //"perfect" es has 16 elements => therefore split es in vl_len(es)/(17) parts
+  //at least one part can be deleted completly!
+  int boundary = (int)(vl_len(es) / (associativity+1));
+  //int first_del_number = (int)(vl_len(es) * CONTRACT_FIRST_DEL_FACTOR);
+  int first_del_number = 12;
+  //int second_del_number = (int)(vl_len(es) * CONTRACT_SECOND_DEL_FACTOR);
+  int second_del_number = 6;
 
   if(first_del_number > 1) {
-    contract_multiple(es, candidates, current, first_del_number);
+    if(!contract_multiple(es, candidates, current, first_del_number)) {
+      return;
+    }
     if(second_del_number > 1) {
       contract_multiple(es, candidates, current, second_del_number);
     }
@@ -574,7 +584,7 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
     int size_old = INT32_MAX;
     for(int i=0; i<MAX_CONTRACT_CALLS && vl_len(es) > l3->l3info.associativity; i++){
       before = rdtscp();
-      contract_advanced(es, lines, c);
+      contract_advanced(es, lines, c, l3->l3info.associativity);
       time_contract += (uint64_t)get_diff(before, rdtscp());
     #ifdef DEBUG_CONTRACT
         printf("%i ", vl_len(es));

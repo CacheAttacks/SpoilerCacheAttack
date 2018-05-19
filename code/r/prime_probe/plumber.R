@@ -73,6 +73,7 @@ data <- ""
 #* @post /changedata
 function(newdata){
   data <<- newdata
+  print(newdata)
 }
 
 #* @param newdata data for the file

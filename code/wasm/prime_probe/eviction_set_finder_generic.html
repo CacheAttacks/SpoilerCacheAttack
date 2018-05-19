@@ -1208,7 +1208,7 @@
 </span></br>
 <span id='covertChannel'>
   <span><input type="button" id="btnSearchForCovertChannel" value="Search covert channel"></span>
-  
+  <span><input type="button" id="btnListeningChannel" value="Listing channel"></span>  
 
 </span></br>
 <span id='sampleEs'>
@@ -1224,14 +1224,14 @@
 </span></br>
 <span id='setMonitoredEsGroup'>
   lower limit monitored es
-  <span><input type="number" id="lowerLimitMonitoredEs" value="0" width="1"></span>
+  <span><input type="number" id="lowerLimitMonitoredEs" value="-1" width="1"></span>
   upper limit monitored es
-  <span><input type="number" id="upperLimitMonitoredEs" value="0" width="1"></span>
+  <span><input type="number" id="upperLimitMonitoredEs" value="-1" width="1"></span>
   <span><input type="button" id="btnSetMonitoredEs" value="Set monitored es"></span>
 </span></br>
 <span id='buildEs'>
   upper limit es
-  <span><input type="number" id="upperLimitEs" value="1" width="1"></span>
+  <span><input type="number" id="upperLimitEs" value="0" width="1"></span>
   <span><input type="button" id="btnBuildEs" value="Build es"></span>
 </span>
 
@@ -1407,7 +1407,7 @@
       document.getElementById('btnSampleEs').onclick = function() {
         if(Module['appStatePtr'] != 0){
           var numberOfSamples = document.getElementById('numberSamples').value;
-          console.log(numberOfSamples);
+          //console.log(numberOfSamples);
           var slotTime = document.getElementById('numberSlotTime').value;
           Module['asm']._sample_es(Module['appStatePtr'], numberOfSamples, slotTime, 1);
         } else {
@@ -1435,6 +1435,7 @@
           Module['asm']._set_monitored_es_lower_half(Module['appStatePtr']);
           Module['asm']._sample_es(Module['appStatePtr'], 50, 0, 1);
           //mutiply by 2 to get index for all sets
+          var POSTstr = Module['createPOSTStr'](Module['wasmMemoryArr'], Module['res']/Module['byteFactor'], Module['nrow'], Module['ncol']);
           noisy_start_cache_set = 2*parseInt(Module['getxhr']('http://localhost:8000/findnoisycacheset', POSTstr));
           console.log("possible noisy_start_cache_set:" + noisy_start_cache_set);
 

@@ -43,7 +43,7 @@
 
 //ifdef => try to find es repeatly
 #define BENCHMARKMODE
-#define BENCHMARKRUNS 100
+#define BENCHMARKRUNS 20
 
 
 #ifdef WASM
