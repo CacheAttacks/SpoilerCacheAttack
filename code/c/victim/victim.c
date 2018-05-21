@@ -27,7 +27,7 @@
 #define NOISY_CHANNEL_OFFSET_REC_START 34
 #define NOISY_CHANNEL_OFFSET_REC_END 63
 #define COMMUNICATION_CHANNEL_OFFSET_START 32
-#define COMMUNICATION_CHANNEL_OFFSET_END 33
+#define COMMUNICATION_CHANNEL_OFFSET_END 32
 
 //simulate page accesses
 void arr_access(char **buffer, int size){
@@ -146,7 +146,7 @@ int main(int argc, char ** argv) {
   int repeat_probe = 2;
   int sync_repeat = 100;
   while(1){
-    printf("enter command e.g. w 10 , s 12:213 , c 100000 , r 3 , n 10 , y 2000 \n");
+    printf("enter command e.g. w 10 , s 12:213 , c 100000 , r 3 , n 10 , y 2000, p 10, b \n");
     fgets(command, 128, stdin);
     //-------------------------------------------PRINT BITSTR-------------------------------------------
     if(command[0] == 'w'){
@@ -191,6 +191,7 @@ int main(int argc, char ** argv) {
           double access_time = mesure_mean_access_time(this_app_state, 2000);
           //printf("access_time %f, idle_noise_mean %f\n", access_time, idle_noise_mean);
           if(access_time > 2 * idle_noise_mean){
+            printf("access_time %f, idle_noise_mean %f\n", access_time, idle_noise_mean);
             printf("listener seems connected!\n");
             break;
           }
@@ -208,6 +209,31 @@ int main(int argc, char ** argv) {
           break;
         }
       }
+
+    }
+    //---------------------------------------BENCHMARK--------------------------------------------
+    else if (command[0] == 'b'){
+      int it = atoi(command+2);
+      uint64_t before = get_time_in_ms(), before_print, after_print;
+      while(get_time_in_ms() - before < 200){
+        before_print = rdtscp64();
+        for(int i = 0; i<it; i++)
+          probe_only(this_app_state->l3->monitoredhead[COMMUNICATION_CHANNEL_OFFSET_START]); 
+        after_print = rdtscp64();
+      }
+      printf("cycles prime single cache set: %" PRIu64 "\n", after_print - before_print);
+    }
+    //---------------------------------------PRINT ON CHANNEL--------------------------------------------
+    else if (command[0] == 'p'){
+      char bitstr[] = "1000111001";
+      int wait_time_sec = atoi(command+2);
+      uint64_t before = get_time_in_ms(), before_print, after_print;
+      while(get_time_in_ms() - before < 1000 * wait_time_sec){
+        before_print = rdtscp64();
+        print_bitstr_covert_channel(bitstr, &probe_only, this_app_state->l3->monitoredhead, COMMUNICATION_CHANNEL_OFFSET_START, COMMUNICATION_CHANNEL_OFFSET_END, repeat_probe, sync_repeat, &waitcycles, wait_cycles);
+        after_print = rdtscp64();
+      }
+      printf("last print bitstr time %" PRIu64 "\n", after_print - before_print);
     }
     //-------------------------------------------SELECT ES-----------------------------------------------
     else if (command[0] == 's'){

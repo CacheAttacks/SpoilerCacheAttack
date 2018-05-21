@@ -5,6 +5,10 @@ find_noise_es <- function(tbl) {
   print(paste0("es ", noise_es_index, " from ", (noise_es_index-1)*64, " to ", noise_es_index*64-1))
 }
 
+split_in_sync <- function(bit_on_vec, sync_repeat_threshold){
+  
+}
+
 #assume each col has same bits
 identify_bits <- function(tbl){
   #use median cause there are more untouched samples
@@ -21,7 +25,11 @@ identify_bits <- function(tbl){
   
   bits_between_sync <- 10
   
-  anlyse_time_line(bit_on_vec[,2], bit_on_repeat_threshold, bit_off_repeat_threshold, 
+  return(plot(bit_on_vec[50:nrow(bit_on_vec),1]))
+  
+  discard_first_measurements <- 50
+  
+  anlyse_time_line(bit_on_vec[50:nrow(bit_on_vec),1], bit_on_repeat_threshold, bit_off_repeat_threshold, 
                    sync_repeat_threshold, bits_between_sync)
 }
 

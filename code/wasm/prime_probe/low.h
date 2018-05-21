@@ -42,8 +42,9 @@
 #define RES_TYPE uint16_t
 
 //ifdef => try to find es repeatly
-#define BENCHMARKMODE
+//#define BENCHMARKMODE
 #define BENCHMARKRUNS 20
+//#define DEBUG_CONTRACT
 
 
 #ifdef WASM

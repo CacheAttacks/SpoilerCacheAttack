@@ -490,15 +490,15 @@ static void contract_advanced(vlist_t es, vlist_t candidates, void *current, int
   //int first_del_number = (int)(vl_len(es) * CONTRACT_FIRST_DEL_FACTOR);
   int first_del_number = 12;
   //int second_del_number = (int)(vl_len(es) * CONTRACT_SECOND_DEL_FACTOR);
-  int second_del_number = 6;
+  //int second_del_number = 6;
 
   if(first_del_number > 1) {
     if(!contract_multiple(es, candidates, current, first_del_number)) {
       return;
     }
-    if(second_del_number > 1) {
-      contract_multiple(es, candidates, current, second_del_number);
-    }
+    // if(second_del_number > 1) {
+    //   contract_multiple(es, candidates, current, second_del_number);
+    // }
   }
 
   for (int i = 0; i < vl_len(es);) {

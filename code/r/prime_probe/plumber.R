@@ -143,7 +143,7 @@ a <- Sys.time()
   e <- print(plot)
   d <- Sys.time()
   print(d-c)
-  e
+  return(e)
 }
 
 
@@ -153,4 +153,28 @@ find_noise_es_gen <- function(tbl, group_size = 32) {
   noise_es_index <- match(max(mean_vec_groups), mean_vec_groups)
   print(paste0("es ", noise_es_index, " from ", (noise_es_index-1)*group_size, " to ", noise_es_index*group_size-1))
   return((noise_es_index-1)*group_size)
+}
+
+source("find_es.R")
+
+#* @get /identifybits
+function(){
+  tbl <- data.table::fread(data)
+  bitstr <- identify_bits(tbl)
+  print(bitstr)
+  return(bitstr)
+}
+
+#* @png (width=1300,height=950)
+#* @get /printbits
+printbits <- function(){
+  tbl <- data.table::fread(data)
+  #use median cause there are more untouched samples
+  median_vec <- apply(tbl, 2, median)
+  #threshold
+  threshold <- 2 * median_vec
+  bit_on_vec <- data.frame(apply(tbl, 2, function(vec) vec > threshold))
+
+  
+  return(plot(bit_on_vec[50:nrow(bit_on_vec),1]))
 }
