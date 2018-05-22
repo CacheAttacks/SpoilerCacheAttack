@@ -53,6 +53,10 @@ struct l3pp {
   int nmonitored;
   void **monitoredhead;
   int max_es;
+#ifdef BENCHMARKCONTRACT
+  vlist_t size_es = vl_new();
+  vlist_t contract_time = vl_new();
+#endif
 };
 
 

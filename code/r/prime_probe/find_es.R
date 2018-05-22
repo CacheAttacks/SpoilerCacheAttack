@@ -15,7 +15,7 @@ identify_bits <- function(tbl){
   median_vec <- apply(tbl, 2, median)
   #threshold
   threshold <- 2 * median_vec
-  bit_on_vec <- data.frame(apply(tbl, 2, function(vec) vec > threshold))
+  bit_on_vec <<- data.frame(apply(tbl, 2, function(vec) vec > threshold))
   #number of continues values > threshold => sync pattern
   sync_repeat_threshold <- 10
   #number of continues values > threshold => bit on

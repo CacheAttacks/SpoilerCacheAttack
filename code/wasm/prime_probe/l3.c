@@ -583,9 +583,16 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
   #endif
     int size_old = INT32_MAX;
     for(int i=0; i<MAX_CONTRACT_CALLS && vl_len(es) > l3->l3info.associativity; i++){
+    #ifdef BENCHMARKCONTRACT
+      vl_push(l3->size_es, (uint32_t)vl_len(es));
+    #endif
       before = rdtscp();
       contract_advanced(es, lines, c, l3->l3info.associativity);
-      time_contract += (uint64_t)get_diff(before, rdtscp());
+      uint64_t time_last_contract = (uint64_t)get_diff(before, rdtscp());
+    #ifdef BENCHMARKCONTRACT
+      vl_push(l3->contract_time, (uint32_t)time_last_contract);
+    #endif
+      time_contract += time_last_contract;
     #ifdef DEBUG_CONTRACT
         printf("%i ", vl_len(es));
     #endif
