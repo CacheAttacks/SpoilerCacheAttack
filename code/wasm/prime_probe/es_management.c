@@ -55,6 +55,16 @@ void set_monitored_es_lower_half(void* app_state_ptr){
   this_app_state->monitored_es_changed = 1;
 }
 
+void change_type(void* app_state_ptr, int type){
+  struct app_state* this_app_state = (struct app_state*)app_state_ptr;
+  if(type != 1 && type != 2 && type != 3 && type != 4 && type != 8){
+    printf("type not found! type still %i\n", type);
+  } else {
+    this_app_state->type = type;
+    printf("type changed to %i\n", type);
+  }
+}
+
 void set_monitored_es(void* app_state_ptr, int min_index, int max_index){
   struct app_state* this_app_state = (struct app_state*)app_state_ptr;
 
@@ -189,7 +199,7 @@ void sample_es(void* app_state_ptr, int number_of_samples, int slot_time
   }
 
   uint64_t before = get_time_in_ms();
-  l3_repeatedprobe(this_app_state->l3, number_of_samples, this_app_state->res, slot_time);
+  l3_repeatedprobe(this_app_state->l3, number_of_samples, this_app_state->res, slot_time, this_app_state->type);
   uint64_t after = get_time_in_ms();
   printf("time from l3_repeatedprobe %" PRIu64 "ms\n", after-before);
  

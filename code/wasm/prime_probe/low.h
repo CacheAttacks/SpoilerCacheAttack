@@ -46,6 +46,8 @@
 #define BENCHMARKRUNS 20
 //#define DEBUG_CONTRACT
 
+#define BENCHMARKCONTRACT
+
 
 #ifdef WASM
 static inline int flush_l3(void *buffer, int pages, int block_size){

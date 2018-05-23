@@ -262,7 +262,7 @@ static inline uint64_t rdtscp64() {
   return (uint64_t)SAB_lib_get_counter_value();
  #else
   uint32_t low, high;
-  asm volatile ("rdtsc": "=a" (low), "=d" (high) :: "ecx");
+  asm volatile ("rdtscp": "=a" (low), "=d" (high) :: "ecx");
   return (((uint64_t)high) << 32) | low;
 #endif
 }

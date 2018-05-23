@@ -163,6 +163,7 @@ int main(int ac, char **av) {
   //save app state for switches between javascript and wasm
   struct app_state* this_app_state = (struct app_state*)calloc(sizeof(struct app_state),1);
   set_app_state_ptr((uint32_t)this_app_state);
+  this_app_state->type = 0;
 
   //l3-cache i7-4770: 16-way-ass, 8192sets => 4+13+6=23bits (8MiB)
 

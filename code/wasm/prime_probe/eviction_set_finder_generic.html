@@ -1208,6 +1208,11 @@
   </span>-->
 </span></br>
 <span id='covertChannel'>
+  <span><input type="number" id="numberType" value="0"></span>
+  <span><input type="button" id="btnChangeType" value="Change probe type"></span>  
+
+</span></br>
+<span id='covertChannel'>
   <span><input type="button" id="btnSearchForCovertChannel" value="Search covert channel"></span>
   <span><input type="button" id="btnListeningChannel" value="Listing channel"></span>  
 
@@ -1457,10 +1462,14 @@
           console.log("Module['appStatePtr'] is null!");
         }
       }
+      document.getElementById('btnChangeType').onclick = function() {
+        if(Module['appStatePtr'] != 0){
+          Module['asm']._change_type(Module['appStatePtr'], document.getElementById('numberType').value);
+        } else {
+          console.log("Module['appStatePtr'] is null!");
+        }
+      }
 
-      
-
-      
     </script>
   </body>
 </html>

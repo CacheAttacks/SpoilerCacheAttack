@@ -265,10 +265,84 @@ int probetime(void *pp) {
   return rdtscp()-s;
 }
 
-int bprobetime(void *pp) {
+int probetime_adv_1(void *pp) {
   if (pp == NULL)
     return 0;
-  return probetime(NEXTPTR(pp));
+    //void *p = (void *)pp;  
+    uint32_t s = rdtscp();
+    for(int i=0; i<1; i++){
+      pp = LNEXT(pp);
+    }
+    return rdtscp()-s;
+}
+
+int probetime_adv_2(void *pp) {
+  if (pp == NULL)
+    return 0;
+    //void *p = (void *)pp;  
+    uint32_t s = rdtscp();
+    for(int i=0; i<2; i++){
+      pp = LNEXT(pp);
+    }
+    return rdtscp()-s;
+}
+
+int probetime_adv_4(void *pp) {
+  if (pp == NULL)
+    return 0;
+    //void *p = (void *)pp;  
+    uint32_t s = rdtscp();
+    for(int i=0; i<4; i++){
+      pp = LNEXT(pp);
+    }
+    return rdtscp()-s;
+}
+
+int probetime_adv_8(void *pp) {
+  if (pp == NULL)
+    return 0;
+    //void *p = (void *)pp;  
+    uint32_t s = rdtscp();
+    for(int i=0; i<8; i++){
+      pp = LNEXT(pp);
+    }
+    return rdtscp()-s;
+}
+
+int probetime_split(void *pp) {
+  if (pp == NULL)
+    return 0;
+  //void *p = (void *)pp;  
+  void *bp = NEXTPTR((void *)pp);  
+  uint32_t s = rdtscp();
+  for(int i=0; i<8; i++){
+    pp = LNEXT(pp);
+    bp = LNEXT(bp);
+  }
+  return rdtscp()-s;
+}
+
+p_probetime get_probe_func_by_type(int type){
+  if(type == 0)
+    return &probetime; 
+  else if(type == 3)
+    return &probetime_split; 
+  else if(type == 1)
+    return &probetime_adv_1; 
+  else if(type == 2)
+    return &probetime_adv_2; 
+  else if(type == 4)
+    return &probetime_adv_4; 
+  else if(type == 8)
+    return &probetime_adv_8; 
+  printf("type unknown!\n");
+    return 0;
+}
+
+int bprobetime(void *pp, p_probetime func_ptr) {
+  if (pp == NULL)
+    return 0;
+  return (*func_ptr)(NEXTPTR(pp));
 }
 
 //cycles through all memory-blocks in a eviction-set
@@ -584,13 +658,13 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
     int size_old = INT32_MAX;
     for(int i=0; i<MAX_CONTRACT_CALLS && vl_len(es) > l3->l3info.associativity; i++){
     #ifdef BENCHMARKCONTRACT
-      vl_push(l3->size_es, (uint32_t)vl_len(es));
+      vl_push(l3->size_es, (void*)vl_len(es));
     #endif
       before = rdtscp();
       contract_advanced(es, lines, c, l3->l3info.associativity);
       uint64_t time_last_contract = (uint64_t)get_diff(before, rdtscp());
     #ifdef BENCHMARKCONTRACT
-      vl_push(l3->contract_time, (uint32_t)time_last_contract);
+      vl_push(l3->contract_time, (void*)((uint32_t)time_last_contract));
     #endif
       time_contract += time_last_contract;
     #ifdef DEBUG_CONTRACT
@@ -819,6 +893,11 @@ l3pp_t l3_prepare(l3info_t l3info, int l3_threshold, int max_es) {
   l3->buffer = buffer;
   l3->l3info.bufsize = bufsize;
 
+#ifdef BENCHMARKCONTRACT
+  l3->size_es = vl_new();
+  l3->contract_time = vl_new();
+#endif
+
   // Create the cache map
     if (!probemap(l3)) {
       free(l3->buffer);
@@ -844,6 +923,13 @@ l3pp_t l3_prepare(l3info_t l3info, int l3_threshold, int max_es) {
   l3->nmonitored = 0;
 
   printf("allocated %i Bytes\n", allocatedMem);
+
+#ifdef BENCHMARKCONTRACT
+      //printf benchmark result for contract
+      for(int i=0; i<vl_len(l3->size_es); i++){
+        printf("%i: s:%u, t:%u\n", i, (uint32_t)vl_get(l3->size_es,i), (uint32_t)vl_get(l3->contract_time,i));
+      }
+#endif
 
   return l3;
 }
@@ -913,16 +999,16 @@ void l3_randomise(l3pp_t l3) {
   }
 }
 
-void l3_probe(l3pp_t l3, RES_TYPE *results) {
+void l3_probe(l3pp_t l3, RES_TYPE *results, int (*probetime)(void* pp)) {
   for (int i = 0; i < l3->nmonitored; i++) {
-    int t = probetime(l3->monitoredhead[i]);
+    int t = (*probetime)(l3->monitoredhead[i]);
     results[i] = t > UINT16_MAX ? UINT16_MAX : t;
   }
 }
 
-void l3_bprobe(l3pp_t l3, RES_TYPE *results) {
+void l3_bprobe(l3pp_t l3, RES_TYPE *results, int (*probetime)(void* pp)) {
   for (int i = 0; i < l3->nmonitored; i++) {
-    int t = bprobetime(l3->monitoredhead[i]);
+    int t = bprobetime(l3->monitoredhead[i], probetime);
     results[i] = t > UINT16_MAX ? UINT16_MAX : t;
   }
 }
@@ -955,7 +1041,7 @@ int l3_getAssociativity(l3pp_t l3) {
 }
 
 
-int l3_repeatedprobe(l3pp_t l3, int nrecords, RES_TYPE *results, int slot) {
+int l3_repeatedprobe(l3pp_t l3, int nrecords, RES_TYPE *results, int slot, int type) {
   assert(l3 != NULL);
   assert(results != NULL);
 
@@ -963,6 +1049,7 @@ int l3_repeatedprobe(l3pp_t l3, int nrecords, RES_TYPE *results, int slot) {
     return 0;
 
   int len = l3->nmonitored;
+  int (*probetime)(void* pp) = get_probe_func_by_type(type);
 
   int even = 1;
   int missed = 0;
@@ -973,9 +1060,9 @@ int l3_repeatedprobe(l3pp_t l3, int nrecords, RES_TYPE *results, int slot) {
 	      results[j] = 0;
     } else {
       if (even)
-	      l3_probe(l3, results);
+	      l3_probe(l3, results, probetime);
       else
-	      l3_bprobe(l3, results);
+	      l3_bprobe(l3, results, probetime);
       even = !even;
     }
     if (slot > 0) {

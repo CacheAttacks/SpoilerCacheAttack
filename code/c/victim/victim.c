@@ -120,6 +120,42 @@ int (*waitop)(uint64_t), uint64_t wait_units){
   }
 }
 
+void* get_probe_func_by_type(int type){
+  if(type == 0)
+    return &probe_only; 
+  else if(type == 3)
+    return &probe_only_split; 
+  else if(type == 1)
+    return &probe_only_adv_1; 
+  else if(type == 2)
+    return &probe_only_adv_2; 
+  else if(type == 4)
+    return &probe_only_adv_4; 
+  else if(type == 8)
+    return &probe_only_adv_8; 
+  printf("type unknown!\n");
+    return 0;
+}
+
+int parse_command(char* line, char *command, int command_number){
+  int command_counter = 0;
+  int i=0;
+  for(; i<strlen(line) && command_counter < command_number; i++){
+    if(line[i] == ' '){
+      command_counter++;
+    }
+  }
+  int begin = i;
+  for(; i<strlen(line); i++){
+    if(line[i] == ' '){
+      line[i] = '\0';
+      break;
+    }
+  }
+  strcpy(command, &line[begin]);
+  line[i] = ' ';
+}
+
 int main(int argc, char ** argv) {
   struct app_state* this_app_state = (struct app_state*)calloc(sizeof(struct app_state),1);
   this_app_state->l3_threshold = 140;
@@ -147,9 +183,9 @@ int main(int argc, char ** argv) {
   //reapeat sync 30 min 10 steps high
 
   char* command = calloc(sizeof(char), 128);
-  int wait_cycles = 4000;
-  int repeat_probe = 4;
-  int sync_repeat = 30;
+  int wait_cycles = 10000;
+  int repeat_probe = 1;
+  int sync_repeat = 7;
   while(1){
     printf("enter command e.g. w 10 , s 12:213 , c 100000 , r 3 , n 10 , y 2000, p 10, b \n");
     fgets(command, 128, stdin);
@@ -166,12 +202,14 @@ int main(int argc, char ** argv) {
     } 
     //---------------------------------------PRINT ON CHANNEL--------------------------------------------
     else if (command[0] == 'p'){
+      command[3] = '\0';
       char bitstr[] = "1000111001";
-      int wait_time_sec = atoi(command+2);
+      int type = atoi(command+2);
+      int wait_time_sec = atoi(command+4);
       uint64_t before = get_time_in_ms(), before_print, after_print;
       while(get_time_in_ms() - before < 1000 * wait_time_sec){
         before_print = rdtscp64();
-        print_bitstr_covert_channel(bitstr, &probe_only, this_app_state->l3->monitoredhead, COMMUNICATION_CHANNEL_OFFSET_START, COMMUNICATION_CHANNEL_OFFSET_END, repeat_probe, sync_repeat, &waitcycles, wait_cycles);
+        print_bitstr_covert_channel(bitstr, get_probe_func_by_type(type), this_app_state->l3->monitoredhead, COMMUNICATION_CHANNEL_OFFSET_START, COMMUNICATION_CHANNEL_OFFSET_END, repeat_probe, sync_repeat, &waitcycles, wait_cycles);
         after_print = rdtscp64();
       }
       printf("last print bitstr time %" PRIu64 "\n", after_print - before_print);
@@ -222,13 +260,29 @@ int main(int argc, char ** argv) {
       set_monitored_es((void*)this_app_state, 0, 0);
     }
     //---------------------------------------BENCHMARK--------------------------------------------
+    //example: b 1 10000
     else if (command[0] == 'b'){
-      int it = atoi(command+2);
+      command[3] = '\0';
+      int type = atoi(command+2);
+      int it = atoi(command+4);
       uint64_t before = get_time_in_ms(), before_print, after_print;
+      printf("type %i, it %i\n", type, it);
       while(get_time_in_ms() - before < 200){
         before_print = rdtscp64();
-        for(int i = 0; i<it; i++)
-          probe_only(this_app_state->l3->monitoredhead[COMMUNICATION_CHANNEL_OFFSET_START]); 
+        for(int i = 0; i<it; i++){
+          if(type == 0)
+            probe_only(this_app_state->l3->monitoredhead[0]); 
+          else if(type == 1)
+            probe_only_adv_1(this_app_state->l3->monitoredhead[0]); 
+          else if(type == 3)
+            probe_only_split(this_app_state->l3->monitoredhead[0]); 
+          else if(type == 2)
+            probe_only_adv_2(this_app_state->l3->monitoredhead[0]); 
+          else if(type == 4)
+            probe_only_adv_4(this_app_state->l3->monitoredhead[0]); 
+          else if(type == 8)
+            probe_only_adv_8(this_app_state->l3->monitoredhead[0]); 
+        }
         after_print = rdtscp64();
       }
       printf("cycles prime single cache set: %" PRIu64 "\n", after_print - before_print);

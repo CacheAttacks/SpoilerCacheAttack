@@ -288,8 +288,7 @@ var functionPointers = new Array(0);
 // 'sig' parameter is only used on LLVM wasm backend
 function addFunction(func, sig) {
   if (typeof sig === 'undefined') {
-    Module.printErr('Warning: addFunction: Provide a wasm function signature ' +
-                    'string as a second argument');
+    Module.printErr('warning: addFunction(): You should provide a wasm function signature string as a second argument. This is not necessary for asm.js and asm2wasm, but is required for the LLVM wasm backend, so it is recommended for full portability.');
   }
   var base = 0;
   for (var i = base; i < base + 0; i++) {
@@ -1535,6 +1534,8 @@ function integrateWasmJS() {
 
   function doNativeWasm(global, env, providedBuffer) {
     if (typeof WebAssembly !== 'object') {
+      // when the method is just native-wasm, our error message can be very specific
+      abort('No WebAssembly support found. Build with -s WASM=0 to target JavaScript instead.');
       Module['printErr']('no native wasm support detected');
       return false;
     }
@@ -1690,7 +1691,7 @@ function integrateWasmJS() {
     var exports;
     exports = doNativeWasm(global, env, providedBuffer);
 
-    if (!exports) abort('no binaryen method succeeded. consider enabling more options, like interpreting, if you want that: https://github.com/kripken/emscripten/wiki/WebAssembly#binaryen-methods');
+    assert(exports, 'no binaryen method succeeded. consider enabling more options, like interpreting, if you want that: https://github.com/kripken/emscripten/wiki/WebAssembly#binaryen-methods');
 
 
     return exports;
@@ -1711,7 +1712,7 @@ var ASM_CONSTS = [];
 
 STATIC_BASE = GLOBAL_BASE;
 
-STATICTOP = STATIC_BASE + 6816;
+STATICTOP = STATIC_BASE + 6848;
 /* global initializers */  __ATINIT__.push();
 
 
@@ -1720,7 +1721,7 @@ STATICTOP = STATIC_BASE + 6816;
 
 
 
-var STATIC_BUMP = 6816;
+var STATIC_BUMP = 6848;
 Module["STATIC_BASE"] = STATIC_BASE;
 Module["STATIC_BUMP"] = STATIC_BUMP;
 
@@ -3982,6 +3983,9 @@ function copyTempDouble(ptr) {
         }
         return stream;
       },close:function (stream) {
+        if (FS.isClosed(stream)) {
+          throw new FS.ErrnoError(ERRNO_CODES.EBADF);
+        }
         if (stream.getdents) stream.getdents = null; // free readdir state
         try {
           if (stream.stream_ops.close) {
@@ -3992,7 +3996,13 @@ function copyTempDouble(ptr) {
         } finally {
           FS.closeStream(stream.fd);
         }
+        stream.fd = null;
+      },isClosed:function (stream) {
+        return stream.fd === null;
       },llseek:function (stream, offset, whence) {
+        if (FS.isClosed(stream)) {
+          throw new FS.ErrnoError(ERRNO_CODES.EBADF);
+        }
         if (!stream.seekable || !stream.stream_ops.llseek) {
           throw new FS.ErrnoError(ERRNO_CODES.ESPIPE);
         }
@@ -4002,6 +4012,9 @@ function copyTempDouble(ptr) {
       },read:function (stream, buffer, offset, length, position) {
         if (length < 0 || position < 0) {
           throw new FS.ErrnoError(ERRNO_CODES.EINVAL);
+        }
+        if (FS.isClosed(stream)) {
+          throw new FS.ErrnoError(ERRNO_CODES.EBADF);
         }
         if ((stream.flags & 2097155) === 1) {
           throw new FS.ErrnoError(ERRNO_CODES.EBADF);
@@ -4024,6 +4037,9 @@ function copyTempDouble(ptr) {
       },write:function (stream, buffer, offset, length, position, canOwn) {
         if (length < 0 || position < 0) {
           throw new FS.ErrnoError(ERRNO_CODES.EINVAL);
+        }
+        if (FS.isClosed(stream)) {
+          throw new FS.ErrnoError(ERRNO_CODES.EBADF);
         }
         if ((stream.flags & 2097155) === 0) {
           throw new FS.ErrnoError(ERRNO_CODES.EBADF);
@@ -4053,6 +4069,9 @@ function copyTempDouble(ptr) {
         }
         return bytesWritten;
       },allocate:function (stream, offset, length) {
+        if (FS.isClosed(stream)) {
+          throw new FS.ErrnoError(ERRNO_CODES.EBADF);
+        }
         if (offset < 0 || length <= 0) {
           throw new FS.ErrnoError(ERRNO_CODES.EINVAL);
         }
@@ -4976,6 +4995,13 @@ function copyTempDouble(ptr) {
           if (!stream.tty) return -ERRNO_CODES.ENOTTY;
           return 0;
         }
+        case 21524: {
+          // TODO: technically, this ioctl call should change the window size.
+          // but, since emscripten doesn't have any concept of a terminal window
+          // yet, we'll just silently throw it away as we do TIOCGWINSZ
+          if (!stream.tty) return -ERRNO_CODES.ENOTTY;
+          return 0;
+        }
         default: abort('bad ioctl syscall ' + op);
       }
     } catch (e) {
@@ -5127,9 +5153,9 @@ function nullFunc_iiii(x) { Module["printErr"]("Invalid function pointer called 
 
 function nullFunc_viii(x) { Module["printErr"]("Invalid function pointer called with signature 'viii'. Perhaps this is an invalid value (e.g. caused by calling a virtual method on a NULL pointer)? Or calling a function with an incorrect type, which will fail? (it is worth building your source files with -Werror (warnings are errors), as warnings can indicate undefined behavior which can cause this)");  Module["printErr"]("Build with ASSERTIONS=2 for more info.");abort(x) }
 
-Module['wasmTableSize'] = 11;
+Module['wasmTableSize'] = 33;
 
-Module['wasmMaxTableSize'] = 11;
+Module['wasmMaxTableSize'] = 33;
 
 function invoke_ii(index,a1) {
   try {
@@ -5175,6 +5201,12 @@ var real__build_es = asm["_build_es"]; asm["_build_es"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return real__build_es.apply(null, arguments);
+};
+
+var real__change_type = asm["_change_type"]; asm["_change_type"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return real__change_type.apply(null, arguments);
 };
 
 var real__fflush = asm["_fflush"]; asm["_fflush"] = function() {
@@ -5293,6 +5325,10 @@ var _build_es = Module["_build_es"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return Module["asm"]["_build_es"].apply(null, arguments) };
+var _change_type = Module["_change_type"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["_change_type"].apply(null, arguments) };
 var _fflush = Module["_fflush"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');

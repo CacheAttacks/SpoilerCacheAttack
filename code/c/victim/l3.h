@@ -60,15 +60,66 @@ struct l3pp {
 #define L3FLAG_USEPTE		0x02 
 #define L3FLAG_NOPROBE		0x04 
 
+#define OFFSET(p, o) ((void *)((uintptr_t)(p) + (o)))
+#define NEXTPTR(p) (OFFSET((p), sizeof(void *)))
+
 #define LNEXT(t) (*(void **)(t))
 static inline void probe_only(void *pp) {
   if (pp == NULL)
     return;
-  int rv = 0;
   void *p = (void *)pp;
   do {
     p = LNEXT(p);
   } while (p != (void *) pp);
+}
+
+#define NUMBER_OF_PROBE_ADD 1
+static inline void probe_only_adv_1(void *pp) {
+  if (pp == NULL)
+    return;
+    //void *p = (void *)pp;  
+    for(int i=0; i<1; i++){
+      pp = LNEXT(pp);
+    }
+}
+
+static inline void probe_only_adv_2(void *pp) {
+  if (pp == NULL)
+    return;
+    //void *p = (void *)pp;  
+    for(int i=0; i<2; i++){
+      pp = LNEXT(pp);
+    }
+}
+
+static inline void probe_only_adv_4(void *pp) {
+  if (pp == NULL)
+    return;
+    //void *p = (void *)pp;  
+    for(int i=0; i<4; i++){
+      pp = LNEXT(pp);
+    }
+}
+
+static inline void probe_only_adv_8(void *pp) {
+  if (pp == NULL)
+    return;
+    //void *p = (void *)pp;  
+    for(int i=0; i<8; i++){
+      pp = LNEXT(pp);
+    }
+}
+
+static inline void probe_only_split(void *pp) {
+  if (pp == NULL)
+    return;
+  //void *p = (void *)pp;  
+  void *bp = NEXTPTR((void *)pp);  
+
+  for(int i=0; i<8; i++){
+    pp = LNEXT(pp);
+    bp = LNEXT(bp);
+  }
 }
 
 l3pp_t l3_prepare(l3info_t l3info, int L3_THRESHOLD, int max_es);
