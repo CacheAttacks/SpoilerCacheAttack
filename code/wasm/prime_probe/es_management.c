@@ -57,7 +57,9 @@ void set_monitored_es_lower_half(void* app_state_ptr){
 
 void change_type(void* app_state_ptr, int type){
   struct app_state* this_app_state = (struct app_state*)app_state_ptr;
-  if(type != 1 && type != 2 && type != 3 && type != 4 && type != 8){
+  if(type != 0 &&
+  type != 11 && type != 12 && type != 14 && type != 18 && type != 116
+  && type != 22 && type != 24 && type != 28){
     printf("type not found! type still %i\n", type);
   } else {
     this_app_state->type = type;
@@ -107,16 +109,19 @@ void set_monitored_es(void* app_state_ptr, int min_index, int max_index){
 }
 
 void build_es(void* app_state_ptr, int max_es){
-  build_es_ex(app_state_ptr, max_es, 
+  int ngroups;
+  do{
+  ngroups = build_es_ex(app_state_ptr, max_es, 
   #ifdef BENCHMARKMODE
   1, BENCHMARKRUNS
   #else
   0, 0
   #endif
   );
+  } while(ngroups < MIN_ES && ngroups < max_es);
 }
 
-void build_es_ex(void* app_state_ptr, int max_es, int benchmarkmode, int benchmarkruns){
+int build_es_ex(void* app_state_ptr, int max_es, int benchmarkmode, int benchmarkruns){
   struct app_state* this_app_state = (struct app_state*)app_state_ptr;
 
   if(!this_app_state->l3_threshold){
@@ -162,9 +167,6 @@ if(benchmarkmode){
     printf("%u ", timer_array[i]);
   }
   printf("\n");
-  l3_release(this_app_state->l3);
-  SAB_terminate_counter_sub_worker();
-  exit(1);
 } else {
     uint32_t timer_before = get_time_in_ms();
     this_app_state->l3 = l3_prepare(NULL, this_app_state->l3_threshold, max_es);
@@ -179,6 +181,8 @@ if(benchmarkmode){
   set_monitored_es(app_state_ptr, -1, -1);
 
   printf("ncol: %i\n", this_app_state->l3->nmonitored);
+
+  return this_app_state->l3->ngroups;
 }
 
 void sample_es(void* app_state_ptr, int number_of_samples, int slot_time

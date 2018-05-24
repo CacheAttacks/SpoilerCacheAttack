@@ -123,6 +123,24 @@ int L3_THRESHOLD = 10000;
 #define LNEXT(t) (*(void **)(t))
 #define OFFSET(p, o) ((void *)((uintptr_t)(p) + (o)))
 #define NEXTPTR(p) (OFFSET((p), sizeof(void *)))
+#define BPROBEPTR(p) (OFFSET((p), sizeof(void *)))
+#define PROBE_PTR_OFFSET2(p) (OFFSET((p), 2*sizeof(void *)))
+#define PROBE_PTR_OFFSET4(p) (OFFSET((p), 4*sizeof(void *)))
+#define PROBE_PTR_OFFSET6(p) (OFFSET((p), 6*sizeof(void *)))
+#define PROBE_PTR_OFFSET8(p) (OFFSET((p), 8*sizeof(void *)))
+#define PROBE_PTR_OFFSET10(p) (OFFSET((p), 10*sizeof(void *)))
+#define PROBE_PTR_OFFSET12(p) (OFFSET((p), 12*sizeof(void *)))
+#define PROBE_PTR_OFFSET14(p) (OFFSET((p), 14*sizeof(void *)))
+
+//Cache-Line has only 64 use this only if there is no bprobe necessary
+#define PROBE_PTR_OFFSET1(p) (OFFSET((p), 1*sizeof(void *)))
+#define PROBE_PTR_OFFSET3(p) (OFFSET((p), 3*sizeof(void *)))
+#define PROBE_PTR_OFFSET5(p) (OFFSET((p), 5*sizeof(void *)))
+#define PROBE_PTR_OFFSET7(p) (OFFSET((p), 7*sizeof(void *)))
+#define PROBE_PTR_OFFSET9(p) (OFFSET((p), 9*sizeof(void *)))
+#define PROBE_PTR_OFFSET11(p) (OFFSET((p), 11*sizeof(void *)))
+#define PROBE_PTR_OFFSET13(p) (OFFSET((p), 13*sizeof(void *)))
+#define PROBE_PTR_OFFSET15(p) (OFFSET((p), 15*sizeof(void *)))
 
 #define IS_MONITORED(monitored, setno) ((monitored)[(setno)>>5] & (1 << ((setno)&0x1f)))
 #define SET_MONITORED(monitored, setno) ((monitored)[(setno)>>5] |= (1 << ((setno)&0x1f)))
@@ -217,7 +235,8 @@ static void fillL3Info(l3pp_t l3) {
   // }
 }
 
-void *sethead(l3pp_t l3, int set) { //vlist_t list, int count, int offset) {
+//extend version: change between no bprobe and direct access to all 16 add or bprobe and access to 8 add with distance 2
+void *sethead_ex(l3pp_t l3, int set, int bprobe) { //vlist_t list, int count, int offset) {
   //load eviction set
   vlist_t list = l3->groups[set / l3->groupsize];
   
@@ -235,13 +254,27 @@ void *sethead(l3pp_t l3, int set) { //vlist_t list, int count, int offset) {
   //}
   
   for (int i = 0; i < count; i++) {
-    //for probe
-    LNEXT(OFFSET(vl_get(list, i), offset)) = OFFSET(vl_get(list, (i + 1) % count), offset);
-    //for bprobe
-    LNEXT(OFFSET(vl_get(list, i), offset+sizeof(void*))) = OFFSET(vl_get(list, (i + count - 1) % count), offset+sizeof(void *));
+    int distance_between_add = 1;
+    if(bprobe){
+      //for bprobe
+      LNEXT(OFFSET(vl_get(list, i), offset+sizeof(void*))) = OFFSET(vl_get(list, (i + count - 1) % count), offset+sizeof(void *));
+      //cause bprobe only 8 add entry-points can be saved into the cacheline
+      distance_between_add = 2;
+    }
+
+    //for other probe algos, e.g. probetime_split_4
+    for(int add_off = 0; add_off < 16; add_off += distance_between_add){
+      int list_index = (i + add_off) % count;
+      int cacheline_offset = offset + add_off * sizeof(void*);
+      LNEXT(OFFSET(vl_get(list, list_index), cacheline_offset)) = OFFSET(vl_get(list, (list_index + 1) % count), cacheline_offset);
+    }
   }
 
   return OFFSET(vl_get(list, 0), offset);
+}
+
+void *sethead(l3pp_t l3, int set){
+  return sethead_ex(l3, set, 1);
 }
 
 void prime(void *pp, int reps) {
@@ -309,7 +342,18 @@ int probetime_adv_8(void *pp) {
     return rdtscp()-s;
 }
 
-int probetime_split(void *pp) {
+int probetime_adv_16(void *pp) {
+  if (pp == NULL)
+    return 0;
+    //void *p = (void *)pp;  
+    uint32_t s = rdtscp();
+    for(int i=0; i<16; i++){
+      pp = LNEXT(pp);
+    }
+    return rdtscp()-s;
+}
+
+int probetime_split_2(void *pp) {
   if (pp == NULL)
     return 0;
   //void *p = (void *)pp;  
@@ -322,18 +366,66 @@ int probetime_split(void *pp) {
   return rdtscp()-s;
 }
 
+int probetime_split_4(void *pp) {
+  if (pp == NULL)
+    return 0;
+  //void *p = (void *)pp;  
+  void *b_off_4 = PROBE_PTR_OFFSET4((void *)pp);  
+  void *b_off_8 = PROBE_PTR_OFFSET8((void *)pp);
+  void *b_off_12 = PROBE_PTR_OFFSET12((void *)pp);
+  uint32_t s = rdtscp();
+  for(int i=0; i<4; i++){
+    pp = LNEXT(pp);
+    b_off_4 = LNEXT(b_off_4);
+    b_off_8 = LNEXT(b_off_8);
+    b_off_12 = LNEXT(b_off_12);
+  }
+  return rdtscp()-s;
+}
+
+int probetime_split_8(void *pp) {
+  if (pp == NULL)
+    return 0;
+  //void *p = (void *)pp;  
+  void *b_off_2 = PROBE_PTR_OFFSET2((void *)pp);  
+  void *b_off_4 = PROBE_PTR_OFFSET4((void *)pp);
+  void *b_off_6 = PROBE_PTR_OFFSET6((void *)pp);
+  void *b_off_8 = PROBE_PTR_OFFSET8((void *)pp);  
+  void *b_off_10 = PROBE_PTR_OFFSET10((void *)pp);
+  void *b_off_12 = PROBE_PTR_OFFSET12((void *)pp);
+  void *b_off_14 = PROBE_PTR_OFFSET14((void *)pp);
+  uint32_t s = rdtscp();
+  for(int i=0; i<2; i++){
+    pp = LNEXT(pp);
+    b_off_2 = LNEXT(b_off_2);
+    b_off_4 = LNEXT(b_off_4);
+    b_off_6 = LNEXT(b_off_6);
+    b_off_8 = LNEXT(b_off_8);
+    b_off_10 = LNEXT(b_off_10);
+    b_off_12 = LNEXT(b_off_12);
+    b_off_14 = LNEXT(b_off_14);
+  }
+  return rdtscp()-s;
+}
+
 p_probetime get_probe_func_by_type(int type){
   if(type == 0)
     return &probetime; 
-  else if(type == 3)
-    return &probetime_split; 
-  else if(type == 1)
+  else if(type == 22)
+    return &probetime_split_2; 
+  else if(type == 24)
+    return &probetime_split_4; 
+  else if(type == 28)
+    return &probetime_split_4; 
+  else if(type == 11)
     return &probetime_adv_1; 
-  else if(type == 2)
+  else if(type == 12)
     return &probetime_adv_2; 
-  else if(type == 4)
+  else if(type == 14)
     return &probetime_adv_4; 
-  else if(type == 8)
+  else if(type == 18)
+    return &probetime_adv_8; 
+  else if(type == 116)
     return &probetime_adv_8; 
   printf("type unknown!\n");
     return 0;
@@ -626,8 +718,10 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
     #ifdef DEBUG
     int d_l1 = vl_len(lines);
     #endif // DEBUG
-    if (fail > 1000) 
+    if (fail > 200){ 
+      printf("to many failed atemps, es search canceled!\n");
       break;
+    }
 
     before = rdtscp();
     void *c = expand(es, lines);

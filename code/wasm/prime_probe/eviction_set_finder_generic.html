@@ -1207,7 +1207,18 @@
                                                                               document.getElementById('resize').checked)">
   </span>-->
 </span></br>
-<span id='covertChannel'>
+<span id='changeType'>
+  <select id="selectType">
+      <option value="0">Default Prime</option>
+      <option value="22">Split2</option>
+      <option value="24">Split4</option>
+      <option value="28">Split8</option>
+      <option value="11">MaxChase1</option>
+      <option value="12">MaxChase2</option>
+      <option value="14">MaxChase4</option>
+      <option value="18">MaxChase8</option>
+      <option value="116">MaxChase16</option>
+  </select> 
   <span><input type="number" id="numberType" value="0"></span>
   <span><input type="button" id="btnChangeType" value="Change probe type"></span>  
 
@@ -1467,7 +1478,7 @@
       //change type of probing algo
       document.getElementById('btnChangeType').onclick = function() {
         if(Module['appStatePtr'] != 0){
-          Module['asm']._change_type(Module['appStatePtr'], document.getElementById('numberType').value);
+          Module['asm']._change_type(Module['appStatePtr'], document.getElementById('selectType').value);
         } else {
           console.log("Module['appStatePtr'] is null!");
         }
