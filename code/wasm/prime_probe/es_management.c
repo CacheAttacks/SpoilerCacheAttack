@@ -107,6 +107,16 @@ void set_monitored_es(void* app_state_ptr, int min_index, int max_index){
 }
 
 void build_es(void* app_state_ptr, int max_es){
+  build_es_ex(app_state_ptr, max_es, 
+  #ifdef BENCHMARKMODE
+  1, BENCHMARKRUNS
+  #else
+  0, 0
+  #endif
+  );
+}
+
+void build_es_ex(void* app_state_ptr, int max_es, int benchmarkmode, int benchmarkruns){
   struct app_state* this_app_state = (struct app_state*)app_state_ptr;
 
   if(!this_app_state->l3_threshold){
@@ -136,17 +146,15 @@ void build_es(void* app_state_ptr, int max_es){
   printf("warm-up finished\n");
 #endif
 
-#ifdef BENCHMARKMODE
-  uint32_t *timer_array = calloc(BENCHMARKRUNS, sizeof(uint32_t));
+if(benchmarkmode){
+    uint32_t *timer_array = calloc(BENCHMARKRUNS, sizeof(uint32_t));
   for(int i=0; i<BENCHMARKRUNS; i++)
   {
-#endif
     uint32_t timer_before = get_time_in_ms();
     this_app_state->l3 = l3_prepare(NULL, this_app_state->l3_threshold, max_es);
     uint32_t timer_after = get_time_in_ms();
 
     printf("Eviction set total time: %u sec\n", (timer_after-timer_before)/1000);
-#ifdef BENCHMARKMODE
     l3_release(this_app_state->l3);
     timer_array[i] = timer_after-timer_before;
   }
@@ -157,8 +165,13 @@ void build_es(void* app_state_ptr, int max_es){
   l3_release(this_app_state->l3);
   SAB_terminate_counter_sub_worker();
   exit(1);
-#endif  
+} else {
+    uint32_t timer_before = get_time_in_ms();
+    this_app_state->l3 = l3_prepare(NULL, this_app_state->l3_threshold, max_es);
+    uint32_t timer_after = get_time_in_ms();
 
+    printf("Eviction set total time: %u sec\n", (timer_after-timer_before)/1000);
+}
   int nsets = l3_getSets(this_app_state->l3);
   int nmonitored = nsets/64;
   printf("nmonitored: %i\n",nmonitored);

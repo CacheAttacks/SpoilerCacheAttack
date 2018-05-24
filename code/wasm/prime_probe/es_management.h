@@ -21,6 +21,7 @@ double mesure_mean_access_time(struct app_state* this_app_state, int samples);
 void change_type(void* app_state_ptr, int type);
 void set_monitored_es(void* app_state_ptr, int min_index, int max_index);
 void build_es(void* app_state_ptr, int max_es);
+void build_es_ex(void* app_state_ptr, int max_es, int benchmarkmode, int benchmarkruns);
 void sample_es(void* app_state_ptr, int number_of_samples, int slot_time
 #ifdef WASM
 , int plot

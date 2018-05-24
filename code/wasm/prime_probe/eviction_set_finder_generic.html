@@ -1239,6 +1239,8 @@
   upper limit es
   <span><input type="number" id="upperLimitEs" value="0" width="1"></span>
   <span><input type="button" id="btnBuildEs" value="Build es"></span>
+  <span><input type="number" id="numberBenchmarksruns" value="20" width="1"></span>
+  <span><input type="button" id="btnBenchmarkmode" value="Benchmark es"></span>
 </span>
 
     <div class="emscripten">
@@ -1462,6 +1464,7 @@
           console.log("Module['appStatePtr'] is null!");
         }
       }
+      //change type of probing algo
       document.getElementById('btnChangeType').onclick = function() {
         if(Module['appStatePtr'] != 0){
           Module['asm']._change_type(Module['appStatePtr'], document.getElementById('numberType').value);
@@ -1469,6 +1472,16 @@
           console.log("Module['appStatePtr'] is null!");
         }
       }
+      //runs build es multiple times to benchmark performance
+      document.getElementById('btnBenchmarkmode').onclick = function() {
+        if(Module['appStatePtr'] != 0){
+          Module['asm']._build_es_ex(Module['appStatePtr'], document.getElementById('upperLimitEs').value, 1, document.getElementById('numberBenchmarksruns').value);
+        } else {
+          console.log("Module['appStatePtr'] is null!");
+        }
+      }
+
+      
 
     </script>
   </body>
