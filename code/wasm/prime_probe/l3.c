@@ -313,6 +313,7 @@ int probetime_adv_2(void *pp) {
   if (pp == NULL)
     return 0;
     //void *p = (void *)pp;  
+    pp = PROBE_PTR_OFFSET2((void *)pp);
     uint32_t s = rdtscp();
     for(int i=0; i<2; i++){
       pp = LNEXT(pp);
@@ -323,6 +324,7 @@ int probetime_adv_2(void *pp) {
 int probetime_adv_4(void *pp) {
   if (pp == NULL)
     return 0;
+    pp = PROBE_PTR_OFFSET4((void *)pp); 
     //void *p = (void *)pp;  
     uint32_t s = rdtscp();
     for(int i=0; i<4; i++){
@@ -335,6 +337,7 @@ int probetime_adv_8(void *pp) {
   if (pp == NULL)
     return 0;
     //void *p = (void *)pp;  
+    pp = PROBE_PTR_OFFSET8((void *)pp);
     uint32_t s = rdtscp();
     for(int i=0; i<8; i++){
       pp = LNEXT(pp);
@@ -718,7 +721,7 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
     #ifdef DEBUG
     int d_l1 = vl_len(lines);
     #endif // DEBUG
-    if (fail > 200){ 
+    if (fail > 1000){ 
       printf("to many failed atemps, es search canceled!\n");
       break;
     }
@@ -781,9 +784,11 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
       size_old = vl_len(es);
     }
 #else
+  before = rdtscp();
   contract(es, lines, c);
   contract(es, lines, c);
   contract(es, lines, c);
+  time_contract += (uint64_t)get_diff(before, rdtscp());
 #endif 
 
     before = rdtscp();

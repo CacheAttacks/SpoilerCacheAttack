@@ -24,7 +24,8 @@ buildEsExWrapper = function(max_es, benchmarkmode, benchmarkruns){
 
 measureMeanAccessTimeWrapper = function(samples){
     Module['startTimer']();
-    Module['asm']._measure_mean_access_time(Module['appStatePtr'], samples);
+    var meanAccessTime = Module['asm']._measure_mean_access_time(Module['appStatePtr'], samples);
     Module['stopTimer']();
+    return meanAccessTime;
 }
 

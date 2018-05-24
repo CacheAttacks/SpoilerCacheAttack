@@ -46,7 +46,7 @@
 #define BENCHMARKRUNS 20
 //#define DEBUG_CONTRACT
 
-#define BENCHMARKCONTRACT
+//#define BENCHMARKCONTRACT
 
 
 #ifdef WASM

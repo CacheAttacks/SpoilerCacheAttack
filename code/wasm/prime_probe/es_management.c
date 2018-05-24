@@ -118,7 +118,7 @@ void build_es(void* app_state_ptr, int max_es){
   0, 0
   #endif
   );
-  } while(ngroups < MIN_ES && ngroups < max_es);
+  } while(ngroups < MIN_ES && (ngroups < max_es || max_es == 0));
 }
 
 int build_es_ex(void* app_state_ptr, int max_es, int benchmarkmode, int benchmarkruns){

@@ -532,9 +532,11 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
       size_old = vl_len(es);
     }
 #else
+  before = rdtscp();
   contract(es, lines, c);
   contract(es, lines, c);
   contract(es, lines, c);
+  time_contract += (uint64_t)get_diff(before, rdtscp());
 #endif 
 
     before = rdtscp();
