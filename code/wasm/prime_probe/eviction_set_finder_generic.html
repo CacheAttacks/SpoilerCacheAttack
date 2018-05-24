@@ -1263,6 +1263,7 @@
     </div>
     <textarea id="output" rows="8"></textarea>-->
 
+    <script type="text/javascript" src="c_wrapper_funcs.js"></script>
     <script type="text/javascript" src="timer_SAB.js"></script>
     <script type="text/javascript" src="timer_clock_edge.js"></script>
     <script type='text/javascript'>
@@ -1301,6 +1302,21 @@
       }
 
       var Module = {
+        startTimer: function(){
+          if(!Module['timerIsRunning']){
+            Module['timerWorker'] = shared_array_counter_init(Module['sharedBufferCounter']);
+            Module['timerIsRunning'] = true;
+            console.log("timer started");
+          }
+        },
+        stopTimer: function(){
+          if(Module['timerIsRunning']){
+            // Module['timerWorker'].terminate();
+            // Module['timerIsRunning'] = false;
+            // console.log("timer stopped");
+          }
+        },
+        timerIsRunning: false,
         imgElement: img,
         postxhr: function(url, data){
           var xhr = new XMLHttpRequest();
@@ -1330,7 +1346,9 @@
           }
           return POSTstr;
         },
-        preRun: [],
+        preRun: function(){
+          Module['startTimer']();
+        },
         postRun: function(){
           postRun();
         },
@@ -1410,9 +1428,10 @@
 
       //init sharedArrayBuffer counter
       const sharedBuffer = new SharedArrayBuffer(Uint32Array.BYTES_PER_ELEMENT);
-      const sharedArray = new Uint32Array(sharedBuffer);
-      Module['sharedArrayCounter'] = sharedArray;
-      Module['timerWorker'] = shared_array_counter_init(sharedArray);
+      //const sharedArray = new Uint32Array(sharedBuffer);
+      Module['sharedArrayCounter'] = new Uint32Array(sharedBuffer);
+      Module['sharedBufferCounter'] = sharedBuffer;
+
     </script>
     <script type="text/javascript" src="eviction_set_finder.js"></script>
     <script type="text/javascript">  
@@ -1437,14 +1456,14 @@
           var numberOfSamples = document.getElementById('numberSamples').value;
           //console.log(numberOfSamples);
           var slotTime = document.getElementById('numberSlotTime').value;
-          Module['asm']._sample_es(Module['appStatePtr'], numberOfSamples, slotTime, 1);
+          sampleEsWrapper(numberOfSamples, slotTime, 1);
         } else {
           console.log("Module['appStatePtr'] is null!");
         }
       }
       document.getElementById('btnBuildEs').onclick = function() {
         if(Module['appStatePtr'] != 0){
-          Module['asm']._build_es(Module['appStatePtr'], document.getElementById('upperLimitEs').value);
+          buildEsWrapper(document.getElementById('upperLimitEs').value);
           document.getElementById('btnBuildEs').value = "Rebuild es";
         } else {
           console.log("Module['appStatePtr'] is null!");
@@ -1486,7 +1505,7 @@
       //runs build es multiple times to benchmark performance
       document.getElementById('btnBenchmarkmode').onclick = function() {
         if(Module['appStatePtr'] != 0){
-          Module['asm']._build_es_ex(Module['appStatePtr'], document.getElementById('upperLimitEs').value, 1, document.getElementById('numberBenchmarksruns').value);
+          buildEsExWrapper(document.getElementById('upperLimitEs').value, 1, document.getElementById('numberBenchmarksruns').value);
         } else {
           console.log("Module['appStatePtr'] is null!");
         }

@@ -18,7 +18,7 @@ extern void set_ptr_to_data(uint32_t, int, int, int);
 extern void print_plot_data(void);
 
 uint64_t get_time_in_ms();
-double mesure_mean_access_time(struct app_state* this_app_state, int samples);
+double measure_mean_access_time(struct app_state* this_app_state, int samples);
 void change_type(void* app_state_ptr, int type);
 void set_monitored_es(void* app_state_ptr, int min_index, int max_index);
 void build_es(void* app_state_ptr, int max_es);

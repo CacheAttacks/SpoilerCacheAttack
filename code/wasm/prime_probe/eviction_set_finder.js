@@ -5245,16 +5245,16 @@ var real__malloc = asm["_malloc"]; asm["_malloc"] = function() {
   return real__malloc.apply(null, arguments);
 };
 
+var real__measure_mean_access_time = asm["_measure_mean_access_time"]; asm["_measure_mean_access_time"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return real__measure_mean_access_time.apply(null, arguments);
+};
+
 var real__memalign = asm["_memalign"]; asm["_memalign"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return real__memalign.apply(null, arguments);
-};
-
-var real__mesure_mean_access_time = asm["_mesure_mean_access_time"]; asm["_mesure_mean_access_time"] = function() {
-  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
-  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
-  return real__mesure_mean_access_time.apply(null, arguments);
 };
 
 var real__sample_es = asm["_sample_es"]; asm["_sample_es"] = function() {
@@ -5359,6 +5359,10 @@ var _malloc = Module["_malloc"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return Module["asm"]["_malloc"].apply(null, arguments) };
+var _measure_mean_access_time = Module["_measure_mean_access_time"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["_measure_mean_access_time"].apply(null, arguments) };
 var _memalign = Module["_memalign"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
@@ -5371,10 +5375,6 @@ var _memset = Module["_memset"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return Module["asm"]["_memset"].apply(null, arguments) };
-var _mesure_mean_access_time = Module["_mesure_mean_access_time"] = function() {
-  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
-  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
-  return Module["asm"]["_mesure_mean_access_time"].apply(null, arguments) };
 var _sample_es = Module["_sample_es"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');

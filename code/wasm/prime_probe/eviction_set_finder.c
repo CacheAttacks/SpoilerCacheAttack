@@ -178,6 +178,9 @@ int main(int ac, char **av) {
   //exit(1);
   printf("----------------TESTS FINISHED------------------\n");
 
+  //energy saving option, counter is started on demand
+  //SAB_terminate_counter_sub_worker();
+
   //build_es((void*)this_app_state);
 
   //sample_es((void*)this_app_state);

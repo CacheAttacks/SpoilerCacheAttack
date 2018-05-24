@@ -3,7 +3,7 @@
 //https://interactive-examples.mdn.mozilla.net/pages/js/sharedarraybuffer-constructor.html
 //disabled by default, enable firefox => about:config => javascript.options.shared_memory;true
 
-function shared_array_counter_init(sharedArray)
+function shared_array_counter_init(sharedBuffer)
 {
     //const sharedBuffer = new SharedArrayBuffer(Uint32Array.BYTES_PER_ELEMENT);
     //const sharedArray = new Uint32Array(sharedBuffer);

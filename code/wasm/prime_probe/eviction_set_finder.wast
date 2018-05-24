@@ -76,10 +76,10 @@
  (export "_llvm_bswap_i32" (func $_llvm_bswap_i32))
  (export "_main" (func $_main))
  (export "_malloc" (func $_malloc))
+ (export "_measure_mean_access_time" (func $_measure_mean_access_time))
  (export "_memalign" (func $_memalign))
  (export "_memcpy" (func $_memcpy))
  (export "_memset" (func $_memset))
- (export "_mesure_mean_access_time" (func $_mesure_mean_access_time))
  (export "_sample_es" (func $_sample_es))
  (export "_sbrk" (func $_sbrk))
  (export "_set_monitored_es" (func $_set_monitored_es))
@@ -355,7 +355,7 @@
   (set_global $STACKTOP
    (get_local $sp)
   )
-  ;;@ eviction_set_finder.c:190:0
+  ;;@ eviction_set_finder.c:193:0
   (return
    (i32.const 0)
   )
@@ -2728,7 +2728,7 @@
    (get_local $$1)
   )
  )
- (func $_mesure_mean_access_time (; 51 ;) (param $$0 i32) (param $$1 i32) (result f64)
+ (func $_measure_mean_access_time (; 51 ;) (param $$0 i32) (param $$1 i32) (result f64)
   (local $$10 i32)
   (local $$11 i32)
   (local $$12 i32)

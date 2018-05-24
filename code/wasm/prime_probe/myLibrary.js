@@ -10,7 +10,7 @@ if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
 if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
     SAB_terminate_counter_sub_worker: function()
     {
-        Module['timerWorker'].terminate();
+        Module['stopTimer']();
     }
 });
 

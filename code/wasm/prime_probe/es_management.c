@@ -22,7 +22,7 @@ uint64_t get_time_in_ms(){
 }
 
 //use set_monitored_es beforehand to set the observed es
-double mesure_mean_access_time(struct app_state* this_app_state, int samples){
+double measure_mean_access_time(struct app_state* this_app_state, int samples){
   sample_es((void*)this_app_state, samples, 0
   #ifdef WASM
   , 0
