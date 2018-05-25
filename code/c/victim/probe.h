@@ -24,5 +24,7 @@ void probe_only_adv_4(void *pp);
 void probe_only_adv_8(void *pp);
 void probe_only_adv_16(void *pp);
 void probe_only_split_2(void *pp);
+void probe_only_split_4(void *pp);
+void probe_only_split_8(void *pp);
 
 void* get_probe_only_by_type(int type);

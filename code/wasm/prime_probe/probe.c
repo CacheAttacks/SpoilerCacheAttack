@@ -277,6 +277,44 @@ void probe_only_split_2(void *pp) {
   }
 }
 
+int probe_only_split_4(void *pp) {
+  if (pp == NULL)
+    return 0;
+  //void *p = (void *)pp;  
+  void *b_off_4 = PROBE_PTR_OFFSET4((void *)pp);  
+  void *b_off_8 = PROBE_PTR_OFFSET8((void *)pp);
+  void *b_off_12 = PROBE_PTR_OFFSET12((void *)pp);
+  for(int i=0; i<4; i++){
+    pp = LNEXT(pp);
+    b_off_4 = LNEXT(b_off_4);
+    b_off_8 = LNEXT(b_off_8);
+    b_off_12 = LNEXT(b_off_12);
+  }
+}
+
+int probe_only_split_8(void *pp) {
+  if (pp == NULL)
+    return 0;
+  //void *p = (void *)pp;  
+  void *b_off_2 = PROBE_PTR_OFFSET2((void *)pp);  
+  void *b_off_4 = PROBE_PTR_OFFSET4((void *)pp);
+  void *b_off_6 = PROBE_PTR_OFFSET6((void *)pp);
+  void *b_off_8 = PROBE_PTR_OFFSET8((void *)pp);  
+  void *b_off_10 = PROBE_PTR_OFFSET10((void *)pp);
+  void *b_off_12 = PROBE_PTR_OFFSET12((void *)pp);
+  void *b_off_14 = PROBE_PTR_OFFSET14((void *)pp);
+  for(int i=0; i<2; i++){
+    pp = LNEXT(pp);
+    b_off_2 = LNEXT(b_off_2);
+    b_off_4 = LNEXT(b_off_4);
+    b_off_6 = LNEXT(b_off_6);
+    b_off_8 = LNEXT(b_off_8);
+    b_off_10 = LNEXT(b_off_10);
+    b_off_12 = LNEXT(b_off_12);
+    b_off_14 = LNEXT(b_off_14);
+  }
+}
+
 void* get_probe_only_by_type(int type){
   if(type == 0)
     return &probe_only; 
