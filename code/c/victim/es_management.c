@@ -29,7 +29,7 @@ double measure_mean_access_time(struct app_state* this_app_state, int samples){
   #endif
   );
   double access_time_mean = 0;
-  int res_size = this_app_state->l3->nmonitored * this_app_state->number_of_samples_old;
+  int res_size = this_app_state->l3->nmonitored * samples;
   for(int i=0; i<res_size; i++) {
     access_time_mean += this_app_state->res[i];
   }
@@ -218,7 +218,7 @@ void sample_es(void* app_state_ptr, int number_of_samples, int slot_time
   uint64_t before = get_time_in_ms();
   l3_repeatedprobe(this_app_state->l3, number_of_samples, this_app_state->res, slot_time, this_app_state->type);
   uint64_t after = get_time_in_ms();
-  printf("time from l3_repeatedprobe %" PRIu64 "ms\n", after-before);
+  //printf("time from l3_repeatedprobe %" PRIu64 "ms\n", after-before);
  
 #ifdef WASM
   //update ptr, type = 0 => Uint16

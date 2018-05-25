@@ -3,13 +3,22 @@
     // for the documentation about the tasks.json format
     "version": "2.0.0",
     "tasks": [
+        // {
+        //     "label": "build victim",
+        //     "type": "shell",
+        //     "command": "gcc",
+        //     "args": [
+        //         "-g", "victim.c", "l3.c", "es_management.c", "vlist.c", "probe.c", "timestats.c" "-o", "victim_$(date +\"%g%m%d.%H%M%S\")", "-DVERSION=$(date +\"%g%m%d.%H%M%S\")"
+        //     ],
+        //     "group": {
+        //         "kind": "build",
+        //         "isDefault": true
+        //     }
+        // }
         {
             "label": "build victim",
             "type": "shell",
-            "command": "gcc",
-            "args": [
-                "-g", "victim.c", "l3.c", "es_management.c", "vlist.c", "probe.c", "timestats.c" "-o", "victim"
-            ],
+            "command": ".vscode/compile.sh",
             "group": {
                 "kind": "build",
                 "isDefault": true

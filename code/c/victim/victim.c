@@ -140,15 +140,23 @@ int parse_command(char* line, char *command, int command_number){
   line[i] = ' ';
 }
 
+uint64_t benchmark(void (*probe_operation)(void*), void* pp, int it, int op_type){
+    uint64_t before_print = rdtscp64();
+    for(int i=0; i<it; i++)
+      (*probe_operation)(pp);
+    uint64_t after_print = rdtscp64();
+    printf("%i it with type %i: %" PRIu64 "\n", it, op_type, after_print - before_print);
+}
+
 int main(int argc, char ** argv) {
   struct app_state* this_app_state = (struct app_state*)calloc(sizeof(struct app_state),1);
   this_app_state->l3_threshold = 140;
 
   build_es((void*)this_app_state, 1);
 
-  set_monitored_es((void*)this_app_state, 0, 0);
+  set_monitored_es((void*)this_app_state, -1, -1);
 
-  sample_es((void*)this_app_state, 1, 0);
+  //sample_es((void*)this_app_state, 1, 0);
 
   printf("probe %i es:\n", this_app_state->l3->nmonitored);
 
@@ -233,7 +241,7 @@ int main(int argc, char ** argv) {
           sec_switch = get_time_in_ms();
           send_noise++;
           if(send_noise % 2 == 0){
-            set_monitored_es((void*)this_app_state, 0, 0);
+            set_monitored_es((void*)this_app_state, -1, -1);
           } else {
             set_monitored_es((void*)this_app_state, NOISY_CHANNEL_OFFSET_REC_START, NOISY_CHANNEL_OFFSET_REC_END);
           }
@@ -241,7 +249,7 @@ int main(int argc, char ** argv) {
       }
       //reset monitored es for further data sending
       //dats sending use l3->monitorhead
-      set_monitored_es((void*)this_app_state, 0, 0);
+      set_monitored_es((void*)this_app_state, -1, -1);
     }
     //---------------------------------------BENCHMARK--------------------------------------------
     //example: b 1 10000
@@ -251,25 +259,38 @@ int main(int argc, char ** argv) {
       int it = atoi(command+4);
       uint64_t before = get_time_in_ms(), before_print, after_print;
       printf("type %i, it %i\n", type, it);
-      while(get_time_in_ms() - before < 200){
-        before_print = rdtscp64();
-        for(int i = 0; i<it; i++){
-          if(type == 0)
-            probe_only(this_app_state->l3->monitoredhead[0]); 
-          else if(type == 1)
-            probe_only_adv_1(this_app_state->l3->monitoredhead[0]); 
-          else if(type == 3)
-            probe_only_split_2(this_app_state->l3->monitoredhead[0]); 
-          else if(type == 2)
-            probe_only_adv_2(this_app_state->l3->monitoredhead[0]); 
-          else if(type == 4)
-            probe_only_adv_4(this_app_state->l3->monitoredhead[0]); 
-          else if(type == 8)
-            probe_only_adv_8(this_app_state->l3->monitoredhead[0]); 
+      if(type == 0){
+        for(int i=0;i<10;i++){
+          benchmark(get_probe_only_by_type(i), this_app_state->l3->monitoredhead[0], it, i);
         }
-        after_print = rdtscp64();
+      } else {
+        while(get_time_in_ms() - before < 200){
+          before_print = rdtscp64();
+          for(int i = 0; i<it; i++){
+
+            if(type == 6)
+              probe_only(this_app_state->l3->monitoredhead[0]); 
+            else if(type == 1)
+              probe_only_adv_1(this_app_state->l3->monitoredhead[0]); 
+            else if(type == 3)
+              probe_only_split_2(this_app_state->l3->monitoredhead[0]); 
+            else if(type == 5)
+              probe_only_split_4(this_app_state->l3->monitoredhead[0]);
+            else if(type == 7)
+              probe_only_split_8(this_app_state->l3->monitoredhead[0]);
+            else if(type == 2)
+              probe_only_adv_2(this_app_state->l3->monitoredhead[0]); 
+            else if(type == 4)
+              probe_only_adv_4(this_app_state->l3->monitoredhead[0]); 
+            else if(type == 8)
+              probe_only_adv_8(this_app_state->l3->monitoredhead[0]); 
+            else if(type == 9)
+              probe_only_adv_16(this_app_state->l3->monitoredhead[0]); 
+          }
+          after_print = rdtscp64();
+        }
+        printf("cycles prime single cache set: %" PRIu64 "\n", after_print - before_print);
       }
-      printf("cycles prime single cache set: %" PRIu64 "\n", after_print - before_print);
     }
     //-------------------------------------------SELECT ES-----------------------------------------------
     else if (command[0] == 's'){

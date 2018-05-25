@@ -228,6 +228,13 @@ void probe_only(void *pp) {
   } while (p != (void *) pp);
 }
 
+void probe_only_adv_1_fast(void *pp) {
+  if (pp == NULL)
+    return;
+    //void *p = (void *)pp;  
+    pp = LNEXT(pp);
+}
+
 //#define NUMBER_OF_PROBE_ADD 1
 void probe_only_adv_1(void *pp) {
   if (pp == NULL)
@@ -261,6 +268,15 @@ void probe_only_adv_8(void *pp) {
     return;
     //void *p = (void *)pp;  
     for(int i=0; i<8; i++){
+      pp = LNEXT(pp);
+    }
+}
+
+void probe_only_adv_16(void *pp) {
+  if (pp == NULL)
+    return;
+    //void *p = (void *)pp;  
+    for(int i=0; i<16; i++){
       pp = LNEXT(pp);
     }
 }
@@ -318,8 +334,14 @@ int probe_only_split_8(void *pp) {
 void* get_probe_only_by_type(int type){
   if(type == 0)
     return &probe_only; 
+  else if(type == 6)
+    return &probe_only_adv_1_fast;
   else if(type == 3)
     return &probe_only_split_2; 
+  else if(type == 5)
+    return &probe_only_split_4; 
+  else if(type == 7)
+    return &probe_only_split_8; 
   else if(type == 1)
     return &probe_only_adv_1; 
   else if(type == 2)
@@ -328,6 +350,8 @@ void* get_probe_only_by_type(int type){
     return &probe_only_adv_4; 
   else if(type == 8)
     return &probe_only_adv_8; 
+  else if(type == 9)
+    return &probe_only_adv_16; 
   printf("type unknown!\n");
     return 0;
 }
