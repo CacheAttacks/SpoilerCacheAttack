@@ -20,6 +20,12 @@
 #ifndef __L3_H__
 #define __L3_H__ 1
 
+struct timer_info *info;
+
+#define LNEXT(t) (*(void **)(t))
+#define OFFSET(p, o) ((void *)((uintptr_t)(p) + (o)))
+#define NEXTPTR(p) (OFFSET((p), sizeof(void *)))
+
 typedef void (*l3progressNotification_t)(int count, int est, void *data);
 struct l3info {
   int associativity;

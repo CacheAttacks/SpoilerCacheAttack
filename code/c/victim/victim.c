@@ -14,6 +14,7 @@
 #include "vlist.h"
 #include "l3.h"
 #include "es_management.h"
+#include "probe.h"
 
 #define SIZE 2048
 #define ARRAYS 100
@@ -120,23 +121,6 @@ int (*waitop)(uint64_t), uint64_t wait_units){
   }
 }
 
-void* get_probe_func_by_type(int type){
-  if(type == 0)
-    return &probe_only; 
-  else if(type == 3)
-    return &probe_only_split; 
-  else if(type == 1)
-    return &probe_only_adv_1; 
-  else if(type == 2)
-    return &probe_only_adv_2; 
-  else if(type == 4)
-    return &probe_only_adv_4; 
-  else if(type == 8)
-    return &probe_only_adv_8; 
-  printf("type unknown!\n");
-    return 0;
-}
-
 int parse_command(char* line, char *command, int command_number){
   int command_counter = 0;
   int i=0;
@@ -170,7 +154,7 @@ int main(int argc, char ** argv) {
 
   //measure idle noise to check wether listener is connected to channel
   set_monitored_es((void*)this_app_state, 32, 63);
-  double idle_noise_mean = mesure_mean_access_time(this_app_state, 2000);
+  double idle_noise_mean = measure_mean_access_time(this_app_state, 2000);
   printf("idle_noise_mean %f\n", idle_noise_mean);
 
   // while(1){
@@ -209,7 +193,7 @@ int main(int argc, char ** argv) {
       uint64_t before = get_time_in_ms(), before_print, after_print;
       while(get_time_in_ms() - before < 1000 * wait_time_sec){
         before_print = rdtscp64();
-        print_bitstr_covert_channel(bitstr, get_probe_func_by_type(type), this_app_state->l3->monitoredhead, COMMUNICATION_CHANNEL_OFFSET_START, COMMUNICATION_CHANNEL_OFFSET_END, repeat_probe, sync_repeat, &waitcycles, wait_cycles);
+        print_bitstr_covert_channel(bitstr, get_probe_only_by_type(type), this_app_state->l3->monitoredhead, COMMUNICATION_CHANNEL_OFFSET_START, COMMUNICATION_CHANNEL_OFFSET_END, repeat_probe, sync_repeat, &waitcycles, wait_cycles);
         after_print = rdtscp64();
       }
       printf("last print bitstr time %" PRIu64 "\n", after_print - before_print);
@@ -237,7 +221,7 @@ int main(int argc, char ** argv) {
             print_bit_covert_channel(&probe_only, this_app_state->l3->monitoredhead, NOISY_CHANNEL_OFFSET_SEND_START, NOISY_CHANNEL_OFFSET_SEND_END, repeat_probe);
           }
         } else {
-          double access_time = mesure_mean_access_time(this_app_state, 2000);
+          double access_time = measure_mean_access_time(this_app_state, 2000);
           //printf("access_time %f, idle_noise_mean %f\n", access_time, idle_noise_mean);
           if(access_time > 2 * idle_noise_mean){
             printf("access_time %f, idle_noise_mean %f\n", access_time, idle_noise_mean);
@@ -275,7 +259,7 @@ int main(int argc, char ** argv) {
           else if(type == 1)
             probe_only_adv_1(this_app_state->l3->monitoredhead[0]); 
           else if(type == 3)
-            probe_only_split(this_app_state->l3->monitoredhead[0]); 
+            probe_only_split_2(this_app_state->l3->monitoredhead[0]); 
           else if(type == 2)
             probe_only_adv_2(this_app_state->l3->monitoredhead[0]); 
           else if(type == 4)

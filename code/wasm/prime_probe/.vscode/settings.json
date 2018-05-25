@@ -4,6 +4,8 @@
         "limits.h": "c",
         "es_management.h": "c",
         "stdlib.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "stat.h": "c",
+        "strings.h": "c"
     }
 }

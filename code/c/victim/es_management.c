@@ -22,7 +22,7 @@ uint64_t get_time_in_ms(){
 }
 
 //use set_monitored_es beforehand to set the observed es
-double mesure_mean_access_time(struct app_state* this_app_state, int samples){
+double measure_mean_access_time(struct app_state* this_app_state, int samples){
   sample_es((void*)this_app_state, samples, 0
   #ifdef WASM
   , 0
@@ -55,6 +55,18 @@ void set_monitored_es_lower_half(void* app_state_ptr){
   this_app_state->monitored_es_changed = 1;
 }
 
+void change_type(void* app_state_ptr, int type){
+  struct app_state* this_app_state = (struct app_state*)app_state_ptr;
+  if(type != 0 &&
+  type != 11 && type != 12 && type != 14 && type != 18 && type != 116
+  && type != 22 && type != 24 && type != 28){
+    printf("type not found! type still %i\n", type);
+  } else {
+    this_app_state->type = type;
+    printf("type changed to %i\n", type);
+  }
+}
+
 void set_monitored_es(void* app_state_ptr, int min_index, int max_index){
   struct app_state* this_app_state = (struct app_state*)app_state_ptr;
 
@@ -62,12 +74,14 @@ void set_monitored_es(void* app_state_ptr, int min_index, int max_index){
   this_app_state->last_max_index == max_index){
     return;
   }
-
+  //printf("min_index:%i ,max_index:%i\n", min_index, max_index);
   int nsets = l3_getSets(this_app_state->l3);
   int nmonitored = nsets/64;
-  if(min_index == 0 && max_index == 0)
+  //printf("nmonitored: %i\n", nmonitored);
+  if(min_index == -1 && max_index == -1)
   {
     max_index = nmonitored-1;
+    min_index = 0;
   }
   if(min_index < 0){
     printf("min_index < 0\n");
@@ -95,6 +109,19 @@ void set_monitored_es(void* app_state_ptr, int min_index, int max_index){
 }
 
 void build_es(void* app_state_ptr, int max_es){
+  int ngroups;
+  do{
+  ngroups = build_es_ex(app_state_ptr, max_es, 
+  #ifdef BENCHMARKMODE
+  1, BENCHMARKRUNS
+  #else
+  0, 0
+  #endif
+  );
+  } while(ngroups < MIN_ES && (ngroups < max_es || max_es == 0));
+}
+
+int build_es_ex(void* app_state_ptr, int max_es, int benchmarkmode, int benchmarkruns){
   struct app_state* this_app_state = (struct app_state*)app_state_ptr;
 
   if(!this_app_state->l3_threshold){
@@ -124,33 +151,38 @@ void build_es(void* app_state_ptr, int max_es){
   printf("warm-up finished\n");
 #endif
 
-#ifdef BENCHMARKMODE
-  uint32_t *timer_array = calloc(BENCHMARKRUNS, sizeof(uint32_t));
+if(benchmarkmode){
+    uint32_t *timer_array = calloc(BENCHMARKRUNS, sizeof(uint32_t));
   for(int i=0; i<BENCHMARKRUNS; i++)
   {
-#endif
     uint32_t timer_before = get_time_in_ms();
     this_app_state->l3 = l3_prepare(NULL, this_app_state->l3_threshold, max_es);
     uint32_t timer_after = get_time_in_ms();
 
     printf("Eviction set total time: %u sec\n", (timer_after-timer_before)/1000);
-#ifdef BENCHMARKMODE
+    l3_release(this_app_state->l3);
     timer_array[i] = timer_after-timer_before;
   }
   for(int i=0; i<BENCHMARKRUNS; i++){
     printf("%u ", timer_array[i]);
   }
   printf("\n");
-  l3_release(l3);
-  SAB_terminate_counter_sub_worker();
-  exit(1);
-#endif  
+} else {
+    uint32_t timer_before = get_time_in_ms();
+    this_app_state->l3 = l3_prepare(NULL, this_app_state->l3_threshold, max_es);
+    uint32_t timer_after = get_time_in_ms();
 
+    printf("Eviction set total time: %u sec\n", (timer_after-timer_before)/1000);
+}
   int nsets = l3_getSets(this_app_state->l3);
   int nmonitored = nsets/64;
   printf("nmonitored: %i\n",nmonitored);
 
-  set_monitored_es(app_state_ptr, 0, 0);
+  set_monitored_es(app_state_ptr, -1, -1);
+
+  printf("ncol: %i\n", this_app_state->l3->nmonitored);
+
+  return this_app_state->l3->ngroups;
 }
 
 void sample_es(void* app_state_ptr, int number_of_samples, int slot_time
@@ -183,11 +215,14 @@ void sample_es(void* app_state_ptr, int number_of_samples, int slot_time
     //  this_app_state->res[i] = 1;
   }
 
-  l3_repeatedprobe(this_app_state->l3, number_of_samples, this_app_state->res, 0);
+  uint64_t before = get_time_in_ms();
+  l3_repeatedprobe(this_app_state->l3, number_of_samples, this_app_state->res, slot_time, this_app_state->type);
+  uint64_t after = get_time_in_ms();
+  printf("time from l3_repeatedprobe %" PRIu64 "ms\n", after-before);
  
 #ifdef WASM
   //update ptr, type = 0 => Uint16
-  set_ptr_to_data((uint32_t)this_app_state->res, number_of_samples, this_app_state->l3->nmonitored, slot_time);
+  set_ptr_to_data((uint32_t)this_app_state->res, number_of_samples, this_app_state->l3->nmonitored, 0);
 
   //printf("set_ptr_to_data: %p\n", this_app_state->res);
 

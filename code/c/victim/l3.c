@@ -36,6 +36,7 @@
 #include "vlist.h"
 #include "l3.h"
 #include "timestats.h"
+#include "probe.h"
 
 #define CHECKTIMES 16
 #define FACTORDEBUG 20
@@ -45,6 +46,8 @@
 #else
   #define FACTORNORMAL 1
 #endif
+
+int L3_THRESHOLD = 10000;
 
 /*
  * Intel documentation still mentiones one slice per core, but
@@ -90,12 +93,23 @@
 //experiments shows: valid es => max three contract calls
 #define MAX_CONTRACT_CALLS 3
 
+//choose percentage of availible mem blocks in the pool before first es testing
+#define EXPAND_START_VALUE_FACTOR 0.3
+
+//try to delete mulipte elements from es in contract before es testing
+//e.g. vl_len(es) = 1000 & CONTRACT_FIRST_DEL_FACTOR=0.02 => del 20 elements at once
+#define CONTRACT_FIRST_DEL_FACTOR 0.02
+#define CONTRACT_SECOND_DEL_FACTOR 0.005
+
 #ifdef WASM
   //ifdef => test eviction set multiple times after contract phase
   #define AFTERCONTRACTTEST
 
   //ifdef => test correctness of conctract phase, test es without one member for each member
   #define ONEOUTTEST
+
+  //print debug stuff for one out test and after contract test
+  #define DEBUG_TEST_PRINT 0
 
   #define EXPAND_ITERATIONS 20
   #define CONTRACT_ITERATIONS 1
@@ -105,13 +119,6 @@
   #define CONTRACT_ITERATIONS 1
   #define COLLECT_ITERATIONS 1
 #endif
-
-
-int L3_THRESHOLD = 10000;
-
-#define LNEXT(t) (*(void **)(t))
-#define OFFSET(p, o) ((void *)((uintptr_t)(p) + (o)))
-#define NEXTPTR(p) (OFFSET((p), sizeof(void *)))
 
 #define IS_MONITORED(monitored, setno) ((monitored)[(setno)>>5] & (1 << ((setno)&0x1f)))
 #define SET_MONITORED(monitored, setno) ((monitored)[(setno)>>5] |= (1 << ((setno)&0x1f)))
@@ -206,7 +213,8 @@ static void fillL3Info(l3pp_t l3) {
   // }
 }
 
-void *sethead(l3pp_t l3, int set) { //vlist_t list, int count, int offset) {
+//extend version: change between no bprobe and direct access to all 16 add or bprobe and access to 8 add with distance 2
+void *sethead_ex(l3pp_t l3, int set, int bprobe) { //vlist_t list, int count, int offset) {
   //load eviction set
   vlist_t list = l3->groups[set / l3->groupsize];
   
@@ -224,13 +232,27 @@ void *sethead(l3pp_t l3, int set) { //vlist_t list, int count, int offset) {
   //}
   
   for (int i = 0; i < count; i++) {
-    //for probe
-    LNEXT(OFFSET(vl_get(list, i), offset)) = OFFSET(vl_get(list, (i + 1) % count), offset);
-    //for bprobe
-    LNEXT(OFFSET(vl_get(list, i), offset+sizeof(void*))) = OFFSET(vl_get(list, (i + count - 1) % count), offset+sizeof(void *));
+    int distance_between_add = 1;
+    if(bprobe){
+      //for bprobe
+      LNEXT(OFFSET(vl_get(list, i), offset+sizeof(void*))) = OFFSET(vl_get(list, (i + count - 1) % count), offset+sizeof(void *));
+      //cause bprobe only 8 add entry-points can be saved into the cacheline
+      distance_between_add = 2;
+    }
+
+    //for other probe algos, e.g. probetime_split_4
+    for(int add_off = 0; add_off < 16; add_off += distance_between_add){
+      int list_index = (i + add_off) % count;
+      int cacheline_offset = offset + add_off * sizeof(void*);
+      LNEXT(OFFSET(vl_get(list, list_index), cacheline_offset)) = OFFSET(vl_get(list, (list_index + 1) % count), cacheline_offset);
+    }
   }
 
   return OFFSET(vl_get(list, 0), offset);
+}
+
+void *sethead(l3pp_t l3, int set){
+  return sethead_ex(l3, set, 1);
 }
 
 void prime(void *pp, int reps) {
@@ -239,53 +261,6 @@ void prime(void *pp, int reps) {
 
 #define str(x) #x
 #define xstr(x) str(x)
-
-//cycles through all memory-blocks in a eviction-set
-//return sum time for all accesses
-int probetime(void *pp) {
-  if (pp == NULL)
-    return 0;
-  int rv = 0;
-  void *p = (void *)pp;
-  uint32_t s = rdtscp();
-  do {
-    p = LNEXT(p);
-  } while (p != (void *) pp);
-  return rdtscp()-s;
-}
-
-int bprobetime(void *pp) {
-  if (pp == NULL)
-    return 0;
-  return probetime(NEXTPTR(pp));
-}
-
-//cycles through all memory-blocks in a eviction-set
-//access them and count accesses with (accesstime > L3_THRESHOLD)
-int probecount(void *pp) {
-  if (pp == NULL)
-    return 0;
-  int rv = 0;
-  void *p = (void *)pp;
-  //cycle through all memory-blocks in the eviction-set once
-  //remember LNEXT(p) point to memory-block[i+1]
-  do {
-    uint32_t s = memaccesstime(p, info);
-    //uint32_t s = rdtscp();
-    p = LNEXT(p);
-    //s = rdtscp() - s;
-    if (s > L3_THRESHOLD)
-      rv++;
-  } while (p != (void *) pp);
-  return rv;
-}
-
-int bprobecount(void *pp) {
-  if (pp == NULL)
-    return 0;
-  //remember memory_block[i].add + offset + 1 points to memory_block[i-1]
-  return probecount(NEXTPTR(pp));
-}
 
 static int timedwalk(void *list, register void *candidate, int walk_size, int print, vlist_t es) {
 #ifdef DEBUG
@@ -415,8 +390,10 @@ static void expand_test(vlist_t es, void* current){
 static void *expand(vlist_t es, vlist_t candidates) {
   while (vl_len(candidates) > 0) {
     void *current = vl_poprand(candidates);
-    if (vl_len(es) > 16 && checkevict_safe(es, current, vl_len(es), 0, EXPAND_ITERATIONS)){
-      printf("found es! size:%i\n", vl_len(es));
+    if (vl_len(es) > 16 && 
+    vl_len(es) > vl_len(candidates) * EXPAND_START_VALUE_FACTOR && 
+    checkevict_safe(es, current, vl_len(es), 0, EXPAND_ITERATIONS)){
+      //printf("found es! size:%i\n", vl_len(es));
       //expand_test(es, current);
       //checkevict(es, current, vl_len(es), 1);
       //checkevict(es, current, vl_len(es), 1);
@@ -439,6 +416,59 @@ static void contract(vlist_t es, vlist_t candidates, void *current) {
     //load each element in evection set instead of clflush
     //access_es(es);
     //clflush(current);
+    if (checkevict_safe(es, current, vl_len(es), 0, CONTRACT_ITERATIONS))
+      vl_push(candidates, cand);
+    else {
+      vl_insert(es, i, cand);
+      i++;
+    }
+  }
+}
+
+static int contract_multiple(vlist_t es, vlist_t candidates, void *current, int del_number){
+  int contract_at_least_once = 0;
+  vlist_t tmp_list = vl_new();
+  for (int i = 0; i < vl_len(es) ;) {
+    for(int j=0; j<del_number && i < vl_len(es); j++){
+      vl_push(tmp_list, vl_del(es, i));      
+    }
+    if (checkevict_safe(es, current, vl_len(es), 0, CONTRACT_ITERATIONS)){
+      while(vl_len(tmp_list) > 0){
+        vl_push(candidates, vl_pop(tmp_list));      
+      }
+    } else {
+      while(vl_len(tmp_list) > 0){
+        vl_insert(es, i, vl_pop(tmp_list));
+      }
+      i += del_number;
+      contract_at_least_once = 1;
+    }
+  }
+  return contract_at_least_once;
+}
+
+static void contract_advanced(vlist_t es, vlist_t candidates, void *current, int associativity) {
+  //"perfect" es has 16 elements => therefore split es in vl_len(es)/(17) parts
+  //at least one part can be deleted completly!
+  int boundary = (int)(vl_len(es) / (associativity+1));
+  //int first_del_number = (int)(vl_len(es) * CONTRACT_FIRST_DEL_FACTOR);
+  int first_del_number = 12;
+  //int second_del_number = (int)(vl_len(es) * CONTRACT_SECOND_DEL_FACTOR);
+  //int second_del_number = 6;
+
+  if(first_del_number > 1) {
+    if(!contract_multiple(es, candidates, current, first_del_number)) {
+      return;
+    }
+    // if(second_del_number > 1) {
+    //   contract_multiple(es, candidates, current, second_del_number);
+    // }
+  }
+
+  for (int i = 0; i < vl_len(es);) {
+    void *cand = vl_get(es, i);
+    vl_del(es, i);
+
     if (checkevict_safe(es, current, vl_len(es), 0, CONTRACT_ITERATIONS))
       vl_push(candidates, cand);
     else {
@@ -486,8 +516,10 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
     #ifdef DEBUG
     int d_l1 = vl_len(lines);
     #endif // DEBUG
-    if (fail > 1000) 
+    if (fail > 1000){ 
+      printf("to many failed atemps, es search canceled!\n");
       break;
+    }
 
     before = rdtscp();
     void *c = expand(es, lines);
@@ -512,21 +544,36 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
     }
 
 #ifdef WASM
+  #ifdef DEBUG_CONTRACT
     printf("CONTRACT (es size step):");
+  #endif
     int size_old = INT32_MAX;
     for(int i=0; i<MAX_CONTRACT_CALLS && vl_len(es) > l3->l3info.associativity; i++){
+    #ifdef BENCHMARKCONTRACT
+      vl_push(l3->size_es, (void*)vl_len(es));
+    #endif
       before = rdtscp();
-      contract(es, lines, c);
-      time_contract += (uint64_t)get_diff(before, rdtscp());
+      contract_advanced(es, lines, c, l3->l3info.associativity);
+      uint64_t time_last_contract = (uint64_t)get_diff(before, rdtscp());
+    #ifdef BENCHMARKCONTRACT
+      vl_push(l3->contract_time, (void*)((uint32_t)time_last_contract));
+    #endif
+      time_contract += time_last_contract;
+    #ifdef DEBUG_CONTRACT
         printf("%i ", vl_len(es));
+    #endif
       if(i==0 && vl_len(es) >= MAX_SIZE_AFTER_FIRST_CONTRACT)
       {
+    #ifdef DEBUG_CONTRACT
         printf("after first contract call => vl_len(es) >= %i => break\n", MAX_SIZE_AFTER_FIRST_CONTRACT);
+    #endif
         break;
       }
       if(i==1 && vl_len(es) >= MAX_SIZE_AFTER_SECOND_CONTRACT)
       {
+    #ifdef DEBUG_CONTRACT
         printf("after first contract call => vl_len(es) >= %i => break\n", MAX_SIZE_AFTER_SECOND_CONTRACT);
+    #endif
         break;
       }
       size_old = vl_len(es);
@@ -540,34 +587,41 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
 #endif 
 
     before = rdtscp();
-    if(vl_len(es) < l3->l3info.associativity){
-      printf("warning vl_len(es)=%i < ass=%i!\n", vl_len(es), l3->l3info.associativity);
-    }
-
+    // if(vl_len(es) < l3->l3info.associativity){
+    //   printf("warning vl_len(es)=%i < ass=%i!\n", vl_len(es), l3->l3info.associativity);
+    // }
     int test_failed = 0;
     if (vl_len(es) <= l3->l3info.associativity + MAX_L3_ASSOCIATIVITY_DIFF &&
     vl_len(es) >= l3->l3info.associativity){
     #ifdef AFTERCONTRACTTEST
+    #if DEBUG_TEST_PRINT == 1
       printf("after contract es size:%i\n", vl_len(es));
       printf("evict ");
+    #endif
       for(int i=0;i<10;i++){
-        if(checkevict(es, c, vl_len(es), 1) <= L3_THRESHOLD)
+        if(checkevict(es, c, vl_len(es), DEBUG_TEST_PRINT) <= L3_THRESHOLD)
           test_failed = 1;
-        //printf("%i ", checkevict(es, c, vl_len(es), 0));
+      #if DEBUG_TEST_PRINT == 1
+        printf("%i ", checkevict(es, c, vl_len(es), 0));
+      #endif
       }
     #endif //AFTERCONTRACTTEST
     #ifdef ONEOUTTEST
       int oneouttest_failed = 0;
-      printf("\n 1 out test \n");  
+    #if DEBUG_TEST_PRINT == 1
+      printf("\n 1 out test \n"); 
+    #endif
       for(int i=0;i<vl_len(es);i++){
         void *element = vl_del(es, i);
-        if(checkevict(es, c, vl_len(es), 1) > L3_THRESHOLD)
+        if(checkevict(es, c, vl_len(es), DEBUG_TEST_PRINT) > L3_THRESHOLD)
           oneouttest_failed++;
         vl_insert(es, i, element);
       }
       if(oneouttest_failed > 3)
         test_failed = 1;
+    #if DEBUG_TEST_PRINT == 1
       putchar('\n');
+    #endif
     #endif //ONEOUTTEST
     }
 
@@ -676,7 +730,6 @@ static int probemap(l3pp_t l3) {
     vl_push(pages, l3->buffer + i + ADDRESS_OFFSET);
   vlist_t groups = map(l3, pages);
   vlist_t all_groups = expand_groups(groups);
-  //vlist_t all_groups = groups;
   vl_free(groups);  
 
   //Store map results
@@ -734,6 +787,11 @@ l3pp_t l3_prepare(l3info_t l3info, int l3_threshold, int max_es) {
   l3->buffer = buffer;
   l3->l3info.bufsize = bufsize;
 
+#ifdef BENCHMARKCONTRACT
+  l3->size_es = vl_new();
+  l3->contract_time = vl_new();
+#endif
+
   // Create the cache map
     if (!probemap(l3)) {
       free(l3->buffer);
@@ -759,6 +817,13 @@ l3pp_t l3_prepare(l3info_t l3info, int l3_threshold, int max_es) {
   l3->nmonitored = 0;
 
   printf("allocated %i Bytes\n", allocatedMem);
+
+#ifdef BENCHMARKCONTRACT
+      //printf benchmark result for contract
+      for(int i=0; i<vl_len(l3->size_es); i++){
+        printf("%i: s:%u, t:%u\n", i, (uint32_t)vl_get(l3->size_es,i), (uint32_t)vl_get(l3->contract_time,i));
+      }
+#endif
 
   return l3;
 }
@@ -828,16 +893,16 @@ void l3_randomise(l3pp_t l3) {
   }
 }
 
-void l3_probe(l3pp_t l3, RES_TYPE *results) {
+void l3_probe(l3pp_t l3, RES_TYPE *results, int (*probetime)(void* pp)) {
   for (int i = 0; i < l3->nmonitored; i++) {
-    int t = probetime(l3->monitoredhead[i]);
+    int t = (*probetime)(l3->monitoredhead[i]);
     results[i] = t > UINT16_MAX ? UINT16_MAX : t;
   }
 }
 
-void l3_bprobe(l3pp_t l3, RES_TYPE *results) {
+void l3_bprobe(l3pp_t l3, RES_TYPE *results, int (*probetime)(void* pp)) {
   for (int i = 0; i < l3->nmonitored; i++) {
-    int t = bprobetime(l3->monitoredhead[i]);
+    int t = bprobetime(l3->monitoredhead[i], probetime);
     results[i] = t > UINT16_MAX ? UINT16_MAX : t;
   }
 }
@@ -870,7 +935,7 @@ int l3_getAssociativity(l3pp_t l3) {
 }
 
 
-int l3_repeatedprobe(l3pp_t l3, int nrecords, RES_TYPE *results, int slot) {
+int l3_repeatedprobe(l3pp_t l3, int nrecords, RES_TYPE *results, int slot, int type) {
   assert(l3 != NULL);
   assert(results != NULL);
 
@@ -878,6 +943,7 @@ int l3_repeatedprobe(l3pp_t l3, int nrecords, RES_TYPE *results, int slot) {
     return 0;
 
   int len = l3->nmonitored;
+  int (*probetime)(void* pp) = get_probetime_by_type(type);
 
   int even = 1;
   int missed = 0;
@@ -888,9 +954,9 @@ int l3_repeatedprobe(l3pp_t l3, int nrecords, RES_TYPE *results, int slot) {
 	      results[j] = 0;
     } else {
       if (even)
-	      l3_probe(l3, results);
+	      l3_probe(l3, results, probetime);
       else
-	      l3_bprobe(l3, results);
+	      l3_bprobe(l3, results, probetime);
       even = !even;
     }
     if (slot > 0) {

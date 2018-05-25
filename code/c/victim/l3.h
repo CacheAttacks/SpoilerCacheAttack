@@ -20,6 +20,12 @@
 #ifndef __L3_H__
 #define __L3_H__ 1
 
+struct timer_info *info;
+
+#define LNEXT(t) (*(void **)(t))
+#define OFFSET(p, o) ((void *)((uintptr_t)(p) + (o)))
+#define NEXTPTR(p) (OFFSET((p), sizeof(void *)))
+
 typedef void (*l3progressNotification_t)(int count, int est, void *data);
 struct l3info {
   int associativity;
@@ -53,6 +59,10 @@ struct l3pp {
   int nmonitored;
   void **monitoredhead;
   int max_es;
+#ifdef BENCHMARKCONTRACT
+  vlist_t size_es;
+  vlist_t contract_time;
+#endif
 };
 
 
@@ -60,67 +70,8 @@ struct l3pp {
 #define L3FLAG_USEPTE		0x02 
 #define L3FLAG_NOPROBE		0x04 
 
-#define OFFSET(p, o) ((void *)((uintptr_t)(p) + (o)))
-#define NEXTPTR(p) (OFFSET((p), sizeof(void *)))
+typedef int (*p_probetime)(void*);
 
-#define LNEXT(t) (*(void **)(t))
-static inline void probe_only(void *pp) {
-  if (pp == NULL)
-    return;
-  void *p = (void *)pp;
-  do {
-    p = LNEXT(p);
-  } while (p != (void *) pp);
-}
-
-#define NUMBER_OF_PROBE_ADD 1
-static inline void probe_only_adv_1(void *pp) {
-  if (pp == NULL)
-    return;
-    //void *p = (void *)pp;  
-    for(int i=0; i<1; i++){
-      pp = LNEXT(pp);
-    }
-}
-
-static inline void probe_only_adv_2(void *pp) {
-  if (pp == NULL)
-    return;
-    //void *p = (void *)pp;  
-    for(int i=0; i<2; i++){
-      pp = LNEXT(pp);
-    }
-}
-
-static inline void probe_only_adv_4(void *pp) {
-  if (pp == NULL)
-    return;
-    //void *p = (void *)pp;  
-    for(int i=0; i<4; i++){
-      pp = LNEXT(pp);
-    }
-}
-
-static inline void probe_only_adv_8(void *pp) {
-  if (pp == NULL)
-    return;
-    //void *p = (void *)pp;  
-    for(int i=0; i<8; i++){
-      pp = LNEXT(pp);
-    }
-}
-
-static inline void probe_only_split(void *pp) {
-  if (pp == NULL)
-    return;
-  //void *p = (void *)pp;  
-  void *bp = NEXTPTR((void *)pp);  
-
-  for(int i=0; i<8; i++){
-    pp = LNEXT(pp);
-    bp = LNEXT(bp);
-  }
-}
 
 l3pp_t l3_prepare(l3info_t l3info, int L3_THRESHOLD, int max_es);
 void l3_release(l3pp_t l3);
@@ -141,12 +92,12 @@ int l3_getmonitoredset(l3pp_t l3, int *lines, int nlines);
 
 void l3_randomise(l3pp_t l3);
 
-void l3_probe(l3pp_t l3, RES_TYPE *results);
-void l3_bprobe(l3pp_t l3, RES_TYPE *results);
+void l3_probe(l3pp_t l3, RES_TYPE *results, p_probetime func_ptr);
+void l3_bprobe(l3pp_t l3, RES_TYPE *results, p_probetime func_ptr);
 void l3_probecount(l3pp_t l3, RES_TYPE *results);
 void l3_bprobecount(l3pp_t l3, RES_TYPE *results);
 
-int l3_repeatedprobe(l3pp_t l3, int nrecords, RES_TYPE *results, int slot);
+int l3_repeatedprobe(l3pp_t l3, int nrecords, RES_TYPE *results, int slot, int type);
 int l3_repeatedprobecount(l3pp_t l3, int nrecords, RES_TYPE *results, int slot);
 
 #endif // __L3_H__
