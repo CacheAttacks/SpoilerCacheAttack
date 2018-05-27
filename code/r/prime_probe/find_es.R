@@ -57,7 +57,7 @@ identify_bits <- function(tbl){
   threshold <- 1.5 * median_vec
   bit_on_vec <<- data.frame(apply(tbl, 2, function(vec) vec > threshold))
   #number of continues values > threshold => sync pattern
-  sync_repeat_threshold <- 7
+  sync_repeat_threshold <- 5
   #number of continues values > threshold => bit on
   bit_on_repeat_threshold <- 2
   #number of continues values <= threshold => bit off

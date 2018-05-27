@@ -178,3 +178,17 @@ printbits <- function(){
   
   return(plot(bit_on_vec[50:nrow(bit_on_vec),1]))
 }
+
+
+#* @png (width=1300,height=500)
+#* @get /plotchannel
+plotchannel <- function(){
+  tbl <- data.table::fread(data)
+  if(ncol(tbl) == 1){
+    tbl[,"pos"] <- 1:nrow(tbl)
+    max_value <- 300
+    tbl[tbl$V1>max_value, "V1"] <- max_value
+    plot <- ggplot2::ggplot(tbl, ggplot2::aes(x = pos, y = V1)) + ggplot2::geom_histogram(stat = "identity")
+    print(plot)
+  }
+}

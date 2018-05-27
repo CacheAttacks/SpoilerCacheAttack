@@ -148,6 +148,16 @@ uint64_t benchmark(void (*probe_operation)(void*), void* pp, int it, int op_type
     printf("%i it with type %i: %" PRIu64 "\n", it, op_type, after_print - before_print);
 }
 
+uint64_t benchmark_adv_generic(void* pp, int it){
+    for(int a=1; a<=16; a++){
+      uint64_t before_print = rdtscp64();
+      for(int i=0; i<it; i++)
+        probe_only_adv_generic(pp, a);
+      uint64_t after_print = rdtscp64();
+      printf("%i it with type %i: %" PRIu64 "\n", it, a, after_print - before_print);
+    }
+}
+
 int main(int argc, char ** argv) {
   struct app_state* this_app_state = (struct app_state*)calloc(sizeof(struct app_state),1);
   this_app_state->l3_threshold = 140;
@@ -164,6 +174,8 @@ int main(int argc, char ** argv) {
   set_monitored_es((void*)this_app_state, 32, 63);
   double idle_noise_mean = measure_mean_access_time(this_app_state, 2000);
   printf("idle_noise_mean %f\n", idle_noise_mean);
+
+  char randbitstr[] = "1101111011011001100110110101011101010011000101111100010110011111100110000001001010011100001001110111100011111011101100110011101101111111101100011101001010110001111010000010000011111100111100010000101111100010001100011011001101000000001101100100100001000101011110011010110100100000000100000011000011000000110000010001011100001101111000101010001000101101001011001101111100001011000110001101001110101110011010100001010001000011100011110010000011010001100011000111001001000100110011010110101000101000100000110110100100100001111011010010110001101110111000101000101110000010111010010011011100110101011010000010101001011011000001010100100000110111001111001101111000001101011010010000000001110100111011011110110111000111011100010100010001011100011111111001100000001011110011100100001011111100100100101010001011011010010101111001010001000000001101101101100010110010110111000100001101010011111110001100100100110000110010001111110011101100000111100001010010011000010111110101010010001100001000010010011011001000";
 
   // while(1){
   //   l3_probe(this_app_state->l3, this_app_state->res);
@@ -195,13 +207,13 @@ int main(int argc, char ** argv) {
     //---------------------------------------PRINT ON CHANNEL--------------------------------------------
     else if (command[0] == 'p'){
       command[3] = '\0';
-      char bitstr[] = "1000111001";
+      //char bitstr[] = "1000111001";
       int type = atoi(command+2);
       int wait_time_sec = atoi(command+4);
       uint64_t before = get_time_in_ms(), before_print, after_print;
       while(get_time_in_ms() - before < 1000 * wait_time_sec){
         before_print = rdtscp64();
-        print_bitstr_covert_channel(bitstr, get_probe_only_by_type(type), this_app_state->l3->monitoredhead, COMMUNICATION_CHANNEL_OFFSET_START, COMMUNICATION_CHANNEL_OFFSET_END, repeat_probe, sync_repeat, &waitcycles, wait_cycles);
+        print_bitstr_covert_channel(randbitstr, get_probe_only_by_type(type), this_app_state->l3->monitoredhead, COMMUNICATION_CHANNEL_OFFSET_START, COMMUNICATION_CHANNEL_OFFSET_END, repeat_probe, sync_repeat, &waitcycles, wait_cycles);
         after_print = rdtscp64();
       }
       printf("last print bitstr time %" PRIu64 "\n", after_print - before_print);
@@ -263,6 +275,8 @@ int main(int argc, char ** argv) {
         for(int i=0;i<10;i++){
           benchmark(get_probe_only_by_type(i), this_app_state->l3->monitoredhead[0], it, i);
         }
+        printf("probe_only_adv_generic\n");
+        benchmark_adv_generic(this_app_state->l3->monitoredhead[0], it);
       } else {
         while(get_time_in_ms() - before < 200){
           before_print = rdtscp64();

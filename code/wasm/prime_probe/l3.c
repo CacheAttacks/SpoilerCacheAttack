@@ -109,7 +109,7 @@ int L3_THRESHOLD = 10000;
   #define ONEOUTTEST
 
   //print debug stuff for one out test and after contract test
-  #define DEBUG_TEST_PRINT 0
+  #define DEBUG_TEST_PRINT 1
 
   #define EXPAND_ITERATIONS 20
   #define CONTRACT_ITERATIONS 1
@@ -186,6 +186,7 @@ static uintptr_t getphysaddr(void *p) {
 }
 static void fillL3Info(l3pp_t l3) {
 //l3-cache i7-4770: 16-way-ass, 8192sets, 4slices => 4(ass)+13(sets)+6(line)=23bits (8MiB)
+//l3-cache i3-5010U: 12-way-ass, 4096sets, 3MiB like 16-way-ass and 4MiB => 4(ass)+12(sets)+6(line)=22bits (4MiB)
 //works also for other CPUs
 
   l3->l3info.associativity = 16;
@@ -234,10 +235,16 @@ void *sethead_ex(l3pp_t l3, int set, int bprobe) { //vlist_t list, int count, in
   for (int i = 0; i < count; i++) {
     int distance_between_add = 1;
     if(bprobe){
-      //for bprobe
-      LNEXT(OFFSET(vl_get(list, i), offset+sizeof(void*))) = OFFSET(vl_get(list, (i + count - 1) % count), offset+sizeof(void *));
       //cause bprobe only 8 add entry-points can be saved into the cacheline
       distance_between_add = 2;
+
+      //for bprobe
+      for(int add_off = 0; add_off < 16; add_off += distance_between_add){
+        int list_index = (i + add_off) % count;
+        int cacheline_offset = offset + (add_off + 1) * sizeof(void*);
+        LNEXT(OFFSET(vl_get(list, list_index), cacheline_offset)) = OFFSET(vl_get(list, (list_index + count - 1) % count), cacheline_offset);
+      }
+      //LNEXT(OFFSET(vl_get(list, i), offset+sizeof(void*))) = OFFSET(vl_get(list, (i + count - 1) % count), offset+sizeof(void *));
     }
 
     //for other probe algos, e.g. probetime_split_4
@@ -631,7 +638,7 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
 
     //rewind if size(es) do not match associativity
     if (vl_len(es) > l3->l3info.associativity + MAX_L3_ASSOCIATIVITY_DIFF ||
-    vl_len(es) < l3->l3info.associativity ||
+    vl_len(es) < l3->l3info.associativity - 4 ||
     test_failed) {
       while (vl_len(es))
 	      vl_push(lines, vl_del(es, 0));

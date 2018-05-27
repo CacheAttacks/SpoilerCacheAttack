@@ -124,7 +124,7 @@ int mem_access_testing(int rounds, int print){
   }
   if(mean_random - mean_linear <= 10){
     printf("mean_random - mean_linear < 10\n");
-    exit(1);
+    //exit(1);
   }
 
   int threshold = mean_linear + (((mean_random - mean_linear)/2));
@@ -167,11 +167,12 @@ int main(int ac, char **av) {
 
   //l3-cache i7-4770: 16-way-ass, 8192sets => 4+13+6=23bits (8MiB)
 
-  //counter_consistency_test(1, 500000000, 1000000);
-
   float resolution_ns = get_timer_resolution();  
 
-  //this_app_state->l3_threshold = mem_access_testing(100000, 0);
+  //counter_consistency_test(1, 5000000, 1000000);
+
+  this_app_state->l3_threshold = mem_access_testing(100000, 0);
+  //this_app_state->l3_threshold = 45;
   this_app_state->l3_threshold = 31;
   // flush_l3(0,0,0);
   // mem_access_testing(100000, 0);

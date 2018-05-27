@@ -65,7 +65,6 @@ int probetime_adv_2(void *pp) {
   if (pp == NULL)
     return 0;
     //void *p = (void *)pp;  
-    pp = PROBE_PTR_OFFSET2((void *)pp);
     uint32_t s = rdtscp();
     for(int i=0; i<2; i++){
       pp = LNEXT(pp);
@@ -76,7 +75,6 @@ int probetime_adv_2(void *pp) {
 int probetime_adv_4(void *pp) {
   if (pp == NULL)
     return 0;
-    pp = PROBE_PTR_OFFSET4((void *)pp); 
     //void *p = (void *)pp;  
     uint32_t s = rdtscp();
     for(int i=0; i<4; i++){
@@ -89,7 +87,6 @@ int probetime_adv_8(void *pp) {
   if (pp == NULL)
     return 0;
     //void *p = (void *)pp;  
-    pp = PROBE_PTR_OFFSET8((void *)pp);
     uint32_t s = rdtscp();
     for(int i=0; i<8; i++){
       pp = LNEXT(pp);
@@ -103,6 +100,17 @@ int probetime_adv_16(void *pp) {
     //void *p = (void *)pp;  
     uint32_t s = rdtscp();
     for(int i=0; i<16; i++){
+      pp = LNEXT(pp);
+    }
+    return rdtscp()-s;
+}
+
+int probetime_adv_generic(void *pp, int max_it) {
+  if (pp == NULL)
+    return 0;
+    //void *p = (void *)pp;  
+    uint32_t s = rdtscp();
+    for(int i=0; i<max_it; i++){
       pp = LNEXT(pp);
     }
     return rdtscp()-s;
@@ -281,6 +289,14 @@ void probe_only_adv_16(void *pp) {
     }
 }
 
+void probe_only_adv_generic(void *pp, int max_it) {
+  if (pp == NULL)
+    return; 
+    for(int i=0; i<max_it; i++){
+      pp = LNEXT(pp);
+    }
+}
+
 void probe_only_split_2(void *pp) {
   if (pp == NULL)
     return;
@@ -293,9 +309,9 @@ void probe_only_split_2(void *pp) {
   }
 }
 
-int probe_only_split_4(void *pp) {
+void probe_only_split_4(void *pp) {
   if (pp == NULL)
-    return 0;
+    return;
   //void *p = (void *)pp;  
   void *b_off_4 = PROBE_PTR_OFFSET4((void *)pp);  
   void *b_off_8 = PROBE_PTR_OFFSET8((void *)pp);
@@ -308,9 +324,9 @@ int probe_only_split_4(void *pp) {
   }
 }
 
-int probe_only_split_8(void *pp) {
+void probe_only_split_8(void *pp) {
   if (pp == NULL)
-    return 0;
+    return;
   //void *p = (void *)pp;  
   void *b_off_2 = PROBE_PTR_OFFSET2((void *)pp);  
   void *b_off_4 = PROBE_PTR_OFFSET4((void *)pp);

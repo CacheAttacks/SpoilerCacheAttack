@@ -37,3 +37,13 @@ tbl_melt[tbl_melt$value>max_value,"value"] <- max_value
 plot <- ggplot2::ggplot(tbl_melt, ggplot2::aes(x=sample,y=es)) + 
   ggplot2::geom_tile(ggplot2::aes(fill = value)) +
   ggplot2::scale_fill_gradient(low = "white", high = "steelblue")
+
+
+
+m <- t(sapply(0:1023,function(x){ as.integer(intToBits(x))}))
+m2 <- apply(m, 1, function(x) Reduce(function(x,y) paste0(x,y), rev(as.character(x))[23:32]))
+bitstr <- Reduce(function(x,y) paste0(x,y), m2)
+
+set.seed(42)
+bitstr2 <- Reduce(paste0, sample(c(0,1), 1000, replace = T))
+write(bitstr2, file = "randbitstr.txt")

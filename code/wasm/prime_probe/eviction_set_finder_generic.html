@@ -1219,7 +1219,7 @@
       <option value="18">MaxChase8</option>
       <option value="116">MaxChase16</option>
   </select> 
-  <span><input type="number" id="numberType" value="0"></span>
+  <!--<span><input type="number" id="numberType" value="0"></span>-->
   <span><input type="button" id="btnChangeType" value="Change probe type"></span>  
 
 </span></br>
@@ -1347,7 +1347,6 @@
           return POSTstr;
         },
         preRun: function(){
-          Module['startTimer']();
         },
         postRun: function(){
           postRun();
@@ -1431,6 +1430,7 @@
       //const sharedArray = new Uint32Array(sharedBuffer);
       Module['sharedArrayCounter'] = new Uint32Array(sharedBuffer);
       Module['sharedBufferCounter'] = sharedBuffer;
+      Module['startTimer']();
 
     </script>
     <script type="text/javascript" src="eviction_set_finder.js"></script>
