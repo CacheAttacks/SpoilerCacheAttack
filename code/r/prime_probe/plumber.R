@@ -73,7 +73,7 @@ data <- ""
 #* @post /changedata
 function(newdata){
   data <<- newdata
-  print(newdata)
+  #print(newdata)
 }
 
 #* @param newdata data for the file
@@ -179,16 +179,34 @@ printbits <- function(){
   return(plot(bit_on_vec[50:nrow(bit_on_vec),1]))
 }
 
+source("smoothed_z-score_algo.R")
 
-#* @png (width=1300,height=500)
+#* @png (width=1000,height=500)
 #* @get /plotchannel
 plotchannel <- function(){
   tbl <- data.table::fread(data)
   if(ncol(tbl) == 1){
-    tbl[,"pos"] <- 1:nrow(tbl)
-    max_value <- 300
+    #tbl[,"sample"] <- 1:nrow(tbl)
+    max_value <- 700
     tbl[tbl$V1>max_value, "V1"] <- max_value
-    plot <- ggplot2::ggplot(tbl, ggplot2::aes(x = pos, y = V1)) + ggplot2::geom_histogram(stat = "identity")
-    print(plot)
+    #plot <- ggplot2::ggplot(tbl, ggplot2::aes(x = sample, y = V1)) + ggplot2::geom_histogram(stat = "identity")
+    #print(plot)
+    
+    lag       <- 30
+    threshold <- 4
+    influence <- 0.01
+    y <- tbl[[1]][50:(length(tbl[[1]])-10)]
+    y <- y[10000:10500]
+    
+    result <- ThresholdingAlgo(y,lag,threshold,influence)
+    
+    par(mfrow = c(2,1),oma = c(2,2,0,0) + 0.1,mar = c(0,0,2,1) + 0.2)
+    plot(1:length(y),y,type="l",ylab="",xlab="") 
+    lines(1:length(y),result$avgFilter,type="l",col="cyan",lwd=2)
+    lines(1:length(y),result$avgFilter+threshold*result$stdFilter,type="l",col="green",lwd=2)
+    lines(1:length(y),result$avgFilter-threshold*result$stdFilter,type="l",col="green",lwd=2)
+    plot(result$signals,type="S",col="red",ylab="",xlab="",ylim=c(-1.5,1.5),lwd=2)
+    p <- recordPlot()
+    return(print(p))
   }
 }

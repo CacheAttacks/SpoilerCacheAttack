@@ -120,11 +120,7 @@ if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
             Module['postxhr']('http://localhost:8000/changedata', POSTstr);
             
             d = new Date();
-            if(Module['ncol'] != 1){
-                Module['imgElement'].src = 'http://localhost:8000/plotdata?selected_es=' + document.getElementById('numberRangeEs').value + "&" + d.getTime();
-            } else {
-                Module['imgElement'].src = 'http://localhost:8000/plotchannel' + "&" + d.getTime();
-            }
+            Module['imgElement'].src = 'http://localhost:8000/plotdata?selected_es=' + document.getElementById('numberRangeEs').value + "&" + d.getTime();
         }
     }
 });

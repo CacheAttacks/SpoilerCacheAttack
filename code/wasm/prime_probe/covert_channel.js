@@ -4,7 +4,7 @@
 Module['asm']._set_monitored_es_lower_half(Module['appStatePtr']);
 sampleEsWrapper(50, 0, 1);
 //mutiply by 2 to get index for all sets
-var POSTstr = Module['createPOSTStr'](Module['wasmMemoryArr'], Module['res']/Module['byteFactor'], Module['nrow'], Module['ncol']);
+// var POSTstr = Module['createPOSTStr'](Module['wasmMemoryArr'], Module['res']/Module['byteFactor'], Module['nrow'], Module['ncol']);
 console.log(Module['getxhr']('http://localhost:8000/findnoisycacheset'));
 noisy_start_cache_set = 2*(Module['getxhr']('http://localhost:8000/findnoisycacheset'));
 console.log("possible noisy_start_cache_set:" + noisy_start_cache_set);

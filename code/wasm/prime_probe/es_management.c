@@ -57,13 +57,14 @@ void set_monitored_es_lower_half(void* app_state_ptr){
 
 void change_type(void* app_state_ptr, int type){
   struct app_state* this_app_state = (struct app_state*)app_state_ptr;
-  if(type != 0 &&
-  type != 11 && type != 12 && type != 14 && type != 18 && type != 116
-  && type != 22 && type != 24 && type != 28){
-    printf("type not found! type still %i\n", type);
-  } else {
+  if(type == 0
+  || ((type-10) >= 1 && (type-10) <= 9)  
+  || ((type-100) >= 10 && (type-100) <= 16)
+  || type == 22 || type == 24 || type == 28){
     this_app_state->type = type;
     printf("type changed to %i\n", type);
+  } else {
+    printf("type not found! type still %i\n", type);
   }
 }
 

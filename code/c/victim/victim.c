@@ -207,13 +207,15 @@ int main(int argc, char ** argv) {
     //---------------------------------------PRINT ON CHANNEL--------------------------------------------
     else if (command[0] == 'p'){
       command[3] = '\0';
-      //char bitstr[] = "1000111001";
+      char bitstr[] = "1000111001";
+      char* printbitstr = randbitstr;
+      printbitstr = bitstr;
       int type = atoi(command+2);
       int wait_time_sec = atoi(command+4);
       uint64_t before = get_time_in_ms(), before_print, after_print;
       while(get_time_in_ms() - before < 1000 * wait_time_sec){
         before_print = rdtscp64();
-        print_bitstr_covert_channel(randbitstr, get_probe_only_by_type(type), this_app_state->l3->monitoredhead, COMMUNICATION_CHANNEL_OFFSET_START, COMMUNICATION_CHANNEL_OFFSET_END, repeat_probe, sync_repeat, &waitcycles, wait_cycles);
+        print_bitstr_covert_channel(printbitstr, get_probe_only_by_type(type), this_app_state->l3->monitoredhead, COMMUNICATION_CHANNEL_OFFSET_START, COMMUNICATION_CHANNEL_OFFSET_END, repeat_probe, sync_repeat, &waitcycles, wait_cycles);
         after_print = rdtscp64();
       }
       printf("last print bitstr time %" PRIu64 "\n", after_print - before_print);

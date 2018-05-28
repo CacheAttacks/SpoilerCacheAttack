@@ -72,6 +72,17 @@ int probetime_adv_2(void *pp) {
     return rdtscp()-s;
 }
 
+int probetime_adv_3(void *pp) {
+  if (pp == NULL)
+    return 0;
+    //void *p = (void *)pp;  
+    uint32_t s = rdtscp();
+    for(int i=0; i<3; i++){
+      pp = LNEXT(pp);
+    }
+    return rdtscp()-s;
+}
+
 int probetime_adv_4(void *pp) {
   if (pp == NULL)
     return 0;
@@ -83,12 +94,122 @@ int probetime_adv_4(void *pp) {
     return rdtscp()-s;
 }
 
+int probetime_adv_5(void *pp) {
+  if (pp == NULL)
+    return 0;
+    //void *p = (void *)pp;  
+    uint32_t s = rdtscp();
+    for(int i=0; i<5; i++){
+      pp = LNEXT(pp);
+    }
+    return rdtscp()-s;
+}
+
+int probetime_adv_6(void *pp) {
+  if (pp == NULL)
+    return 0;
+    //void *p = (void *)pp;  
+    uint32_t s = rdtscp();
+    for(int i=0; i<6; i++){
+      pp = LNEXT(pp);
+    }
+    return rdtscp()-s;
+}
+
+int probetime_adv_7(void *pp) {
+  if (pp == NULL)
+    return 0;
+    //void *p = (void *)pp;  
+    uint32_t s = rdtscp();
+    for(int i=0; i<7; i++){
+      pp = LNEXT(pp);
+    }
+    return rdtscp()-s;
+}
+
 int probetime_adv_8(void *pp) {
   if (pp == NULL)
     return 0;
     //void *p = (void *)pp;  
     uint32_t s = rdtscp();
     for(int i=0; i<8; i++){
+      pp = LNEXT(pp);
+    }
+    return rdtscp()-s;
+}
+
+int probetime_adv_9(void *pp) {
+  if (pp == NULL)
+    return 0;
+    //void *p = (void *)pp;  
+    uint32_t s = rdtscp();
+    for(int i=0; i<9; i++){
+      pp = LNEXT(pp);
+    }
+    return rdtscp()-s;
+}
+
+int probetime_adv_10(void *pp) {
+  if (pp == NULL)
+    return 0;
+    //void *p = (void *)pp;  
+    uint32_t s = rdtscp();
+    for(int i=0; i<10; i++){
+      pp = LNEXT(pp);
+    }
+    return rdtscp()-s;
+}
+
+int probetime_adv_11(void *pp) {
+  if (pp == NULL)
+    return 0;
+    //void *p = (void *)pp;  
+    uint32_t s = rdtscp();
+    for(int i=0; i<11; i++){
+      pp = LNEXT(pp);
+    }
+    return rdtscp()-s;
+}
+
+int probetime_adv_12(void *pp) {
+  if (pp == NULL)
+    return 0;
+    //void *p = (void *)pp;  
+    uint32_t s = rdtscp();
+    for(int i=0; i<12; i++){
+      pp = LNEXT(pp);
+    }
+    return rdtscp()-s;
+}
+
+int probetime_adv_13(void *pp) {
+  if (pp == NULL)
+    return 0;
+    //void *p = (void *)pp;  
+    uint32_t s = rdtscp();
+    for(int i=0; i<13; i++){
+      pp = LNEXT(pp);
+    }
+    return rdtscp()-s;
+}
+
+int probetime_adv_14(void *pp) {
+  if (pp == NULL)
+    return 0;
+    //void *p = (void *)pp;  
+    uint32_t s = rdtscp();
+    for(int i=0; i<14; i++){
+      pp = LNEXT(pp);
+    }
+    return rdtscp()-s;
+}
+
+int probetime_adv_15(void *pp) {
+  if (pp == NULL)
+    return 0;
+    //void *p = (void *)pp;  
+    uint32_t s = rdtscp();
+    for(int i=0; i<15; i++){
       pp = LNEXT(pp);
     }
     return rdtscp()-s;
@@ -184,12 +305,34 @@ p_probetime get_probetime_by_type(int type){
     return &probetime_adv_1; 
   else if(type == 12)
     return &probetime_adv_2; 
+  else if(type == 13)
+    return &probetime_adv_3; 
   else if(type == 14)
     return &probetime_adv_4; 
+  else if(type == 15)
+    return &probetime_adv_5; 
+  else if(type == 16)
+    return &probetime_adv_6; 
+  else if(type == 17)
+    return &probetime_adv_7; 
   else if(type == 18)
     return &probetime_adv_8; 
+  else if(type == 19)
+    return &probetime_adv_9; 
+  else if(type == 110)
+    return &probetime_adv_10; 
+  else if(type == 111)
+    return &probetime_adv_11; 
+  else if(type == 112)
+    return &probetime_adv_12; 
+  else if(type == 113)
+    return &probetime_adv_13; 
+  else if(type == 114)
+    return &probetime_adv_14; 
+  else if(type == 115)
+    return &probetime_adv_15; 
   else if(type == 116)
-    return &probetime_adv_8; 
+    return &probetime_adv_16; 
   printf("type unknown!\n");
     return 0;
 }

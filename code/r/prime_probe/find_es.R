@@ -44,12 +44,9 @@ split_in_sync <- function(bit_on_vec, sync_repeat_threshold, bit_off_repeat_thre
   return(list_pos_sync_block_begin)
 }
 
-search_for_hotspot_regions <- function(){
-  
-}
-
 #assume each col has same bits
 identify_bits <- function(tbl){
+  tmp <<- tbl
   #use median cause there are more untouched samples
   median_vec <- apply(tbl, 2, median)
   print(median_vec)
@@ -69,15 +66,29 @@ identify_bits <- function(tbl){
   
   #discard_first_measurements <- 1
   
-  list_sync_blocks <- split_in_sync(bit_on_vec[,1], sync_repeat_threshold, bit_off_repeat_threshold)
+  lag       <- 30
+  threshold <- 5
+  influence <- 0.01
+  
+  # Run algo with lag = 30, threshold = 5, influence = 0
+  result <- ThresholdingAlgo(tbl[[1]],lag,threshold,influence)
+  #smooth result
+  for(i in 1:(length(result$signals)-2)){
+    if(result$signals[i] == 1 && result$signals[i+1] == 0 && result$signals[i+2] == 1)
+      result$signals[i+1] <- 1
+  }
+  
+  list_sync_blocks <<- split_in_sync(result$signals, sync_repeat_threshold, bit_off_repeat_threshold)
   print(list_sync_blocks)
   
-  for(i in 1:(floor(length(list_sync_blocks)/2))*2-1){
-    start <- list_sync_blocks[[i]]
-    end <- list_sync_blocks[[i+1]]
-    str <- analyse_bits_between_sync(bit_on_vec[start:end,1], bit_on_repeat_threshold, bit_off_repeat_threshold, 
-                   sync_repeat_threshold, bits_between_sync)
-    print(str)
+  if(length(list_sync_blocks) > 1){
+    for(i in 1:(floor(length(list_sync_blocks)/2))*2-1){
+      start <- list_sync_blocks[[i]]
+      end <- list_sync_blocks[[i+1]]
+      str <- analyse_bits_between_sync(result$signals[start:end], bit_on_repeat_threshold, bit_off_repeat_threshold, 
+                     sync_repeat_threshold, bits_between_sync)
+      print(str)
+    }
   }
 }
 

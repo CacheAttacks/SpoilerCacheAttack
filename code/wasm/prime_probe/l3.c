@@ -109,7 +109,7 @@ int L3_THRESHOLD = 10000;
   #define ONEOUTTEST
 
   //print debug stuff for one out test and after contract test
-  #define DEBUG_TEST_PRINT 1
+  //#define DEBUG_TEST_PRINT 1
 
   #define EXPAND_ITERATIONS 20
   #define CONTRACT_ITERATIONS 1
