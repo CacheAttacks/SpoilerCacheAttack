@@ -160,10 +160,16 @@ source("find_es.R")
 #* @get /identifybits
 function(){
   tbl <- data.table::fread(data)
-  bitstr <- identify_bits(tbl)
-  print(bitstr)
+  bitstr_list <<- identify_bits(tbl)
+  default_bitstr <- "1000111001"
+  compare_bitstr_list(bitstr_list, default_bitstr)
   return(bitstr)
 }
+#13.3 kilobit
+#3.4*10^9/13300 = 2556391 per 10 bits
+#10 * c + 10 * r * prime + y * prime
+#prime = 400
+#10 * c + 4000 + 8000
 
 #* @png (width=1300,height=950)
 #* @get /printbits
@@ -192,13 +198,14 @@ plotchannel <- function(){
     #plot <- ggplot2::ggplot(tbl, ggplot2::aes(x = sample, y = V1)) + ggplot2::geom_histogram(stat = "identity")
     #print(plot)
     
-    lag       <- 30
-    threshold <- 4
-    influence <- 0.01
+    lag       <- 2
+    threshold <- 5
+    influence <- 0.001
     y <- tbl[[1]][50:(length(tbl[[1]])-10)]
-    y <- y[10000:10500]
+    #y <- y[10000:11000]
     
     result <- ThresholdingAlgo(y,lag,threshold,influence)
+    result$signals[result$signals == -1] <- 0
     
     par(mfrow = c(2,1),oma = c(2,2,0,0) + 0.1,mar = c(0,0,2,1) + 0.2)
     plot(1:length(y),y,type="l",ylab="",xlab="") 

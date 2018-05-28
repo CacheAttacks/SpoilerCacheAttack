@@ -187,11 +187,11 @@ int main(int argc, char ** argv) {
   //reapeat sync 30 min 10 steps high
 
   char* command = calloc(sizeof(char), 128);
-  int wait_cycles = 10000;
+  int wait_cycles = 30000;
   int repeat_probe = 1;
-  int sync_repeat = 7;
+  int sync_repeat = 10;
   while(1){
-    printf("enter command e.g. w 10 , s 12:213 , c 100000 , r 3 , n 10 , y 2000, p 10, b \n");
+    printf("enter command e.g. w 10 , s 12:213 , c %i , r %i , n 10 , y %i, p 0 10, b \n", wait_cycles, repeat_probe, sync_repeat);
     fgets(command, 128, stdin);
     //-------------------------------------------PRINT BITSTR-------------------------------------------
     if(command[0] == 'w'){
@@ -210,6 +210,8 @@ int main(int argc, char ** argv) {
       char bitstr[] = "1000111001";
       char* printbitstr = randbitstr;
       printbitstr = bitstr;
+      int prime_cycles = 400;
+      printf("bitrate: %i kbit/s", wait_cycles*10 + repeat_probe*prime_cycles*10 + sync_repeat*prime_cycles);
       int type = atoi(command+2);
       int wait_time_sec = atoi(command+4);
       uint64_t before = get_time_in_ms(), before_print, after_print;

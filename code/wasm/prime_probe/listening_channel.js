@@ -9,7 +9,7 @@ if (typeof Module['noisy_start_cache_set'] !== 'undefined') {
     Module['postxhr']('http://localhost:8000/changedata', POSTstr);
 
     d = new Date();
-    Module['imgElement'].src = 'http://localhost:8000/plotchannel' + "?" + d.getTime();
+    //Module['imgElement'].src = 'http://localhost:8000/plotchannel' + "?" + d.getTime();
 
     var after = performance.now();
     console.log("time from sample_es: " + (after-before) + "ms");

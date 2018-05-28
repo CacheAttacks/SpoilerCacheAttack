@@ -32,10 +32,11 @@ split_in_sync <- function(bit_on_vec, sync_repeat_threshold, bit_off_repeat_thre
       if(sync_bit_on){
         if(length(list_pos_sync_block_begin) > 0){
           #we want pos before beginning
-          list_pos_sync_block_begin[[length(list_pos_sync_block_begin)+1]] <- pos_snyc_bit_begin - 1
+          list_pos_sync_block_begin[[length(list_pos_sync_block_begin)+1]] <- 
+            c(pos_snyc_bit_begin - 1, over_threshold_count)
         } 
         list_pos_sync_block_begin[[length(list_pos_sync_block_begin)+1]] <-
-          i - bit_off_repeat_threshold
+          c(i - bit_off_repeat_threshold, over_threshold_count)
       }
       sync_bit_on <- F
       over_threshold_count <- 0
@@ -54,9 +55,9 @@ identify_bits <- function(tbl){
   threshold <- 1.5 * median_vec
   bit_on_vec <<- data.frame(apply(tbl, 2, function(vec) vec > threshold))
   #number of continues values > threshold => sync pattern
-  sync_repeat_threshold <- 5
+  sync_repeat_threshold <- 18
   #number of continues values > threshold => bit on
-  bit_on_repeat_threshold <- 2
+  bit_on_repeat_threshold <- 3
   #number of continues values <= threshold => bit off
   bit_off_repeat_threshold <- 1
   
@@ -66,12 +67,12 @@ identify_bits <- function(tbl){
   
   #discard_first_measurements <- 1
   
-  lag       <- 30
+  lag       <- 10
   threshold <- 5
   influence <- 0.01
   
   # Run algo with lag = 30, threshold = 5, influence = 0
-  result <- ThresholdingAlgo(tbl[[1]],lag,threshold,influence)
+  result <<- ThresholdingAlgo(tbl[[1]],lag,threshold,influence)
   #smooth result
   for(i in 1:(length(result$signals)-2)){
     if(result$signals[i] == 1 && result$signals[i+1] == 0 && result$signals[i+2] == 1)
@@ -79,17 +80,19 @@ identify_bits <- function(tbl){
   }
   
   list_sync_blocks <<- split_in_sync(result$signals, sync_repeat_threshold, bit_off_repeat_threshold)
-  print(list_sync_blocks)
+  #print(list_sync_blocks)
   
+  str_list <- list()
   if(length(list_sync_blocks) > 1){
     for(i in 1:(floor(length(list_sync_blocks)/2))*2-1){
-      start <- list_sync_blocks[[i]]
-      end <- list_sync_blocks[[i+1]]
-      str <- analyse_bits_between_sync(result$signals[start:end], bit_on_repeat_threshold, bit_off_repeat_threshold, 
+      start <- list_sync_blocks[[i]][1]
+      end <- list_sync_blocks[[i+1]][1]
+      str_list[[length(str_list)+1]] <- analyse_bits_between_sync(result$signals[start:end], bit_on_repeat_threshold, bit_off_repeat_threshold, 
                      sync_repeat_threshold, bits_between_sync)
-      print(str)
+      #print(str_list[[length(str_list)]])
     }
   }
+  return(str_list)
 }
 
 analyse_bits_between_sync <- function(time_line, bit_on_repeat_threshold, bit_off_repeat_threshold, 
@@ -155,7 +158,7 @@ get_zeros <- function(list_bit_off_counter, average_pause_length, zeros_to_fill)
     paste0("1", Reduce(paste0, rep(0,x)))
   }))
   bitstr <- substring(bitstr, 2, nchar(bitstr))
-  print(bitstr)
+  #print(bitstr)
   return(bitstr)
 }
 
@@ -177,4 +180,16 @@ edit_sync_str <- function(sync_str, average_pause_length, bit_on_counter){
     last_pos <- end_pos
   }
   return(final_str)
+}
+
+
+compare_bitstr_list <- function(bitstr_list, default_bitstr){
+  #print(default_bitstr)
+  errors <<- sapply(bitstr_list, function(str) {
+    sum(sapply(1:nchar(str), function(pos) substr(default_bitstr, pos, pos) != substr(str, pos, pos)))
+  })
+  #print(sum(errors))
+  print(paste0("error sum:", sum(errors), ", error-rate: ", (sum(errors)/(nchar(default_bitstr)*length(bitstr_list)))))
+  print()
+  return(errors)
 }
