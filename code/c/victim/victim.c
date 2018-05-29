@@ -97,9 +97,14 @@ void test(){
 
 void print_bit_covert_channel(void (*probe_operation)(void*), void** cacheset_head_arr, 
 int cacheset_index_min, int cacheset_index_max, int repeat_probe){
-  for(int i=0; i<=repeat_probe; i++) {
-    for(int cacheset_index=cacheset_index_min; cacheset_index<=cacheset_index_max; cacheset_index++){
-      (*probe_operation)(cacheset_head_arr[cacheset_index]);
+  if(cacheset_index_max - cacheset_index_min == 0){
+    for(int i=0; i<=repeat_probe; i++)
+      (*probe_operation)(cacheset_head_arr[cacheset_index_min]);
+  } else {
+    for(int i=0; i<=repeat_probe; i++) {
+      for(int cacheset_index=cacheset_index_min; cacheset_index<=cacheset_index_max; cacheset_index++){
+        (*probe_operation)(cacheset_head_arr[cacheset_index]);
+      }
     }
   }    
 }

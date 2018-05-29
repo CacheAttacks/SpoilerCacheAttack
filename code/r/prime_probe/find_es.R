@@ -45,6 +45,15 @@ split_in_sync <- function(bit_on_vec, sync_repeat_threshold, bit_off_repeat_thre
   return(list_pos_sync_block_begin)
 }
 
+print_median_approach <- function(tbl, bit_on_vec){
+  max_value <- 700
+  tbl[tbl$V1>max_value, "V1"] <- max_value
+  par(mfrow = c(2,1),oma = c(2,2,0,0) + 0.1,mar = c(0,0,2,1) + 0.2)
+  plot(1:length(tbl[[1]]),tbl[[1]],type="l",ylab="",xlab="") 
+  plot(bit_on_vec,type="S",col="red",ylab="",xlab="",ylim=c(-1.5,1.5),lwd=2)
+  recordPlot()
+}
+
 #assume each col has same bits
 identify_bits <- function(tbl){
   tmp <<- tbl
@@ -54,6 +63,12 @@ identify_bits <- function(tbl){
   #threshold
   threshold <- 1.5 * median_vec
   bit_on_vec <<- data.frame(apply(tbl, 2, function(vec) vec > threshold))
+  
+  print_median_approach(tmp, bit_on_vec)
+  #par(mfrow = c(2,1),oma = c(2,2,0,0) + 0.1,mar = c(0,0,2,1) + 0.2)
+  #plot(1:length(tmp[[1]]),tmp[[1]],type="l",ylab="",xlab="") 
+  #plot(bit_on_vec,type="S",col="red",ylab="",xlab="",ylim=c(-1.5,1.5),lwd=2)
+  
   #number of continues values > threshold => sync pattern
   sync_repeat_threshold <- 18
   #number of continues values > threshold => bit on
@@ -63,16 +78,23 @@ identify_bits <- function(tbl){
   
   bits_between_sync <- 10
   
-  #return(plot(bit_on_vec[50:nrow(bit_on_vec),1]))
+  block_sample_size <- 1500
   
   #discard_first_measurements <- 1
   
-  lag       <- 10
-  threshold <- 5
-  influence <- 0.01
+  result <<- calc_smoothed_z_score(tbl[[1]])
   
-  # Run algo with lag = 30, threshold = 5, influence = 0
-  result <<- ThresholdingAlgo(tbl[[1]],lag,threshold,influence)
+  length_dist <- get_concusive_ones_dist(result$signals)
+  
+  approx_syncs <- round(length(result$signals)/block_sample_size)
+  
+  bit_on_repeat_threshold <- 
+    mean(Reduce(c, apply(length_dist[2:(nrow(length_dist)-approx_syncs),], 1, function(x) rep(as.numeric(x[1]),x[2]))))
+  
+  sync_repeat_threshold <- 0.7 * 
+    median(Reduce(c, apply(length_dist[(nrow(length_dist)-approx_syncs+1):nrow(length_dist),], 1, function(x) rep(as.numeric(x[1]),x[2]))))
+  print(paste0("sync_repeat_threshold:", sync_repeat_threshold))
+  
   #smooth result
   for(i in 1:(length(result$signals)-2)){
     if(result$signals[i] == 1 && result$signals[i+1] == 0 && result$signals[i+2] == 1)
@@ -189,7 +211,59 @@ compare_bitstr_list <- function(bitstr_list, default_bitstr){
     sum(sapply(1:nchar(str), function(pos) substr(default_bitstr, pos, pos) != substr(str, pos, pos)))
   })
   #print(sum(errors))
-  print(paste0("error sum:", sum(errors), ", error-rate: ", (sum(errors)/(nchar(default_bitstr)*length(bitstr_list)))))
-  print()
-  return(errors)
+  info_str <- paste0("error sum:", sum(errors), ", error-rate: ", (sum(errors)/(nchar(default_bitstr)*length(bitstr_list))))
+  return(info_str)
+}
+
+get_concusive_ones_dist <- function(bit_vec){
+  counter_one <- 0
+  bit_on <- 0
+  length_ones <- list()
+  for(i in 1:length(bit_vec)){
+    if(bit_vec[i] == 1){
+      bit_on <- 1
+      counter_one <- counter_one + 1
+    } else if(bit_on == 1){
+      length_ones[[length(length_ones) + 1]] <- c(counter_one, i)
+      bit_on <- 0
+      counter_one <- 0
+    }
+  }
+  #print(length_ones)
+  length_dist <- data.table::data.table(table(sapply(length_ones, function(x) x[1])))
+  #print(length_dist)
+  return(length_dist)
+}
+
+smooth <- function(bit_vec, factor, neighbors=1){
+  for(i in (neighbors+1):(length(bit_vec)-neighbors)){
+    bit_vec[i] <- bit_vec[i] * (1-(2*factor)) + bit_vec[i-1] * factor + bit_vec[i+1] * factor
+  }
+  return(bit_vec)
+}
+
+lag       <- 30
+threshold <- 4
+influence <- 0.01
+
+plot_smoothed_z_score <- function(y){
+  result <- calc_smoothed_z_score(y)
+  
+  par(mfrow = c(2,1),oma = c(2,2,0,0) + 0.1,mar = c(0,0,2,1) + 0.2)
+  plot(1:length(y),y,type="l",ylab="",xlab="") 
+  lines(1:length(y),result$avgFilter,type="l",col="cyan",lwd=2)
+  lines(1:length(y),result$avgFilter+threshold*result$stdFilter,type="l",col="green",lwd=2)
+  lines(1:length(y),result$avgFilter-threshold*result$stdFilter,type="l",col="green",lwd=2)
+  plot(result$signals,type="S",col="red",ylab="",xlab="",ylim=c(-1.5,1.5),lwd=2)
+  p <- recordPlot()
+  return(print(p))
+}
+
+calc_smoothed_z_score <- function(y){
+  #y <- smooth(y, 0.25)
+  
+  result <- ThresholdingAlgo(y,lag,threshold,influence)
+  result$signals[result$signals == -1] <- 0
+  
+  return(result)
 }

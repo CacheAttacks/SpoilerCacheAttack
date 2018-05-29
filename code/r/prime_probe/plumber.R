@@ -162,8 +162,9 @@ function(){
   tbl <- data.table::fread(data)
   bitstr_list <<- identify_bits(tbl)
   default_bitstr <- "1000111001"
-  compare_bitstr_list(bitstr_list, default_bitstr)
-  return(bitstr)
+  info_str <- compare_bitstr_list(bitstr_list, default_bitstr)
+  #return(bitstr_list)
+  return(info_str)
 }
 #13.3 kilobit
 #3.4*10^9/13300 = 2556391 per 10 bits
@@ -187,7 +188,7 @@ printbits <- function(){
 
 source("smoothed_z-score_algo.R")
 
-#* @png (width=1000,height=500)
+#* @png (width=1920,height=500)
 #* @get /plotchannel
 plotchannel <- function(){
   tbl <- data.table::fread(data)
@@ -198,22 +199,8 @@ plotchannel <- function(){
     #plot <- ggplot2::ggplot(tbl, ggplot2::aes(x = sample, y = V1)) + ggplot2::geom_histogram(stat = "identity")
     #print(plot)
     
-    lag       <- 2
-    threshold <- 5
-    influence <- 0.001
     y <- tbl[[1]][50:(length(tbl[[1]])-10)]
-    #y <- y[10000:11000]
-    
-    result <- ThresholdingAlgo(y,lag,threshold,influence)
-    result$signals[result$signals == -1] <- 0
-    
-    par(mfrow = c(2,1),oma = c(2,2,0,0) + 0.1,mar = c(0,0,2,1) + 0.2)
-    plot(1:length(y),y,type="l",ylab="",xlab="") 
-    lines(1:length(y),result$avgFilter,type="l",col="cyan",lwd=2)
-    lines(1:length(y),result$avgFilter+threshold*result$stdFilter,type="l",col="green",lwd=2)
-    lines(1:length(y),result$avgFilter-threshold*result$stdFilter,type="l",col="green",lwd=2)
-    plot(result$signals,type="S",col="red",ylab="",xlab="",ylim=c(-1.5,1.5),lwd=2)
-    p <- recordPlot()
-    return(print(p))
+    return(plot_smoothed_z_score(y))
   }
 }
+

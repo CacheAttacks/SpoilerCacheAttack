@@ -48,6 +48,7 @@
 #endif
 
 int L3_THRESHOLD = 10000;
+int L3_THRESHOLD_OFFSET = 0;
 
 /*
  * Intel documentation still mentiones one slice per core, but
@@ -101,6 +102,14 @@ int L3_THRESHOLD = 10000;
 #define CONTRACT_FIRST_DEL_FACTOR 0.02
 #define CONTRACT_SECOND_DEL_FACTOR 0.005
 
+#define FAIL_MAX 1000
+//decrease L3_THRESHOLD_OFFSET to del more elements in the contract phase
+#define TOO_BIG_TRIGGER_VALUE 20
+//decrease L3_THRESHOLD_OFFSET to del less elements in the contract phase
+#define TOO_SMALL_TRIGGER_VALUE 20
+
+#define DEBUG_CHANGE_THRESHOLD
+
 #ifdef WASM
   //ifdef => test eviction set multiple times after contract phase
   #define AFTERCONTRACTTEST
@@ -109,7 +118,7 @@ int L3_THRESHOLD = 10000;
   #define ONEOUTTEST
 
   //print debug stuff for one out test and after contract test
-  //#define DEBUG_TEST_PRINT 1
+  #define DEBUG_TEST_PRINT 0
 
   #define EXPAND_ITERATIONS 20
   #define CONTRACT_ITERATIONS 1
@@ -353,7 +362,7 @@ static int checkevict(vlist_t es, void *candidate, int walk_size, int print) {
   for (int i = 0; i < vl_len(es); i++) 
     LNEXT(vl_get(es, i)) = vl_get(es, (i + 1) % vl_len(es));
   int timecur = timedwalk(vl_get(es, 0), candidate, walk_size, print, es);
-  // if(timecur > L3_THRESHOLD)
+  // if(timecur > (L3_THRESHOLD + L3_THRESHOLD_OFFSET))
    //printf("timecur %i\n",timecur);
   return timecur;
 }
@@ -365,7 +374,7 @@ static int checkevict_safe(vlist_t es, void *candidate, int walk_size, int print
   }
   int counter = 0;
   for(int i=0; i<proofs; i++){
-      if(checkevict(es, candidate, walk_size, print) <= L3_THRESHOLD)
+      if(checkevict(es, candidate, walk_size, print) <= (L3_THRESHOLD + L3_THRESHOLD_OFFSET))
           break;
       counter++;
       if(i >= 1)
@@ -515,15 +524,28 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
   vlist_t groups = vl_new();
   vlist_t es = vl_new();
   int nlines = vl_len(lines);
-  int fail = 0;
+  int fail = 0, too_big = 0, too_small = 0;
   while (vl_len(lines)) {
-    //break;
+
+    if(too_big > TOO_BIG_TRIGGER_VALUE || too_small > TOO_SMALL_TRIGGER_VALUE){
+    if(too_big > TOO_BIG_TRIGGER_VALUE){
+        //L3_THRESHOLD_OFFSET--;
+      } else {
+        //L3_THRESHOLD_OFFSET++;
+      }
+  #ifdef DEBUG_CHANGE_THRESHOLD
+        //printf("toobig %i, toosmall %i\n", too_big, too_small);
+        //printf("L3_THRESHOLD + L3_THRESHOLD_OFFSET now: %i\n", L3_THRESHOLD + L3_THRESHOLD_OFFSET);
+  #endif
+        too_big = 0;
+        too_small = 0;
+    }
 
     assert(vl_len(es) == 0);
     #ifdef DEBUG
     int d_l1 = vl_len(lines);
     #endif // DEBUG
-    if (fail > 1000){ 
+    if (fail > FAIL_MAX){ 
       printf("to many failed atemps, es search canceled!\n");
       break;
     }
@@ -640,6 +662,12 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
     if (vl_len(es) > l3->l3info.associativity + MAX_L3_ASSOCIATIVITY_DIFF ||
     vl_len(es) < l3->l3info.associativity - 4 ||
     test_failed) {
+      if(vl_len(es) > l3->l3info.associativity + MAX_L3_ASSOCIATIVITY_DIFF) {
+        too_big++;
+      } else {
+        too_small++;
+      }
+
       while (vl_len(es))
 	      vl_push(lines, vl_del(es, 0));
       
@@ -656,6 +684,8 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
     } 
     time_datahandling += (uint64_t)get_diff(before, rdtscp());
 
+    too_small = 0;
+    too_big = 0;
     fail = 0;
     vlist_t set = vl_new();
     //do not add collected memory blocks to es
