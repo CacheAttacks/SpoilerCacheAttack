@@ -38,6 +38,11 @@ extern int L3_THRESHOLD;
 
 //cycles through all memory-blocks in a eviction-set
 //return sum time for all accesses
+#ifdef WASM
+  __attribute__((optnone))
+#else 
+  __attribute__((optimize("O0"))) 
+#endif
 int probetime(void *pp) {
   if (pp == NULL)
     return 0;
@@ -50,6 +55,11 @@ int probetime(void *pp) {
   return rdtscp()-s;
 }
 
+#ifdef WASM
+  __attribute__((optnone))
+#else
+  __attribute__((optimize("O0")))
+#endif
 int probetime_adv_1(void *pp) {
   if (pp == NULL)
     return 0;
@@ -61,6 +71,11 @@ int probetime_adv_1(void *pp) {
     return rdtscp()-s;
 }
 
+#ifdef WASM
+  __attribute__((optnone))
+#else
+  __attribute__((optimize("O0")))
+#endif
 int probetime_adv_2(void *pp) {
   if (pp == NULL)
     return 0;
@@ -72,6 +87,11 @@ int probetime_adv_2(void *pp) {
     return rdtscp()-s;
 }
 
+#ifdef WASM
+  __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0")))
+#endif
 int probetime_adv_3(void *pp) {
   if (pp == NULL)
     return 0;
@@ -83,6 +103,11 @@ int probetime_adv_3(void *pp) {
     return rdtscp()-s;
 }
 
+#ifdef WASM
+  __attribute__((optnone))
+#else
+  __attribute__((optimize("O0")))
+#endif
 int probetime_adv_4(void *pp) {
   if (pp == NULL)
     return 0;
@@ -94,6 +119,11 @@ int probetime_adv_4(void *pp) {
     return rdtscp()-s;
 }
 
+#ifdef WASM
+  __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0")))
+#endif
 int probetime_adv_5(void *pp) {
   if (pp == NULL)
     return 0;
@@ -105,6 +135,11 @@ int probetime_adv_5(void *pp) {
     return rdtscp()-s;
 }
 
+#ifdef WASM
+  __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0")))
+#endif
 int probetime_adv_6(void *pp) {
   if (pp == NULL)
     return 0;
@@ -116,6 +151,11 @@ int probetime_adv_6(void *pp) {
     return rdtscp()-s;
 }
 
+#ifdef WASM
+  __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 int probetime_adv_7(void *pp) {
   if (pp == NULL)
     return 0;
@@ -127,6 +167,11 @@ int probetime_adv_7(void *pp) {
     return rdtscp()-s;
 }
 
+#ifdef WASM
+  __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 int probetime_adv_8(void *pp) {
   if (pp == NULL)
     return 0;
@@ -138,6 +183,11 @@ int probetime_adv_8(void *pp) {
     return rdtscp()-s;
 }
 
+#ifdef WASM
+  __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 int probetime_adv_9(void *pp) {
   if (pp == NULL)
     return 0;
@@ -149,6 +199,11 @@ int probetime_adv_9(void *pp) {
     return rdtscp()-s;
 }
 
+#ifdef WASM
+  __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 int probetime_adv_10(void *pp) {
   if (pp == NULL)
     return 0;
@@ -160,6 +215,11 @@ int probetime_adv_10(void *pp) {
     return rdtscp()-s;
 }
 
+#ifdef WASM
+  __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 int probetime_adv_11(void *pp) {
   if (pp == NULL)
     return 0;
@@ -171,6 +231,11 @@ int probetime_adv_11(void *pp) {
     return rdtscp()-s;
 }
 
+#ifdef WASM
+  __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 int probetime_adv_12(void *pp) {
   if (pp == NULL)
     return 0;
@@ -182,6 +247,11 @@ int probetime_adv_12(void *pp) {
     return rdtscp()-s;
 }
 
+#ifdef WASM
+  __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 int probetime_adv_13(void *pp) {
   if (pp == NULL)
     return 0;
@@ -193,6 +263,11 @@ int probetime_adv_13(void *pp) {
     return rdtscp()-s;
 }
 
+#ifdef WASM
+  __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 int probetime_adv_14(void *pp) {
   if (pp == NULL)
     return 0;
@@ -204,6 +279,11 @@ int probetime_adv_14(void *pp) {
     return rdtscp()-s;
 }
 
+#ifdef WASM
+  __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 int probetime_adv_15(void *pp) {
   if (pp == NULL)
     return 0;
@@ -215,6 +295,11 @@ int probetime_adv_15(void *pp) {
     return rdtscp()-s;
 }
 
+#ifdef WASM
+  __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 int probetime_adv_16(void *pp) {
   if (pp == NULL)
     return 0;
@@ -226,6 +311,11 @@ int probetime_adv_16(void *pp) {
     return rdtscp()-s;
 }
 
+#ifdef WASM
+  __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 int probetime_adv_generic(void *pp, int max_it) {
   if (pp == NULL)
     return 0;
@@ -237,6 +327,11 @@ int probetime_adv_generic(void *pp, int max_it) {
     return rdtscp()-s;
 }
 
+#ifdef WASM
+  __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 int probetime_split_2(void *pp) {
   if (pp == NULL)
     return 0;
@@ -250,6 +345,11 @@ int probetime_split_2(void *pp) {
   return rdtscp()-s;
 }
 
+#ifdef WASM
+    __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 int probetime_split_4(void *pp) {
   if (pp == NULL)
     return 0;
@@ -267,6 +367,11 @@ int probetime_split_4(void *pp) {
   return rdtscp()-s;
 }
 
+#ifdef WASM
+    __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 int probetime_split_8(void *pp) {
   if (pp == NULL)
     return 0;
@@ -339,6 +444,11 @@ p_probetime get_probetime_by_type(int type){
 
 //cycles through all memory-blocks in a eviction-set
 //access them and count accesses with (accesstime > L3_THRESHOLD)
+#ifdef WASM
+    __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 int probecount(void *pp) {
   if (pp == NULL)
     return 0;
@@ -370,6 +480,11 @@ int bprobetime(void *pp, p_probetime func_ptr) {
   return (*func_ptr)(NEXTPTR(pp));
 }
 
+#ifdef WASM
+    __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 void probe_only(void *pp) {
   if (pp == NULL)
     return;
@@ -379,6 +494,11 @@ void probe_only(void *pp) {
   } while (p != (void *) pp);
 }
 
+#ifdef WASM
+    __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 void probe_only_adv_1_fast(void *pp) {
   if (pp == NULL)
     return;
@@ -386,7 +506,11 @@ void probe_only_adv_1_fast(void *pp) {
     pp = LNEXT(pp);
 }
 
-//#define NUMBER_OF_PROBE_ADD 1
+#ifdef WASM
+    __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 void probe_only_adv_1(void *pp) {
   if (pp == NULL)
     return;
@@ -396,6 +520,11 @@ void probe_only_adv_1(void *pp) {
     }
 }
 
+#ifdef WASM
+    __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 void probe_only_adv_2(void *pp) {
   if (pp == NULL)
     return;
@@ -405,6 +534,11 @@ void probe_only_adv_2(void *pp) {
     }
 }
 
+#ifdef WASM
+    __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 void probe_only_adv_4(void *pp) {
   if (pp == NULL)
     return;
@@ -414,6 +548,11 @@ void probe_only_adv_4(void *pp) {
     }
 }
 
+#ifdef WASM
+    __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 void probe_only_adv_8(void *pp) {
   if (pp == NULL)
     return;
@@ -423,6 +562,11 @@ void probe_only_adv_8(void *pp) {
     }
 }
 
+#ifdef WASM
+    __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 void probe_only_adv_16(void *pp) {
   if (pp == NULL)
     return;
@@ -432,6 +576,11 @@ void probe_only_adv_16(void *pp) {
     }
 }
 
+#ifdef WASM
+    __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 void probe_only_adv_generic(void *pp, int max_it) {
   if (pp == NULL)
     return; 
@@ -440,6 +589,11 @@ void probe_only_adv_generic(void *pp, int max_it) {
     }
 }
 
+#ifdef WASM
+    __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 void probe_only_split_2(void *pp) {
   if (pp == NULL)
     return;
@@ -452,6 +606,11 @@ void probe_only_split_2(void *pp) {
   }
 }
 
+#ifdef WASM
+    __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 void probe_only_split_4(void *pp) {
   if (pp == NULL)
     return;
@@ -467,6 +626,11 @@ void probe_only_split_4(void *pp) {
   }
 }
 
+#ifdef WASM
+    __attribute__((optnone))
+#else     
+  __attribute__((optimize("O0"))) 
+#endif
 void probe_only_split_8(void *pp) {
   if (pp == NULL)
     return;

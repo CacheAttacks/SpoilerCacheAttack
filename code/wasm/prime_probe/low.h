@@ -181,15 +181,14 @@ typedef struct timer_info *timer_info_p;
 extern void dummy_for_wat(void);
 
 #ifdef WASM
-    __attribute__((optnone))
-#endif 
-static inline uint32_t gcc_test_opt(void *v) {
+__attribute__((optnone)) static inline uint32_t gcc_test_opt(void *v) {
     uint32_t before = SAB_lib_get_counter_value();
     uint32_t a = *((uint32_t*)v);
     uint32_t after = SAB_lib_get_counter_value();
     dummy_for_wat();
     return after-before;
 }
+#endif 
 
 #ifdef WASM
     __attribute__((optnone))
