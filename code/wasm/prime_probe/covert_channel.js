@@ -10,19 +10,19 @@ noisy_start_cache_set = 2*(Module['getxhr']('http://localhost:8000/findnoisycach
 console.log("possible noisy_start_cache_set:" + noisy_start_cache_set);
 
 //get idle noise values
-Module['asm']._set_monitored_es(Module['appStatePtr'], (noisy_start_cache_set - 64) % Module['ncol'], (noisy_start_cache_set - 64 + 31) % Module['ncol']);
+Module['asm']._set_monitored_es(Module['appStatePtr'], (noisy_start_cache_set - 64 + NOISY_CHANNEL_OFFSET_SEND_START) % Module['ncol'], (noisy_start_cache_set - 64 + NOISY_CHANNEL_OFFSET_SEND_END) % Module['ncol']);
 Module['idle_noise_mean'] = measureMeanAccessTimeWrapper(2000);
 
 //get avg noise level of assumed channel cache sets
-Module['asm']._set_monitored_es(Module['appStatePtr'], noisy_start_cache_set, noisy_start_cache_set + 31);
+Module['asm']._set_monitored_es(Module['appStatePtr'], noisy_start_cache_set + NOISY_CHANNEL_OFFSET_SEND_START, noisy_start_cache_set + NOISY_CHANNEL_OFFSET_SEND_END);
 var access_time = measureMeanAccessTimeWrapper(2000);
 console.log("idle_noise_mean:" + Module['idle_noise_mean'] + ", access_time:" + access_time);
 
 if(access_time > 2 * Module['idle_noise_mean']) {
     //noise the higher 30 sets of the detected cache-super-set
     //make noise for more than 1 sec => server switches between listening and sending every sec
-    console.log("noise on set " + (noisy_start_cache_set + 34) + " to " + (noisy_start_cache_set + 63));
-    Module['asm']._set_monitored_es(Module['appStatePtr'], noisy_start_cache_set + 34, noisy_start_cache_set + 63);
+    console.log("noise on set " + (noisy_start_cache_set + NOISY_CHANNEL_OFFSET_REC_START) + " to " + (noisy_start_cache_set + NOISY_CHANNEL_OFFSET_REC_END));
+    Module['asm']._set_monitored_es(Module['appStatePtr'], noisy_start_cache_set + NOISY_CHANNEL_OFFSET_REC_START, noisy_start_cache_set + NOISY_CHANNEL_OFFSET_REC_END);
     var before = performance.now();
     sampleEsWrapper(200000, 0, 0);
     var after = performance.now();

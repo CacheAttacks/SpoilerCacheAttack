@@ -160,6 +160,8 @@ source("find_es.R")
 #* @get /identifybits
 function(){
   tbl <- data.table::fread(data)
+  print(paste0("median:", median(tbl[[1]])))
+  return(0)
   bitstr_list <<- identify_bits(tbl)
   default_bitstr <- "1000111001"
   info_str <- compare_bitstr_list(bitstr_list, default_bitstr)

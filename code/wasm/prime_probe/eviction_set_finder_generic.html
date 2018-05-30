@@ -1231,7 +1231,8 @@
       <option value="116">MaxChase16</option>
   </select> 
   <!--<span><input type="number" id="numberType" value="0"></span>-->
-  <span><input type="button" id="btnChangeType" value="Change probe type"></span>  
+  <span><input type="button" id="btnChangeType" value="Change probe type"></span>
+  <span><input type="button" id="btnBenchmarkType" value="Benchmark probe types"></span> 
 
 </span></br>
 <span id='covertChannel'>
@@ -1278,6 +1279,13 @@
     <script type="text/javascript" src="timer_SAB.js"></script>
     <script type="text/javascript" src="timer_clock_edge.js"></script>
     <script type='text/javascript'>
+      var NOISY_CHANNEL_OFFSET_SEND_START = 0;
+      var NOISY_CHANNEL_OFFSET_SEND_END = 31;
+      var NOISY_CHANNEL_OFFSET_REC_START = 34;
+      var NOISY_CHANNEL_OFFSET_REC_END = 63;
+      var COMMUNICATION_CHANNEL_OFFSET_START = 32;
+      var COMMUNICATION_CHANNEL_OFFSET_END = 32;
+
       const testBuffer = new SharedArrayBuffer(Uint32Array.BYTES_PER_ELEMENT*2);
       const testarr = new Uint32Array(testBuffer);
 
@@ -1505,6 +1513,15 @@
           console.log("Module['appStatePtr'] is null!");
         }
       }
+      document.getElementById('btnBenchmarkType').onclick = function() {
+        if(Module['appStatePtr'] != 0){
+          
+          $.loadScript('benchmark_probe_type.js', function(){});
+
+        } else {
+          console.log("Module['appStatePtr'] is null!");
+        }
+      }
       //change type of probing algo
       document.getElementById('btnChangeType').onclick = function() {
         if(Module['appStatePtr'] != 0){
@@ -1521,9 +1538,6 @@
           console.log("Module['appStatePtr'] is null!");
         }
       }
-
-      
-
     </script>
   </body>
 </html>

@@ -84,7 +84,9 @@ static inline uint32_t get_diff(uint32_t before, uint32_t after)
   }
 }
 
-
+#ifdef WASM
+    __attribute__((optnone))
+#endif
 static inline int memaccess(void *v) {
   #ifdef WASM
     int a = *((int*)v);
@@ -176,6 +178,22 @@ struct timer_info {
 };
 typedef struct timer_info *timer_info_p;
 
+extern void dummy_for_wat(void);
+
+#ifdef WASM
+    __attribute__((optnone))
+#endif 
+static inline uint32_t gcc_test_opt(void *v) {
+    uint32_t before = SAB_lib_get_counter_value();
+    *v;
+    uint32_t after = SAB_lib_get_counter_value();
+    dummy_for_wat();
+    return after-before;
+}
+
+#ifdef WASM
+    __attribute__((optnone))
+#endif
 static inline uint32_t memaccesstime(void *v, struct timer_info *info) {
 
 #ifdef WASM
@@ -184,22 +202,27 @@ static inline uint32_t memaccesstime(void *v, struct timer_info *info) {
   //warmuprounds(10);
 #endif
 
-  uint32_t a;
-  uint32_t after;
-  uint32_t before = SAB_lib_get_counter_value();
-  if(before > 0){
-    before++;
-    a = *((uint32_t*)v);
-  }
-  if(a == 0){
-    after = SAB_lib_get_counter_value();
-    after++;
-  } else {
-    after = SAB_lib_get_counter_value();
-    if(before > 0)
-    before--;
-  }
-  uint32_t ret = get_diff(before,after);
+  // uint32_t a;
+  // uint32_t after;
+  // uint32_t before = SAB_lib_get_counter_value();
+  // if(before > 0){
+  //   before++;
+  //   a = *((uint32_t*)v);
+  // }
+  // if(a == 0){
+  //   after = SAB_lib_get_counter_value();
+  //   after++;
+  // } else {
+  //   after = SAB_lib_get_counter_value();
+  //   if(before > 0)
+  //   before--;
+  // }
+  // return get_diff(before,after);
+
+    uint32_t before = SAB_lib_get_counter_value();
+    uint32_t a = *((uint32_t*)v);
+    uint32_t after = SAB_lib_get_counter_value();
+    return get_diff(before,after) + a - a;
   
   // info->time_arr[info->time_arr_pos] = ret;
   // info->time_arr_sum += ret;
@@ -220,7 +243,7 @@ static inline uint32_t memaccesstime(void *v, struct timer_info *info) {
   //   }
   // }
 
-  return ret;
+  //return ret;
   
 #else
   uint32_t rv;
@@ -299,6 +322,9 @@ static inline void mfence() {
 
 //walks through eviction-set count steps or 
 //stopps beforehand if size(eviction-set) < count
+#ifdef WASM
+    __attribute__((optnone))
+#endif
 static inline int walk(void *p, int count) {
 #ifdef WASM
   if (p == NULL)

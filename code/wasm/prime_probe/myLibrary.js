@@ -131,3 +131,8 @@ if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
         Module['appStatePtr'] = ptr;
     }
 });
+
+if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
+    dummy_for_wat: function() {
+    }
+});

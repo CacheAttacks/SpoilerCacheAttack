@@ -1,15 +1,15 @@
 if (typeof Module['noisy_start_cache_set'] !== 'undefined') {
     //wait for sending on channels 32 and 33
-    console.log("listen on " + (Module['noisy_start_cache_set'] + 32)); //+ " and " + (Module['noisy_start_cache_set'] + 32));
-    Module['asm']._set_monitored_es(Module['appStatePtr'], Module['noisy_start_cache_set'] + 32, Module['noisy_start_cache_set'] + 32);
+    console.log("listen on " + (Module['noisy_start_cache_set'] + COMMUNICATION_CHANNEL_OFFSET_START)); //+ " and " + (Module['noisy_start_cache_set'] + 32));
+    Module['asm']._set_monitored_es(Module['appStatePtr'], Module['noisy_start_cache_set'] + COMMUNICATION_CHANNEL_OFFSET_START, Module['noisy_start_cache_set'] + COMMUNICATION_CHANNEL_OFFSET_END);
     var before = performance.now();
-    sampleEsWrapper(5000, 0, 0);
+    sampleEsWrapper(2000000, 0, 0);
     
     var POSTstr = Module['createPOSTStr'](Module['wasmMemoryArr'], Module['res']/Module['byteFactor'], Module['nrow'], Module['ncol']);
     Module['postxhr']('http://localhost:8000/changedata', POSTstr);
 
     d = new Date();
-    Module['imgElement'].src = 'http://localhost:8000/plotchannel' + "?" + d.getTime();
+    //Module['imgElement'].src = 'http://localhost:8000/plotchannel' + "?" + d.getTime();
 
     var after = performance.now();
     console.log("time from sample_es: " + (after-before) + "ms");

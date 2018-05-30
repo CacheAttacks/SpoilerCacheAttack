@@ -37,6 +37,7 @@
 #include "l3.h"
 #include "timestats.h"
 #include "probe.h"
+#include "es_management.h"
 
 #define CHECKTIMES 16
 #define FACTORDEBUG 20
@@ -362,6 +363,7 @@ static int checkevict(vlist_t es, void *candidate, int walk_size, int print) {
   for (int i = 0; i < vl_len(es); i++) 
     LNEXT(vl_get(es, i)) = vl_get(es, (i + 1) % vl_len(es));
   int timecur = timedwalk(vl_get(es, 0), candidate, walk_size, print, es);
+  //printf("$%i ", timecur);
   // if(timecur > (L3_THRESHOLD + L3_THRESHOLD_OFFSET))
    //printf("timecur %i\n",timecur);
   return timecur;

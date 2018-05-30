@@ -169,6 +169,12 @@ int main(int ac, char **av) {
 
   float resolution_ns = get_timer_resolution();  
 
+  int ptr = (int)resolution_ns;
+
+  uint32_t val = gcc_test_opt((void*)ptr);
+
+  printf("%i", val);
+
   //counter_consistency_test(1, 5000000, 1000000);
 
   this_app_state->l3_threshold = mem_access_testing(100000, 0);
