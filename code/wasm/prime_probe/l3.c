@@ -313,7 +313,8 @@ static int timedwalk(void *list, register void *candidate, int walk_size, int pr
 
     //walk(list,20); was default why???
   #ifdef WASM
-    or_walk = walk(list, walk_size);
+    //or_walk = walk(list, walk_size);
+    walk_through(list);
   #else
     or_walk = walk(list, 20);
   #endif

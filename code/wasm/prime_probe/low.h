@@ -185,7 +185,7 @@ extern void dummy_for_wat(void);
 #endif 
 static inline uint32_t gcc_test_opt(void *v) {
     uint32_t before = SAB_lib_get_counter_value();
-    *v;
+    uint32_t a = *((uint32_t*)v);
     uint32_t after = SAB_lib_get_counter_value();
     dummy_for_wat();
     return after-before;
@@ -201,23 +201,6 @@ static inline uint32_t memaccesstime(void *v, struct timer_info *info) {
   warmuptimer();
   //warmuprounds(10);
 #endif
-
-  // uint32_t a;
-  // uint32_t after;
-  // uint32_t before = SAB_lib_get_counter_value();
-  // if(before > 0){
-  //   before++;
-  //   a = *((uint32_t*)v);
-  // }
-  // if(a == 0){
-  //   after = SAB_lib_get_counter_value();
-  //   after++;
-  // } else {
-  //   after = SAB_lib_get_counter_value();
-  //   if(before > 0)
-  //   before--;
-  // }
-  // return get_diff(before,after);
 
     uint32_t before = SAB_lib_get_counter_value();
     uint32_t a = *((uint32_t*)v);
@@ -319,6 +302,21 @@ static inline void mfence() {
 //asm( "str %[output]"
 //   : [output] "=r" (current_task)
 //    );
+
+
+#ifdef WASM
+__attribute__((optnone)) static inline void* walk_through(void *p) {
+  if (p == NULL)
+    return 0;
+
+    void* old_p = p;
+  do{
+    p = *((void **)p);
+  }while(p != old_p);
+
+  return p;
+}
+#endif
 
 //walks through eviction-set count steps or 
 //stopps beforehand if size(eviction-set) < count
