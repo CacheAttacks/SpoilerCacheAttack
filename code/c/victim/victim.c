@@ -192,9 +192,9 @@ int main(int argc, char ** argv) {
   //reapeat sync 30 min 10 steps high
 
   char* command = calloc(sizeof(char), 128);
-  int wait_cycles = 70000;
-  int repeat_probe = 10;
-  int sync_repeat = 100;
+  int wait_cycles = 30000;
+  int repeat_probe = 1;
+  int sync_repeat = 1000;
   while(1){
     printf("enter command e.g. w 10 , s 12:213 , c %i , r %i , n 10 , y %i, p 0 10, b \n", wait_cycles, repeat_probe, sync_repeat);
     fgets(command, 128, stdin);
@@ -212,7 +212,7 @@ int main(int argc, char ** argv) {
     //---------------------------------------PRINT ON CHANNEL--------------------------------------------
     else if (command[0] == 'p'){
       command[3] = '\0';
-      char bitstr[] = "1000111001";
+      char bitstr[] = "0010001110";
       char* printbitstr = randbitstr;
       printbitstr = bitstr;
       int prime_cycles = 400;

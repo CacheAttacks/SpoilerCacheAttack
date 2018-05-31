@@ -163,7 +163,6 @@ function(){
   print(paste0("median:", median(tbl[[1]])))
   return(0)
   bitstr_list <<- identify_bits(tbl)
-  default_bitstr <- "1000111001"
   info_str <- compare_bitstr_list(bitstr_list, default_bitstr)
   #return(bitstr_list)
   return(info_str)
@@ -196,12 +195,14 @@ plotchannel <- function(){
   tbl <- data.table::fread(data)
   if(ncol(tbl) == 1){
     #tbl[,"sample"] <- 1:nrow(tbl)
-    max_value <- 700
+    max_value <- 300
     tbl[tbl$V1>max_value, "V1"] <- max_value
     #plot <- ggplot2::ggplot(tbl, ggplot2::aes(x = sample, y = V1)) + ggplot2::geom_histogram(stat = "identity")
     #print(plot)
     
-    y <- tbl[[1]][50:(length(tbl[[1]])-10)]
+    y <- tbl[[1]][(length(tbl[[1]])*0.1):(length(tbl[[1]])-10)]
+    y <- mean_smooth(y)
+    print(y)
     return(plot_smoothed_z_score(y))
   }
 }

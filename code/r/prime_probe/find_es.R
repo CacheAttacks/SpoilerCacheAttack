@@ -54,6 +54,22 @@ print_median_approach <- function(tbl, bit_on_vec){
   recordPlot()
 }
 
+mean_smooth <- function(y){
+  y[y<mean(y)] <- mean(y)
+  return(y)
+}
+
+#number of continues values > threshold => sync pattern
+sync_repeat_threshold <- 18
+#number of continues values > threshold => bit on
+bit_on_repeat_threshold <- 3
+#number of continues values <= threshold => bit off
+bit_off_repeat_threshold <- 1
+
+bits_between_sync <- 10
+
+block_sample_size <- 1500
+
 #assume each col has same bits
 identify_bits <- function(tbl){
   tmp <<- tbl
@@ -69,20 +85,10 @@ identify_bits <- function(tbl){
   #plot(1:length(tmp[[1]]),tmp[[1]],type="l",ylab="",xlab="") 
   #plot(bit_on_vec,type="S",col="red",ylab="",xlab="",ylim=c(-1.5,1.5),lwd=2)
   
-  #number of continues values > threshold => sync pattern
-  sync_repeat_threshold <- 18
-  #number of continues values > threshold => bit on
-  bit_on_repeat_threshold <- 3
-  #number of continues values <= threshold => bit off
-  bit_off_repeat_threshold <- 1
-  
-  bits_between_sync <- 10
-  
-  block_sample_size <- 1500
-  
   #discard_first_measurements <- 1
   
-  result <<- calc_smoothed_z_score(tbl[[1]])
+  result <<- calc_smoothed_z_score(y)
+  result$signals <- bit_on_vec
   
   length_dist <- get_concusive_ones_dist(result$signals)
   
@@ -165,7 +171,7 @@ analyse_bits_between_sync <- function(time_line, bit_on_repeat_threshold, bit_of
   
   return(bitstr2)
 }
-#1000111001
+#0010001110
 
 gregexpr("\\([0-9]+\\)","1(29)s(29)1(127)1(29)1(27)1(94)1(31)s(23)1")
 
@@ -246,15 +252,30 @@ lag       <- 30
 threshold <- 4
 influence <- 0.01
 
+threshold_factor <- 2
+default_bitstr <- "0010001110"
+
 plot_smoothed_z_score <- function(y){
   result <- calc_smoothed_z_score(y)
   
-  par(mfrow = c(2,1),oma = c(2,2,0,0) + 0.1,mar = c(0,0,2,1) + 0.2)
-  plot(1:length(y),y,type="l",ylab="",xlab="") 
-  lines(1:length(y),result$avgFilter,type="l",col="cyan",lwd=2)
-  lines(1:length(y),result$avgFilter+threshold*result$stdFilter,type="l",col="green",lwd=2)
-  lines(1:length(y),result$avgFilter-threshold*result$stdFilter,type="l",col="green",lwd=2)
-  plot(result$signals,type="S",col="red",ylab="",xlab="",ylim=c(-1.5,1.5),lwd=2)
+  plot_title <- paste0(#"idle",
+                       "bitstr = ", default_bitstr,
+                       ", pause cycles = 30000, repeat prime bit is 1 = 1",
+                       ", repeat prime sync = 1000",
+                       ", sender prime 1 add",
+                       ", rec prime/probe 16 add single loop", 
+                       ", bit detection simple threshold",
+                       ", threshold = median * ", threshold_factor,
+                       ", bits between sync = ", bits_between_sync)
+  #unten,links,oben,rechts
+  par(mfrow = c(2,1),oma = c(2,2,0,0) + 0.1,mar = c(4,4,2,1) + 0.2)
+  plot(1:length(y),y,type="l",xlab="samples", ylab="access time") 
+  title(plot_title)
+  lines(1:length(y),rep(threshold_factor*median(y),length(y)),type="l",col="cyan",lwd=2)
+  #lines(1:length(y),result$avgFilter,type="l",col="cyan",lwd=2)
+  #lines(1:length(y),result$avgFilter+threshold*result$stdFilter,type="l",col="green",lwd=2)
+  #lines(1:length(y),result$avgFilter-threshold*result$stdFilter,type="l",col="green",lwd=2)
+  plot(result$signals,type="S",col="red",ylab="bit value",xlab="samples",ylim=c(0,1),lwd=2)
   p <- recordPlot()
   return(print(p))
 }
@@ -264,6 +285,9 @@ calc_smoothed_z_score <- function(y){
   
   result <- ThresholdingAlgo(y,lag,threshold,influence)
   result$signals[result$signals == -1] <- 0
+  
+  threshold <- threshold_factor * median(y)
+  result$signals <- y > threshold
   
   return(result)
 }
