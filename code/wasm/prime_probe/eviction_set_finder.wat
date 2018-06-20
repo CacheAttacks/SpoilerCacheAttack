@@ -49,6 +49,7 @@
   (func $_print_plot_data (import "env" "_print_plot_data") (type $t8))
   (func $_set_app_state_ptr (import "env" "_set_app_state_ptr") (type $t3) (param i32))
   (func $_set_ptr_to_data (import "env" "_set_ptr_to_data") (type $t6) (param i32 i32 i32 i32))
+  (func $_test_find (import "env" "_test_find") (type $t8))
   (func $stackAlloc (export "stackAlloc") (type $t1) (param $p0 i32) (result i32)
     (local $l0 i32)
     (set_local $l0
@@ -89,25 +90,27 @@
   (func $getTempRet0 (export "getTempRet0") (type $t4) (result i32)
     (get_global $g9))
   (func $_test_mem_access (type $t2) (param $p0 i32) (param $p1 i32) (param $p2 i32) (result i32)
-    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32) (local $l4 i32) (local $l5 i32) (local $l6 i32) (local $l7 i32) (local $l8 i32) (local $l9 i32) (local $l10 i32) (local $l11 i32) (local $l12 i32) (local $l13 i32)
+    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32) (local $l4 i32) (local $l5 i32) (local $l6 i32) (local $l7 i32) (local $l8 i32) (local $l9 i32) (local $l10 i32) (local $l11 i32) (local $l12 i32) (local $l13 i32) (local $l14 i32) (local $l15 i32) (local $l16 i32)
     (block $B0
-      (set_local $l1
+      (set_local $l6
         (get_global $g5))
       (set_global $g5
         (i32.add
           (get_global $g5)
           (i32.const 32)))
-      (set_local $l11
+      (set_local $l13
         (i32.add
-          (get_local $l1)
+          (get_local $l6)
           (i32.const 16)))
-      (set_local $l12
+      (set_local $l14
         (i32.add
-          (get_local $l1)
+          (get_local $l6)
           (i32.const 8)))
-      (set_local $l8
-        (get_local $l1))
-      (set_local $l7
+      (set_local $l9
+        (i32.add
+          (get_local $l6)
+          (i32.const 24)))
+      (set_local $l10
         (call $___mmap
           (i32.const 0)
           (i32.const 167772160)
@@ -117,7 +120,7 @@
           (i32.const 0)))
       (if $I1
         (i32.eqz
-          (get_local $l7))
+          (get_local $l10))
         (then
           (set_local $l1
             (call $___mmap
@@ -135,12 +138,12 @@
         (i32.shl
           (get_local $p1)
           (i32.const 4)))
-      (set_local $l6
+      (set_local $l7
         (call $_malloc
           (get_local $l1)))
       (if $I2
         (i32.eqz
-          (tee_local $l13
+          (tee_local $l15
             (i32.gt_s
               (get_local $p1)
               (i32.const 0))))
@@ -148,268 +151,379 @@
           (set_local $p0
             (i32.const 0))
           (br $B0)))
-      (if $I3
-        (get_local $p0)
-        (then
-          (set_local $l1
-            (i32.const 0))
-          (set_local $p0
-            (i32.const 0))
-          (loop $L4
-            (set_local $l2
-              (call $_rand))
-            (set_local $l2
-              (i32.rem_s
-                (get_local $l2)
-                (i32.const 20971520)))
-            (set_local $l2
-              (i32.shl
-                (get_local $l2)
-                (i32.const 3)))
-            (set_local $l2
-              (i32.add
-                (get_local $l7)
-                (get_local $l2)))
-            (set_local $l0
-              (i32.and
-                (get_local $l2)
-                (i32.const -4096)))
-            (call $_memaccess
-              (get_local $l0))
-            (set_local $l3
-              (i32.load
-                (i32.const 5400)))
-            (set_local $l9
-              (call $_memaccesstime
-                (get_local $l2)
-                (get_local $l3)))
-            (set_local $l3
-              (i32.shl
-                (get_local $l1)
-                (i32.const 2)))
-            (set_local $l5
-              (i32.add
-                (get_local $l6)
-                (i32.shl
-                  (get_local $l3)
-                  (i32.const 2))))
-            (i32.store
-              (get_local $l5)
-              (get_local $l9))
-            (set_local $l5
-              (i32.add
-                (get_local $l2)
-                (i32.const 1)))
-            (set_local $l4
-              (i32.load
-                (i32.const 5400)))
-            (drop
-              (call $_memaccesstime
-                (get_local $l5)
-                (get_local $l4)))
-            (set_local $l5
-              (i32.load
-                (i32.const 5400)))
-            (set_local $l5
-              (call $_memaccesstime
-                (get_local $l2)
-                (get_local $l5)))
-            (set_local $l4
-              (i32.or
-                (get_local $l3)
-                (i32.const 1)))
-            (set_local $l4
-              (i32.add
-                (get_local $l6)
-                (i32.shl
-                  (get_local $l4)
-                  (i32.const 2))))
-            (i32.store
-              (get_local $l4)
-              (get_local $l5))
-            (call $_memaccess
-              (get_local $l0))
-            (set_local $l0
-              (i32.load
-                (i32.const 5400)))
-            (set_local $l0
-              (call $_memaccesstime
-                (get_local $l2)
-                (get_local $l0)))
-            (set_local $l5
-              (i32.or
-                (get_local $l3)
-                (i32.const 2)))
-            (set_local $l5
-              (i32.add
-                (get_local $l6)
-                (i32.shl
-                  (get_local $l5)
-                  (i32.const 2))))
-            (i32.store
-              (get_local $l5)
-              (get_local $l0))
-            (set_local $l0
-              (i32.load
-                (i32.const 5400)))
-            (set_local $l0
-              (call $_memaccesstime
-                (get_local $l2)
-                (get_local $l0)))
-            (set_local $l3
-              (i32.or
-                (get_local $l3)
-                (i32.const 3)))
-            (set_local $l3
-              (i32.add
-                (get_local $l6)
-                (i32.shl
-                  (get_local $l3)
-                  (i32.const 2))))
-            (i32.store
-              (get_local $l3)
-              (get_local $l0))
-            (set_local $p0
-              (i32.add
-                (get_local $l9)
-                (get_local $p0)))
-            (set_local $l1
-              (i32.add
-                (get_local $l1)
-                (i32.const 1)))
-            (br_if $L4
-              (i32.ne
-                (get_local $l1)
-                (get_local $p1)))))
-        (else
-          (set_local $l5
-            (i32.add
-              (get_local $p1)
-              (i32.const -1)))
-          (set_local $l1
-            (i32.const 0))
-          (set_local $p0
-            (i32.const 0))
-          (loop $L5
-            (set_local $l0
-              (i32.add
-                (get_local $l7)
-                (get_local $l1)))
-            (set_local $l2
-              (i32.and
-                (get_local $l0)
-                (i32.const -4096)))
-            (call $_memaccess
-              (get_local $l2))
-            (set_local $l3
-              (i32.load
-                (i32.const 5400)))
-            (set_local $l9
-              (call $_memaccesstime
-                (get_local $l0)
-                (get_local $l3)))
-            (set_local $l3
-              (i32.shl
-                (get_local $l1)
-                (i32.const 2)))
-            (set_local $l4
-              (i32.add
-                (get_local $l6)
-                (i32.shl
-                  (get_local $l3)
-                  (i32.const 2))))
-            (i32.store
-              (get_local $l4)
-              (get_local $l9))
-            (set_local $l4
-              (i32.add
-                (get_local $l0)
-                (i32.const 1)))
-            (set_local $l10
-              (i32.load
-                (i32.const 5400)))
-            (drop
-              (call $_memaccesstime
-                (get_local $l4)
-                (get_local $l10)))
-            (set_local $l4
-              (i32.load
-                (i32.const 5400)))
-            (set_local $l4
-              (call $_memaccesstime
-                (get_local $l0)
-                (get_local $l4)))
-            (set_local $l10
-              (i32.or
-                (get_local $l3)
-                (i32.const 1)))
-            (set_local $l10
-              (i32.add
-                (get_local $l6)
-                (i32.shl
-                  (get_local $l10)
-                  (i32.const 2))))
-            (i32.store
-              (get_local $l10)
-              (get_local $l4))
-            (call $_memaccess
-              (get_local $l2))
-            (set_local $l2
-              (i32.load
-                (i32.const 5400)))
-            (set_local $l2
-              (call $_memaccesstime
-                (get_local $l0)
-                (get_local $l2)))
-            (set_local $l4
-              (i32.or
-                (get_local $l3)
-                (i32.const 2)))
-            (set_local $l4
-              (i32.add
-                (get_local $l6)
-                (i32.shl
-                  (get_local $l4)
-                  (i32.const 2))))
-            (i32.store
-              (get_local $l4)
-              (get_local $l2))
-            (set_local $l2
-              (i32.load
-                (i32.const 5400)))
-            (set_local $l2
-              (call $_memaccesstime
-                (get_local $l0)
-                (get_local $l2)))
-            (set_local $l0
-              (i32.or
-                (get_local $l3)
-                (i32.const 3)))
-            (set_local $l0
-              (i32.add
-                (get_local $l6)
-                (i32.shl
+      (set_local $l16
+        (i32.eqz
+          (get_local $p0)))
+      (set_local $l1
+        (i32.const 0))
+      (set_local $p0
+        (i32.const 0))
+      (loop $L3
+        (set_local $l0
+          (if $I4 (result i32)
+            (get_local $l16)
+            (then
+              (get_local $l1))
+            (else
+              (set_local $l0
+                (call $_rand))
+              (set_local $l0
+                (i32.rem_s
                   (get_local $l0)
-                  (i32.const 2))))
-            (i32.store
+                  (i32.const 20971520)))
+              (i32.shl
+                (get_local $l0)
+                (i32.const 3)))))
+        (set_local $l8
+          (i32.add
+            (get_local $l10)
+            (get_local $l0)))
+        (set_local $l0
+          (i32.and
+            (get_local $l8)
+            (i32.const -4096)))
+        (set_local $l3
+          (get_local $l0))
+        (call $_memaccess
+          (get_local $l0))
+        (loop $L5
+          (set_local $l0
+            (call $_SAB_lib_get_counter_value))
+          (set_local $l5
+            (call $_SAB_lib_get_counter_value))
+          (set_local $l0
+            (i32.xor
               (get_local $l0)
-              (get_local $l2))
-            (set_local $p0
-              (i32.add
-                (get_local $l9)
-                (get_local $p0)))
-            (set_local $l1
-              (i32.add
-                (get_local $l1)
-                (i32.const 1)))
-            (br_if $L5
-              (i32.ne
-                (get_local $l1)
-                (get_local $p1))))
-          (set_local $l2
+              (i32.const -1)))
+          (set_local $l0
             (i32.add
-              (get_local $l7)
-              (get_local $l5)))))
+              (get_local $l5)
+              (get_local $l0)))
+          (br_if $L5
+            (i32.ge_u
+              (get_local $l0)
+              (i32.const 99))))
+        (call $_test_find)
+        (set_local $l4
+          (call $_SAB_lib_get_counter_value))
+        (set_local $l0
+          (i32.load
+            (get_local $l8)))
+        (i32.store
+          (get_local $l9)
+          (get_local $l0))
+        (set_local $l2
+          (call $_SAB_lib_get_counter_value))
+        (set_local $l5
+          (if $I6 (result i32)
+            (i32.lt_u
+              (get_local $l2)
+              (get_local $l4))
+            (then
+              (set_local $l0
+                (i32.add
+                  (get_local $l2)
+                  (i32.const 100)))
+              (set_local $l5
+                (i32.lt_u
+                  (get_local $l0)
+                  (get_local $l4)))
+              (set_local $l0
+                (i32.xor
+                  (get_local $l4)
+                  (i32.const -1)))
+              (set_local $l0
+                (i32.add
+                  (get_local $l2)
+                  (get_local $l0)))
+              (if $I7 (result i32)
+                (get_local $l5)
+                (then
+                  (get_local $l0))
+                (else
+                  (i32.const 0))))
+            (else
+              (i32.sub
+                (get_local $l2)
+                (get_local $l4)))))
+        (set_local $l11
+          (i32.shl
+            (get_local $l1)
+            (i32.const 2)))
+        (set_local $l0
+          (i32.add
+            (get_local $l7)
+            (i32.shl
+              (get_local $l11)
+              (i32.const 2))))
+        (i32.store
+          (get_local $l0)
+          (get_local $l5))
+        (loop $L8
+          (set_local $l0
+            (call $_SAB_lib_get_counter_value))
+          (set_local $l2
+            (call $_SAB_lib_get_counter_value))
+          (set_local $l0
+            (i32.xor
+              (get_local $l0)
+              (i32.const -1)))
+          (set_local $l0
+            (i32.add
+              (get_local $l2)
+              (get_local $l0)))
+          (br_if $L8
+            (i32.ge_u
+              (get_local $l0)
+              (i32.const 99))))
+        (set_local $l0
+          (i32.add
+            (get_local $l8)
+            (i32.const 1)))
+        (call $_test_find)
+        (drop
+          (call $_SAB_lib_get_counter_value))
+        (set_local $l0
+          (i32.load
+            (get_local $l0)))
+        (i32.store
+          (get_local $l9)
+          (get_local $l0))
+        (drop
+          (call $_SAB_lib_get_counter_value))
+        (loop $L9
+          (set_local $l0
+            (call $_SAB_lib_get_counter_value))
+          (set_local $l2
+            (call $_SAB_lib_get_counter_value))
+          (set_local $l0
+            (i32.xor
+              (get_local $l0)
+              (i32.const -1)))
+          (set_local $l0
+            (i32.add
+              (get_local $l2)
+              (get_local $l0)))
+          (br_if $L9
+            (i32.ge_u
+              (get_local $l0)
+              (i32.const 99))))
+        (call $_test_find)
+        (set_local $l12
+          (call $_SAB_lib_get_counter_value))
+        (set_local $l0
+          (i32.load
+            (get_local $l8)))
+        (i32.store
+          (get_local $l9)
+          (get_local $l0))
+        (set_local $l4
+          (call $_SAB_lib_get_counter_value))
+        (if $I10
+          (i32.lt_u
+            (get_local $l4)
+            (get_local $l12))
+          (then
+            (set_local $l0
+              (i32.add
+                (get_local $l4)
+                (i32.const 100)))
+            (set_local $l2
+              (i32.lt_u
+                (get_local $l0)
+                (get_local $l12)))
+            (set_local $l0
+              (i32.xor
+                (get_local $l12)
+                (i32.const -1)))
+            (set_local $l0
+              (i32.add
+                (get_local $l4)
+                (get_local $l0)))
+            (if $I11
+              (i32.eqz
+                (get_local $l2))
+              (then
+                (set_local $l0
+                  (i32.const 0)))))
+          (else
+            (set_local $l0
+              (i32.sub
+                (get_local $l4)
+                (get_local $l12)))))
+        (set_local $l2
+          (i32.or
+            (get_local $l11)
+            (i32.const 1)))
+        (set_local $l2
+          (i32.add
+            (get_local $l7)
+            (i32.shl
+              (get_local $l2)
+              (i32.const 2))))
+        (i32.store
+          (get_local $l2)
+          (get_local $l0))
+        (call $_memaccess
+          (get_local $l3))
+        (loop $L12
+          (set_local $l0
+            (call $_SAB_lib_get_counter_value))
+          (set_local $l3
+            (call $_SAB_lib_get_counter_value))
+          (set_local $l0
+            (i32.xor
+              (get_local $l0)
+              (i32.const -1)))
+          (set_local $l0
+            (i32.add
+              (get_local $l3)
+              (get_local $l0)))
+          (br_if $L12
+            (i32.ge_u
+              (get_local $l0)
+              (i32.const 99))))
+        (call $_test_find)
+        (set_local $l4
+          (call $_SAB_lib_get_counter_value))
+        (set_local $l0
+          (i32.load
+            (get_local $l8)))
+        (i32.store
+          (get_local $l9)
+          (get_local $l0))
+        (set_local $l2
+          (call $_SAB_lib_get_counter_value))
+        (if $I13
+          (i32.lt_u
+            (get_local $l2)
+            (get_local $l4))
+          (then
+            (set_local $l0
+              (i32.add
+                (get_local $l2)
+                (i32.const 100)))
+            (set_local $l3
+              (i32.lt_u
+                (get_local $l0)
+                (get_local $l4)))
+            (set_local $l0
+              (i32.xor
+                (get_local $l4)
+                (i32.const -1)))
+            (set_local $l0
+              (i32.add
+                (get_local $l2)
+                (get_local $l0)))
+            (if $I14
+              (i32.eqz
+                (get_local $l3))
+              (then
+                (set_local $l0
+                  (i32.const 0)))))
+          (else
+            (set_local $l0
+              (i32.sub
+                (get_local $l2)
+                (get_local $l4)))))
+        (set_local $l3
+          (i32.or
+            (get_local $l11)
+            (i32.const 2)))
+        (set_local $l3
+          (i32.add
+            (get_local $l7)
+            (i32.shl
+              (get_local $l3)
+              (i32.const 2))))
+        (i32.store
+          (get_local $l3)
+          (get_local $l0))
+        (loop $L15
+          (set_local $l0
+            (call $_SAB_lib_get_counter_value))
+          (set_local $l3
+            (call $_SAB_lib_get_counter_value))
+          (set_local $l0
+            (i32.xor
+              (get_local $l0)
+              (i32.const -1)))
+          (set_local $l0
+            (i32.add
+              (get_local $l3)
+              (get_local $l0)))
+          (br_if $L15
+            (i32.ge_u
+              (get_local $l0)
+              (i32.const 99))))
+        (call $_test_find)
+        (set_local $l4
+          (call $_SAB_lib_get_counter_value))
+        (set_local $l0
+          (i32.load
+            (get_local $l8)))
+        (i32.store
+          (get_local $l9)
+          (get_local $l0))
+        (set_local $l2
+          (call $_SAB_lib_get_counter_value))
+        (if $I16
+          (i32.lt_u
+            (get_local $l2)
+            (get_local $l4))
+          (then
+            (set_local $l0
+              (i32.add
+                (get_local $l2)
+                (i32.const 100)))
+            (set_local $l3
+              (i32.lt_u
+                (get_local $l0)
+                (get_local $l4)))
+            (set_local $l0
+              (i32.xor
+                (get_local $l4)
+                (i32.const -1)))
+            (set_local $l0
+              (i32.add
+                (get_local $l2)
+                (get_local $l0)))
+            (if $I17
+              (i32.eqz
+                (get_local $l3))
+              (then
+                (set_local $l0
+                  (i32.const 0)))))
+          (else
+            (set_local $l0
+              (i32.sub
+                (get_local $l2)
+                (get_local $l4)))))
+        (set_local $l3
+          (i32.or
+            (get_local $l11)
+            (i32.const 3)))
+        (set_local $l3
+          (i32.add
+            (get_local $l7)
+            (i32.shl
+              (get_local $l3)
+              (i32.const 2))))
+        (i32.store
+          (get_local $l3)
+          (get_local $l0))
+        (set_local $p0
+          (i32.add
+            (get_local $l5)
+            (get_local $p0)))
+        (set_local $l1
+          (i32.add
+            (get_local $l1)
+            (i32.const 1)))
+        (br_if $L3
+          (i32.ne
+            (get_local $l1)
+            (get_local $p1))))
       (set_local $p2
         (i32.ne
           (get_local $p2)
@@ -418,123 +532,123 @@
         (i32.eqz
           (i32.and
             (get_local $p2)
-            (get_local $l13))))
+            (get_local $l15))))
       (set_local $p2
         (i32.const 0))
-      (loop $L6
+      (loop $L18
         (i32.store
-          (get_local $l8)
-          (get_local $l2))
+          (get_local $l6)
+          (get_local $l8))
         (drop
           (call $_printf
             (i32.const 1532)
-            (get_local $l8)))
-        (set_local $l1
+            (get_local $l6)))
+        (set_local $l5
           (i32.shl
             (get_local $p2)
             (i32.const 2)))
-        (set_local $l0
+        (set_local $l1
           (i32.add
-            (get_local $l6)
+            (get_local $l7)
             (i32.shl
-              (get_local $l1)
+              (get_local $l5)
               (i32.const 2))))
-        (set_local $l0
-          (i32.load
-            (get_local $l0)))
         (set_local $l3
+          (i32.load
+            (get_local $l1)))
+        (set_local $l1
           (i32.or
-            (get_local $l1)
+            (get_local $l5)
             (i32.const 1)))
-        (set_local $l3
-          (i32.add
-            (get_local $l6)
-            (i32.shl
-              (get_local $l3)
-              (i32.const 2))))
-        (set_local $l3
-          (i32.load
-            (get_local $l3)))
-        (i32.store
-          (get_local $l12)
-          (get_local $l0))
-        (set_local $l0
-          (i32.add
-            (get_local $l12)
-            (i32.const 4)))
-        (i32.store
-          (get_local $l0)
-          (get_local $l3))
-        (drop
-          (call $_printf
-            (i32.const 1544)
-            (get_local $l12)))
-        (set_local $l0
-          (i32.or
-            (get_local $l1)
-            (i32.const 2)))
-        (set_local $l0
-          (i32.add
-            (get_local $l6)
-            (i32.shl
-              (get_local $l0)
-              (i32.const 2))))
-        (set_local $l0
-          (i32.load
-            (get_local $l0)))
-        (set_local $l1
-          (i32.or
-            (get_local $l1)
-            (i32.const 3)))
         (set_local $l1
           (i32.add
-            (get_local $l6)
+            (get_local $l7)
             (i32.shl
               (get_local $l1)
               (i32.const 2))))
-        (set_local $l1
+        (set_local $l0
           (i32.load
             (get_local $l1)))
         (i32.store
-          (get_local $l11)
-          (get_local $l0))
-        (set_local $l0
+          (get_local $l14)
+          (get_local $l3))
+        (set_local $l1
           (i32.add
-            (get_local $l11)
+            (get_local $l14)
             (i32.const 4)))
         (i32.store
-          (get_local $l0)
-          (get_local $l1))
+          (get_local $l1)
+          (get_local $l0))
+        (drop
+          (call $_printf
+            (i32.const 1544)
+            (get_local $l14)))
+        (set_local $l1
+          (i32.or
+            (get_local $l5)
+            (i32.const 2)))
+        (set_local $l1
+          (i32.add
+            (get_local $l7)
+            (i32.shl
+              (get_local $l1)
+              (i32.const 2))))
+        (set_local $l3
+          (i32.load
+            (get_local $l1)))
+        (set_local $l1
+          (i32.or
+            (get_local $l5)
+            (i32.const 3)))
+        (set_local $l1
+          (i32.add
+            (get_local $l7)
+            (i32.shl
+              (get_local $l1)
+              (i32.const 2))))
+        (set_local $l0
+          (i32.load
+            (get_local $l1)))
+        (i32.store
+          (get_local $l13)
+          (get_local $l3))
+        (set_local $l1
+          (i32.add
+            (get_local $l13)
+            (i32.const 4)))
+        (i32.store
+          (get_local $l1)
+          (get_local $l0))
         (drop
           (call $_printf
             (i32.const 1553)
-            (get_local $l11)))
+            (get_local $l13)))
         (set_local $p2
           (i32.add
             (get_local $p2)
             (i32.const 1)))
-        (br_if $L6
+        (br_if $L18
           (i32.ne
             (get_local $p2)
             (get_local $p1))))
       (call $_free
-        (get_local $l7))
+        (get_local $l10))
       (set_local $p0
         (i32.div_s
           (get_local $p0)
           (get_local $p1)))
       (set_global $g5
-        (get_local $l8))
+        (get_local $l6))
       (return
         (get_local $p0)))
     (call $_free
-      (get_local $l7))
+      (get_local $l10))
     (set_local $p0
       (i32.div_s
         (get_local $p0)
         (get_local $p1)))
     (set_global $g5
-      (get_local $l8))
+      (get_local $l6))
     (get_local $p0))
   (func $_memaccess (type $t3) (param $p0 i32)
     (local $l0 i32) (local $l1 i32)
@@ -565,58 +679,6 @@
         (get_local $l1)))
     (set_global $g5
       (get_local $l0)))
-  (func $_memaccesstime (type $t7) (param $p0 i32) (param $p1 i32) (result i32)
-    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32)
-    (set_local $l0
-      (get_global $g5))
-    (set_global $g5
-      (i32.add
-        (get_global $g5)
-        (i32.const 16)))
-    (set_local $l1
-      (i32.add
-        (get_local $l0)
-        (i32.const 12)))
-    (set_local $l2
-      (i32.add
-        (get_local $l0)
-        (i32.const 4)))
-    (i32.store
-      (tee_local $l3
-        (i32.add
-          (get_local $l0)
-          (i32.const 8)))
-      (get_local $p0))
-    (i32.store
-      (get_local $l0)
-      (get_local $p1))
-    (call $_warmuptimer)
-    (set_local $p0
-      (call $_SAB_lib_get_counter_value))
-    (i32.store
-      (get_local $l1)
-      (get_local $p0))
-    (drop
-      (i32.load
-        (get_local $l3)))
-    (set_local $p0
-      (call $_SAB_lib_get_counter_value))
-    (i32.store
-      (get_local $l2)
-      (get_local $p0))
-    (set_local $p0
-      (i32.load
-        (get_local $l1)))
-    (set_local $p1
-      (i32.load
-        (get_local $l2)))
-    (set_local $p0
-      (call $_get_diff
-        (get_local $p0)
-        (get_local $p1)))
-    (set_global $g5
-      (get_local $l0))
-    (get_local $p0))
   (func $_mem_access_testing (type $t7) (param $p0 i32) (param $p1 i32) (result i32)
     (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32) (local $l4 i32)
     (set_local $l0
@@ -783,7 +845,7 @@
       (get_local $p0))
     (i32.const 0))
   (func $_gcc_test_opt (type $t1) (param $p0 i32) (result i32)
-    (local $l0 i32) (local $l1 i32) (local $l2 i32)
+    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32)
     (set_local $l0
       (get_global $g5))
     (set_global $g5
@@ -793,21 +855,31 @@
     (set_local $l1
       (i32.add
         (get_local $l0)
-        (i32.const 8)))
+        (i32.const 12)))
+    (set_local $l2
+      (i32.add
+        (get_local $l0)
+        (i32.const 4)))
     (i32.store
-      (tee_local $l2
+      (tee_local $l3
         (i32.add
           (get_local $l0)
-          (i32.const 4)))
+          (i32.const 8)))
       (get_local $p0))
     (set_local $p0
       (call $_SAB_lib_get_counter_value))
     (i32.store
       (get_local $l1)
       (get_local $p0))
-    (drop
+    (set_local $p0
       (i32.load
-        (get_local $l2)))
+        (get_local $l3)))
+    (set_local $p0
+      (i32.load
+        (get_local $p0)))
+    (i32.store
+      (get_local $l2)
+      (get_local $p0))
     (set_local $p0
       (call $_SAB_lib_get_counter_value))
     (i32.store
@@ -827,60 +899,6 @@
     (set_global $g5
       (get_local $l0))
     (get_local $p0))
-  (func $_get_diff (type $t7) (param $p0 i32) (param $p1 i32) (result i32)
-    (local $l0 i32)
-    (if $I0
-      (i32.lt_u
-        (get_local $p1)
-        (get_local $p0))
-      (then
-        (set_local $l0
-          (i32.add
-            (get_local $p1)
-            (i32.const 100)))
-        (set_local $l0
-          (i32.lt_u
-            (get_local $l0)
-            (get_local $p0)))
-        (set_local $p0
-          (i32.xor
-            (get_local $p0)
-            (i32.const -1)))
-        (set_local $p0
-          (i32.add
-            (get_local $p0)
-            (get_local $p1)))
-        (if $I1
-          (i32.eqz
-            (get_local $l0))
-          (then
-            (set_local $p0
-              (i32.const 0)))))
-      (else
-        (set_local $p0
-          (i32.sub
-            (get_local $p1)
-            (get_local $p0)))))
-    (get_local $p0))
-  (func $_warmuptimer (type $t8)
-    (local $l0 i32) (local $l1 i32)
-    (loop $L0
-      (set_local $l0
-        (call $_SAB_lib_get_counter_value))
-      (set_local $l1
-        (call $_SAB_lib_get_counter_value))
-      (set_local $l0
-        (i32.xor
-          (get_local $l0)
-          (i32.const -1)))
-      (set_local $l0
-        (i32.add
-          (get_local $l1)
-          (get_local $l0)))
-      (br_if $L0
-        (i32.ge_u
-          (get_local $l0)
-          (i32.const 99)))))
   (func $_vl_new (type $t4) (result i32)
     (local $l0 i32) (local $l1 i32) (local $l2 i32)
     (set_local $l0
@@ -6047,7 +6065,7 @@
                             (call $___assert_fail
                               (i32.const 2472)
                               (i32.const 2488)
-                              (i32.const 546)
+                              (i32.const 547)
                               (i32.const 2493))
                             (br $B9))
                           (drop
@@ -6856,8 +6874,14 @@
       (get_local $l9))
     (i32.const 0))
   (func $_checkevict (type $t2) (param $p0 i32) (param $p1 i32) (param $p2 i32) (result i32)
-    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32) (local $l4 i32) (local $l5 i32) (local $l6 i32)
+    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32) (local $l4 i32) (local $l5 i32) (local $l6 i32) (local $l7 i32)
     (block $B0
+      (set_local $l6
+        (get_global $g5))
+      (set_global $g5
+        (i32.add
+          (get_global $g5)
+          (i32.const 16)))
       (if $I1
         (i32.eqz
           (get_local $p0))
@@ -6867,29 +6891,29 @@
             (i32.const 2233)
             (i32.const 56)
             (i32.const 2243))))
-      (set_local $l5
+      (set_local $l4
         (i32.add
           (get_local $p0)
           (i32.const 4)))
-      (set_local $l2
+      (set_local $l1
         (i32.load
-          (get_local $l5)))
+          (get_local $l4)))
       (br_if $B0
         (i32.eqz
-          (get_local $l2)))
+          (get_local $l1)))
       (if $I2
         (get_local $p2)
         (then
-          (set_local $l1
-            (get_local $l2)))
+          (set_local $l0
+            (get_local $l1)))
         (else
           (drop
             (call $_puts
               (i32.const 2892)))
-          (set_local $l0
+          (set_local $l3
             (i32.load
-              (get_local $l5)))
-          (set_local $l6
+              (get_local $l4)))
+          (set_local $l7
             (i32.const 6))))
       (block $B3
         (block $B4
@@ -6897,60 +6921,60 @@
             (block $B6
               (if $I7
                 (i32.eq
-                  (get_local $l6)
+                  (get_local $l7)
                   (i32.const 6))
                 (then
-                  (set_local $l3
-                    (get_local $l4))
-                  (set_local $l1
-                    (get_local $l0))))
+                  (set_local $l2
+                    (get_local $l5))
+                  (set_local $l0
+                    (get_local $l3))))
               (br_if $B6
                 (i32.ge_s
-                  (get_local $l3)
-                  (get_local $l1)))
-              (set_local $l4
+                  (get_local $l2)
+                  (get_local $l0)))
+              (set_local $l5
                 (i32.add
-                  (get_local $l3)
+                  (get_local $l2)
                   (i32.const 1)))
               (br_if $B4
                 (i32.le_s
-                  (get_local $l1)
+                  (get_local $l0)
                   (i32.const -1)))
-              (set_local $l0
+              (set_local $l3
                 (i32.rem_s
-                  (get_local $l4)
-                  (get_local $l1)))
+                  (get_local $l5)
+                  (get_local $l0)))
               (set_local $p2
                 (i32.add
                   (get_local $p0)
                   (i32.const 8)))
-              (set_local $l2
+              (set_local $l1
                 (i32.load
                   (get_local $p2)))
               (set_local $p2
                 (i32.add
-                  (get_local $l2)
-                  (i32.shl
-                    (get_local $l0)
-                    (i32.const 2))))
-              (set_local $l0
-                (i32.load
-                  (get_local $p2)))
-              (set_local $p2
-                (i32.add
-                  (get_local $l2)
+                  (get_local $l1)
                   (i32.shl
                     (get_local $l3)
+                    (i32.const 2))))
+              (set_local $l3
+                (i32.load
+                  (get_local $p2)))
+              (set_local $p2
+                (i32.add
+                  (get_local $l1)
+                  (i32.shl
+                    (get_local $l2)
                     (i32.const 2))))
               (set_local $p2
                 (i32.load
                   (get_local $p2)))
               (i32.store
                 (get_local $p2)
+                (get_local $l3))
+              (set_local $l3
                 (get_local $l0))
-              (set_local $l0
-                (get_local $l1))
-              (set_local $l6
+              (set_local $l7
                 (i32.const 6))
               (br $L5)))
           (br $B3))
@@ -6961,7 +6985,7 @@
           (i32.const 2264)))
       (if $I8
         (i32.le_s
-          (get_local $l1)
+          (get_local $l0)
           (i32.const 0))
         (then
           (call $___assert_fail
@@ -6976,40 +7000,95 @@
       (set_local $p0
         (i32.load
           (get_local $p0)))
-      (set_local $p0
+      (set_local $l1
         (i32.load
           (get_local $p0)))
       (br_if $B0
         (i32.eqz
-          (get_local $p0)))
+          (get_local $l1)))
       (set_local $p0
         (i32.load
-          (get_local $p0)))
+          (get_local $l1)))
       (br_if $B0
         (i32.eqz
           (get_local $p0)))
-      (set_local $l0
+      (set_local $l5
         (call $_ts_alloc))
       (call $_memaccess
         (get_local $p1))
-      (set_local $l1
+      (set_local $l3
         (i32.and
           (get_local $p1)
           (i32.const -4096)))
       (set_local $p0
         (i32.const 0))
       (loop $L9
-        (call $_memaccess
+        (call $_walk_through
           (get_local $l1))
+        (call $_memaccess
+          (get_local $l3))
+        (loop $L10
+          (set_local $p2
+            (call $_SAB_lib_get_counter_value))
+          (set_local $l0
+            (call $_SAB_lib_get_counter_value))
+          (set_local $p2
+            (i32.xor
+              (get_local $p2)
+              (i32.const -1)))
+          (set_local $p2
+            (i32.add
+              (get_local $l0)
+              (get_local $p2)))
+          (br_if $L10
+            (i32.ge_u
+              (get_local $p2)
+              (i32.const 99))))
+        (call $_test_find)
+        (set_local $l4
+          (call $_SAB_lib_get_counter_value))
         (set_local $p2
           (i32.load
-            (i32.const 5400)))
-        (set_local $p2
-          (call $_memaccesstime
-            (get_local $p1)
-            (get_local $p2)))
+            (get_local $p1)))
+        (i32.store
+          (get_local $l6)
+          (get_local $p2))
+        (set_local $l2
+          (call $_SAB_lib_get_counter_value))
+        (if $I11
+          (i32.lt_u
+            (get_local $l2)
+            (get_local $l4))
+          (then
+            (set_local $p2
+              (i32.add
+                (get_local $l2)
+                (i32.const 100)))
+            (set_local $l0
+              (i32.lt_u
+                (get_local $p2)
+                (get_local $l4)))
+            (set_local $p2
+              (i32.xor
+                (get_local $l4)
+                (i32.const -1)))
+            (set_local $p2
+              (i32.add
+                (get_local $l2)
+                (get_local $p2)))
+            (if $I12
+              (i32.eqz
+                (get_local $l0))
+              (then
+                (set_local $p2
+                  (i32.const 0)))))
+          (else
+            (set_local $p2
+              (i32.sub
+                (get_local $l2)
+                (get_local $l4)))))
         (call $_ts_add
-          (get_local $l0)
+          (get_local $l5)
           (get_local $p2))
         (set_local $p0
           (i32.add
@@ -7021,14 +7100,90 @@
             (i32.const 48))))
       (set_local $p0
         (call $_ts_median
-          (get_local $l0)))
+          (get_local $l5)))
       (call $_ts_free
-        (get_local $l0))
+        (get_local $l5))
+      (set_global $g5
+        (get_local $l6))
       (return
         (get_local $p0)))
     (set_local $p0
       (i32.const 0))
+    (set_global $g5
+      (get_local $l6))
     (i32.const 0))
+  (func $_walk_through (type $t3) (param $p0 i32)
+    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32)
+    (set_local $l0
+      (get_global $g5))
+    (set_global $g5
+      (i32.add
+        (get_global $g5)
+        (i32.const 16)))
+    (set_local $l1
+      (i32.add
+        (get_local $l0)
+        (i32.const 4)))
+    (set_local $l2
+      (i32.add
+        (get_local $l0)
+        (i32.const 8)))
+    (i32.store
+      (get_local $l0)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l0)))
+    (if $I0
+      (i32.eqz
+        (get_local $p0))
+      (then
+        (i32.store
+          (get_local $l1)
+          (i32.const 0))
+        (drop
+          (i32.load
+            (get_local $l1)))
+        (set_global $g5
+          (get_local $l0))
+        (return)))
+    (set_local $p0
+      (i32.load
+        (get_local $l0)))
+    (i32.store
+      (get_local $l2)
+      (get_local $p0))
+    (loop $L1
+      (set_local $p0
+        (i32.load
+          (get_local $l0)))
+      (set_local $p0
+        (i32.load
+          (get_local $p0)))
+      (i32.store
+        (get_local $l0)
+        (get_local $p0))
+      (set_local $l3
+        (i32.load
+          (get_local $l0)))
+      (set_local $p0
+        (i32.load
+          (get_local $l2)))
+      (br_if $L1
+        (i32.ne
+          (get_local $l3)
+          (get_local $p0))))
+    (set_local $p0
+      (i32.load
+        (get_local $l0)))
+    (i32.store
+      (get_local $l1)
+      (get_local $p0))
+    (drop
+      (i32.load
+        (get_local $l1)))
+    (set_global $g5
+      (get_local $l0)))
   (func $_l3_release (type $t3) (param $p0 i32)
     (local $l0 i32) (local $l1 i32)
     (set_local $l0
@@ -7340,7 +7495,7 @@
           (call $___assert_fail
             (i32.const 2907)
             (i32.const 2488)
-            (i32.const 978)
+            (i32.const 979)
             (i32.const 2918))))
       (if $I2
         (i32.eqz
@@ -7349,7 +7504,7 @@
           (call $___assert_fail
             (i32.const 2935)
             (i32.const 2488)
-            (i32.const 979)
+            (i32.const 980)
             (i32.const 2918))))
       (if $I3
         (i32.eqz
@@ -7758,52 +7913,1904 @@
         (get_local $p1)))
     (get_local $p1))
   (func $_probetime (type $t1) (param $p0 i32) (result i32)
-    (local $l0 i32) (local $l1 i32)
+    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32) (local $l4 i32)
+    (set_local $l0
+      (get_global $g5))
+    (set_global $g5
+      (i32.add
+        (get_global $g5)
+        (i32.const 32)))
+    (set_local $l2
+      (i32.add
+        (get_local $l0)
+        (i32.const 12)))
+    (set_local $l1
+      (i32.add
+        (get_local $l0)
+        (i32.const 16)))
+    (set_local $l3
+      (i32.add
+        (get_local $l0)
+        (i32.const 8)))
+    (i32.store
+      (tee_local $l4
+        (i32.add
+          (get_local $l0)
+          (i32.const 4)))
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l4)))
     (if $I0
       (i32.eqz
         (get_local $p0))
       (then
-        (set_local $p0
+        (i32.store
+          (get_local $l2)
           (i32.const 0))
+        (set_local $p0
+          (i32.load
+            (get_local $l2)))
+        (set_global $g5
+          (get_local $l0))
         (return
-          (i32.const 0))))
-    (set_local $l1
-      (call $_SAB_lib_get_counter_value))
-    (set_local $l0
+          (get_local $p0))))
+    (i32.store
+      (get_local $l1)
+      (i32.const 0))
+    (set_local $p0
+      (i32.load
+        (get_local $l4)))
+    (i32.store
+      (get_local $l3)
+      (get_local $p0))
+    (set_local $p0
+      (call $_rdtscp))
+    (i32.store
+      (get_local $l0)
       (get_local $p0))
     (loop $L1
-      (set_local $l0
+      (set_local $p0
         (i32.load
-          (get_local $l0)))
+          (get_local $l3)))
+      (set_local $p0
+        (i32.load
+          (get_local $p0)))
+      (i32.store
+        (get_local $l3)
+        (get_local $p0))
+      (set_local $l1
+        (i32.load
+          (get_local $l3)))
+      (set_local $p0
+        (i32.load
+          (get_local $l4)))
       (br_if $L1
         (i32.ne
-          (get_local $l0)
+          (get_local $l1)
           (get_local $p0))))
+    (set_local $l1
+      (call $_rdtscp))
     (set_local $p0
-      (call $_SAB_lib_get_counter_value))
+      (i32.load
+        (get_local $l0)))
     (set_local $p0
       (i32.sub
-        (get_local $p0)
-        (get_local $l1)))
+        (get_local $l1)
+        (get_local $p0)))
+    (i32.store
+      (get_local $l2)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l2)))
+    (set_global $g5
+      (get_local $l0))
     (get_local $p0))
-  (func $_probetime_adv_1 (type $t1) (param $p0 i32) (result i32)
+  (func $_rdtscp (type $t4) (result i32)
     (local $l0 i32)
+    (set_local $l0
+      (call $_SAB_lib_get_counter_value))
+    (get_local $l0))
+  (func $_probetime_adv_1 (type $t1) (param $p0 i32) (result i32)
+    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32)
+    (set_local $l0
+      (get_global $g5))
+    (set_global $g5
+      (i32.add
+        (get_global $g5)
+        (i32.const 16)))
+    (set_local $l2
+      (i32.add
+        (get_local $l0)
+        (i32.const 8)))
+    (set_local $l3
+      (i32.add
+        (get_local $l0)
+        (i32.const 12)))
+    (set_local $l1
+      (i32.add
+        (get_local $l0)
+        (i32.const 4)))
+    (i32.store
+      (get_local $l0)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l0)))
     (if $I0
       (i32.eqz
         (get_local $p0))
       (then
-        (set_local $p0
+        (i32.store
+          (get_local $l2)
           (i32.const 0))
+        (set_local $p0
+          (i32.load
+            (get_local $l2)))
+        (set_global $g5
+          (get_local $l0))
         (return
-          (i32.const 0))))
+          (get_local $p0))))
     (set_local $p0
-      (call $_SAB_lib_get_counter_value))
-    (set_local $l0
-      (call $_SAB_lib_get_counter_value))
+      (call $_rdtscp))
+    (i32.store
+      (get_local $l3)
+      (get_local $p0))
+    (i32.store
+      (get_local $l1)
+      (i32.const 0))
+    (loop $L1
+      (block $B2
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (br_if $B2
+          (i32.ge_s
+            (get_local $p0)
+            (i32.const 1)))
+        (set_local $p0
+          (i32.load
+            (get_local $l0)))
+        (set_local $p0
+          (i32.load
+            (get_local $p0)))
+        (i32.store
+          (get_local $l0)
+          (get_local $p0))
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (set_local $p0
+          (i32.add
+            (get_local $p0)
+            (i32.const 1)))
+        (i32.store
+          (get_local $l1)
+          (get_local $p0))
+        (br $L1)))
+    (set_local $l1
+      (call $_rdtscp))
+    (set_local $p0
+      (i32.load
+        (get_local $l3)))
     (set_local $p0
       (i32.sub
-        (get_local $l0)
+        (get_local $l1)
         (get_local $p0)))
+    (i32.store
+      (get_local $l2)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l2)))
+    (set_global $g5
+      (get_local $l0))
+    (get_local $p0))
+  (func $_probetime_adv_2 (type $t1) (param $p0 i32) (result i32)
+    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32)
+    (set_local $l0
+      (get_global $g5))
+    (set_global $g5
+      (i32.add
+        (get_global $g5)
+        (i32.const 16)))
+    (set_local $l2
+      (i32.add
+        (get_local $l0)
+        (i32.const 8)))
+    (set_local $l3
+      (i32.add
+        (get_local $l0)
+        (i32.const 12)))
+    (set_local $l1
+      (i32.add
+        (get_local $l0)
+        (i32.const 4)))
+    (i32.store
+      (get_local $l0)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l0)))
+    (if $I0
+      (i32.eqz
+        (get_local $p0))
+      (then
+        (i32.store
+          (get_local $l2)
+          (i32.const 0))
+        (set_local $p0
+          (i32.load
+            (get_local $l2)))
+        (set_global $g5
+          (get_local $l0))
+        (return
+          (get_local $p0))))
+    (set_local $p0
+      (call $_rdtscp))
+    (i32.store
+      (get_local $l3)
+      (get_local $p0))
+    (i32.store
+      (get_local $l1)
+      (i32.const 0))
+    (loop $L1
+      (block $B2
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (br_if $B2
+          (i32.ge_s
+            (get_local $p0)
+            (i32.const 2)))
+        (set_local $p0
+          (i32.load
+            (get_local $l0)))
+        (set_local $p0
+          (i32.load
+            (get_local $p0)))
+        (i32.store
+          (get_local $l0)
+          (get_local $p0))
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (set_local $p0
+          (i32.add
+            (get_local $p0)
+            (i32.const 1)))
+        (i32.store
+          (get_local $l1)
+          (get_local $p0))
+        (br $L1)))
+    (set_local $l1
+      (call $_rdtscp))
+    (set_local $p0
+      (i32.load
+        (get_local $l3)))
+    (set_local $p0
+      (i32.sub
+        (get_local $l1)
+        (get_local $p0)))
+    (i32.store
+      (get_local $l2)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l2)))
+    (set_global $g5
+      (get_local $l0))
+    (get_local $p0))
+  (func $_probetime_adv_3 (type $t1) (param $p0 i32) (result i32)
+    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32)
+    (set_local $l0
+      (get_global $g5))
+    (set_global $g5
+      (i32.add
+        (get_global $g5)
+        (i32.const 16)))
+    (set_local $l2
+      (i32.add
+        (get_local $l0)
+        (i32.const 8)))
+    (set_local $l3
+      (i32.add
+        (get_local $l0)
+        (i32.const 12)))
+    (set_local $l1
+      (i32.add
+        (get_local $l0)
+        (i32.const 4)))
+    (i32.store
+      (get_local $l0)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l0)))
+    (if $I0
+      (i32.eqz
+        (get_local $p0))
+      (then
+        (i32.store
+          (get_local $l2)
+          (i32.const 0))
+        (set_local $p0
+          (i32.load
+            (get_local $l2)))
+        (set_global $g5
+          (get_local $l0))
+        (return
+          (get_local $p0))))
+    (set_local $p0
+      (call $_rdtscp))
+    (i32.store
+      (get_local $l3)
+      (get_local $p0))
+    (i32.store
+      (get_local $l1)
+      (i32.const 0))
+    (loop $L1
+      (block $B2
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (br_if $B2
+          (i32.ge_s
+            (get_local $p0)
+            (i32.const 3)))
+        (set_local $p0
+          (i32.load
+            (get_local $l0)))
+        (set_local $p0
+          (i32.load
+            (get_local $p0)))
+        (i32.store
+          (get_local $l0)
+          (get_local $p0))
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (set_local $p0
+          (i32.add
+            (get_local $p0)
+            (i32.const 1)))
+        (i32.store
+          (get_local $l1)
+          (get_local $p0))
+        (br $L1)))
+    (set_local $l1
+      (call $_rdtscp))
+    (set_local $p0
+      (i32.load
+        (get_local $l3)))
+    (set_local $p0
+      (i32.sub
+        (get_local $l1)
+        (get_local $p0)))
+    (i32.store
+      (get_local $l2)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l2)))
+    (set_global $g5
+      (get_local $l0))
+    (get_local $p0))
+  (func $_probetime_adv_4 (type $t1) (param $p0 i32) (result i32)
+    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32)
+    (set_local $l0
+      (get_global $g5))
+    (set_global $g5
+      (i32.add
+        (get_global $g5)
+        (i32.const 16)))
+    (set_local $l2
+      (i32.add
+        (get_local $l0)
+        (i32.const 8)))
+    (set_local $l3
+      (i32.add
+        (get_local $l0)
+        (i32.const 12)))
+    (set_local $l1
+      (i32.add
+        (get_local $l0)
+        (i32.const 4)))
+    (i32.store
+      (get_local $l0)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l0)))
+    (if $I0
+      (i32.eqz
+        (get_local $p0))
+      (then
+        (i32.store
+          (get_local $l2)
+          (i32.const 0))
+        (set_local $p0
+          (i32.load
+            (get_local $l2)))
+        (set_global $g5
+          (get_local $l0))
+        (return
+          (get_local $p0))))
+    (set_local $p0
+      (call $_rdtscp))
+    (i32.store
+      (get_local $l3)
+      (get_local $p0))
+    (i32.store
+      (get_local $l1)
+      (i32.const 0))
+    (loop $L1
+      (block $B2
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (br_if $B2
+          (i32.ge_s
+            (get_local $p0)
+            (i32.const 4)))
+        (set_local $p0
+          (i32.load
+            (get_local $l0)))
+        (set_local $p0
+          (i32.load
+            (get_local $p0)))
+        (i32.store
+          (get_local $l0)
+          (get_local $p0))
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (set_local $p0
+          (i32.add
+            (get_local $p0)
+            (i32.const 1)))
+        (i32.store
+          (get_local $l1)
+          (get_local $p0))
+        (br $L1)))
+    (set_local $l1
+      (call $_rdtscp))
+    (set_local $p0
+      (i32.load
+        (get_local $l3)))
+    (set_local $p0
+      (i32.sub
+        (get_local $l1)
+        (get_local $p0)))
+    (i32.store
+      (get_local $l2)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l2)))
+    (set_global $g5
+      (get_local $l0))
+    (get_local $p0))
+  (func $_probetime_adv_5 (type $t1) (param $p0 i32) (result i32)
+    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32)
+    (set_local $l0
+      (get_global $g5))
+    (set_global $g5
+      (i32.add
+        (get_global $g5)
+        (i32.const 16)))
+    (set_local $l2
+      (i32.add
+        (get_local $l0)
+        (i32.const 8)))
+    (set_local $l3
+      (i32.add
+        (get_local $l0)
+        (i32.const 12)))
+    (set_local $l1
+      (i32.add
+        (get_local $l0)
+        (i32.const 4)))
+    (i32.store
+      (get_local $l0)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l0)))
+    (if $I0
+      (i32.eqz
+        (get_local $p0))
+      (then
+        (i32.store
+          (get_local $l2)
+          (i32.const 0))
+        (set_local $p0
+          (i32.load
+            (get_local $l2)))
+        (set_global $g5
+          (get_local $l0))
+        (return
+          (get_local $p0))))
+    (set_local $p0
+      (call $_rdtscp))
+    (i32.store
+      (get_local $l3)
+      (get_local $p0))
+    (i32.store
+      (get_local $l1)
+      (i32.const 0))
+    (loop $L1
+      (block $B2
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (br_if $B2
+          (i32.ge_s
+            (get_local $p0)
+            (i32.const 5)))
+        (set_local $p0
+          (i32.load
+            (get_local $l0)))
+        (set_local $p0
+          (i32.load
+            (get_local $p0)))
+        (i32.store
+          (get_local $l0)
+          (get_local $p0))
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (set_local $p0
+          (i32.add
+            (get_local $p0)
+            (i32.const 1)))
+        (i32.store
+          (get_local $l1)
+          (get_local $p0))
+        (br $L1)))
+    (set_local $l1
+      (call $_rdtscp))
+    (set_local $p0
+      (i32.load
+        (get_local $l3)))
+    (set_local $p0
+      (i32.sub
+        (get_local $l1)
+        (get_local $p0)))
+    (i32.store
+      (get_local $l2)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l2)))
+    (set_global $g5
+      (get_local $l0))
+    (get_local $p0))
+  (func $_probetime_adv_6 (type $t1) (param $p0 i32) (result i32)
+    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32)
+    (set_local $l0
+      (get_global $g5))
+    (set_global $g5
+      (i32.add
+        (get_global $g5)
+        (i32.const 16)))
+    (set_local $l2
+      (i32.add
+        (get_local $l0)
+        (i32.const 8)))
+    (set_local $l3
+      (i32.add
+        (get_local $l0)
+        (i32.const 12)))
+    (set_local $l1
+      (i32.add
+        (get_local $l0)
+        (i32.const 4)))
+    (i32.store
+      (get_local $l0)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l0)))
+    (if $I0
+      (i32.eqz
+        (get_local $p0))
+      (then
+        (i32.store
+          (get_local $l2)
+          (i32.const 0))
+        (set_local $p0
+          (i32.load
+            (get_local $l2)))
+        (set_global $g5
+          (get_local $l0))
+        (return
+          (get_local $p0))))
+    (set_local $p0
+      (call $_rdtscp))
+    (i32.store
+      (get_local $l3)
+      (get_local $p0))
+    (i32.store
+      (get_local $l1)
+      (i32.const 0))
+    (loop $L1
+      (block $B2
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (br_if $B2
+          (i32.ge_s
+            (get_local $p0)
+            (i32.const 6)))
+        (set_local $p0
+          (i32.load
+            (get_local $l0)))
+        (set_local $p0
+          (i32.load
+            (get_local $p0)))
+        (i32.store
+          (get_local $l0)
+          (get_local $p0))
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (set_local $p0
+          (i32.add
+            (get_local $p0)
+            (i32.const 1)))
+        (i32.store
+          (get_local $l1)
+          (get_local $p0))
+        (br $L1)))
+    (set_local $l1
+      (call $_rdtscp))
+    (set_local $p0
+      (i32.load
+        (get_local $l3)))
+    (set_local $p0
+      (i32.sub
+        (get_local $l1)
+        (get_local $p0)))
+    (i32.store
+      (get_local $l2)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l2)))
+    (set_global $g5
+      (get_local $l0))
+    (get_local $p0))
+  (func $_probetime_adv_7 (type $t1) (param $p0 i32) (result i32)
+    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32)
+    (set_local $l0
+      (get_global $g5))
+    (set_global $g5
+      (i32.add
+        (get_global $g5)
+        (i32.const 16)))
+    (set_local $l2
+      (i32.add
+        (get_local $l0)
+        (i32.const 8)))
+    (set_local $l3
+      (i32.add
+        (get_local $l0)
+        (i32.const 12)))
+    (set_local $l1
+      (i32.add
+        (get_local $l0)
+        (i32.const 4)))
+    (i32.store
+      (get_local $l0)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l0)))
+    (if $I0
+      (i32.eqz
+        (get_local $p0))
+      (then
+        (i32.store
+          (get_local $l2)
+          (i32.const 0))
+        (set_local $p0
+          (i32.load
+            (get_local $l2)))
+        (set_global $g5
+          (get_local $l0))
+        (return
+          (get_local $p0))))
+    (set_local $p0
+      (call $_rdtscp))
+    (i32.store
+      (get_local $l3)
+      (get_local $p0))
+    (i32.store
+      (get_local $l1)
+      (i32.const 0))
+    (loop $L1
+      (block $B2
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (br_if $B2
+          (i32.ge_s
+            (get_local $p0)
+            (i32.const 7)))
+        (set_local $p0
+          (i32.load
+            (get_local $l0)))
+        (set_local $p0
+          (i32.load
+            (get_local $p0)))
+        (i32.store
+          (get_local $l0)
+          (get_local $p0))
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (set_local $p0
+          (i32.add
+            (get_local $p0)
+            (i32.const 1)))
+        (i32.store
+          (get_local $l1)
+          (get_local $p0))
+        (br $L1)))
+    (set_local $l1
+      (call $_rdtscp))
+    (set_local $p0
+      (i32.load
+        (get_local $l3)))
+    (set_local $p0
+      (i32.sub
+        (get_local $l1)
+        (get_local $p0)))
+    (i32.store
+      (get_local $l2)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l2)))
+    (set_global $g5
+      (get_local $l0))
+    (get_local $p0))
+  (func $_probetime_adv_8 (type $t1) (param $p0 i32) (result i32)
+    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32)
+    (set_local $l0
+      (get_global $g5))
+    (set_global $g5
+      (i32.add
+        (get_global $g5)
+        (i32.const 16)))
+    (set_local $l2
+      (i32.add
+        (get_local $l0)
+        (i32.const 8)))
+    (set_local $l3
+      (i32.add
+        (get_local $l0)
+        (i32.const 12)))
+    (set_local $l1
+      (i32.add
+        (get_local $l0)
+        (i32.const 4)))
+    (i32.store
+      (get_local $l0)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l0)))
+    (if $I0
+      (i32.eqz
+        (get_local $p0))
+      (then
+        (i32.store
+          (get_local $l2)
+          (i32.const 0))
+        (set_local $p0
+          (i32.load
+            (get_local $l2)))
+        (set_global $g5
+          (get_local $l0))
+        (return
+          (get_local $p0))))
+    (set_local $p0
+      (call $_rdtscp))
+    (i32.store
+      (get_local $l3)
+      (get_local $p0))
+    (i32.store
+      (get_local $l1)
+      (i32.const 0))
+    (loop $L1
+      (block $B2
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (br_if $B2
+          (i32.ge_s
+            (get_local $p0)
+            (i32.const 8)))
+        (set_local $p0
+          (i32.load
+            (get_local $l0)))
+        (set_local $p0
+          (i32.load
+            (get_local $p0)))
+        (i32.store
+          (get_local $l0)
+          (get_local $p0))
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (set_local $p0
+          (i32.add
+            (get_local $p0)
+            (i32.const 1)))
+        (i32.store
+          (get_local $l1)
+          (get_local $p0))
+        (br $L1)))
+    (set_local $l1
+      (call $_rdtscp))
+    (set_local $p0
+      (i32.load
+        (get_local $l3)))
+    (set_local $p0
+      (i32.sub
+        (get_local $l1)
+        (get_local $p0)))
+    (i32.store
+      (get_local $l2)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l2)))
+    (set_global $g5
+      (get_local $l0))
+    (get_local $p0))
+  (func $_probetime_adv_9 (type $t1) (param $p0 i32) (result i32)
+    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32)
+    (set_local $l0
+      (get_global $g5))
+    (set_global $g5
+      (i32.add
+        (get_global $g5)
+        (i32.const 16)))
+    (set_local $l2
+      (i32.add
+        (get_local $l0)
+        (i32.const 8)))
+    (set_local $l3
+      (i32.add
+        (get_local $l0)
+        (i32.const 12)))
+    (set_local $l1
+      (i32.add
+        (get_local $l0)
+        (i32.const 4)))
+    (i32.store
+      (get_local $l0)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l0)))
+    (if $I0
+      (i32.eqz
+        (get_local $p0))
+      (then
+        (i32.store
+          (get_local $l2)
+          (i32.const 0))
+        (set_local $p0
+          (i32.load
+            (get_local $l2)))
+        (set_global $g5
+          (get_local $l0))
+        (return
+          (get_local $p0))))
+    (set_local $p0
+      (call $_rdtscp))
+    (i32.store
+      (get_local $l3)
+      (get_local $p0))
+    (i32.store
+      (get_local $l1)
+      (i32.const 0))
+    (loop $L1
+      (block $B2
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (br_if $B2
+          (i32.ge_s
+            (get_local $p0)
+            (i32.const 9)))
+        (set_local $p0
+          (i32.load
+            (get_local $l0)))
+        (set_local $p0
+          (i32.load
+            (get_local $p0)))
+        (i32.store
+          (get_local $l0)
+          (get_local $p0))
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (set_local $p0
+          (i32.add
+            (get_local $p0)
+            (i32.const 1)))
+        (i32.store
+          (get_local $l1)
+          (get_local $p0))
+        (br $L1)))
+    (set_local $l1
+      (call $_rdtscp))
+    (set_local $p0
+      (i32.load
+        (get_local $l3)))
+    (set_local $p0
+      (i32.sub
+        (get_local $l1)
+        (get_local $p0)))
+    (i32.store
+      (get_local $l2)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l2)))
+    (set_global $g5
+      (get_local $l0))
+    (get_local $p0))
+  (func $_probetime_adv_10 (type $t1) (param $p0 i32) (result i32)
+    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32)
+    (set_local $l0
+      (get_global $g5))
+    (set_global $g5
+      (i32.add
+        (get_global $g5)
+        (i32.const 16)))
+    (set_local $l2
+      (i32.add
+        (get_local $l0)
+        (i32.const 8)))
+    (set_local $l3
+      (i32.add
+        (get_local $l0)
+        (i32.const 12)))
+    (set_local $l1
+      (i32.add
+        (get_local $l0)
+        (i32.const 4)))
+    (i32.store
+      (get_local $l0)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l0)))
+    (if $I0
+      (i32.eqz
+        (get_local $p0))
+      (then
+        (i32.store
+          (get_local $l2)
+          (i32.const 0))
+        (set_local $p0
+          (i32.load
+            (get_local $l2)))
+        (set_global $g5
+          (get_local $l0))
+        (return
+          (get_local $p0))))
+    (set_local $p0
+      (call $_rdtscp))
+    (i32.store
+      (get_local $l3)
+      (get_local $p0))
+    (i32.store
+      (get_local $l1)
+      (i32.const 0))
+    (loop $L1
+      (block $B2
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (br_if $B2
+          (i32.ge_s
+            (get_local $p0)
+            (i32.const 10)))
+        (set_local $p0
+          (i32.load
+            (get_local $l0)))
+        (set_local $p0
+          (i32.load
+            (get_local $p0)))
+        (i32.store
+          (get_local $l0)
+          (get_local $p0))
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (set_local $p0
+          (i32.add
+            (get_local $p0)
+            (i32.const 1)))
+        (i32.store
+          (get_local $l1)
+          (get_local $p0))
+        (br $L1)))
+    (set_local $l1
+      (call $_rdtscp))
+    (set_local $p0
+      (i32.load
+        (get_local $l3)))
+    (set_local $p0
+      (i32.sub
+        (get_local $l1)
+        (get_local $p0)))
+    (i32.store
+      (get_local $l2)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l2)))
+    (set_global $g5
+      (get_local $l0))
+    (get_local $p0))
+  (func $_probetime_adv_11 (type $t1) (param $p0 i32) (result i32)
+    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32)
+    (set_local $l0
+      (get_global $g5))
+    (set_global $g5
+      (i32.add
+        (get_global $g5)
+        (i32.const 16)))
+    (set_local $l2
+      (i32.add
+        (get_local $l0)
+        (i32.const 8)))
+    (set_local $l3
+      (i32.add
+        (get_local $l0)
+        (i32.const 12)))
+    (set_local $l1
+      (i32.add
+        (get_local $l0)
+        (i32.const 4)))
+    (i32.store
+      (get_local $l0)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l0)))
+    (if $I0
+      (i32.eqz
+        (get_local $p0))
+      (then
+        (i32.store
+          (get_local $l2)
+          (i32.const 0))
+        (set_local $p0
+          (i32.load
+            (get_local $l2)))
+        (set_global $g5
+          (get_local $l0))
+        (return
+          (get_local $p0))))
+    (set_local $p0
+      (call $_rdtscp))
+    (i32.store
+      (get_local $l3)
+      (get_local $p0))
+    (i32.store
+      (get_local $l1)
+      (i32.const 0))
+    (loop $L1
+      (block $B2
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (br_if $B2
+          (i32.ge_s
+            (get_local $p0)
+            (i32.const 11)))
+        (set_local $p0
+          (i32.load
+            (get_local $l0)))
+        (set_local $p0
+          (i32.load
+            (get_local $p0)))
+        (i32.store
+          (get_local $l0)
+          (get_local $p0))
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (set_local $p0
+          (i32.add
+            (get_local $p0)
+            (i32.const 1)))
+        (i32.store
+          (get_local $l1)
+          (get_local $p0))
+        (br $L1)))
+    (set_local $l1
+      (call $_rdtscp))
+    (set_local $p0
+      (i32.load
+        (get_local $l3)))
+    (set_local $p0
+      (i32.sub
+        (get_local $l1)
+        (get_local $p0)))
+    (i32.store
+      (get_local $l2)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l2)))
+    (set_global $g5
+      (get_local $l0))
+    (get_local $p0))
+  (func $_probetime_adv_12 (type $t1) (param $p0 i32) (result i32)
+    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32)
+    (set_local $l0
+      (get_global $g5))
+    (set_global $g5
+      (i32.add
+        (get_global $g5)
+        (i32.const 16)))
+    (set_local $l2
+      (i32.add
+        (get_local $l0)
+        (i32.const 8)))
+    (set_local $l3
+      (i32.add
+        (get_local $l0)
+        (i32.const 12)))
+    (set_local $l1
+      (i32.add
+        (get_local $l0)
+        (i32.const 4)))
+    (i32.store
+      (get_local $l0)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l0)))
+    (if $I0
+      (i32.eqz
+        (get_local $p0))
+      (then
+        (i32.store
+          (get_local $l2)
+          (i32.const 0))
+        (set_local $p0
+          (i32.load
+            (get_local $l2)))
+        (set_global $g5
+          (get_local $l0))
+        (return
+          (get_local $p0))))
+    (set_local $p0
+      (call $_rdtscp))
+    (i32.store
+      (get_local $l3)
+      (get_local $p0))
+    (i32.store
+      (get_local $l1)
+      (i32.const 0))
+    (loop $L1
+      (block $B2
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (br_if $B2
+          (i32.ge_s
+            (get_local $p0)
+            (i32.const 12)))
+        (set_local $p0
+          (i32.load
+            (get_local $l0)))
+        (set_local $p0
+          (i32.load
+            (get_local $p0)))
+        (i32.store
+          (get_local $l0)
+          (get_local $p0))
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (set_local $p0
+          (i32.add
+            (get_local $p0)
+            (i32.const 1)))
+        (i32.store
+          (get_local $l1)
+          (get_local $p0))
+        (br $L1)))
+    (set_local $l1
+      (call $_rdtscp))
+    (set_local $p0
+      (i32.load
+        (get_local $l3)))
+    (set_local $p0
+      (i32.sub
+        (get_local $l1)
+        (get_local $p0)))
+    (i32.store
+      (get_local $l2)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l2)))
+    (set_global $g5
+      (get_local $l0))
+    (get_local $p0))
+  (func $_probetime_adv_13 (type $t1) (param $p0 i32) (result i32)
+    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32)
+    (set_local $l0
+      (get_global $g5))
+    (set_global $g5
+      (i32.add
+        (get_global $g5)
+        (i32.const 16)))
+    (set_local $l2
+      (i32.add
+        (get_local $l0)
+        (i32.const 8)))
+    (set_local $l3
+      (i32.add
+        (get_local $l0)
+        (i32.const 12)))
+    (set_local $l1
+      (i32.add
+        (get_local $l0)
+        (i32.const 4)))
+    (i32.store
+      (get_local $l0)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l0)))
+    (if $I0
+      (i32.eqz
+        (get_local $p0))
+      (then
+        (i32.store
+          (get_local $l2)
+          (i32.const 0))
+        (set_local $p0
+          (i32.load
+            (get_local $l2)))
+        (set_global $g5
+          (get_local $l0))
+        (return
+          (get_local $p0))))
+    (set_local $p0
+      (call $_rdtscp))
+    (i32.store
+      (get_local $l3)
+      (get_local $p0))
+    (i32.store
+      (get_local $l1)
+      (i32.const 0))
+    (loop $L1
+      (block $B2
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (br_if $B2
+          (i32.ge_s
+            (get_local $p0)
+            (i32.const 13)))
+        (set_local $p0
+          (i32.load
+            (get_local $l0)))
+        (set_local $p0
+          (i32.load
+            (get_local $p0)))
+        (i32.store
+          (get_local $l0)
+          (get_local $p0))
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (set_local $p0
+          (i32.add
+            (get_local $p0)
+            (i32.const 1)))
+        (i32.store
+          (get_local $l1)
+          (get_local $p0))
+        (br $L1)))
+    (set_local $l1
+      (call $_rdtscp))
+    (set_local $p0
+      (i32.load
+        (get_local $l3)))
+    (set_local $p0
+      (i32.sub
+        (get_local $l1)
+        (get_local $p0)))
+    (i32.store
+      (get_local $l2)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l2)))
+    (set_global $g5
+      (get_local $l0))
+    (get_local $p0))
+  (func $_probetime_adv_14 (type $t1) (param $p0 i32) (result i32)
+    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32)
+    (set_local $l0
+      (get_global $g5))
+    (set_global $g5
+      (i32.add
+        (get_global $g5)
+        (i32.const 16)))
+    (set_local $l2
+      (i32.add
+        (get_local $l0)
+        (i32.const 8)))
+    (set_local $l3
+      (i32.add
+        (get_local $l0)
+        (i32.const 12)))
+    (set_local $l1
+      (i32.add
+        (get_local $l0)
+        (i32.const 4)))
+    (i32.store
+      (get_local $l0)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l0)))
+    (if $I0
+      (i32.eqz
+        (get_local $p0))
+      (then
+        (i32.store
+          (get_local $l2)
+          (i32.const 0))
+        (set_local $p0
+          (i32.load
+            (get_local $l2)))
+        (set_global $g5
+          (get_local $l0))
+        (return
+          (get_local $p0))))
+    (set_local $p0
+      (call $_rdtscp))
+    (i32.store
+      (get_local $l3)
+      (get_local $p0))
+    (i32.store
+      (get_local $l1)
+      (i32.const 0))
+    (loop $L1
+      (block $B2
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (br_if $B2
+          (i32.ge_s
+            (get_local $p0)
+            (i32.const 14)))
+        (set_local $p0
+          (i32.load
+            (get_local $l0)))
+        (set_local $p0
+          (i32.load
+            (get_local $p0)))
+        (i32.store
+          (get_local $l0)
+          (get_local $p0))
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (set_local $p0
+          (i32.add
+            (get_local $p0)
+            (i32.const 1)))
+        (i32.store
+          (get_local $l1)
+          (get_local $p0))
+        (br $L1)))
+    (set_local $l1
+      (call $_rdtscp))
+    (set_local $p0
+      (i32.load
+        (get_local $l3)))
+    (set_local $p0
+      (i32.sub
+        (get_local $l1)
+        (get_local $p0)))
+    (i32.store
+      (get_local $l2)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l2)))
+    (set_global $g5
+      (get_local $l0))
+    (get_local $p0))
+  (func $_probetime_adv_15 (type $t1) (param $p0 i32) (result i32)
+    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32)
+    (set_local $l0
+      (get_global $g5))
+    (set_global $g5
+      (i32.add
+        (get_global $g5)
+        (i32.const 16)))
+    (set_local $l2
+      (i32.add
+        (get_local $l0)
+        (i32.const 8)))
+    (set_local $l3
+      (i32.add
+        (get_local $l0)
+        (i32.const 12)))
+    (set_local $l1
+      (i32.add
+        (get_local $l0)
+        (i32.const 4)))
+    (i32.store
+      (get_local $l0)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l0)))
+    (if $I0
+      (i32.eqz
+        (get_local $p0))
+      (then
+        (i32.store
+          (get_local $l2)
+          (i32.const 0))
+        (set_local $p0
+          (i32.load
+            (get_local $l2)))
+        (set_global $g5
+          (get_local $l0))
+        (return
+          (get_local $p0))))
+    (set_local $p0
+      (call $_rdtscp))
+    (i32.store
+      (get_local $l3)
+      (get_local $p0))
+    (i32.store
+      (get_local $l1)
+      (i32.const 0))
+    (loop $L1
+      (block $B2
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (br_if $B2
+          (i32.ge_s
+            (get_local $p0)
+            (i32.const 15)))
+        (set_local $p0
+          (i32.load
+            (get_local $l0)))
+        (set_local $p0
+          (i32.load
+            (get_local $p0)))
+        (i32.store
+          (get_local $l0)
+          (get_local $p0))
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (set_local $p0
+          (i32.add
+            (get_local $p0)
+            (i32.const 1)))
+        (i32.store
+          (get_local $l1)
+          (get_local $p0))
+        (br $L1)))
+    (set_local $l1
+      (call $_rdtscp))
+    (set_local $p0
+      (i32.load
+        (get_local $l3)))
+    (set_local $p0
+      (i32.sub
+        (get_local $l1)
+        (get_local $p0)))
+    (i32.store
+      (get_local $l2)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l2)))
+    (set_global $g5
+      (get_local $l0))
+    (get_local $p0))
+  (func $_probetime_adv_16 (type $t1) (param $p0 i32) (result i32)
+    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32)
+    (set_local $l0
+      (get_global $g5))
+    (set_global $g5
+      (i32.add
+        (get_global $g5)
+        (i32.const 16)))
+    (set_local $l2
+      (i32.add
+        (get_local $l0)
+        (i32.const 8)))
+    (set_local $l3
+      (i32.add
+        (get_local $l0)
+        (i32.const 12)))
+    (set_local $l1
+      (i32.add
+        (get_local $l0)
+        (i32.const 4)))
+    (i32.store
+      (get_local $l0)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l0)))
+    (if $I0
+      (i32.eqz
+        (get_local $p0))
+      (then
+        (i32.store
+          (get_local $l2)
+          (i32.const 0))
+        (set_local $p0
+          (i32.load
+            (get_local $l2)))
+        (set_global $g5
+          (get_local $l0))
+        (return
+          (get_local $p0))))
+    (set_local $p0
+      (call $_rdtscp))
+    (i32.store
+      (get_local $l3)
+      (get_local $p0))
+    (i32.store
+      (get_local $l1)
+      (i32.const 0))
+    (loop $L1
+      (block $B2
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (br_if $B2
+          (i32.ge_s
+            (get_local $p0)
+            (i32.const 16)))
+        (set_local $p0
+          (i32.load
+            (get_local $l0)))
+        (set_local $p0
+          (i32.load
+            (get_local $p0)))
+        (i32.store
+          (get_local $l0)
+          (get_local $p0))
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (set_local $p0
+          (i32.add
+            (get_local $p0)
+            (i32.const 1)))
+        (i32.store
+          (get_local $l1)
+          (get_local $p0))
+        (br $L1)))
+    (set_local $l1
+      (call $_rdtscp))
+    (set_local $p0
+      (i32.load
+        (get_local $l3)))
+    (set_local $p0
+      (i32.sub
+        (get_local $l1)
+        (get_local $p0)))
+    (i32.store
+      (get_local $l2)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l2)))
+    (set_global $g5
+      (get_local $l0))
+    (get_local $p0))
+  (func $_probetime_split_2 (type $t1) (param $p0 i32) (result i32)
+    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32) (local $l4 i32)
+    (set_local $l0
+      (get_global $g5))
+    (set_global $g5
+      (i32.add
+        (get_global $g5)
+        (i32.const 32)))
+    (set_local $l2
+      (i32.add
+        (get_local $l0)
+        (i32.const 12)))
+    (set_local $l1
+      (i32.add
+        (get_local $l0)
+        (i32.const 16)))
+    (set_local $l4
+      (i32.add
+        (get_local $l0)
+        (i32.const 8)))
+    (i32.store
+      (tee_local $l3
+        (i32.add
+          (get_local $l0)
+          (i32.const 4)))
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l3)))
+    (if $I0
+      (i32.eqz
+        (get_local $p0))
+      (then
+        (i32.store
+          (get_local $l2)
+          (i32.const 0))
+        (set_local $p0
+          (i32.load
+            (get_local $l2)))
+        (set_global $g5
+          (get_local $l0))
+        (return
+          (get_local $p0))))
+    (set_local $p0
+      (i32.load
+        (get_local $l3)))
+    (set_local $p0
+      (i32.add
+        (get_local $p0)
+        (i32.const 4)))
+    (i32.store
+      (get_local $l1)
+      (get_local $p0))
+    (set_local $p0
+      (call $_rdtscp))
+    (i32.store
+      (get_local $l4)
+      (get_local $p0))
+    (i32.store
+      (get_local $l0)
+      (i32.const 0))
+    (loop $L1
+      (block $B2
+        (set_local $p0
+          (i32.load
+            (get_local $l0)))
+        (br_if $B2
+          (i32.ge_s
+            (get_local $p0)
+            (i32.const 8)))
+        (set_local $p0
+          (i32.load
+            (get_local $l3)))
+        (set_local $p0
+          (i32.load
+            (get_local $p0)))
+        (i32.store
+          (get_local $l3)
+          (get_local $p0))
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (set_local $p0
+          (i32.load
+            (get_local $p0)))
+        (i32.store
+          (get_local $l1)
+          (get_local $p0))
+        (set_local $p0
+          (i32.load
+            (get_local $l0)))
+        (set_local $p0
+          (i32.add
+            (get_local $p0)
+            (i32.const 1)))
+        (i32.store
+          (get_local $l0)
+          (get_local $p0))
+        (br $L1)))
+    (set_local $l1
+      (call $_rdtscp))
+    (set_local $p0
+      (i32.load
+        (get_local $l4)))
+    (set_local $p0
+      (i32.sub
+        (get_local $l1)
+        (get_local $p0)))
+    (i32.store
+      (get_local $l2)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l2)))
+    (set_global $g5
+      (get_local $l0))
+    (get_local $p0))
+  (func $_probetime_split_4 (type $t1) (param $p0 i32) (result i32)
+    (local $l0 i32) (local $l1 i32) (local $l2 i32) (local $l3 i32) (local $l4 i32) (local $l5 i32) (local $l6 i32)
+    (set_local $l0
+      (get_global $g5))
+    (set_global $g5
+      (i32.add
+        (get_global $g5)
+        (i32.const 32)))
+    (set_local $l3
+      (i32.add
+        (get_local $l0)
+        (i32.const 20)))
+    (set_local $l4
+      (i32.add
+        (get_local $l0)
+        (i32.const 24)))
+    (set_local $l5
+      (i32.add
+        (get_local $l0)
+        (i32.const 16)))
+    (set_local $l2
+      (i32.add
+        (get_local $l0)
+        (i32.const 8)))
+    (set_local $l6
+      (i32.add
+        (get_local $l0)
+        (i32.const 4)))
+    (i32.store
+      (tee_local $l1
+        (i32.add
+          (get_local $l0)
+          (i32.const 12)))
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l1)))
+    (if $I0
+      (i32.eqz
+        (get_local $p0))
+      (then
+        (i32.store
+          (get_local $l3)
+          (i32.const 0))
+        (set_local $p0
+          (i32.load
+            (get_local $l3)))
+        (set_global $g5
+          (get_local $l0))
+        (return
+          (get_local $p0))))
+    (set_local $p0
+      (i32.load
+        (get_local $l1)))
+    (set_local $p0
+      (i32.add
+        (get_local $p0)
+        (i32.const 16)))
+    (i32.store
+      (get_local $l4)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l1)))
+    (set_local $p0
+      (i32.add
+        (get_local $p0)
+        (i32.const 32)))
+    (i32.store
+      (get_local $l5)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l1)))
+    (set_local $p0
+      (i32.add
+        (get_local $p0)
+        (i32.const 48)))
+    (i32.store
+      (get_local $l2)
+      (get_local $p0))
+    (set_local $p0
+      (call $_rdtscp))
+    (i32.store
+      (get_local $l6)
+      (get_local $p0))
+    (i32.store
+      (get_local $l0)
+      (i32.const 0))
+    (loop $L1
+      (block $B2
+        (set_local $p0
+          (i32.load
+            (get_local $l0)))
+        (br_if $B2
+          (i32.ge_s
+            (get_local $p0)
+            (i32.const 4)))
+        (set_local $p0
+          (i32.load
+            (get_local $l1)))
+        (set_local $p0
+          (i32.load
+            (get_local $p0)))
+        (i32.store
+          (get_local $l1)
+          (get_local $p0))
+        (set_local $p0
+          (i32.load
+            (get_local $l4)))
+        (set_local $p0
+          (i32.load
+            (get_local $p0)))
+        (i32.store
+          (get_local $l4)
+          (get_local $p0))
+        (set_local $p0
+          (i32.load
+            (get_local $l5)))
+        (set_local $p0
+          (i32.load
+            (get_local $p0)))
+        (i32.store
+          (get_local $l5)
+          (get_local $p0))
+        (set_local $p0
+          (i32.load
+            (get_local $l2)))
+        (set_local $p0
+          (i32.load
+            (get_local $p0)))
+        (i32.store
+          (get_local $l2)
+          (get_local $p0))
+        (set_local $p0
+          (i32.load
+            (get_local $l0)))
+        (set_local $p0
+          (i32.add
+            (get_local $p0)
+            (i32.const 1)))
+        (i32.store
+          (get_local $l0)
+          (get_local $p0))
+        (br $L1)))
+    (set_local $l2
+      (call $_rdtscp))
+    (set_local $p0
+      (i32.load
+        (get_local $l6)))
+    (set_local $p0
+      (i32.sub
+        (get_local $l2)
+        (get_local $p0)))
+    (i32.store
+      (get_local $l3)
+      (get_local $p0))
+    (set_local $p0
+      (i32.load
+        (get_local $l3)))
+    (set_global $g5
+      (get_local $l0))
     (get_local $p0))
   (func $_get_probetime_by_type (type $t1) (param $p0 i32) (result i32)
     (local $l0 i32)
@@ -20939,7 +22946,7 @@
   (global $g7 (mut i32) (i32.const 0))
   (global $g8 (mut i32) (i32.const 0))
   (global $g9 (mut i32) (i32.const 0))
-  (elem (get_global $env.tableBase) $b0 $___stdio_close $_probetime $_probetime_adv_1 $_probetime_adv_1 $_probetime_adv_1 $_probetime_adv_1 $_probetime_adv_1 $_probetime_adv_1 $_probetime_adv_1 $_probetime_adv_1 $_probetime_adv_1 $_probetime_adv_1 $_probetime_adv_1 $_probetime_adv_1 $_probetime_adv_1 $_probetime_adv_1 $_probetime_adv_1 $_probetime_adv_1 $_probetime_adv_1 $_probetime_adv_1 $b0 $b0 $b0 $b0 $b0 $b0 $b0 $b0 $b0 $b0 $b0 $b1 $___stdout_write $___stdio_seek $___stdio_write $b2)
+  (elem (get_global $env.tableBase) $b0 $___stdio_close $_probetime $_probetime_split_2 $_probetime_split_4 $_probetime_adv_1 $_probetime_adv_2 $_probetime_adv_3 $_probetime_adv_4 $_probetime_adv_5 $_probetime_adv_6 $_probetime_adv_7 $_probetime_adv_8 $_probetime_adv_9 $_probetime_adv_10 $_probetime_adv_11 $_probetime_adv_12 $_probetime_adv_13 $_probetime_adv_14 $_probetime_adv_15 $_probetime_adv_16 $b0 $b0 $b0 $b0 $b0 $b0 $b0 $b0 $b0 $b0 $b0 $b1 $___stdout_write $___stdio_seek $___stdio_write $b2)
   (data (i32.const 1024) "\10'\00\00\08\04\00\00\05")
   (data (i32.const 1044) "\01")
   (data (i32.const 1068) "\01\00\00\00\02\00\00\00h\17\00\00\00\04")

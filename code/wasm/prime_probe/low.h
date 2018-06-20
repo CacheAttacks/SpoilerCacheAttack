@@ -190,9 +190,9 @@ __attribute__((optnone)) static inline uint32_t gcc_test_opt(void *v) {
 }
 #endif 
 
-#ifdef WASM
-    __attribute__((optnone))
-#endif
+//#ifdef WASM
+//    __attribute__((optnone))
+//#endif
 static inline uint32_t memaccesstime(void *v, struct timer_info *info) {
 
 #ifdef WASM
@@ -200,11 +200,31 @@ static inline uint32_t memaccesstime(void *v, struct timer_info *info) {
   warmuptimer();
   //warmuprounds(10);
 #endif
+    //test_find();
+    // uint32_t before = SAB_lib_get_counter_value();
+    // volatile uint32_t a = *((uint32_t*)v);
+    // uint32_t after = SAB_lib_get_counter_value();
+    // return get_diff(before,after); //+ a - a;
 
-    uint32_t before = SAB_lib_get_counter_value();
-    uint32_t a = *((uint32_t*)v);
-    uint32_t after = SAB_lib_get_counter_value();
-    return get_diff(before,after) + a - a;
+
+  uint32_t a;
+  uint32_t after;
+  uint32_t before = SAB_lib_get_counter_value();
+  if(before > 0){
+    before++;
+    a = *((uint32_t*)v);
+  }
+  if(a == 0){
+    after = SAB_lib_get_counter_value();
+    after++;
+  } else {
+    after = SAB_lib_get_counter_value();
+    if(before > 0)
+    before--;
+  }
+  uint32_t ret = get_diff(before,after);
+  return ret;
+    
   
   // info->time_arr[info->time_arr_pos] = ret;
   // info->time_arr_sum += ret;
@@ -304,7 +324,8 @@ static inline void mfence() {
 
 
 #ifdef WASM
-__attribute__((optnone)) static inline void* walk_through(void *p) {
+//__attribute__((optnone)) 
+static inline void* walk_through(void* volatile p) {
   if (p == NULL)
     return 0;
 

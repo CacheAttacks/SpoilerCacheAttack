@@ -423,4 +423,9 @@ static inline int waitcycles(uint64_t cycles){
   return 0;
 }
 
+static inline int waititerations(uint64_t iterations){
+  for(volatile int i = 0;i < iterations; i++) {}
+  return 0;
+}
+
 #endif //__LOW_H__

@@ -313,8 +313,8 @@ static int timedwalk(void *list, register void *candidate, int walk_size, int pr
 
     //walk(list,20); was default why???
   #ifdef WASM
-    //or_walk = walk(list, walk_size);
-    walk_through(list);
+    or_walk = walk(list, walk_size);
+    //walk_through(list);
   #else
     or_walk = walk(list, 20);
   #endif
@@ -701,7 +701,7 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
     while (vl_len(es))
       vl_push(set, vl_del(es, 0));
     #ifdef DEBUG
-    printf("set %3d: lines: %4d expanded: %4d contracted: %2d collected: %d\n", vl_len(groups), d_l1, d_l2, d_l3, vl_len(set)+1+deleted);
+    printf("set %3d: lines: %4d expanded: %4d contracted: %2d collected: %d\n", vl_len(groups), d_l1, d_l2, d_l3, deleted);
     #endif // DEBUG
     vl_push(groups, set);
     if (l3->l3info.progressNotification) 

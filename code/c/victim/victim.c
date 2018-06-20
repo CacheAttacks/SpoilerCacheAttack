@@ -15,6 +15,7 @@
 #include "l3.h"
 #include "es_management.h"
 #include "probe.h"
+#include "NSS/freebl/rsa.c"
 
 #define SIZE 2048
 #define ARRAYS 100
@@ -192,9 +193,9 @@ int main(int argc, char ** argv) {
   //reapeat sync 30 min 10 steps high
 
   char* command = calloc(sizeof(char), 128);
-  int wait_cycles = 30000;
+  int wait_cycles = 5000;
   int repeat_probe = 1;
-  int sync_repeat = 1000;
+  int sync_repeat = 100;
   while(1){
     printf("enter command e.g. w 10 , s 12:213 , c %i , r %i , n 10 , y %i, p 0 10, b \n", wait_cycles, repeat_probe, sync_repeat);
     fgets(command, 128, stdin);
@@ -222,7 +223,7 @@ int main(int argc, char ** argv) {
       uint64_t before = get_time_in_ms(), before_print, after_print;
       while(get_time_in_ms() - before < 1000 * wait_time_sec){
         before_print = rdtscp64();
-        print_bitstr_covert_channel(printbitstr, get_probe_only_by_type(type), this_app_state->l3->monitoredhead, COMMUNICATION_CHANNEL_OFFSET_START, COMMUNICATION_CHANNEL_OFFSET_END, repeat_probe, sync_repeat, &waitcycles, wait_cycles);
+        print_bitstr_covert_channel(printbitstr, get_probe_only_by_type(type), this_app_state->l3->monitoredhead, COMMUNICATION_CHANNEL_OFFSET_START, COMMUNICATION_CHANNEL_OFFSET_END, repeat_probe, sync_repeat, &waititerations, wait_cycles);
         after_print = rdtscp64();
       }
       printf("last print bitstr time %" PRIu64 "\n", after_print - before_print);
