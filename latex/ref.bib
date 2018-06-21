@@ -1,9 +1,123 @@
-@article{Dijkstra1959,
-  author = {Dijkstra, Edsger W.},
-  title = {{A Note on Two Problems in Connexion with Graphs}},
-  journal = {Numerische Mathematik},
-  year = {1959},
-  volume = {1},
-  number = {1},
-  pages = {pp.\ 269--271}
+@misc{CacheStatsHaswell,
+  author = {Intel},
+  title = {Intel® 64 and IA-32 Architectures
+Optimization Reference Manual},
+  pages = {2-11},
+  year = {2016},
+  howpublished = {https://www.intel.co.uk/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-optimization-manual.pdf},
+  note = {Accessed: 2018-06-14},
+}
+
+@misc{CacheRyzen,
+  title = {The AMD Zen and Ryzen 7 Review: A Deep Dive on 1800X, 1700X and 1700},
+  author = {Ian Cutress}, 
+  howpublished = {https://www.anandtech.com/show/11170/the-amd-zen-and-ryzen-7-review-a-deep-dive-on-1800x-1700x-and-1700/9},
+  year = {2017},
+  note = {Accessed: 2018-06-14},
+}
+
+@misc{CacheSkylakeX,
+  title = {Intel Announces Skylake-X: Bringing 18-Core HCC Silicon to Consumers for \$1999},
+  author = {Ian Cutress}, 
+  howpublished = {https://www.anandtech.com/show/11464/intel-announces-skylakex-bringing-18core-hcc-silicon-to-consumers-for-1999/3},
+  year = {2017},
+  note = {Accessed: 2018-06-14},
+}
+
+@misc{DriveByPaper,
+    author = {Daniel Genkin and Lev Pachmanov and Eran Tromer and Yuval Yarom},
+    title = {Drive-by Key-Extraction Cache Attacks from Portable Code},
+    howpublished = {Cryptology ePrint Archive, Report 2018/119},
+    year = {2018},
+    note = {\url{https://eprint.iacr.org/2018/119}},
+}
+
+
+@misc{AMDIntelMarketShare,
+  title = {AMD vs Intel Market Share},
+  author = {PassMark}, 
+  howpublished = {https://www.cpubenchmark.net/market_share.html},
+  year = {2018},
+  note = {Accessed: 2018-06-16},
+}
+
+@misc{CacheReplacementPolicy,
+author={Henry Wong},
+title={{Intel Ivy Bridge} Cache Replacement Policy},
+month={jan},
+year=2013,
+url={http://blog.stuffedcow.net/2013/01/ivb-cache-replacement/},
+note = {Accessed: 2018-06-16}
+}
+
+@TECHREPORT{BernsteinAES,
+    author = {Daniel J. Bernstein},
+    title = {Cache-timing attacks on AES},
+    institution = {},
+    year = {2005}
+}
+
+
+@InProceedings{FantasticTimers,
+author="Schwarz, Michael
+and Maurice, Cl{\'e}mentine
+and Gruss, Daniel
+and Mangard, Stefan",
+editor="Kiayias, Aggelos",
+title="Fantastic Timers and Where to Find Them: High-Resolution Microarchitectural Attacks in JavaScript",
+booktitle="Financial Cryptography and Data Security",
+year="2017",
+publisher="Springer International Publishing",
+address="Cham",
+pages="247--267",
+abstract="Research showed that microarchitectural attacks like cache attacks can be performed through websites using JavaScript. These timing attacks allow an adversary to spy on users secrets such as their keystrokes, leveraging fine-grained timers. However, the W3C and browser vendors responded to this significant threat by eliminating fine-grained timers from JavaScript. This renders previous high-resolution microarchitectural attacks non-applicable.",
+isbn="978-3-319-70972-7"
+}
+
+@InProceedings{BSIRSAKeyGeneration,
+author="Finke, Thomas
+and Gebhardt, Max
+and Schindler, Werner",
+editor="Clavier, Christophe
+and Gaj, Kris",
+title="A New Side-Channel Attack on RSA Prime Generation",
+booktitle="Cryptographic Hardware and Embedded Systems - CHES 2009",
+year="2009",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="141--155",
+abstract="We introduce and analyze a side-channel attack on a straight-forward implementation of the RSA key generation step. The attack exploits power information that allows to determine the number of the trial divisions for each prime candidate. Practical experiments are conducted, and countermeasures are proposed. For realistic parameters the success probability of our attack is in the order of 10--15 {\%}.",
+isbn="978-3-642-04138-9"
+}
+
+@article{RSAKeyGeneration2,
+author = {Cabrera Aldaya, Alejandro and Pereida García, Cesar and Alvarez Tapia, Luis and Bob Brumley, Billy},
+year = {2018},
+month = {04},
+pages = {},
+title = {Cache-Timing Attacks on RSA Key Generation}
+}
+
+@inproceedings{TheSpyInTheSandbox,
+ author = {Oren, Yossef and Kemerlis, Vasileios P. and Sethumadhavan, Simha and Keromytis, Angelos D.},
+ title = {The Spy in the Sandbox: Practical Cache Attacks in JavaScript and Their Implications},
+ booktitle = {Proceedings of the 22Nd ACM SIGSAC Conference on Computer and Communications Security},
+ series = {CCS '15},
+ year = {2015},
+ isbn = {978-1-4503-3832-5},
+ location = {Denver, Colorado, USA},
+ pages = {1406--1418},
+ numpages = {13},
+ url = {http://doi.acm.org/10.1145/2810103.2813708},
+ doi = {10.1145/2810103.2813708},
+ acmid = {2813708},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {cache-timing attacks, covert channel, javascript-based cache attacks, side-channel attacks, user tracking},
+} 
+
+@inproceedings{CacheAttackRSA,
+  title={Cache Missing for Fun and Profit},
+  author={Colin Percival},
+  year={2005}
 }

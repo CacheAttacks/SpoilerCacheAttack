@@ -1,5 +1,86 @@
-\chapter{Methods, Design or Preliminaries}
+\chapter{Implementierung}
 \label{chapter:preparation}
 
-% Describe your methods here
-\Blindtext
+Das folgende Kapitel beschreibt mit Hilfe welcher Softwaretools der Cache-Angriff implementiert wird.
+
+Um das allgemeinere und praxisnähere Angriffsmodell umsetzen und den Angriff schon durch den Besuch einer Website zu starten, liegt der komplette Angriffscode in JavaScript und Webassembly vor. Frühere Implementierungen von Cache-Angriffen im Browser \cite{TheSpyInTheSandbox} hatten noch keine Möglichkeit Webassembly zu verwenden, weshalb diese den kompletten Angriffscode in JavaScript schreiben mussten. Webassembly ermöglicht hardwarenähere Programmierung und dem Vorteil, dass Code nicht wie in JavaScript während Laufzeit optimiert wird. Des Weiteren steht mit dem emscripten-Compiler ein Tool bereit, welches die Übersetzung von C-Code in Webassembly anbietet. Somit kann bestehender Angriffscode in C, in diesem Fall von Mastik, als Grundlage verwendet werden, und eine komplette fehleranfällige Neuimplementierung in JavaScript entfällt.
+
+
+\section{Timer in JavaScript}
+
+Der hier ausgeführte Cache-Angriff benötigt präzise Timer, welche ein Auflösung von unter x ns bereitstellen sollten. Wie im Diagramm zu sehen (TODO diagram einfügen) ist Zugriffs einem Cache-Miss im Mittel x ns höher als bei einem Cache-Miss. Das heißt bei einer Auflösung von x ns lässt sich nicht mehr in allen Fällen ein Miss von einem Hit unterscheiden. Dennoch lässt sich die Suche nach Eviction-Sets auch mit schlechteren Timerauflösungen bewerkstelligen, indem Operationen mehrfach ausgeführt werden und die Differenz der aufsummierten Zeiten zur Bewertung herangezogen wird. Im Eviction-Set Algorithmus könnte etwa die Funktion $checkevict$ wie in \ref{alg:checkevict_low_resolution} angepasst werden, wobei der Parameter $repeatIterations$ abhängig von Timerauflösung gewählt wird. Weiter besteht jedoch das Problem schwache Aktivitäten im Cache-Set währen des eigentlichen Angriffs aufzudecken, da im Worst-Case nur ein Eintrag aus dem beobachteten Cache-Set verdrängt wird und somit lediglich die Zugriffszeit zwischen einem Hit und Miss ausschlaggebend ist. In diesem Fall könnte die Dauer mehrerer Prime+Probe Iterationen gesamtheitlich gemessen werden, und zwar in der Vermutung, dass auf die für die Verdrängung verantwortliche Adresse über die Zeit mehrfach zugegriffen wird. Die direkten Auswirkungen eines niedrig aufgelösten Timers sind also eine geringere zeitliche Auflösung oder die Nichtregestrierung von schwachen Cache-Aktivitäten.
+
+\begin{algorithm}[h]
+\DontPrintSemicolon
+\caption{Psuedo-Code für $checkevict$ im Fall von einer niedrig aufgelösten getTimestamp}
+\label{alg:checkevict_low_resolution}
+
+\Fn{$checkevict(possibleEvictionSet, witness)$}{
+    timestampBefore <- getTimestamp()\;
+    \For{i=1 to repeatIterations}{
+        accessMemory(possibleEvictionSet)\;
+        accessMemory(witness)\;
+    }
+	timestampAfter <- getTimestamp()\;
+	\Return timestampAfter - timestampBefore > threshold;
+}
+
+\end{algorithm}
+
+Der W3C hat die High Resolution Time API spezifiziert, welche die Methode performance.now() beinhaltet, die einen aktuellen Timestamp zurückgibt. Im Firefox hatte die Methode in früheren Versionen eine hinreichend genaue Auflösung im Nanosekundenbereich, wobei in Reaktion auf die Sicherheitslücken Meltdown und Spectre die Auflösung schrittweise auf 2ms im aktuellen Firefox 60 abgesenkt wurde. Auch in den Browsern Edge und Chrome wurden im Zuge der Veröffentlichung von Meltdown und Spectre die Auflösung von perfomance.now() verringert, allerdings wird auf den zurückgegebenen Timestamp zusätzlich ein Timerjitter addiert. So bieten Edge und Chrome zurzeit (Stand Juni 18) eine Auflösung von 20us + 20us Jitter respektive 100us + 100us Jitter.
+Das Paper "Fantastic Timers and where to find them" beschreibt diverse andere Methoden um mit Hilfe von JavaScript Timer zu generieren. Allerdings ist nur eine geeignete Methode dabei, da die Auflösung aller anderen mindestens im hohen einstelligen us Bereich liegt und somit der Parameter $repeatIterations$ auf Werte oberhalb von TODO x gesetzt werden müsste, um zuverlässig Eviction Sets zu finden. Hierdurch würde die benötigte Ausführungszeit zum Finden der Eviction Sets auf ein Maß ansteigen, welches dann nicht mehr zum angenommenen Angriffsmodell passen würde.
+
+\subsection{Verdeckter Kanal}
+
+Die maximale Sendegeschwindigkeit eines Kanals ist durch die Rate mit welcher der Sender ein beliebiges Cache-Set primen kann, begrenzt.
+Damit der Empfänger ein zufälliges Rauschen von einem Priming unterscheiden kann, sollte der Sender mehrere Einträge aus dem zu primenden Cache-Set verdrängen, wobei im Optimalfall die Anzahl der zugegriffenen Speicheradressen der Assoziativität des Caches entspricht.
+Hiermit wird die Wahrscheinlichkeit erhöht, dass sich die vom Empfänger im Probe-Schritt gemessene Zugriffszeit signifikant von Fällen unterscheidet in denen zufällig einzelne Einträge aus dem überwachten Cache-Set verdrängt werden. 
+%Daraus folgernd nehmen wir an, dass der Sender in seiner Priming-Phase auf der Assoziativität entsprechend viele Speicheradressen zugreift.
+Im Folgenden sollen verschiedene Methoden verglichen werden um ein Cache-Set zu primen, indem entweder die Anzahl der zugegriffen Speicheradressen oder die Zugriffsmethode verändert wird.
+Wenn etwa die Anzahl der zugeriffenen Speicheraddressen veringert wird, sind auf der einen Seite mehr Timeslots in einem Zeitabschnitt möglich und die Chance, dass benachbarte Timeslots zusätzlich beeinflusst werden, sinkt. Auf der anderen Seite sind die messbaren Ausschläge der Zugriffszeiten verringert, wodurch ein bewusst geprimtes Cache-Set schwieriger von einem Messrauschen oder zufälligen Zugriffen unterschieden werden kann.
+Sende- und Empfangsseite können durchaus abweichende Parameter verwenden, wenn wie etwa im vorliegenden Fall der Empfänger langsamer als der Sender arbeitet. Um die Timeslots anzugleichen, könnte der Empfänger die Dauer für eine Priming-Operation durch die Senkung der Anzahl der zugegriffenen Speicheraddressen verringern und der Empfänger andersherum die Dauer für eine Priming-Operation erhöhen. 
+
+\begin{algorithm}[h]
+\DontPrintSemicolon
+\caption{Psuedo-Code für Pointer-Chasing-Methode}
+\label{alg:pointerChasing}
+
+\Fn{$AccessTimeEvictionSet(pointerToAddress)$}{
+    pointerToAddressFirst $\leftarrow$ pointerToAddress\;
+    timestampBefore $\leftarrow$ getTimeStamp()\;
+    \While{pointerToAddressFirst != pointerToAddress}{
+        pointerToAddress $\leftarrow$ readValue(pointerToAddress)\;
+    }
+    \Return getTimeStamp() - timestampBefore
+}
+
+\end{algorithm}
+
+Auf dem Testrechner benötigt ein in C geschriebenes Sendeprogramm für eine Million Prime-Vorgänge mit 16 Adressen und der Single-Pointer-Chasing-Methode (siehe Algorithmus \ref{alg:pointerChasing}) etwa 323 Millionen Taktzyklen.
+Im Optimalfall kann im Timeslot $x$ ein erfolgter Prime-Vorgang als 1 und ein nicht erfolgter Prime-Vorgang als 0 interpretiert werden.
+Bei einem typischen All-Core Turbo Takt von 3,4 Ghz des i7-4770 ergibt sich so eine maximale Senderate von ~10,5 Mbit/s.
+Diese Rate wird jedoch vom Empfänger beschränkt, welcher zusätzlich noch eine Zeitmessung durchführen muss. Der Worst-Case ist hier ein in Webassembly geschriebener Empfänger, da dort eine Zeitmessung kostenintensiver ist. In Chromium 66 können
+eine Million Messungen eines Cache-Sets in etwa 200ms durchgeführt werden. Im Mittel dauert eine Messung also 0,2µs, womit ein Empfangsrate von maximal ~5 MBit/s realisiert werden kann.
+
+%Um die Performance zu erhöhen kann wie erwähnt die Anzahl der zugegriffen Speicheradressen reduziert werden. 
+Im Folgenden soll die maximal mögliche Senderate unter optimalen Bedingungen ermittelt werden. Hierfür wird im Voraus ein Cache-Set ausgewählt auf dem im Idle-Zustand des Systems ein geringes Rauschen herrscht.
+Um die Synchronisation des Senders und Empfängers aufrechtzuerhalten, wird nach 10 gesendeten Bits ein Synchronisationsblock eingefügt, welcher durch $sb$ Prime-Vorgänge auf der Senderseite erzeugt wird. 
+Eine 1 wird durch $s$ Prime-Vorgänge repräsentiert und eine 0 durch das Unterlassen der Prime-Vorgänge. 
+Um die einzelnen Bits auseinanderzuhalten wird zwischen jedem gesendeten Bit eine Pause von $p$ Taktzyklen eingelegt.
+
+%Um einen Kanal zu Initialisieren 
+
+
+%TODO: benchmark cache set finder
+%entwickle bessere benchmark prozedur, messe zeit für contract jedes es und mittle dann
+
+
+%Problem: v8 compiliert lazy, d.h. nur häufig verwendete
+
+\subsection{Angriffe auf RSA Key Generierung}
+
+Details zu Implementierung in Mozilla NSS
+
+Was wird angegriffen
+
+Verweis auf Paper Cache-Timing Attacks on RSA Key Generation

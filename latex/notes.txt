@@ -1,0 +1,191 @@
+100000000 it with type 0: 33001015375
+100000000 it with type 1: 1224753818
+100000000 it with type 2: 1396286414
+100000000 it with type 3: 16135792603
+100000000 it with type 4: 2108273704
+100000000 it with type 5: 4003751999
+100000000 it with type 6: 723344192
+100000000 it with type 7: 3561818968
+100000000 it with type 8: 3999503026
+100000000 it with type 9: 33289281931
+100000000 it with type 0: 33001015375
+100000000 it with type 1: 1224753818
+100000000 it with type 2: 1396286414
+100000000 it with type 3: 16135792603
+100000000 it with type 4: 2108273704
+100000000 it with type 5: 4003751999
+100000000 it with type 6: 723344192
+100000000 it with type 7: 3561818968
+100000000 it with type 8: 3999503026
+100000000 it with type 9: 33289281931
+
+
+enter command e.g. w 10 , s 12:213 , c 100000 , r 3 , n 10 , y 2000, p 10, b 
+b 0 1000000
+type 0, it 1000000
+1000000 it with type 0: 340771623
+1000000 it with type 1: 14386866
+1000000 it with type 2: 13123773
+1000000 it with type 3: 169272675
+1000000 it with type 4: 21094607
+1000000 it with type 5: 40767632
+1000000 it with type 6: 7260590
+1000000 it with type 7: 36397952
+1000000 it with type 8: 40225554
+1000000 it with type 9: 341521652
+probe_only_adv_generic
+1000000 it with type 1: 12219899
+1000000 it with type 2: 13466213
+1000000 it with type 3: 19475037
+1000000 it with type 4: 22099961
+1000000 it with type 5: 27218441
+1000000 it with type 6: 31486387
+1000000 it with type 7: 37921433
+1000000 it with type 8: 44100399
+1000000 it with type 9: 65512454
+1000000 it with type 10: 200994663
+1000000 it with type 11: 228139631
+1000000 it with type 12: 251393355
+1000000 it with type 13: 271065556
+1000000 it with type 14: 294497652
+1000000 it with type 15: 316220817
+1000000 it with type 16: 337481231
+enter command e.g. w 10 , s 12:213 , c 100000 , r 3 , n 10 , y 2000, p 10, b 
+b 0 100000000
+type 0, it 100000000
+100000000 it with type 0: 34072242479
+100000000 it with type 1: 1381615118
+100000000 it with type 2: 1312043480
+100000000 it with type 3: 16517102561
+100000000 it with type 4: 2109906424
+100000000 it with type 5: 4020148576
+100000000 it with type 6: 725729997
+100000000 it with type 7: 3565902045
+100000000 it with type 8: 4031189488
+100000000 it with type 9: 33902341682
+probe_only_adv_generic
+100000000 it with type 1: 1261884462
+100000000 it with type 2: 1422902856
+100000000 it with type 3: 1873842867
+100000000 it with type 4: 2207076572
+100000000 it with type 5: 2666587589
+100000000 it with type 6: 3155112951
+100000000 it with type 7: 3793473332
+100000000 it with type 8: 4376377299
+100000000 it with type 9: 6581744586
+100000000 it with type 10: 20147032922
+100000000 it with type 11: 22748942257
+100000000 it with type 12: 25073903326
+100000000 it with type 13: 27117577239
+100000000 it with type 14: 29414690571
+100000000 it with type 15: 31608336380
+100000000 it with type 16: 33780119150
+
+
+with -O3
+type 0, it 1000000
+1000000 it with type 0: 294440615
+1000000 it with type 1: 9756065
+1000000 it with type 2: 11513811
+1000000 it with type 3: 133193272
+1000000 it with type 4: 17310234
+1000000 it with type 5: 38391945
+1000000 it with type 6: 6183358
+1000000 it with type 7: 33350407
+1000000 it with type 8: 36083190
+1000000 it with type 9: 292836635
+probe_only_adv_generic
+1000000 it with type 1: 10787550
+1000000 it with type 2: 16711680
+1000000 it with type 3: 17778488
+1000000 it with type 4: 20130754
+1000000 it with type 5: 23842163
+1000000 it with type 6: 28237928
+1000000 it with type 7: 33942780
+1000000 it with type 8: 39743374
+1000000 it with type 9: 52033180
+1000000 it with type 10: 141311746
+1000000 it with type 11: 175469569
+1000000 it with type 12: 205751048
+1000000 it with type 13: 227127858
+1000000 it with type 14: 263030041
+1000000 it with type 15: 274994690
+1000000 it with type 16: 301726696
+
+
+imagelib idct_islow funciton:
+ac zero mean 50 cycles
+ac non zero mean ~100 cycles
+authoren nutzen speicherzugriffszahl um ac zero von ac-non-zero zu unterscheiden
+authoren haben perfekte zeitliche auflösung
+unsere zeitliche auflösung zu gering um priming in 50cyclen durchzuführen, daher vermischen sich ac-zero und ac-non-zero phasen
+
+
+ideen: pointer kette aufteilen und prozessor parallelität nutzen
+bsp: 	a = *a;
+	b = *b;
+
+Alle resultate mit O0 compiler opt
+
+kette beim sender verkürzen von 16 auf 1 z.b.
+
+Untenstehende Werte sind Optimalwerte, d.h. wenn Daten schon im Cache sind, andernfalls dauert der Vorgang länger.
+
+mit 1 adresse ohne schleife:
+7 taktzyklen (test 1mio aufruf mittelwert)
+
+mit 1 adresse mit sinnloser schleife:
+12 taktzyklen (test 1mio aufruf mittelwert)
+
+mit 2 adresse:
+20 taktzyklen (test 1mio aufruf mittelwert)
+
+mit 4 adresse:
+22 taktzyklen (test 1mio aufruf mittelwert)
+
+mit 8 adresse:
+40 taktzyklen (test 1mio aufruf mittelwert)
+
+mit 16 adressen(ptr=same abbruch):
+330 taktzyklen (test 1mio aufruf mittelwert)
+
+mit 16 adressen(loop):
+332 taktzyklen (test 1mio aufruf mittelwert)
+
+mit 2x8 adressen pointer chasing parallel:
+172 taktzyklen (test 1mio aufruf mittelwert)
+
+mit 4x4 adressen pointer chasing parallel:
+40 taktzyklen (test 1mio aufruf mittelwert)
+
+mit 8x2 adressen pointer chasing parallel:
+35 taktzyklen (test 1mio aufruf mittelwert)
+
+sender und empfänger beste ergebnisse mit 2x8 adressen
+c=100000, y=50, r=10
+
+
+wasm empfänger:
+werte in counter zeiteinheiten mit 1 zeiteinheit ~ 2.5ns
+default prime 69,68.8 (356ms 2mio)
+split2 67,66.7 (339ms 2mio)
+split4 24,24.3 (287ms 2mio)
+split8 24,24.5 (191ms 2mio)
+maxchase 1 29,23 (191ms 2mio)
+maxchase 2 19,15.6 (166ms 2mio)
+maxchase 3 19,17.9 (180ms 2mio)
+maxchase 4 18,16 (167ms 2mio)
+maxchase 5 19,18.2 (172ms 2mio)
+maxchase 6 21,22.3 (183ms 2mio)
+maxchase 7 50,46.6 (269ms 2mio)
+maxchase 8 57,55 (297ms 2mio)
+maxchase 9 57,54 (295ms 2mio)
+maxchase 10 59,55 (300ms 2mio)
+maxchase 11 60,54.5 (298ms 2mio)
+maxchase 12 62,60.1 (313ms 2mio)
+maxchase 13 62,60.7 (336ms 2mio)
+maxchase 14 63,61.5 (319ms 2mio)
+maxchase 15 64,63.4 (326ms 2mio)
+maxchase 16 76,65.3 (335ms 2mio)
+
+ O3 compiler opt standard do not find expand es
