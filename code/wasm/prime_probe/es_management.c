@@ -102,10 +102,10 @@ void set_monitored_es(void* app_state_ptr, int min_index, int max_index){
   //printf("monitor from %i to %i\n", min_index, max_index);
 
   for (int i = min_index*64; i < (max_index+1)*64; i += 64)
-    l3_monitor(this_app_state->l3, i);
+    l3_monitor(this_app_state->l3, i);set_monitored_es(app_state_ptrset_monitored_es(app_state_ptr, min_index, max_index);, min_index, max_index);
 
   this_app_state->monitored_es_changed = 1;
-  this_app_state->last_min_index = min_index;
+  this_app_state->last_min_index = min_index;set_monitored_es(app_state_ptr, min_index, max_index);
   this_app_state->last_max_index = max_index;
 }
 
@@ -232,4 +232,77 @@ void sample_es(void* app_state_ptr, int number_of_samples, int slot_time
 #endif
 
   this_app_state->number_of_samples_old = number_of_samples;
+}
+
+void get_mean_evictions_sets(void* app_state_ptr, int *idle_mean_values)
+{
+  struct app_state* this_app_state = (struct app_state*)app_state_ptr;
+  if(!this_app_state->l3){
+    printf("app_state_ptr->l3 is null! Already called build_es?\n");
+    return;
+  }
+
+  int min_index = this_app_state->idle_times_min_index;
+  int max_index = this_app_state->idle_times_max_index;
+  if(min_index == -1 && max_index == -1)
+  {
+    max_index = nmonitored-1;
+    min_index = 0;
+  }
+  if(min_index < 0){
+    printf("min_index < 0\n");
+    return;
+  }
+  if(max_index >= nmonitored){
+    printf("max_index >= number_of_es\n");
+    return;
+  }
+  if(max_index < min_index){
+    printf("max_index < min_index\n");
+    return;
+  }
+
+  if(this_app_state->res){
+      free(this_app_state->res);
+  } 
+  this_app_state->res = calloc(number_of_samples * 1, sizeof(RES_TYPE));
+
+  //int sample_together = 10;
+  const int number_of_samples = 300;
+
+  for(int i = min_index; i < max_index; i++){
+    //int sampled_cur = sample_together;
+    //if()
+    set_monitored_es(app_state_ptr, i, i+1);
+    
+    l3_repeatedprobe(this_app_state->l3, number_of_samples, this_app_state->res, 0, this_app_state->type);
+    long mean = 0;
+    for(int i=0; i<number_of_samples; i++){
+      mean += this_app_state->res[i];
+    }
+    mean /= number_of_samples;
+
+    this_app_state->idle_mean_values[i-min_index] = mean;
+  }
+
+  //get idle mean
+}
+
+void get_idle_times(void* app_state_ptr, int min_index, int max_index){
+  this_app_state->idle_times_min_index = min_index;
+  this_app_state->idle_times_max_index = max_index;
+  if(this_app_state->idle_mean_values){
+    free(this_app_state->idle_mean_values);
+  }
+  this_app_state->idle_mean_values = calloc(sizeof(int), max_index-min_index+1);
+  get_mean_evictions_sets(app_state_ptr, this_app_state->idle_mean_values);
+}
+
+void find_interesting_eviction_sets(void* app_state_ptr)
+{
+  //get current mean access time values for selected cache sets
+  int *idle_mean_values = calloc(sizeof(int), max_index-min_index+1);
+  get_mean_evictions_sets(app_state_ptr, idle_mean_values);
+
+  //compare idle values with current values to get interesting cache sets
 }

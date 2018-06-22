@@ -10,6 +10,9 @@ struct app_state {
   int last_min_index;
   int last_max_index;
   int type;
+  int *idle_mean_values;
+  int idle_times_min_index;
+  int idle_times_max_index;
 };
 
 //tell javascript main thread ptr add from res array in wasm memory region
@@ -28,3 +31,9 @@ void sample_es(void* app_state_ptr, int number_of_samples, int slot_time
 , int plot
 #endif
 );
+
+//implement in c instead of javascript to get a more generic approach (useable without wasm)
+void get_mean_evictions_sets(void* app_state_ptr, int *idle_mean_values);
+void get_idle_times(void* app_state_ptr, int min_index, int max_index);
+//called after get_idle_times, test eviction sets used in get_idle_times
+void find_interesting_eviction_sets(void* app_state_ptr);
