@@ -10,9 +10,11 @@ struct app_state {
   int last_min_index;
   int last_max_index;
   int type;
+
   int *idle_mean_values;
   int idle_times_min_index;
   int idle_times_max_index;
+  int *interesting_cache_sets; //index vector for cache sets
 };
 
 //tell javascript main thread ptr add from res array in wasm memory region

@@ -102,10 +102,10 @@ void set_monitored_es(void* app_state_ptr, int min_index, int max_index){
   //printf("monitor from %i to %i\n", min_index, max_index);
 
   for (int i = min_index*64; i < (max_index+1)*64; i += 64)
-    l3_monitor(this_app_state->l3, i);set_monitored_es(app_state_ptrset_monitored_es(app_state_ptr, min_index, max_index);, min_index, max_index);
+    l3_monitor(this_app_state->l3, i);
 
   this_app_state->monitored_es_changed = 1;
-  this_app_state->last_min_index = min_index;set_monitored_es(app_state_ptr, min_index, max_index);
+  this_app_state->last_min_index = min_index;
   this_app_state->last_max_index = max_index;
 }
 
@@ -244,6 +244,40 @@ void get_mean_evictions_sets(void* app_state_ptr, int *idle_mean_values)
 
   int min_index = this_app_state->idle_times_min_index;
   int max_index = this_app_state->idle_times_max_index;
+
+  //int sample_together = 10;
+  const int number_of_samples = 300;
+
+  // if(this_app_state->res){
+  //     free(this_app_state->res);
+  // } 
+  // this_app_state->res = calloc(number_of_samples * 1, sizeof(RES_TYPE));
+  RES_TYPE *res = calloc(number_of_samples * 1, sizeof(RES_TYPE));
+
+  for(int i = min_index; i < max_index; i++){
+    //int sampled_cur = sample_together;
+    //if()
+    set_monitored_es(app_state_ptr, i, i);
+    
+    l3_repeatedprobe(this_app_state->l3, number_of_samples, res, 0, this_app_state->type);
+    long mean = 0;
+    for(int a=0; a<number_of_samples; a++){
+      mean += res[a];
+    }
+    mean /= number_of_samples;
+    printf("%li ", mean);
+
+    idle_mean_values[i-min_index] = mean;
+  }
+
+  //get idle mean
+}
+
+void get_idle_times(void* app_state_ptr, int min_index, int max_index)
+{
+  struct app_state* this_app_state = (struct app_state*)app_state_ptr;
+
+  int nmonitored = l3_getSets(this_app_state->l3)/64;
   if(min_index == -1 && max_index == -1)
   {
     max_index = nmonitored-1;
@@ -262,47 +296,40 @@ void get_mean_evictions_sets(void* app_state_ptr, int *idle_mean_values)
     return;
   }
 
-  if(this_app_state->res){
-      free(this_app_state->res);
-  } 
-  this_app_state->res = calloc(number_of_samples * 1, sizeof(RES_TYPE));
-
-  //int sample_together = 10;
-  const int number_of_samples = 300;
-
-  for(int i = min_index; i < max_index; i++){
-    //int sampled_cur = sample_together;
-    //if()
-    set_monitored_es(app_state_ptr, i, i+1);
-    
-    l3_repeatedprobe(this_app_state->l3, number_of_samples, this_app_state->res, 0, this_app_state->type);
-    long mean = 0;
-    for(int i=0; i<number_of_samples; i++){
-      mean += this_app_state->res[i];
-    }
-    mean /= number_of_samples;
-
-    this_app_state->idle_mean_values[i-min_index] = mean;
-  }
-
-  //get idle mean
-}
-
-void get_idle_times(void* app_state_ptr, int min_index, int max_index){
   this_app_state->idle_times_min_index = min_index;
   this_app_state->idle_times_max_index = max_index;
   if(this_app_state->idle_mean_values){
     free(this_app_state->idle_mean_values);
   }
-  this_app_state->idle_mean_values = calloc(sizeof(int), max_index-min_index+1);
+  this_app_state->idle_mean_values = calloc(max_index-min_index+1, sizeof(int));
   get_mean_evictions_sets(app_state_ptr, this_app_state->idle_mean_values);
+  printf("get_idle_times finished\n");
 }
 
 void find_interesting_eviction_sets(void* app_state_ptr)
 {
+  struct app_state* this_app_state = (struct app_state*)app_state_ptr;
+
+  int number_of_observed_cache_sets = this_app_state->idle_times_max_index - this_app_state->idle_times_min_index + 1;
+
   //get current mean access time values for selected cache sets
-  int *idle_mean_values = calloc(sizeof(int), max_index-min_index+1);
+  int *idle_mean_values = calloc(number_of_observed_cache_sets, sizeof(int));
   get_mean_evictions_sets(app_state_ptr, idle_mean_values);
 
   //compare idle values with current values to get interesting cache sets
+  int threshold_factor = 2;
+
+  if(this_app_state->interesting_cache_sets)
+   free(this_app_state->interesting_cache_sets);
+  this_app_state->interesting_cache_sets = calloc(number_of_observed_cache_sets, sizeof(int));
+
+  printf("interesting cache sets: ");
+  for(int i=0; i<number_of_observed_cache_sets; i++){
+    printf("%i(%i) ", idle_mean_values[i], this_app_state->idle_mean_values[i]);
+    if(idle_mean_values[i] > threshold_factor * this_app_state->idle_mean_values[i]){
+      this_app_state->interesting_cache_sets[i] = 1;
+      printf("%i ", i);
+    }
+  }
+  putchar('\n');
 }

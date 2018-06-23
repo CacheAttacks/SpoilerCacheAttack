@@ -1264,6 +1264,14 @@
   <span><input type="button" id="btnBuildEs" value="Build es"></span>
   <span><input type="number" id="numberBenchmarksruns" value="20" width="1"></span>
   <span><input type="button" id="btnBenchmarkmode" value="Benchmark es"></span>
+</span></br>
+<span id='findInterestingCacheSets'>
+  lower limit monitored es
+  <span><input type="number" id="lowerLimitMonitoredEsInteresting" value="-1" width="1"></span>
+  upper limit monitored es
+  <span><input type="number" id="upperLimitMonitoredEsInteresting" value="-1" width="1"></span>
+  <span><input type="button" id="btnGetIdleTimes" value="Get idle times"></span>
+  <span><input type="button" id="btnFindInterestingCacheSets" value="Find interesting cache sets"></span>
 </span>
 
     <div class="emscripten">
@@ -1537,6 +1545,14 @@
         } else {
           console.log("Module['appStatePtr'] is null!");
         }
+      }
+
+      document.getElementById('btnGetIdleTimes').onclick = function() {
+        Module['asm']._get_idle_times(Module['appStatePtr'], document.getElementById('lowerLimitMonitoredEsInteresting').value, document.getElementById('upperLimitMonitoredEsInteresting').value);        
+      }
+
+      document.getElementById('btnFindInterestingCacheSets').onclick = function() {
+        Module['asm']._find_interesting_eviction_sets(Module['appStatePtr']);
       }
     </script>
   </body>
