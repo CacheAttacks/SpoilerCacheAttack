@@ -14,11 +14,14 @@ struct app_state {
   int *idle_mean_values;
   int idle_times_min_index;
   int idle_times_max_index;
+  int *current_mean_values;
   int *interesting_cache_sets; //index vector for cache sets
 };
 
 //tell javascript main thread ptr add from res array in wasm memory region
 extern void set_ptr_to_data(uint32_t, int, int, int);
+extern void set_current_times_ptr(uint32_t);
+extern void set_idle_times_ptr(uint32_t);
 
 extern void print_plot_data(void);
 
@@ -35,7 +38,7 @@ void sample_es(void* app_state_ptr, int number_of_samples, int slot_time
 );
 
 //implement in c instead of javascript to get a more generic approach (useable without wasm)
-void get_mean_evictions_sets(void* app_state_ptr, int *idle_mean_values);
-void get_idle_times(void* app_state_ptr, int min_index, int max_index);
+void get_mean_evictions_sets(void* app_state_ptr, int *idle_mean_values, int number_of_samples);
+void get_idle_times(void* app_state_ptr, int min_index, int max_index, int number_of_samples);
 //called after get_idle_times, test eviction sets used in get_idle_times
-void find_interesting_eviction_sets(void* app_state_ptr);
+void find_interesting_eviction_sets(void* app_state_ptr, float threshold_factor, int number_of_samples);

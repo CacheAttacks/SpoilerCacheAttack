@@ -234,7 +234,7 @@ void sample_es(void* app_state_ptr, int number_of_samples, int slot_time
   this_app_state->number_of_samples_old = number_of_samples;
 }
 
-void get_mean_evictions_sets(void* app_state_ptr, int *idle_mean_values)
+void get_mean_evictions_sets(void* app_state_ptr, int *idle_mean_values, int number_of_samples)
 {
   struct app_state* this_app_state = (struct app_state*)app_state_ptr;
   if(!this_app_state->l3){
@@ -246,7 +246,6 @@ void get_mean_evictions_sets(void* app_state_ptr, int *idle_mean_values)
   int max_index = this_app_state->idle_times_max_index;
 
   //int sample_together = 10;
-  const int number_of_samples = 300;
 
   // if(this_app_state->res){
   //     free(this_app_state->res);
@@ -265,7 +264,7 @@ void get_mean_evictions_sets(void* app_state_ptr, int *idle_mean_values)
       mean += res[a];
     }
     mean /= number_of_samples;
-    printf("%li ", mean);
+    //printf("%li ", mean);
 
     idle_mean_values[i-min_index] = mean;
   }
@@ -273,7 +272,7 @@ void get_mean_evictions_sets(void* app_state_ptr, int *idle_mean_values)
   //get idle mean
 }
 
-void get_idle_times(void* app_state_ptr, int min_index, int max_index)
+void get_idle_times(void* app_state_ptr, int min_index, int max_index, int number_of_samples)
 {
   struct app_state* this_app_state = (struct app_state*)app_state_ptr;
 
@@ -302,34 +301,37 @@ void get_idle_times(void* app_state_ptr, int min_index, int max_index)
     free(this_app_state->idle_mean_values);
   }
   this_app_state->idle_mean_values = calloc(max_index-min_index+1, sizeof(int));
-  get_mean_evictions_sets(app_state_ptr, this_app_state->idle_mean_values);
-  printf("get_idle_times finished\n");
+  get_mean_evictions_sets(app_state_ptr, this_app_state->idle_mean_values, number_of_samples);
+  
+  //set ptr for javascript env
+  set_idle_times_ptr((uint32_t)this_app_state->idle_mean_values);
 }
 
-void find_interesting_eviction_sets(void* app_state_ptr)
+//threshold_factor: compare idle values with current values to get interesting cache sets
+void find_interesting_eviction_sets(void* app_state_ptr, float threshold_factor, int number_of_samples)
 {
   struct app_state* this_app_state = (struct app_state*)app_state_ptr;
 
   int number_of_observed_cache_sets = this_app_state->idle_times_max_index - this_app_state->idle_times_min_index + 1;
 
   //get current mean access time values for selected cache sets
-  int *idle_mean_values = calloc(number_of_observed_cache_sets, sizeof(int));
-  get_mean_evictions_sets(app_state_ptr, idle_mean_values);
-
-  //compare idle values with current values to get interesting cache sets
-  int threshold_factor = 2;
+  this_app_state->current_mean_values = calloc(number_of_observed_cache_sets, sizeof(int));
+  get_mean_evictions_sets(app_state_ptr, this_app_state->current_mean_values, number_of_samples);
+  
+  //set ptr for javascript env
+  set_current_times_ptr((uint32_t)this_app_state->current_mean_values);
 
   if(this_app_state->interesting_cache_sets)
    free(this_app_state->interesting_cache_sets);
   this_app_state->interesting_cache_sets = calloc(number_of_observed_cache_sets, sizeof(int));
 
-  printf("interesting cache sets: ");
+  //printf("interesting cache sets: ");
   for(int i=0; i<number_of_observed_cache_sets; i++){
-    printf("%i(%i) ", idle_mean_values[i], this_app_state->idle_mean_values[i]);
-    if(idle_mean_values[i] > threshold_factor * this_app_state->idle_mean_values[i]){
+    //printf("%i(%i) ", this_app_state->current_mean_values[i], this_app_state->idle_mean_values[i]);
+    if(this_app_state->current_mean_values[i] > threshold_factor * this_app_state->idle_mean_values[i]){
       this_app_state->interesting_cache_sets[i] = 1;
-      printf("%i ", i);
+      //printf("%i ", i);
     }
   }
-  putchar('\n');
+  //putchar('\n');
 }

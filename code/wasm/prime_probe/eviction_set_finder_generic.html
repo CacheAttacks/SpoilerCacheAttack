@@ -1548,11 +1548,12 @@
       }
 
       document.getElementById('btnGetIdleTimes').onclick = function() {
-        Module['asm']._get_idle_times(Module['appStatePtr'], document.getElementById('lowerLimitMonitoredEsInteresting').value, document.getElementById('upperLimitMonitoredEsInteresting').value);        
+        var number_of_samples = 300;
+        Module['asm']._get_idle_times(Module['appStatePtr'], document.getElementById('lowerLimitMonitoredEsInteresting').value, document.getElementById('upperLimitMonitoredEsInteresting').value, number_of_samples);
       }
 
       document.getElementById('btnFindInterestingCacheSets').onclick = function() {
-        Module['asm']._find_interesting_eviction_sets(Module['appStatePtr']);
+        $.loadScript('interesting_cache_sets.js', function(){});
       }
     </script>
   </body>

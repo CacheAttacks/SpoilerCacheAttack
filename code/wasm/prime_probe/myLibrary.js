@@ -133,6 +133,19 @@ if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
 });
 
 if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
+    set_idle_times_ptr: function(ptr) {
+        Module['idleTimesPtr'] = ptr;
+        Module['timesArrayByteFactor'] = 4;
+    }
+});
+
+if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
+    set_current_times_ptr: function(ptr) {
+        Module['currentTimesPtr'] = ptr;
+    }
+});
+
+if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
     dummy_for_wat: function() {
     }
 });

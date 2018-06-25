@@ -73,6 +73,7 @@ data <- ""
 #* @post /changedata
 function(newdata){
   data <<- newdata
+  mydata <<- newdata
   #print(newdata)
 }
 
@@ -139,7 +140,7 @@ a <- Sys.time()
   
   plot <- ggplot2::ggplot(tbl_melt, ggplot2::aes(x=sample,y=es)) + 
     ggplot2::geom_tile(ggplot2::aes(fill = value)) +
-    ggplot2::scale_fill_gradient(low = "white", high = "steelblue")
+    ggplot2::scale_fill_gradientn(colours = RColorBrewer::brewer.pal( 6, "Blues"), limits = c(100, NA), na.value = "white")
   c <- Sys.time()
   print(c-b)
   e <- print(plot)
