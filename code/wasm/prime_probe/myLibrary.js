@@ -140,6 +140,12 @@ if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
 });
 
 if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
+    set_number_of_observed_cache_sets: function(number_of_observed_cache_setsptr) {
+        Module['numberOfObservedCacheSets'] = number_of_observed_cache_setsptr;
+    }
+});
+
+if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
     set_current_times_ptr: function(ptr) {
         Module['currentTimesPtr'] = ptr;
     }

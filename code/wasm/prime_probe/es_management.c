@@ -103,7 +103,6 @@ void set_monitored_es(void* app_state_ptr, int min_index, int max_index){
 
   for (int i = min_index*64; i < (max_index+1)*64; i += 64)
     l3_monitor(this_app_state->l3, i);
-
   this_app_state->monitored_es_changed = 1;
   this_app_state->last_min_index = min_index;
   this_app_state->last_max_index = max_index;
@@ -148,7 +147,7 @@ int build_es_ex(void* app_state_ptr, int max_es, int benchmarkmode, int benchmar
   this_app_state->number_of_samples_old = 0;
 
 #ifdef WASM
-  warmup(1024*1024*128); //warm up 2^27 counts operations ~ 2^30 cycles
+  warmup(1024*1024*128); //warm up 2^27 counts operations ~ 2^30 cyclesthis_app_state->last_min_index
   printf("warm-up finished\n");
 #endif
 
@@ -313,6 +312,8 @@ void find_interesting_eviction_sets(void* app_state_ptr, float threshold_factor,
   struct app_state* this_app_state = (struct app_state*)app_state_ptr;
 
   int number_of_observed_cache_sets = this_app_state->idle_times_max_index - this_app_state->idle_times_min_index + 1;
+
+  set_number_of_observed_cache_sets(number_of_observed_cache_sets);
 
   //get current mean access time values for selected cache sets
   this_app_state->current_mean_values = calloc(number_of_observed_cache_sets, sizeof(int));

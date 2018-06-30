@@ -22,6 +22,7 @@ struct app_state {
 extern void set_ptr_to_data(uint32_t, int, int, int);
 extern void set_current_times_ptr(uint32_t);
 extern void set_idle_times_ptr(uint32_t);
+extern void set_number_of_observed_cache_sets(int);
 
 extern void print_plot_data(void);
 
