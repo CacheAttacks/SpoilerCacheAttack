@@ -1,0 +1,46 @@
+<span><input type="button" id="btnTest" value="Test"></span> 
+
+<script type="text/javascript" src="src/bn.js"></script>
+<script type="text/javascript" src="timer_clock_edge.js"></script>
+<script type="text/javascript" src="src/crypto/random.js"></script>
+<script type="text/javascript" src="src/crypto/public_key/prime.js"></script>
+
+<script type="text/javascript">
+console.log("hello2");
+
+const sharedBuffer = new SharedArrayBuffer(Uint32Array.BYTES_PER_ELEMENT);
+const sharedArray = new Uint32Array(sharedBuffer);
+const counterWorker = new Worker('worker.js');
+counterWorker.postMessage(sharedBuffer);
+
+function SAB_get_resolution_ns(samples)
+{
+    var nsPerTick = 0;
+    for(var i=0; i<samples; i++)
+    {
+        var start = wait_edge();
+        var start_count = Atomics.load(sharedArray, 0);
+        var end = wait_edge();
+        var end_count = Atomics.load(sharedArray, 0);
+        if(end_count - start_count == 0){
+            break;
+        }
+        nsPerTick += (end - start) / (end_count - start_count) ;
+        //console.log(start_count + " " + end_count);
+    }
+    nsPerTick /= samples;
+    //convert from ms to ns
+    return nsPerTick * 1000 * 1000;
+}
+
+function counter_get_value(){
+    return Atomics.load(sharedArray, 0);
+}
+
+document.getElementById('btnTest').onclick = function() {
+    console.log("res: " + SAB_get_resolution_ns(1000) + " ns");
+    var n = randomProbablePrime(1024, counter_get_value);
+}
+
+
+</script>
