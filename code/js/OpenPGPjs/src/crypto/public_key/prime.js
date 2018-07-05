@@ -76,9 +76,12 @@ async function randomProbablePrime(bits, counter_get_value, e, k) {
   //}
   console.log("trials:"+trials_counter);
   console.log("divisionTest mod-Ops mean:"+div_counter/div_test_counter +" sum:"+div_counter);
+  console.log("division Tets Fail counter = " + divisionTestFailCounter);
   console.log(n);
   return n;
 }
+
+divisionTestFailCounter = 0;
 
 /**
  * Probabilistic primality testing
@@ -95,11 +98,14 @@ async function isProbablePrime(n, e, k) {
   div_test_counter++;
   div_counter2 = 0;
   var before = counter_get_value();
-  var div_res = divisionTest(n);
+  var div_res = divisionTestEx(n);
   var after = counter_get_value();
   console.log("time div_test: " + (after-before)/div_counter2);
 
-  if (!div_res) {
+  //chineseRemainderTest(n);
+
+  if (div_res>0) {
+    divisionTestFailCounter++;
     return false;
   }
   if (!fermat(n)) {
@@ -113,6 +119,56 @@ async function isProbablePrime(n, e, k) {
   return true;
 }
 
+function divisionTest(n) {
+  return small_primes.every(m => {
+    div_counter2++;
+    return n.modn(m) !== 0;
+  });
+}
+
+function divisionTestEx(n) {
+  
+  for(var i=0; i<small_primes.length; i++){
+    div_counter++;
+    var ret = n.modn(small_primes[i]);
+    if(ret == 0){
+      return small_primes[i];
+      //console.log("counter:" + div_counter);
+      //return false;
+    }
+  }
+  //console.log("counter:" + div_counter);
+  return -1;
+  //return true;
+}
+
+function chineseRemainderTest(n){
+  var res = [666];
+  var mod = [666];
+  var resmodcounter = 0;
+
+  for(var i=0; i<small_primes.length; i++){
+    var ret = n.modn(small_primes[i]);
+    res[resmodcounter] = ret;
+    mod[resmodcounter] = small_primes[i];
+    resmodcounter++;
+  }
+
+  var strRes = "";
+  var strMod = "";
+  for(var i=0; i<resmodcounter; i++){
+    strRes += res[i]
+    strMod += mod[i];
+    if(i < resmodcounter-1){
+    strRes += ",";
+    strMod += ",";
+    }
+  }
+  console.log("ChineseRemainder[{" + strRes + "},{" + strMod + "}] ");
+  console.log("number of eq = " + resmodcounter);
+  console.log(n.toString(10));
+}
+
 /**
  * Tests whether n is probably prime or not using Fermat's test with b = 2.
  * Fails if b^(n-1) mod n === 1.
@@ -123,29 +179,6 @@ async function isProbablePrime(n, e, k) {
 function fermat(n, b) {
   b = b || new BN(2);
   return b.toRed(BN.mont(n)).redPow(n.subn(1)).fromRed().cmpn(1) === 0;
-}
-
-function divisionTest(n) {
-  return small_primes.every(m => {
-    div_counter2++;
-    return n.modn(m) !== 0;
-  });
-}
-
-
-
-function divisionTestEx(n) {
-  
-  for(var i=0; i<small_primes.length; i++){
-    div_counter++;
-    var ret = n.modn(small_primes[i]);
-    if(ret == 0){
-      //console.log("counter:" + div_counter);
-      return false;
-    }
-  }
-  //console.log("counter:" + div_counter);
-  return true;
 }
 
 // https://github.com/gpg/libgcrypt/blob/master/cipher/primegen.c
