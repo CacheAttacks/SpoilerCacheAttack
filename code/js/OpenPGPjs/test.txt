@@ -7,3 +7,43 @@ Mod[1699698249377028619879452069013351996779049668293123381037077601910705042449
 
 
 n mod 1001 = 178
+
+primes less than x
+primeInf[x_] := Prime@Range@PrimePi@x
+listProduct[x_List] := Times @@ x
+listSum[x_List] := Plus @@ x
+primes := primeInf@(2^3)
+possibleBits := BitLength[listProduct[primes]]
+perfectCaseBits := possibleBits - 7*Length[primes]
+listProductGCD[x_] := 
+ Part[Part[ExtendedGCD[listProduct[primes]/x, x], 2], 
+   1]*(listProduct[primes]/x)
+GCDValuesPrimes := Map[listProductGCD, primes]
+minList := {0, 1, 0, 3}
+maxList := {2, 3, 2, 5}
+GetExPression[i_] := 
+ Symbol["a" <> ToString[i]] > Part[minList, i] && 
+  Symbol["a" <> ToString[i]] < Part[maxList, i]
+expressions := Map[GetExPression, Range[1, Length[minList]]]
+makeVariable[i_] := Symbol["a" <> ToString[i]]
+usedVariables := Map[makeVariable, Range[1, Length[minList]]]
+listSum[usedVariables*GCDValuesPrimes]
+maxValue := 15
+allExpressions := 
+ Append[Append[
+   Append[expressions, 
+    x == Mod[listSum[usedVariables*GCDValuesPrimes], 
+      listProduct[primes]]], x < maxValue], x > 0]
+allExpressions
+FindInstance[allExpressions, Append[usedVariables, x], Integers]
+
+
+Part[Part[Part[GCDValuesPrimes, 1], 2], 2]
+
+FindInstance[x + y == 10 && x > 4 && y < 6 && x < 6, {x, y}]
+
+a := {x, y}
+b := {x + y == 10, x > 4, x < 6, y < 6}
+FindInstance[b, a]
+
+//BaseForm[listProduct[primes], 2]
