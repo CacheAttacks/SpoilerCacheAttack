@@ -94,6 +94,67 @@ Um die einzelnen Bits auseinanderzuhalten, wird zwischen jedem gesendeten Bit ei
 
 %Problem: v8 compiliert lazy, d.h. nur häufig verwendete
 
+%moved from section grundlagen
+\subsection{Eviction-Set Algorithmus in der Javascript-Umgebung}
+
+TODO Algorithmus in Einzelheiten beschreiben
+\todo[size=\footnotesize]{Beschreibe den Algorithmus bitte in einzelteilen, und gib auch den code dafür einzeln an. Der komplette Code gehört in den Anhang.}\todo[size=\footnotesize]{Nutze eine kleinere Schriftart für listings}
+
+
+\SetKwProg{Fn}{Function}{}{}
+
+\begin{algorithm}[h]
+\DontPrintSemicolon
+\caption{Psuedo-Code für Eviction-Set Algorithmus}
+\label{alg:evictionSet}
+
+\Fn{$EvictionSetFinder(memoryBlocks)$}{
+    groups $\leftarrow$ empty\;
+    \While{size(memoryBlocks > 0}{
+        evictionSet $\leftarrow$ empty\;
+		witness $\leftarrow$ expand(evictionSet, memoryBlocks)\;
+		
+		\If{witness != failed}{
+    		contract(evictionSet, memoryBlocks, witness)\;
+    		witnessSet $\leftarrow$ collect(evictionSet, memoryBlocks, witnessSet)\;
+    		groups.add(union(evictionSet, witness, witnessSet))\;
+		}
+    }
+}
+
+\Fn{$Expand(evictionSet, memoryBlocks)$}{
+	\While{size(candidateSet) > 0}{
+		witnesss = SelectRandomItem(candidateSet)\;
+		\If{checkevict(evictionSet, witnesss)}{
+			\Return witnesss
+		}
+		evictionSet.add(witnesss)\;
+	}
+	\Return failed;
+}
+
+\Fn{$Contract(evictionSet, memoryBlocks, witness)$}{
+	\ForEach{candidate in evictionSet}{
+		\If{checkevict(evictionSet, witness)}{
+			mermoryBlocks.add(candidate)\;
+			evictionSet.add(candidate)\;	
+		}		
+	}
+}
+
+\Fn{$Collect(evictionSet, memoryBlocks)$}{
+	witnessSet = empty\;
+	\ForEach{candidate in mermoryBlocks}{
+		\If{checkevict(evictionSet, candidate)}{
+			memoryBlocks.delete(candidate)\;
+			witnessSet.add(candidate)\;
+		}
+	}
+	\Return witnessSet;
+}
+
+\end{algorithm}
+
 \subsection{Angriffe auf RSA Key Generierung}
 
 Details zu Implementierung in Mozilla NSS

@@ -1,37 +1,42 @@
 \chapter{Grundlagen}
 \label{chapter:basics}
 
-Im Folgenden sollen Verfahren und Techniken erläutert werden, welche für das Verständnis der späteren Kapitel essenziell sind. \todo[size=\footnotesize]{Hier sollte mehr stehen als ein Satz, ergibt sich vielleicht später} \todo[size=\footnotesize]{Generell: Du tendierst zu verschachtelten und langen Sätzen. Versuche, Simplere Sätze mit höchstens einem Komma und ohne Zwischeneinschübe zu verwenden. }
+Im Folgenden sollen Verfahren und Techniken erläutert werden, welche für das Verständnis der späteren Kapitel essenziell sind. \todo[size=\footnotesize]{Hier sollte mehr stehen als ein Satz, ergibt sich vielleicht später} 
 
-\section{Virtuelle Speicherverwaltung\todo[size=\footnotesize]{Der komplette Absatz hat keine Quellen, du brauchst mindestens 2}}
+%\todo[size=\footnotesize]{Generell: Du tendierst zu verschachtelten und langen Sätzen. Versuche, Simplere Sätze mit höchstens einem Komma und ohne Zwischeneinschübe zu verwenden. }
 
-Virtuelle Speicherverwaltung stellt eine Abstraktion für die vorhandenen physikalischen Speichermedien wie etwa den Hauptspeicher oder die Festplatte bereit.
-Das Betriebssystem übersetzt virtuelle Adressen, welche von Prozessen genutzt werden, mit Hilfe der Hardware in physikalische Adressen. 
-Jedem Prozess steht der gleiche virtuelle Adressraum zur Verfügung, wobei das Betriebssystem dafür Sorge trägt, für jeden Prozess die richtige Zuordnung von virtueller zu physikalischer Adresse sicherzustellen.
-Ein Vorteil der virtuellen Speicherverwaltung ist eine erhöhte Sicherheit durch die Speicherisolierung aller Prozesse. \todo[size=\footnotesize]{, da ein Prozess keinen Zugriff auf das Adressmapping eines anderen hat.}
-So kann eine fehlerhafte Schreiboperation eines Prozesses keinen Fehler in anderen Prozessen verursachen, da gleiche virtuelle Adressen vom Betriebssystem auf unterschiedliche physikalische Adressen abgebildet werden. 
-Des Weiteren kann ein Prozess mehr Hauptspeicher nutzen als physikalisch vorhanden ist, indem Daten vom Betriebssystem auf andere Speichermedien wie die Festplatte ausgelagert werden. Hiermit werden beispielsweise Anwendungsentwickler entlastet, da sie ihre Software nicht für Systeme mit weniger Hauptspeicher gesondert anpassen müssen. \todo[size=\footnotesize]{Die letzten zwei Sätze sind für deine Arbeit egal, also bitte weg. Wichtiger sind die letzten Bits der Adresse, die bei physikalischer und virtueller adresse gleich sind, und ggf. Speicher-Deduplizierung, wo du dann plötzlich doch das gleiche Mapping hast.}
+\section{Virtuelle Speicherverwaltung\todo[size=\footnotesize]{Ein Quelle in Absatz einfügen?}}
+
+Virtuelle Speicherverwaltung stellt eine Abstraktion für die vorhandenen physischen Speichermedien wie etwa den Hauptspeicher oder die Festplatte bereit \cite{tanenbaumVirtualMemory}.
+Das Betriebssystem übersetzt virtuelle Adressen, welche von Prozessen genutzt werden, mit Hilfe der Hardware in physische Adressen. 
+Jedem Prozess steht der gleiche virtuelle Adressraum zur Verfügung, wobei das Betriebssystem dafür Sorge trägt, für jeden Prozess die richtige Zuordnung von virtueller zu physischer Adresse sicherzustellen.
+Ein Vorteil der virtuellen Speicherverwaltung ist eine erhöhte Sicherheit durch die Speicherisolierung aller Prozesse, da ein Prozess keinen Zugriff auf das Adressmapping eines anderen hat.
+So kann eine fehlerhafte Schreiboperation eines Prozesses keinen Fehler in anderen Prozessen verursachen, da gleiche virtuelle Adressen vom Betriebssystem auf unterschiedliche physische Adressen abgebildet werden.
+%Des Weiteren kann ein Prozess mehr Hauptspeicher nutzen als physisch vorhanden ist, indem Daten vom Betriebssystem auf andere Speichermedien wie die Festplatte ausgelagert werden. Hiermit werden beispielsweise Anwendungsentwickler entlastet, da sie ihre Software nicht für Systeme mit weniger Hauptspeicher gesondert anpassen müssen. 
+\todo[size=\footnotesize]{ggf. Speicher-Deduplizierung, wo du dann plötzlich doch das gleiche Mapping hast.}
 
 \section{Caches}
 
-Die Geschwindigkeitsentwicklung des Hauptspeichers konnte in den letzten Jahren nicht mit der des Prozessors Schritt halten \todo[size=\footnotesize]{Perfekter Ort für Quelle}. Der Cache ist ein im Vergleich zum Hauptspeicher kleinerer, aber schnellerer Pufferspeicher, welcher im aktuellen Kontext häufig benötigte Daten vorhält. \todo[size=\footnotesize]{Hier auch räumliche Nähe erwähnen.}
-Ohne Caches wäre ein Prozessor häufig gezwungen, auf Daten des langsamen Hauptspeichers zu warten, und würde in seiner Verarbeitungsgeschwindigkeit ausgebremst. \todo[size=\footnotesize]{positiv formulieren: Mit cache muss man nicht warten, dadurch wirds schneller}
-Auch in anderen Ebenen sind Caches sinnvoll, wie etwa im Browser, wobei in dieser Arbeit vor allem die Caches im Prozessor von Relevanz sind. \todo[size=\footnotesize]{Kann weg, nicht relevant}
-Weiter liegt der Fokus der Arbeit auf die im Desktopbereich weit verbreitete x86-Architektur. Deshalb werden mit Intel-Prozessoren der Core-Architektur bestückte Testrechner verwendet, da zudem Intels Core-Architektur im x86-Desktopsegment zurzeit den höchsten Marktanteil besitzt \cite{AMDIntelMarketShare}. Deshalb werden Erklärungen im Folgenden häufig mit Beispielen der Intel Core-Architektur veranschaulicht. \todo[size=\footnotesize]{Deshalb, da, deshalb}
+Die Geschwindigkeitsentwicklung des Hauptspeichers konnte in den letzten Jahren nicht mit der des Prozessors Schritt halten \cite{speedGapCPUandRAM}. Der Cache ist ein im Vergleich zum Hauptspeicher kleinerer, aber schnellerer Pufferspeicher, welcher im aktuellen Kontext häufig benötigte Daten vorhält. Diese Daten zeichnen sich auch häufig dadurch aus, dass sie räumlich nah beieinander liegen.
+Ohne Caches wäre ein Prozessor häufig gezwungen, auf Daten des langsamen Hauptspeichers zu warten, und würde in seiner Verarbeitungsgeschwindigkeit ausgebremst. %\todo[size=\footnotesize]{positiv formulieren: Mit cache muss man nicht warten, dadurch wirds schneller} Ist die Aussage nicht wirkungsgleich bzw. genauso Pro-Caches vormuliert?
+Weiter liegt der Fokus der Arbeit auf die im Desktopbereich weit verbreitete x86-Architektur. Deshalb werden mit Intel-Prozessoren der Core-Architektur bestückte Testrechner verwendet, da Intels Core-Architektur im x86-Desktopsegment zurzeit den höchsten Marktanteil besitzt \cite{AMDIntelMarketShare}. Aus diesem Grund werden Erklärungen im Folgenden häufig mit Beispielen der Intel Core-Architektur veranschaulicht.
 
 Ein Cache der Core-Architektur lagert nicht einzelne Bytes, sondern immer gleich 64 Bytes, Cache-Line genannt, auf einmal ein. Dabei werden die 64 Bytes beginnend ab der größten Adresse, welche zugleich kleiner als die Zieladresse und ein Vielfaches von 64 ist, angefragt.
-Angenommen 4 Bytes Daten an Adresse 0b10110111 \todo[size=\footnotesize]{bitte lstinline an allen Stellen} werden angefordert, dann lagert der Cache die 64 Bytes beginnend mit der Adresse 0b10000000 ein.
+Angenommen 4 Bytes Daten an Adresse \lstinline!0b10110111! %\todo[size=\footnotesize]{bitte lstinline an allen Stellen}
+werden angefordert, dann lagert der Cache die 64 Bytes beginnend mit der Adresse \lstinline!0b10000000! ein.
 Heutige Arbeitsspeichermodule liefern 8 Bytes zeitgleich, wobei die CPU mit einem einzigen Befehl einen Burst von 8 Übertragungen initiieren kann, die das Lesen und Schreiben einer gesamten 64-Bytes-Cache-Line ermöglichen.
-Daher ist der Performancenachteil, welcher durch ein Laden von gleichzeitig 64 Bytes entsteht, vernachlässigbar und wird von dem Vorteil überwogen\todo[size=\footnotesize]{diesen Vorteil hast du vorher nicht erwähnt, generell fehlen die beiden Prinzipien von räumlicher und zeitlicher Nähe, gern auch wieder mit Zitat: Daten, die ich gerade gebraucht habe, brauche ich bald wieder (darum Caching), Daten, die ich bald brauche, sind wahrscheinlich in der nähe von Daten, die ich gerade gebraucht habe (Cachelines und Prefetcher)}, dass die zusätzlich geladenen Bytes mit hoher Wahrscheinlichkeit in den nächsten Zyklen ebenfalls benötigt werden. \todo[size=\footnotesize]{Der Satz ist sehr lang und verschachtelt}
+Das vorausladen von aktuell nicht benötigten Daten liegt in der Lokalitätseigenschaft typischer Programme begründet \cite{tanenbaumLocality}. So besagt die zeitliche Lokalität, dass aktuell verwendete Daten mit hoher Wahrscheinlichkeit in naher Zukunft erneut benötigt werden. Räumlich Lokalität hingegen besagt, dass beim Zugriff einer bestimmten Speicheradresse benachbarte Speicheradressen in naher Zukunft mit hoher Wahrscheinlichkeit benötigt werden.
+Somit ist es von Vorteil gleichzeitig 64 Bytes zu Laden, da die zusätzlich geladenen Bytes mit hoher Wahrscheinlichkeit in den nächsten Zyklen ebenfalls benötigt werden. Der Performancenachteil, welcher durch ein Laden von gleichzeitig 64 Bytes entsteht, ist daher vernachlässigbar.
 
 Ein Prozessorcache besteht üblicherweise aus mehreren Ebenen, Cache-Levels genannt, wobei die Core-Architektur etwa 3 Cache-Levels besitzt, welche absteigend größer und langsamer werden. Ein Intel i7-4770 besitzt pro physischen Kern beispielsweise einen 32 KiB-L1-Datencache mit einer Zugriffslatenz von 4 bis 5 Taktzyklen und einen 256 KiB-L2-Cache mit einer Latenz von 12 Taktzyklen \cite{CacheStatsHaswell}.
 Im Unterschied zu den beiden ersten Cache-Levels teilen sich in der Core-Architektur alle Kerne den L3-Cache. 
-Dies bedeutet aus Angreiferinnerensicht\todo[size=\footnotesize]{Überleg dir, ob du wirklich gendern möchtest. Ich persönlich habe kein Problem  damit, wenn es alles männliche Formen sind. Wenn du die weibliche Form nehmen möchstest, hast du dich aber hier verhaspelt.} einen großen Vorteil, da ein Programm \todo[size=\footnotesize]{sogar JEDES Programm} den Zustand des L3-Caches beeinflusst, und zwar unabhängig davon, auf welchem Kern es ausgeführt wird.
-Dagegen muss die Angreiferin bei einem Angriff auf den L1- beziehungsweise L2-Cache sicherstellen, dass ihr Code und das angegriffene Programm auf dem selben physischen\todo[size=\footnotesize]{physikalisch glaube ich} Kern ausgeführt werden.
+Dies bedeutet aus Sicht der Angreiferin einen großen Vorteil, da jedes Programm den Zustand des L3-Caches beeinflusst, und zwar unabhängig davon, auf welchem Kern es ausgeführt wird.
+Dagegen muss die Angreiferin bei einem Angriff auf den L1- beziehungsweise L2-Cache sicherstellen, dass ihr Code und das angegriffene Programm auf dem selben physischen Kern ausgeführt werden.
 
 Die Ersetzungsstrategie legt fest, welcher Eintrag aus dem Cache verdrängt wird, sofern alle Einträge des zugehörigen Cache-Sets belegt sind. 
 Intels Core-Prozessoren verdrängen typischerweise den Eintrag, welcher bezogen auf die letzte Zugriffszeit am ältesten ist, auch least-recently-used-Strategie (LRU) genannt. 
-Ab der Ivy-Bridge-Generation passt Intel diese Strategie situationsbedingt an \cite{CacheReplacementPolicy}, wobei der Algorithmus hinter den Ersetzungsstrategien ebenfalls nicht öffentlich zugänglich ist. \todo[size=\footnotesize]{Und wir wissen nicht, wie sie sie anpassen? Haben wir vermutungen aus anderen Papern?}
+Ab der Ivy-Bridge-Generation passt Intel diese Strategie situationsbedingt an \cite{CacheReplacementPolicy}, wobei der Algorithmus hinter den Ersetzungsstrategien ebenfalls nicht öffentlich zugänglich ist. TODO Vermutungen aus Paper Intel Ivy Bridge cache replacement policy, j und Website Finger-Printing hinzufügen
+\todo[size=\footnotesize]{Und wir wissen nicht, wie sie sie anpassen? Haben wir vermutungen aus anderen Papern?}
 
 \subsection{Assoziativität}
 
@@ -51,92 +56,43 @@ Die Zuordnung von Hauptspeicheradressen zu den Cache-Sets ist nicht öffentlich 
 %\end{enum}
 
 \subsection{\textit{Inclusive} und \textit{exclusive}}
-Ob die Inhalte eines Caches auch in anderen Cache-Levels verfügbar sind, ist ein für diese Arbeit wichtiges Designkriterium. \todo[size=\footnotesize]{Warum? Vielleicht brauchst du hier erklärung oder du lässt den Bezug zur Abreit erst mal weg und hoffst auf später} Ein Cache wird als \textit{inclusive} bezeichnet, falls alle Daten, die in einem niedrigen Cache-Level vorliegen, zusätzlich auch in den höheren Cache-Levels eingelagert sind. 
-So besitzen die Caches aller Desktop-Versionen der Core-Architektur diese Eigenschaft (Stand Juni 2018). \todo[size=\footnotesize]{Kein sinnvoller Satz}
-Die Caches der Desktop-Prozessoren des Konkurrenten AMD zum Beispiel die Zen-Architektur \cite{CacheRyzen} sowie jene der aktuellen Skylake-X-Prozessoren \cite{CacheSkylakeX} für Intels High-Performance-Plattform besitzen diese Eigenschaft nicht.
+Ein Cache wird als \textit{inclusive} bezeichnet, falls alle Daten, die in einem niedrigen Cache-Level vorliegen, zusätzlich auch in den höheren Cache-Levels eingelagert sind. 
+So besitzen die Caches aller Desktop-Versionen der Intel Core-Architektur diese inclusive-Eigenschaft (Stand Juni 2018).
+Die Caches der Desktop-Prozessoren des Konkurrenten AMD zum Beispiel die Zen-Architektur \cite{CacheRyzen} sowie jene der aktuellen Skylake-X-Prozessoren \cite{CacheSkylakeX} für Intels High-Performance-Plattform besitzen diese Eigenschaft hingegen nicht.
 Wegen des großen Marktanteils von Intel-CPUs kann festgehalten werden, dass der Großteil der sich im Einsatz befindlichen Prozessoren mit \textit{Inclusive}-Caches ausgestattet ist.
 
 \section{Cache-Angriffe}
 
-Cache-Angriffe beschreiben eine generelle Klasse von Mikro-Architektur-Seitenkanalangriffen, welche den Cache verwenden, der als geteilte Ressource zwischen verschiedenen Prozessen fungiert, um Informationen abzugreifen. \todo[size=\footnotesize]{Verschachtelt} Durch diesen Angriff können sichere und unsichere Prozesse über den geteilten Cache trotz liegender Schutzmechanismen wie virtualisiertem Speicher oder Hypervisor-Systemen kommunizieren. \todo[size=\footnotesize]{Was ist ein liegender Schutzmechanismus?}
+Cache-Angriffe beschreiben eine generelle Klasse von Mikro-Architektur-Seitenkanalangriffen, welche den Cache verwenden um Informationen abzugreifen, wobei der Cache als geteilte Ressource zwischen verschiedenen Prozessen fungiert. Durch diesen Angriff können sichere und unsichere Prozesse über den geteilten Cache trotz höher liegender Schutzmechanismen wie virtualisiertem Speicher oder Hypervisor-Systemen kommunizieren. 
 Eine Angreiferin könnte ein Programm entwickeln, welches Informationen über den inneren Zustand eines anderen Prozesses sammelt, und so AES-Schlüssel \cite{BernsteinAES} sowie RSA-Schlüssel \cite{CacheAttackRSA} abgreifen auch über die Grenzen von virtuellen Maschinen hinweg.
 
 \subsection{Flush and Reload}
 
-Ausgang dieses Angriffs ist der x86-Assemblerbefehl \textit{clflush}\todo[size=\footnotesize]{Falsch. Armv8 hat auch eine flush Befehl! Damit kann ich auch angriffe machen!}, welcher eine Adresse entgegennimmt und die dazugehörige Cache-Line invalidiert, sodass die Daten beim nächsten Zugriff aus dem Hauptspeicher geladen werden müssen. TODO \todo[size=\footnotesize]{Du hast ja schon geschrieben todo. Hier vielleicht auch eine kleine abbildung, aber defintiv irgendwas über flush WAIT reload und zeitmessungen}\todo{oh, und eine Quelle}
+Ausgang dieses Angriffs ist ein architekturspezifische Flush-Befehl, wie etwa der x86-Assemblerbefehl \textit{clflush}, welcher eine Adresse entgegennimmt und die dazugehörige Cache-Line invalidiert. Dadurch müssen die Daten beim nächsten Zugriff aus dem Hauptspeicher geladen werden müssen.
+TODO \todo[size=\footnotesize]{Du hast ja schon geschrieben todo. Hier vielleicht auch eine kleine abbildung, aber defintiv irgendwas über flush WAIT reload und zeitmessungen}\todo{oh, und eine Quelle}
 
 \subsection{Prime and Probe}
 
 Ein \textit{Eviction-Set} sei eine Menge Adressen, welche einen Cache-Eintrag aus einem Cache verdrängen kann. D.h. ein Eviction-Set, welches einen Eintrag aus dem L3-Cache löscht, würde den gleichen Zweck wie der \textit {clflush}-Assemblerbefehl im Flush-and-Reload-Angriff erfüllen. 
-Um einen Eintrag aus dem Cache zu verdrängen, müssen mehrere Adressen der Daten aus dem \textit{Eviction-Set} \todo[size=\footnotesize]{Nur beim ersten mal kursiv} von der CPU auf das gleiche Cache-Set wie der zu verdrängende Eintrag abgebildet werden, sodass die Größe eines \textit{Eviction-Sets} mindestens die Assoziativität des Caches erreichen sollte.
+Um einen Eintrag aus dem Cache zu verdrängen, müssen mehrere Adressen der Daten aus dem Eviction-Set von der CPU auf das gleiche Cache-Set wie der zu verdrängende Eintrag abgebildet werden, sodass die Größe eines Eviction-Sets mindestens die Assoziativität des Caches erreichen sollte.
 
 Die Idee beim Prime and Probe Angriff besteht darin, in einer sich wiederholenden Abfolge zuerst den Cache zu primen, dann das Opferprogramm rechnen zu lassen und anschließend zu proben.
-In der Priming-Phase werden mittels der \textit{Eviction-Sets} gezielt Cache-Sets vollständig mit den Daten aus dem \textit{Eviction-Sets} belegt.
+In der Priming-Phase werden mittels der Eviction-Sets gezielt Cache-Sets vollständig mit den Daten aus dem Eviction-Sets belegt.
 In der anschließenden Berechnungsphase werden einige Einträge aus den geprimten Cache-Sets vom Opferprogramm verdrängt. Abschließend berechnet die Angreiferin die Summe der Zugriffszeiten auf alle Einträge in einem Eviction-Set.
-Sofern das Opferprogramm in dem zum Eviction-Set korrelierenden Cache-Set Einträge verdrängt hat, kann die Angreiferin eine Abweichung nach oben in ihrer Messung feststellen, da die verdrängten Einträge eine erhöhte Zugriffszeit verursachen. \todo[size=\footnotesize]{Hier nochmal deutlich: Was kann sie daraus schließen?}
+Sofern das Opferprogramm in dem zum Eviction-Set korrelierenden Cache-Set Einträge verdrängt hat, kann die Angreiferin eine Abweichung nach oben in ihrer Messung feststellen, da die verdrängten Einträge eine erhöhte Zugriffszeit verursachen. Somit kann aus den Zugriffszeiten der Eviction-Sets auf die Speicherzugriffe des Opferprogramms geschlossen werden.
 
-Die \textit{Eviction-Sets}, die zur Durchführung eines Cache-Angriffs notwendig sind, lassen sich nicht immer leicht finden, da die virtuellen Adressen in manchen Umgebungen nur eingeschränkt zugänglich sind. \todo[size=\footnotesize]{Deutliches jein. Auf deine eigenen virtuellen adressen hast du unbeschränkt zugriff. Auf die physikalischen und das mapping aber nicht. Auf die virtuellen adressen von anderen prozessen auch nicht. Ich denke du musst hier differenzieren}
-So lässt sich häufig nur garantieren, dass maximal die untersten 12 virtuellen Adressbits mit den physikalischen Adressbits identisch sind, da die typische Page-Size 4096 ($2^{12}$) Bytes beträgt. \todo[size=\footnotesize]{Die Verknüpfung verstehe ich nicht, was hat mit pagesize mit der anzahl zugänglicher Bits zu tun?}\todo[size=\footnotesize]{Schreib bitte hin, wie viel bits du zum adressieren brauchst}
-In solchen Fällen müssen die \textit{Eviction-Sets} in einem Trial-and-Error-Verfahren ermittelt werden, wie es der Algorithmus TODO %\ref[alg:evictionSet}
-beschreibt.\todo[size=\footnotesize]{Ich denke der genaue Algorithmus sollte erst im nächsten Kaptiel kommen. Das Grundlagen-Kapitel wird beim Lesen übersprungen, hier sollte keine Forschung oder Methodik von dir drin stehen.}
-\todo[size=\footnotesize]{Beschreibe den Algorithmus bitte in einzelteilen, und gib auch den code dafür einzeln an. Der komplette Code gehört in den Anhang.}\todo[size=\footnotesize]{Nutze eine kleinere Schriftart für listings}
+Die Eviction-Sets, die zur Durchführung eines Cache-Angriffs notwendig sind, lassen sich nicht immer leicht finden, da das Mapping der virtuellen auf die physischen Adressen in manchen Umgebungen nur eingeschränkt zugänglich ist.
+So ist aber in der Regel das Mapping der virtuellen und physischen Adressen bei den Adressbits der Speicher-Pages identisch, welche etwa unter Windows und Linux zur Zeit 4096 Bytes groß sind. Somit ist in diesem Fall garantiert, dass die untersten 12 virtuellen Adressbits mit den physischen Adressbits identisch sind. Der L3-Caches des Intel i7-4770 ist etwa 8 Mib groß, sodass 11 Bits des Mapping auf die physischen Adressen unbekannt sind.
+In solchen Fällen müssen die Eviction-Sets in einem Trial-and-Error-Verfahren ermittelt werden, wie es der Algorithmus TODO %\ref[alg:evictionSet}
+beschreibt.
+
+TODO algorithmus prime probe pseudocode generic
+
 
 %Beschreibe Algorithmus
 %Hierfür werden zuerst wiederholt Speicherblöcke angefordert, wobei solche in einer Menge gesammelt werden, welche 
 
-\SetKwProg{Fn}{Function}{}{}
 
-\begin{algorithm}[h]
-\DontPrintSemicolon
-\caption{Psuedo-Code für Eviction-Set Algorithmus}
-\label{alg:evictionSet}
-
-\Fn{$EvictionSetFinder(memoryBlocks)$}{
-    groups $\leftarrow$ empty\;
-    \While{size(memoryBlocks > 0}{
-        evictionSet $\leftarrow$ empty\;
-		witness $\leftarrow$ expand(evictionSet, memoryBlocks)\;
-		
-		\If{witness != failed}{
-    		contract(evictionSet, memoryBlocks, witness)\;
-    		witnessSet $\leftarrow$ collect(evictionSet, memoryBlocks, witnessSet)\;
-    		groups.add(union(evictionSet, witness, witnessSet))\;
-		}
-    }
-}
-
-\Fn{$Expand(evictionSet, memoryBlocks)$}{
-	\While{size(candidateSet) > 0}{
-		witnesss = SelectRandomItem(candidateSet)\;
-		\If{checkevict(evictionSet, witnesss)}{
-			\Return witnesss
-		}
-		evictionSet.add(witnesss)\;
-	}
-	\Return failed;
-}
-
-\Fn{$Contract(evictionSet, memoryBlocks, witness)$}{
-	\ForEach{candidate in evictionSet}{
-		\If{checkevict(evictionSet, witness)}{
-			mermoryBlocks.add(candidate)\;
-			evictionSet.add(candidate)\;	
-		}		
-	}
-}
-
-\Fn{$Collect(evictionSet, memoryBlocks)$}{
-	witnessSet = empty\;
-	\ForEach{candidate in mermoryBlocks}{
-		\If{checkevict(evictionSet, candidate)}{
-			memoryBlocks.delete(candidate)\;
-			witnessSet.add(candidate)\;
-		}
-	}
-	\Return witnessSet;
-}
-
-\end{algorithm}
 
 \subsection{RSA}
 
