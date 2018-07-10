@@ -35,18 +35,28 @@ Dagegen muss die Angreiferin bei einem Angriff auf den L1- beziehungsweise L2-Ca
 
 Die Ersetzungsstrategie legt fest, welcher Eintrag aus dem Cache verdrängt wird, sofern alle Einträge des zugehörigen Cache-Sets belegt sind. 
 Intels Core-Prozessoren verdrängen typischerweise den Eintrag, welcher bezogen auf die letzte Zugriffszeit am ältesten ist, auch least-recently-used-Strategie (LRU) genannt. 
-Ab der Ivy-Bridge-Generation passt Intel diese Strategie situationsbedingt an \cite{CacheReplacementPolicy}, wobei der Algorithmus hinter den Ersetzungsstrategien ebenfalls nicht öffentlich zugänglich ist. TODO Vermutungen aus Paper Intel Ivy Bridge cache replacement policy, j und Website Finger-Printing hinzufügen
-\todo[size=\footnotesize]{Und wir wissen nicht, wie sie sie anpassen? Haben wir vermutungen aus anderen Papern?}
+Ab der Ivy-Bridge-Generation passt Intel diese Strategie situationsbedingt an \cite{CacheReplacementPolicy} und verwendet ebenfalls  die bimodul insertion policy(BIP), welche häufig den zuletzt hinzugefügten Eintrag löscht. Dies kann von Vorteil sein, wenn das Working-Set des Programms die Größe des Caches übersteigt und die LRU-Strategie zu keinen Cache-Hits führen würde.
+Bei Ivy-Bridge Prozessoren stellten die Autoren fest, dass manche Cache-Set die LRU-Strategie und manche die BIP-Strategie verfolgen. Es wird daher ein Echtzeitvergleich zwischen beiden Strategien vermutet, um herauszufinden welche Strategie weniger Cache-Misses produziert. Bei den Nachfolger Generationen Haswell und Broadwell stellten die Autoren fest, dass zwischen beiden Strategien mit hoher Frequenz gewechselt wird, wobei der Algorithmus hinter den Ersetzungsstrategien ebenfalls nicht öffentlich zugänglich ist.
 
 \subsection{Assoziativität}
 
 Sofern die Auswahl des Cache-Eintrags für die Daten einer bestimmten Hauptspeicheradresse keinerlei Beschränkungen unterliegt, wird von einem voll-assoziativen Cache gesprochen. 
-Das andere Extrem wäre ein einfach-assoziativer Cache beziehungsweise eine direkte Abbildung, wobei die Adresse des Hauptspeichers, von der die Daten stammen, den zu wählenden Cache-Eintrag eindeutig festlegt. \todo[size=\footnotesize]{Hier helfen Bilder. Du musst nicht selber malen, sondern kannst auch ein Bild von jemand anders nutzen und das sauber angeben}
+Das andere Extrem wäre ein einfach-assoziativer Cache beziehungsweise eine direkte Abbildung, wobei die Adresse des Hauptspeichers, von der die Daten stammen, den zu wählenden Cache-Eintrag eindeutig festlegt.
+Der Mittelweg ist die n-Wege Assoziativität, bei dem die Daten nur an n Cache-Einträgen liegen können (siehe auch Abb.\ref{fig:CacheAsso}).
+
+\begin{figure}[h]
+\label{fig:CacheAsso}
+\caption{Links ist ein direkt abgebildeter Cache zu sehen, bei dem die Hauptspeicheradresse den Cache-Index vollumfänglich festlegt. Rechts ist ein 2-Wege assoziativer Cache zu sehen bei dem etwa die Hauptspeicheradresse 0 sowohl auf \textit{Index 0, Way 0} als auch auf \textit{Index 0, Way 1} im Cache abgebildet werden kann.}
+\centering
+\includegraphics[width=0.8\textwidth]{basics/Cache_Asso.png}
+\end{figure}
 
 Der L3-Cache eines Intel i7-4770 ist beispielsweise 8 MiB groß und verfügt daher über 131072 ($2^{17}$) Cache-Einträge in der Größe einer Cache-Line. 
 Wäre dieser Cache nun voll-assoziativ, müsste er bei jeder Anfrage komplett durchsucht werden. Aus diesem Grund ist der Cache in Cache-Sets unterteilt, wobei Daten einer spezifischen Hauptspeicheradresse nur in genau ein Cache-Set eingelagert werden können. 
 Der i7-4770 besitzt 8192 dieser Cache-Sets, womit sich eine Assoziativität von 16 ergibt, das heißt man teilt die Anzahl der Cache-Einträge durch Anzahl der Cache-Sets. Dies bedeutet, dass die Suche nach den Daten einer Hauptspeicheradresse im Cache auf 16 Einträge begrenzt ist. 
-Die Zuordnung von Hauptspeicheradressen zu den Cache-Sets ist nicht öffentlich dokumentiert. \todo[size=\footnotesize]{Hier fehlt wieder Mapping durch letzte Bits der Adresse}\todo[size=\footnotesize]{Hier fehlen Slices und die vereinfachte Annahme, die man über sie treffen kann.}
+Die Zuordnung der physischen Hauptspeicheradressen zu den Cache-Sets ist nicht öffentlich dokumentiert.
+Des Weiteren wird der Cache in \textit{Slices} unterteilt, wobei jede Slice einem Kern zugeordnet wird. Die Slices sind mittels eines Ringbuses verbunden, sodass jeder Kern auf Daten jeder Slice zugreifen kann. Die Zugriffslatenz erhöht sich mit der Anzahl der benötigten Hops, jedoch ist diese Erhöhung im Bereich von etwa 10 ns pro Hop. Diese Latenzunterschiede sind daher zu gering, um die Erkennung zwischen Cache-Hit und Cache-Miss zu gefährden, welche bei ca. 60 ns liegen \cite{TheSpyInTheSandbox}. Im Rahmen dieser Arbeit sind Slices daher vernachlässigbar, sodass etwa bei Cache-Spezifikationen Slices nicht gesondert erwähnt werden.
+\todo[size=\footnotesize]{Hier fehlt wieder Mapping durch letzte Bits der Adresse (Beschrieben in Abschnitt Prime and Probe)}
 
 %Ein CPU-Cache enthält mehrere Einträge, welche folgende Bestandteile besitzen:
 %\begin{enum}
@@ -68,8 +78,8 @@ Eine Angreiferin könnte ein Programm entwickeln, welches Informationen über de
 
 \subsection{Flush and Reload}
 
-Ausgang dieses Angriffs ist ein architekturspezifische Flush-Befehl, wie etwa der x86-Assemblerbefehl \textit{clflush}, welcher eine Adresse entgegennimmt und die dazugehörige Cache-Line invalidiert. Dadurch müssen die Daten beim nächsten Zugriff aus dem Hauptspeicher geladen werden müssen.
-TODO \todo[size=\footnotesize]{Du hast ja schon geschrieben todo. Hier vielleicht auch eine kleine abbildung, aber defintiv irgendwas über flush WAIT reload und zeitmessungen}\todo{oh, und eine Quelle}
+Ausgang dieses Angriffs ist ein architekturspezifische Flush-Befehl, wie etwa der x86-Assemblerbefehl \textit{clflush}, welcher eine Adresse entgegennimmt und die dazugehörige Cache-Line invalidiert. Dadurch müssen die Daten beim nächsten Zugriff aus dem Hauptspeicher geladen werden müssen. \cite{FlushReload}
+TODO \todo[size=\footnotesize]{Du hast ja schon geschrieben todo. Hier vielleicht auch eine kleine abbildung, aber defintiv irgendwas über flush WAIT reload und zeitmessungen}
 
 \subsection{Prime and Probe}
 
