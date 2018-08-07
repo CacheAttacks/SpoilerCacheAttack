@@ -8,7 +8,7 @@
              "type": "shell",
              "command": "g++",
              "args": [
-                 "-g", "example_code.c", "-o", "example_code", "-Wall"
+                 "-g", "example_code.c", "generic_byte_attack.c", "-o", "example_code", "-Wall"
              ],
              "group": {
                  "kind": "build",

