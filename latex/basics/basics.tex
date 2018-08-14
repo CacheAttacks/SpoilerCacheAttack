@@ -102,12 +102,37 @@ TODO algorithmus prime probe pseudocode generic
 %Beschreibe Algorithmus
 %Hierfür werden zuerst wiederholt Speicherblöcke angefordert, wobei solche in einer Menge gesammelt werden, welche 
 
-
-
 \subsection{RSA}
 
-Falls RSA angegriffen wird TODO
+RSA (Rivest–Shamir–Adleman) ist ein 1978 veröffentlichtes und weitverbreitetes Public-Key-Kryptosystem.
+Das grundlegende Prinzip hinter RSA ist es ist einfach große positive Integer $e,d,n$ zu finden, sodass $(m^d)^e \ m (mod m)$ gilt, aber schwer ein $d$ zu finden wenn nur $e$ und $n$ gegeben sind.
 
-RSA Key Gen, RSA Verschlüsselung Entschlüsselung
+Der RSA-Algorihtmus besteht aus vier Schritten: Der Schlüsselerzeugung, der Schlüsselverteilung, der Verschlüsselung und Entschlüsselung.
+
+Für die Schlüsselerzeugung werden zwei Primzahlen $p$ und $q$ benötigt, welche aus Sicherheitsgründen eine ähnliche Bitlänge haben sollten. 
+
+Anschließend wird $n = pq$ berechnet. Die Länge von $n$ wird auch als Schlüssellänge bezeichnet.
+
+Eine heute gängige Schlüssellänge ist 2048 Bit, sodass die Bitlänge jeder Primzahl in etwa 1024 Bit beträgt. 
+Um derart große Primzahlen in akzeptabler Zeit zu finden werden probabilistische Primzahltests eingesetzt, welche mit einer hohen Wahrscheinlichkeit garantieren, dass die gefundenen Zahlen prim sind.
+
+Des Weiteren wird $\lambda(n) = kgV(\lambda(p),\lambda(q)) = kgV(p-1, q-1)$ berechnet, wobei $\lambda$ die Carmichael-Funktion beschreibt.
+Zu jeder natürlichen Zahl $n$ liefert die Carmichael-Funktion die kleinste Zahl $\lambda(n)$, sodass $a^m \equiv 1 \mod n$ für jedes $a$ gilt.
+
+Sei $e$ eine Ganzzahl mit $1<e<\lambda(n)$ und teilerfremd zu $\lambda(n)$, d.h. es gilt $ggT(e,\lambda(n)) = 1$. Weiter sei $d \equiv e^{-1} \mod \lambda(n)$.
+
+Der öffentliche Schlüssel besteht aus $n$ und dem Exponenten $e$ und muss an Personen weitergegeben werden, welche Nachrichten verschlüsseln möchten.
+
+Der geheime Schlüssel ist der Exponent $d$, wobei die Zahlen $p,q,\lambda(n)$ ebenfalls geheim bleiben müssen, da andernfalls $d$ leicht berechnet werden könnte.
+
+Um eine Nachricht $m$ mit $0 \leq m < n$ zu Verschlüsseln berechnet der Sender $c \equiv m^e \mod n$ mit dem $e$ aus dem öffentlichen Schlüssel des Empfängers und sendet den Chiffretext $c$ an den Empfänger.
+
+Der Empfänger wiederum nutzt sein $d$ aus dem privaten Schlüssel um $c^d \equiv (m^e)^d \equiv m \mod n$, die ursprüngliche Nachricht, zu berechnen.
+
+
+
+
+%RSA Key Gen, RSA Verschlüsselung Entschlüsselung
+
 
 \todo[size=\footnotesize]{Fehlt: irgendwas in Richtung Drive-by, JIT-Environments, WebAssembly}

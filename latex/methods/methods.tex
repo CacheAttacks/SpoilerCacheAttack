@@ -159,6 +159,54 @@ TODO Algorithmus in Einzelheiten beschreiben
 
 Details zu Implementierung in Mozilla NSS
 
+Mozilla Network Security Services(NSS) ist ein Menge von Bibliotheken welche eine plattformübergreifende Entwicklung von sicheren Client- und Server-Anwendungen anstrebt. Dabei wird unterem anderem TLS oder S/MIME implementiert. Mozilla NSS wird etwa im Firefox-Browser und der Mail-Anwendung Thunderbird eingesetzt.
+Der Quellcode ist unter der Mozilla Public License verfügbar und kann online etwa im Firefox-Repository unter https://dxr.mozilla.org/mozilla-central/source/security/nss eingesehen werden.
+
+Im folgenden soll die Schlüsselerzuegung für das RSA-Verfahren in Mozilla NSS beschrieben werden.
+
+Der Code zur Schlüsselerzeugung liegt im Unterordner lib/freebl. Ausgehend von der Funktion RSA_NewKey in rsa.c
+
+
+
+Die Funktion RSA_PrivateKeyCheck prüft ob ein übergebener private Schlüssel alle Anforderungen erfüllt. So wird etwa die Teilerfremdheit von $e$ zu $p-1$ und $q-1$, d.h. $ggT(e,p-1) = 1$ und $ggT(e,q-1) = 1$ geprüft.
+Aus Performancegründen wird der Exponent $e$, anders als ursprünglich im RSA-Algorithmus beschrieben, auf den Wert 65537 fixiert.
+Interessant ist die Funktion $mp_gcd$ (Pseudocode siehe \ref{alg:mp_gcd}), welche den größten gemeinsamen Teiler nachdem binären Verfahren von Josef Strein berechnet.
+
+\begin{algorithm}[h]
+\DontPrintSemicolon
+\caption{Psuedo-Code für mp_gcd nach Josef Stein}
+\label{alg:mp_gcd}
+
+\Fn{$mp_gcd(u,v)$}{
+    k $\leftarrow$ 0\;
+    \While{iseven(u) \& iseven(v)}{
+        u $\leftarrow$ u/2\;
+        v $\leftarrow$ v/2\;
+        k++\;
+    }
+
+    \If{isodd(u)}{
+        t $\leftarrow$ -v\;
+    } \Else {
+        t $\leftarrow$ v\;
+    }
+
+    \While{t $\neq$ 0}{
+        \While{iseven(t)}{
+            t $\leftarrow$ t/2\;
+        }
+        \If{t > 0} {
+            u $\leftarrow$ t\;
+        } else {
+            v $\leftarrow$ -t\;
+        }
+        t $\leftarrow$ u - v\;
+    }
+
+    \Return u*2^k
+}
+\end{algorithm}
+
 Was wird angegriffen
 
 Verweis auf Paper Cache-Timing Attacks on RSA Key Generation
