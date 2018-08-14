@@ -56,9 +56,9 @@ unsigned int* read_byte_from_cache(){
             "rdx",
             "memory"
         );
-        if(mix_i == 35){
-            printf("%#010x\n", my_timey_lines + 0x1000 * mix_i);
-        }
+        //if(mix_i == 35){
+        //    printf("%#010x\n", my_timey_lines + 0x1000 * mix_i);
+        //}
         pipeline_flush();
         delay_arr[mix_i] = t2 - t1;
     }

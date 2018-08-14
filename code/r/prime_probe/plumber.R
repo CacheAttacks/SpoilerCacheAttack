@@ -127,6 +127,7 @@ a <- Sys.time()
     tbl <- tbl[,es_vec, drop=F]
   
   tbl <- tbl[-(1:150),]
+  #tbl <- tbl[-(nrow(tbl)-10:nrow(tbl)),]
   
   tmp_tbl <<- tbl
   tbl_melt <- reshape2::melt(tbl)

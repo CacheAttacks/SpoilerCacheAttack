@@ -1273,6 +1273,13 @@
   <span><input type="button" id="btnGetIdleTimes" value="Get idle times"></span>
   <span><input type="button" id="btnFindInterestingCacheSets" value="Find interesting cache sets"></span>
 </span>
+</br></br>
+<span id='findInterestingCacheSetsTemplate'>
+<span><input type="button" id="btnTemplateDetection" value="Template detection"></span>
+<span><input type="button" id="btnInterestingShift" value="Find interesting shift"></span>
+<span><input type="button" id="btnInterestingSub" value="Find interesting sub"></span>
+<span><input type="button" id="btnInterestingGcd" value="Find interesting gcd"></span>
+</span>
 
     <div class="emscripten">
       <progress value="0" max="100" id="progress" hidden=1></progress>
@@ -1548,13 +1555,30 @@
       }
 
       document.getElementById('btnGetIdleTimes').onclick = function() {
-        var number_of_samples = 300;
+        var number_of_samples = 1000;
         Module['asm']._get_idle_times(Module['appStatePtr'], document.getElementById('lowerLimitMonitoredEsInteresting').value, document.getElementById('upperLimitMonitoredEsInteresting').value, number_of_samples);
       }
 
       document.getElementById('btnFindInterestingCacheSets').onclick = function() {
         $.loadScript('interesting_cache_sets.js', function(){});
       }
+
+      document.getElementById('btnTemplateDetection').onclick = function() {
+        $.loadScript('template_detection.js', function(){});
+      }
+
+      document.getElementById('btnInterestingShift').onclick = function() {
+        $.loadScript('interesting_shift.js', function(){});
+      }
+
+      document.getElementById('btnInterestingSub').onclick = function() {
+        $.loadScript('interesting_sub.js', function(){});
+      }
+
+      document.getElementById('btnInterestingGcd').onclick = function() {
+        $.loadScript('interesting_gcd.js', function(){});
+      }
+      
     </script>
   </body>
 </html>
