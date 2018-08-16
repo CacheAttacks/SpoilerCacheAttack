@@ -9,16 +9,18 @@ $.loadScript('interesting_cache_sets.js', function(){
 
     var interestingCacheSetsShiftFiltered = Module['interestingCacheSetsShift'].filter(value => -1 == Module['interestingCacheSetsSub'].indexOf(value));
     var interestingCacheSetsSubFiltered = Module['interestingCacheSetsSub'].filter(value => -1 == Module['interestingCacheSetsShift'].indexOf(value));
-    console.log(interestingCacheSetsShiftFiltered);
-    console.log(interestingCacheSetsSubFiltered);
+    //console.log(interestingCacheSetsShiftFiltered);
+    //console.log(interestingCacheSetsSubFiltered);
+
+    const reducer = (accumulator, currentValue) => accumulator + currentValue + "(" +  Math.floor(currentValue/64) + "," + currentValue%64 + ") ";
 
 
     //intersection of shift and gcd
     var intersectGcdShift = Module['interestingCacheSetsGcd'].filter(value => -1 !== interestingCacheSetsShiftFiltered.indexOf(value));
-    console.log("intersectGcdShift: " + intersectGcdShift);
+    console.log("%cintersectGcdShift: " + intersectGcdShift.reduce(reducer, ""), 'color: red');
 
     //intersection of sub and gcd
     var intersectGcdSub = Module['interestingCacheSetsGcd'].filter(value => -1 !== interestingCacheSetsSubFiltered.indexOf(value));
-    console.log("intersectGcdSub: " + intersectGcdSub);
+    console.log("%cintersectGcdSub: " + intersectGcdSub.reduce(reducer, ""), 'color: red');
 });
 

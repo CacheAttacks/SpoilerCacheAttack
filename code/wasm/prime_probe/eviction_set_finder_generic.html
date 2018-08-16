@@ -1257,6 +1257,8 @@
   upper limit monitored es
   <span><input type="number" id="upperLimitMonitoredEs" value="-1" width="1"></span>
   <span><input type="button" id="btnSetMonitoredEs" value="Set monitored es"></span>
+  <span><input type="number" id="numberPrimeSpamDurationSec" value="-1" width="1"></span>
+  <span><input type="button" id="btnPrimeSpam" value="Prime Spam"></span>
 </span></br>
 <span id='buildEs'>
   upper limit es
@@ -1577,6 +1579,10 @@
 
       document.getElementById('btnInterestingGcd').onclick = function() {
         $.loadScript('interesting_gcd.js', function(){});
+      }
+
+      document.getElementById('btnPrimeSpam').onclick = function() {       
+        primeSpamEsWrapper(document.getElementById('numberPrimeSpamDurationSec').value);
       }
       
     </script>

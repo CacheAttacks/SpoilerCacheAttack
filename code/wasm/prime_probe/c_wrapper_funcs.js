@@ -4,6 +4,12 @@ sampleEsWrapper = function(numberOfSamples, slotTime, printToBrowser){
     Module['stopTimer']();
   }
 
+primeSpamEsWrapper = function(durationSec){
+    Module['startTimer']();
+    Module['asm']._prime_spam_es(Module['appStatePtr'], durationSec);
+    Module['stopTimer']();
+}
+
 buildEsWrapper = function(max_es){
     Module['startTimer']();
     while(Module['sharedArrayCounter'] < 10000000)

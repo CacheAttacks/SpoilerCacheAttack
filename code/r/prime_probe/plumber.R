@@ -95,7 +95,7 @@ find_noise_es <- function() {
 }
 
 
-#* @png (width=1300,height=950)
+#* @png (width=1500,height=750)
 #* @param selected_es select range e.g. 1:10
 #* @get /plotdata
 visualize_times <- function(selected_es){

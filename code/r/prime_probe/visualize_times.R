@@ -26,6 +26,9 @@ visualize_times("test7.txt")
 setwd("~/MA_2/master-moritz_krebbel-drive_by_cache_attacks//code/r/prime_probe/")
 plumber::plumb("plumber.R")$run(port=8000)
 
+sapply(strtoi(c("0x43c","0x617")), function(x) floor(x/64))
+
+
 
 tbl_melt <- reshape2::melt(tbl)
 tbl_melt[["sample"]] <- rep(1:nrow(tbl), ncol(tbl))

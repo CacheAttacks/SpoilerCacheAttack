@@ -1,7 +1,7 @@
 //much better results with 1000 instead 300
 var numberOfSamples = 1000;
-var numberOfRounds = 3;
-var threshold = 2;
+var numberOfRounds = 2;
+var threshold = 1;
 
 var numberOfObservedCacheSets = Module['numberOfObservedCacheSets'];
 console.log(numberOfObservedCacheSets);
@@ -27,17 +27,18 @@ for(var rounds=0; rounds<numberOfRounds; rounds++){
     // if(interestingCacheSets == ""){
     //     interestingCacheSets = "nothing found!";
     // }
-     console.log(interestingCacheSets);
+     //console.log(interestingCacheSets);
      //console.log("found "+ interestingCounter);
 }
 
 var listInterestingCacheSets = [];
 var interestingCacheSets = "over threshold: ";
-for(var i=0; i<numberOfObservedCacheSets; i++){
-    
+for(var i=0; i<numberOfObservedCacheSets; i++)
+{    
     if(arrNumberOfObservedCacheSets[i] >= threshold)
     {
-        interestingCacheSets += i + " ";
+        //"(floor64:" + Math.floor(i/64) +
+        interestingCacheSets += i + "(" +  Math.floor(i/64) + "," + i%64 + ") ";
         listInterestingCacheSets.push(i);
     }
 }

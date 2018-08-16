@@ -185,6 +185,28 @@ if(benchmarkmode){
   return this_app_state->l3->ngroups;
 }
 
+void prime_spam_es(void* app_state_ptr, int duration_sec)
+{
+  struct app_state* this_app_state = (struct app_state*)app_state_ptr;
+  //2500 counter iterations ~ 10us
+
+  if(!this_app_state->l3){
+    printf("app_state_ptr->l3 is null! Already called build_es?\n");
+    return;
+  }
+  int number_of_samples = 100000;
+
+  if(this_app_state->res){
+    free(this_app_state->res);
+  }  
+  this_app_state->res = calloc(number_of_samples * this_app_state->l3->nmonitored, sizeof(RES_TYPE));
+
+  uint64_t before = get_time_in_ms();
+  while(get_time_in_ms() - before < duration_sec * 1000){
+    l3_repeatedprobe(this_app_state->l3, number_of_samples, this_app_state->res, 0, this_app_state->type);
+  }
+}
+
 void sample_es(void* app_state_ptr, int number_of_samples, int slot_time
 #ifdef WASM
 , int plot
