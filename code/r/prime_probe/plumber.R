@@ -77,6 +77,15 @@ function(newdata){
   #print(newdata)
 }
 
+#* @param newdata monitored es index vec
+#* @post /changeindexvec
+function(newdata){
+  indexvec <<- newdata
+  print(indexvec)
+  indexvec <<- strsplit(indexvec, split=",")
+
+}
+
 #* @param newdata data for the file
 #* @get /changedataget
 function(newdata){
@@ -128,7 +137,7 @@ a <- Sys.time()
   
   tbl <- tbl[-(1:150),]
   #tbl <- tbl[-(nrow(tbl)-10:nrow(tbl)),]
-  
+  colnames(tbl) <- indexvec
   tmp_tbl <<- tbl
   tbl_melt <- reshape2::melt(tbl)
   tbl_melt[["sample"]] <- rep(1:nrow(tbl), ncol(tbl))

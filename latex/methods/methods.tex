@@ -164,13 +164,44 @@ Der Quellcode ist unter der Mozilla Public License verfügbar und kann online et
 
 Im folgenden soll die Schlüsselerzuegung für das RSA-Verfahren in Mozilla NSS beschrieben werden.
 
-Der Code zur Schlüsselerzeugung liegt im Unterordner lib/freebl. Ausgehend von der Funktion RSA_NewKey in rsa.c
+Der Code zur Schlüsselerzeugung liegt im Unterordner lib/freebl. Sobald die Schlüsselparameter $p,q,n,d,e$ bestimmt wurden, werden diese in der Funktion RSA_PrivateKeyCheck auf Gültigkeit überprüft (siehe Pseudo-Code \ref{alg:RSA_PrivateKeyCheck}).
 
+\begin{algorithm}[h]
+\DontPrintSemicolon
+\caption{Pseudo-Code für RSA_PrivateKeyCheck aus rsa.c}
+\label{alg:RSA_PrivateKeyCheck}
 
+\Fn{$RSA_PrivateKeyCheck(key)$}{
+    assert(p $\neq$ q)\;
+    assert(n == p * q)\;
+    assert(gcd(e, p-1) == 1)\;
+    assert(gcd(e, q-1) == 1)\;
+    assert(d*e == 1 mod p-1)\;
+    assert(d*e == 1 mod q-1)\;
+    assert(d_p == d mod p-1)\;
+    assert(d_q == d mod q-1)\;
+    assert(q * q^-1 == 1 mod p)\;
+}
+\end{algorithm}
 
-Die Funktion RSA_PrivateKeyCheck prüft ob ein übergebener private Schlüssel alle Anforderungen erfüllt. So wird etwa die Teilerfremdheit von $e$ zu $p-1$ und $q-1$, d.h. $ggT(e,p-1) = 1$ und $ggT(e,q-1) = 1$ geprüft.
+%Ausgehend von der Funktion RSA_NewKey in rsa.c
+
+%\begin{algorithm}[h]
+%\DontPrintSemicolon
+%\caption{Pseudo-Code für RSA_NewKey aus rsa.c}
+%\label{alg:mp_gcd}
+%
+%\Fn{$RSA_NewKey(keySizeInBits, e)$}{
+%    p $rightarrow$ generate_prime(keySizeInBits)\;
+%    q $rightarrow$ generate_prime(keySizeInBits)\;
+%    d $rightarrow$ rsa_build_from_primes(p,q,e)\;
+%}
+%\end{algorithm}
+
+Relvant für diese Arbeit sind im Wesentlichen Zeile 4 und 5 in denen die Teilerfremdheit von $e$ zu $p-1$ und $q-1$, d.h. $gcd(e,p-1) = 1$ und $gcd(e,q-1) = 1$ geprüft wird.
 Aus Performancegründen wird der Exponent $e$, anders als ursprünglich im RSA-Algorithmus beschrieben, auf den Wert 65537 fixiert.
-Interessant ist die Funktion $mp_gcd$ (Pseudocode siehe \ref{alg:mp_gcd}), welche den größten gemeinsamen Teiler nachdem binären Verfahren von Josef Strein berechnet.
+Interessant ist die Funktion $mp_gcd$ (Pseudocode siehe \ref{alg:mp_gcd}), welche den größten gemeinsamen Teiler nachdem binären Verfahren von Josef Strein \cite{} berechnet. Dieser Algorithmus verwendet zum berechnen des ggT ausschließlich Rechts-Shift-Operationen (Teilen durch 2) und Subtraktionen, wodurch dieser besonders für die in diesem Kontext verwendeten großen Zahlen interessant ist.
+Die Zeilen 1 bis 6 der Funktion $mp_gcd$ können in diesem Fall ignoriert werden, da der Exponent $e$ wie oben beschrieben immer 65537 und damit ungerade ist. Bedeutender hingegen ist die $while$-Schleife in den Zeilen 11 bis 17, welche abhängig von den Eingaben Fallunterscheidungen durchführt. Das Ziel ist hier die Rechts-Shift-Operation (Zeile 13) von der Subtraktionsfunktion (Zeile 17) zu unterscheiden, um die Zustände während der Berechnung zu rekonstruieren.
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
@@ -207,6 +238,6 @@ Interessant ist die Funktion $mp_gcd$ (Pseudocode siehe \ref{alg:mp_gcd}), welch
 }
 \end{algorithm}
 
-Was wird angegriffen
+%Was wird angegriffen
 
-Verweis auf Paper Cache-Timing Attacks on RSA Key Generation
+%Verweis auf Paper Cache-Timing Attacks on RSA Key Generation

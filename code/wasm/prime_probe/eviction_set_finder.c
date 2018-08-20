@@ -165,6 +165,7 @@ int main(int ac, char **av) {
   set_app_state_ptr((uint32_t)this_app_state);
   this_app_state->type = 0;
   this_app_state->idle_mean_values = 0;
+  this_app_state->monitored_es_index_vec = 0;
 
   //l3-cache i7-4770: 16-way-ass, 8192sets => 4+13+6=23bits (8MiB)
 

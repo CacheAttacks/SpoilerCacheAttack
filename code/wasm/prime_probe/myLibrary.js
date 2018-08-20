@@ -118,7 +118,16 @@ if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
         if(Module['byteFactor'] != 0){
             var POSTstr = Module['createPOSTStr'](Module['wasmMemoryArr'], Module['res']/Module['byteFactor'], Module['nrow'], Module['ncol']);
             Module['postxhr']('http://localhost:8000/changedata', POSTstr);
-            
+
+            var indexVecStartAdd = new Module['monitoredEsIndexVecPtr']/Module['byteFactor'];
+            var indexVecSize = Module['monitoredEsIndexVecSize'];
+            var indexString = "";
+            for(var i=0; i<indexVecSize; i++){
+                indexString += Module['wasmMemoryArr'][indexVecStartAdd + i].toString() + ",";
+            }
+
+            Module['postxhr']('http://localhost:8000/changeindexvec', indexString);
+
             d = new Date();
             Module['imgElement'].src = 'http://localhost:8000/plotdata?selected_es=' + document.getElementById('numberRangeEs').value + "&" + d.getTime();
         }
@@ -148,6 +157,13 @@ if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
 if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
     set_current_times_ptr: function(ptr) {
         Module['currentTimesPtr'] = ptr;
+    }
+});
+
+if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
+    set_monitored_es_index_vec_ptr: function(ptr, size) {
+        Module['monitoredEsIndexVecPtr'] = ptr;
+        Module['monitoredEsIndexVecSize'] = size;
     }
 });
 

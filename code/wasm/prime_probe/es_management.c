@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 #include "low.h"
 #include "vlist.h"
 #include "l3.h"
@@ -68,6 +69,44 @@ void change_type(void* app_state_ptr, int type){
   }
 }
 
+//set non-cohesive es
+//could replace set_monitored_es (refactoring effort does not worth it now)
+void set_monitored_es_arr(void* app_state_ptr, int* indices_arr, int indices_arr_size){
+  struct app_state* this_app_state = (struct app_state*)app_state_ptr;
+
+  int nsets = l3_getSets(this_app_state->l3);
+  int nmonitored = nsets/64;
+  int max_index = nmonitored-1;
+  printf("add: %p\n", indices_arr);
+
+  for(int i=0; i<indices_arr_size; i++){
+    int current_index = indices_arr[i];
+    printf("cur: %i\n", current_index);
+    if(current_index < 0){
+      printf("%i < 0\n", current_index);
+      return;
+    }
+    if(current_index >= max_index){
+      printf("%i >= number_of_es\n", current_index);
+      return;
+    }
+  }
+
+  l3_unmonitorall(this_app_state->l3);
+
+  memset(this_app_state->monitored_es_index_vec, 0, nmonitored);
+
+  for(int i=0; i<indices_arr_size; i++){
+    l3_monitor(this_app_state->l3, indices_arr[i] * 64);
+    this_app_state->monitored_es_index_vec[indices_arr[i]] = 1;
+  }
+
+  //sets these values, to preserve compatibility with set_monitored_es
+  this_app_state->monitored_es_changed = 1;
+  this_app_state->last_min_index = -2;
+  this_app_state->last_max_index = -2;
+}
+
 void set_monitored_es(void* app_state_ptr, int min_index, int max_index){
   struct app_state* this_app_state = (struct app_state*)app_state_ptr;
 
@@ -106,6 +145,9 @@ void set_monitored_es(void* app_state_ptr, int min_index, int max_index){
   this_app_state->monitored_es_changed = 1;
   this_app_state->last_min_index = min_index;
   this_app_state->last_max_index = max_index;
+
+  memset(this_app_state->monitored_es_index_vec, 0, nmonitored);
+  memset(this_app_state->monitored_es_index_vec + min_index, 1, max_index - min_index + 1);
 }
 
 void build_es(void* app_state_ptr, int max_es){
@@ -178,7 +220,17 @@ if(benchmarkmode){
   int nmonitored = nsets/64;
   printf("nmonitored: %i\n",nmonitored);
 
+
+
+  //create and set monitored es index vec
+  //size of this vector is not known in advance
+  if(this_app_state->monitored_es_index_vec)
+    free(this_app_state->monitored_es_index_vec);
+  this_app_state->monitored_es_index_vec = calloc(sizeof(uint32_t), nmonitored);
+
   set_monitored_es(app_state_ptr, -1, -1);
+
+  set_monitored_es_index_vec_ptr((uint32_t)this_app_state->monitored_es_index_vec, (uint32_t)nmonitored);
 
   printf("ncol: %i\n", this_app_state->l3->nmonitored);
 

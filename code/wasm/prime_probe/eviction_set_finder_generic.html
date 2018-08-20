@@ -1253,25 +1253,29 @@
 </span></br>
 <span id='setMonitoredEsGroup'>
   lower limit monitored es
-  <span><input type="number" id="lowerLimitMonitoredEs" value="-1" width="1"></span>
+  <span><input type="number" id="numberLowerLimitMonitoredEs" value="-1" width="1"></span>
   upper limit monitored es
-  <span><input type="number" id="upperLimitMonitoredEs" value="-1" width="1"></span>
-  <span><input type="button" id="btnSetMonitoredEs" value="Set monitored es"></span>
-  <span><input type="number" id="numberPrimeSpamDurationSec" value="-1" width="1"></span>
+  <span><input type="number" id="numberUpperLimitMonitoredEs" value="-1" width="1"></span>
+  <span><input type="button" id="btnSetMonitoredEs" value="Set monitored es"></span></br>
+
+  list es
+  <span><input type="text" id="textListEs" value="1,2,3" width="1"></span>
+  <span><input type="button" id="btnSetMonitoredEsArr" value="Set monitored es arr"></span>
+  <span><input type="number" id="numberPrimeSpamDurationSec" value="2" width="1"></span>
   <span><input type="button" id="btnPrimeSpam" value="Prime Spam"></span>
 </span></br>
 <span id='buildEs'>
   upper limit es
-  <span><input type="number" id="upperLimitEs" value="0" width="1"></span>
+  <span><input type="number" id="numberUpperLimitEs" value="0" width="1"></span>
   <span><input type="button" id="btnBuildEs" value="Build es"></span>
   <span><input type="number" id="numberBenchmarksruns" value="20" width="1"></span>
   <span><input type="button" id="btnBenchmarkmode" value="Benchmark es"></span>
 </span></br>
 <span id='findInterestingCacheSets'>
   lower limit monitored es
-  <span><input type="number" id="lowerLimitMonitoredEsInteresting" value="-1" width="1"></span>
+  <span><input type="number" id="numberLowerLimitMonitoredEsInteresting" value="-1" width="1"></span>
   upper limit monitored es
-  <span><input type="number" id="upperLimitMonitoredEsInteresting" value="-1" width="1"></span>
+  <span><input type="number" id="numberUpperLimitMonitoredEsInteresting" value="-1" width="1"></span>
   <span><input type="button" id="btnGetIdleTimes" value="Get idle times"></span>
   <span><input type="button" id="btnFindInterestingCacheSets" value="Find interesting cache sets"></span>
 </span>
@@ -1499,7 +1503,7 @@
       }
       document.getElementById('btnBuildEs').onclick = function() {
         if(Module['appStatePtr'] != 0){
-          buildEsWrapper(document.getElementById('upperLimitEs').value);
+          buildEsWrapper(document.getElementById('numberUpperLimitEs').value);
           document.getElementById('btnBuildEs').value = "Rebuild es";
         } else {
           console.log("Module['appStatePtr'] is null!");
@@ -1507,11 +1511,15 @@
       }
       document.getElementById('btnSetMonitoredEs').onclick = function() {
         if(Module['appStatePtr'] != 0){
-          Module['asm']._set_monitored_es(Module['appStatePtr'], document.getElementById('lowerLimitMonitoredEs').value, document.getElementById('upperLimitMonitoredEs').value);
+          Module['asm']._set_monitored_es(Module['appStatePtr'], document.getElementById('numberLowerLimitMonitoredEs').value, document.getElementById('numberUpperLimitMonitoredEs').value);
         } else {
           console.log("Module['appStatePtr'] is null!");
         }
       }
+      document.getElementById('btnSetMonitoredEsArr').onclick = function() {
+        $.loadScript('set_monitor_es_arr.js', function(){});
+      }
+
       document.getElementById('btnSearchForCovertChannel').onclick = function() {
         if(Module['appStatePtr'] != 0){
           
@@ -1550,7 +1558,7 @@
       //runs build es multiple times to benchmark performance
       document.getElementById('btnBenchmarkmode').onclick = function() {
         if(Module['appStatePtr'] != 0){
-          buildEsExWrapper(document.getElementById('upperLimitEs').value, 1, document.getElementById('numberBenchmarksruns').value);
+          buildEsExWrapper(document.getElementById('numberUpperLimitEs').value, 1, document.getElementById('numberBenchmarksruns').value);
         } else {
           console.log("Module['appStatePtr'] is null!");
         }
@@ -1558,7 +1566,7 @@
 
       document.getElementById('btnGetIdleTimes').onclick = function() {
         var number_of_samples = 1000;
-        Module['asm']._get_idle_times(Module['appStatePtr'], document.getElementById('lowerLimitMonitoredEsInteresting').value, document.getElementById('upperLimitMonitoredEsInteresting').value, number_of_samples);
+        Module['asm']._get_idle_times(Module['appStatePtr'], document.getElementById('numberLowerLimitMonitoredEsInteresting').value, document.getElementById('numberUpperLimitMonitoredEsInteresting').value, number_of_samples);
       }
 
       document.getElementById('btnFindInterestingCacheSets').onclick = function() {
