@@ -40,6 +40,7 @@
 #define PAGE_SIZE 4096
 
 #define RES_TYPE uint16_t
+#define RES_TYPE_MAX UINT16_MAX
 
 //ifdef => try to find es repeatly
 //#define BENCHMARKMODE

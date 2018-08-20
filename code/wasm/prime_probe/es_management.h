@@ -7,7 +7,7 @@ struct app_state {
   int l3_threshold;
   int number_of_samples_old;
   int monitored_es_changed;
-  uint32_t *monitored_es_index_vec; //index vector for currently monitored es (range [0,nmonitored-1])
+  RES_TYPE *monitored_es_index_vec; //index vector for currently monitored es (range [0,nmonitored-1])
   int last_min_index;
   int last_max_index;
   int type;

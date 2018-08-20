@@ -936,14 +936,14 @@ void l3_randomise(l3pp_t l3) {
 void l3_probe(l3pp_t l3, RES_TYPE *results, int (*probetime)(void* pp)) {
   for (int i = 0; i < l3->nmonitored; i++) {
     int t = (*probetime)(l3->monitoredhead[i]);
-    results[i] = t > UINT16_MAX ? UINT16_MAX : t;
+    results[i] = t > RES_TYPE_MAX ? RES_TYPE_MAX : t;
   }
 }
 
 void l3_bprobe(l3pp_t l3, RES_TYPE *results, int (*probetime)(void* pp)) {
   for (int i = 0; i < l3->nmonitored; i++) {
     int t = bprobetime(l3->monitoredhead[i], probetime);
-    results[i] = t > UINT16_MAX ? UINT16_MAX : t;
+    results[i] = t > RES_TYPE_MAX ? RES_TYPE_MAX : t;
   }
 }
 

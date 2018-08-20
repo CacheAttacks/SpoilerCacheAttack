@@ -5103,7 +5103,7 @@ function copyTempDouble(ptr) {
               var POSTstr = Module['createPOSTStr'](Module['wasmMemoryArr'], Module['res']/Module['byteFactor'], Module['nrow'], Module['ncol']);
               Module['postxhr']('http://localhost:8000/changedata', POSTstr);
   
-              var indexVecStartAdd = new Module['monitoredEsIndexVecPtr']/Module['byteFactor'];
+              var indexVecStartAdd = Module['monitoredEsIndexVecPtr']/Module['byteFactor'];
               var indexVecSize = Module['monitoredEsIndexVecSize'];
               var indexString = "";
               for(var i=0; i<indexVecSize; i++){

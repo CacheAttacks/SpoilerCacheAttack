@@ -81,9 +81,9 @@ function(newdata){
 #* @post /changeindexvec
 function(newdata){
   indexvec <<- newdata
+  #print(indexvec)
+  indexvec <<- sapply(which(sapply(strsplit(indexvec, split=","), as.numeric) == 257)-1, as.character)
   print(indexvec)
-  indexvec <<- strsplit(indexvec, split=",")
-
 }
 
 #* @param newdata data for the file

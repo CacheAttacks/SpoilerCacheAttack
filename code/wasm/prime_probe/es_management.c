@@ -94,11 +94,11 @@ void set_monitored_es_arr(void* app_state_ptr, int* indices_arr, int indices_arr
 
   l3_unmonitorall(this_app_state->l3);
 
-  memset(this_app_state->monitored_es_index_vec, 0, nmonitored);
+  memset(this_app_state->monitored_es_index_vec, 0, nmonitored * sizeof(RES_TYPE));
 
   for(int i=0; i<indices_arr_size; i++){
     l3_monitor(this_app_state->l3, indices_arr[i] * 64);
-    this_app_state->monitored_es_index_vec[indices_arr[i]] = 1;
+    this_app_state->monitored_es_index_vec[indices_arr[i]] = RES_TYPE_MAX;
   }
 
   //sets these values, to preserve compatibility with set_monitored_es
@@ -146,8 +146,8 @@ void set_monitored_es(void* app_state_ptr, int min_index, int max_index){
   this_app_state->last_min_index = min_index;
   this_app_state->last_max_index = max_index;
 
-  memset(this_app_state->monitored_es_index_vec, 0, nmonitored);
-  memset(this_app_state->monitored_es_index_vec + min_index, 1, max_index - min_index + 1);
+  memset(this_app_state->monitored_es_index_vec, 0, nmonitored * sizeof(RES_TYPE));
+  memset(this_app_state->monitored_es_index_vec + min_index, 1, (max_index - min_index + 1) * sizeof(RES_TYPE));
 }
 
 void build_es(void* app_state_ptr, int max_es){
@@ -226,7 +226,7 @@ if(benchmarkmode){
   //size of this vector is not known in advance
   if(this_app_state->monitored_es_index_vec)
     free(this_app_state->monitored_es_index_vec);
-  this_app_state->monitored_es_index_vec = calloc(sizeof(uint32_t), nmonitored);
+  this_app_state->monitored_es_index_vec = calloc(sizeof(RES_TYPE), nmonitored);
 
   set_monitored_es(app_state_ptr, -1, -1);
 
