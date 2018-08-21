@@ -11,8 +11,7 @@ Des Weiteren steht mit dem Emscripten-Compiler ein Tool bereit, welches die Übe
 
 \section{Timer in JavaScript}
 
-Der hier ausgeführte Cache-Angriff benötigt präzise Timer, welche eine Auflösung von unter TODO ns bereitstellen sollten. Wie im Diagramm zu sehen (TODO diagram einfügen) ist die Zugriffszeit eines Cache-Misses im Mittel TODO ns höher als bei einem Cache-Hit. 
-Das heißt, dass sich bei einer Auflösung von TODO ns nicht mehr in allen Fällen ein Miss von einem Hit unterscheiden lässt. Dennoch wird die Suche nach \textit{Eviction-Sets} auch mit schlechteren Timerauflösungen bewerkstelligt, indem Operationen mehrfach ausgeführt werden und die Differenz der aufsummierten Zeiten zur Bewertung herangezogen wird.
+Der hier ausgeführte Cache-Angriff benötigt wie in \ref beschrieben präzise Timer, welche eine Auflösung von unter 30 ns bereitstellen sollten. Dennoch könnte die Suche nach \textit{Eviction-Sets} auch mit schlechteren Timerauflösungen bewerkstelligt werden, indem Operationen mehrfach ausgeführt werden und die Differenz der aufsummierten Zeiten zur Bewertung herangezogen wird.
 Im \textit{Eviction-Set}-Algorithmus könnte etwa die Funktion $checkevict$ wie in Algorithmus \ref{alg:checkevict_low_resolution} angepasst werden, wobei der Parameter $repeatIterations$ abhängig von der Timerauflösung gewählt wird. 
 Weiter besteht jedoch das Problem, schwache Aktivitäten im Cache-Set während des eigentlichen Angriffs aufzudecken, da im Worst-Case nur ein Eintrag aus dem beobachteten Cache-Set verdrängt wird und somit lediglich die Zugriffszeit zwischen einem Hit und einem Miss ausschlaggebend ist. 
 In diesem Fall könnte die Dauer mehrerer Prime and Probe-Iterationen gesamtheitlich gemessen werden, und zwar in der Vermutung, dass auf die für die Verdrängung verantwortliche Adresse über die Zeit mehrfach zugegriffen wird. Die direkten Auswirkungen eines niedrig aufgelösten Timers sind also eine geringere zeitliche Auflösung von Cache-Aktivitäten oder die Nichtregestrierung von schwachen.
@@ -160,7 +159,7 @@ TODO Algorithmus in Einzelheiten beschreiben
 Details zu Implementierung in Mozilla NSS
 
 Mozilla Network Security Services(NSS) ist ein Menge von Bibliotheken welche eine plattformübergreifende Entwicklung von sicheren Client- und Server-Anwendungen anstrebt. Dabei wird unterem anderem TLS oder S/MIME implementiert. Mozilla NSS wird etwa im Firefox-Browser und der Mail-Anwendung Thunderbird eingesetzt.
-Der Quellcode ist unter der Mozilla Public License verfügbar und kann online etwa im Firefox-Repository unter https://dxr.mozilla.org/mozilla-central/source/security/nss eingesehen werden.
+Der Quellcode ist unter der Mozilla Public License verfügbar und kann online etwa im Firefox-Repository \cite{MozillaDXR} eingesehen werden.
 
 Im folgenden soll die Schlüsselerzuegung für das RSA-Verfahren in Mozilla NSS beschrieben werden.
 
