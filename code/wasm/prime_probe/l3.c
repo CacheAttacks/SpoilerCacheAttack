@@ -1007,6 +1007,37 @@ int l3_repeatedprobe(l3pp_t l3, int nrecords, RES_TYPE *results, int slot, int t
   return nrecords;
 }
 
+int l3_repeatedprobe_fast(l3pp_t l3, int nrecords, RES_TYPE *results) {
+  assert(l3 != NULL);
+  assert(results != NULL);
+
+  if (nrecords == 0)
+    return 0;
+
+  int len = l3->nmonitored;
+  if(len > 1)
+    return -1;
+
+  void* monitoredes1 = l3->monitoredhead[0];
+  //int monitoredes2 = l3->monitoredhead[1];
+
+  int even = 1;
+  for (int i = 0; i < nrecords;){ //i++, results+=len) {
+      if (even){
+          //for (int i = 0; i < len; i++) {
+            results[++i] = (uint16_t)probetime(monitoredes1);
+          //}
+      }
+      else {
+          //for (int i = 0; i < len; i++) {
+            results[++i] = (uint16_t)probetime(NEXTPTR(monitoredes1));
+          //}
+      }
+      even = !even;
+  }
+  return nrecords;
+}
+
 //cycles through all memory-blocks in a eviction-set
 //access them and count accesses with (accesstime > L3_THRESHOLD)
 int l3_repeatedprobecount(l3pp_t l3, int nrecords, RES_TYPE *results, int slot) {

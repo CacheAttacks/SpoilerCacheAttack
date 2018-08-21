@@ -290,7 +290,11 @@ void sample_es(void* app_state_ptr, int number_of_samples, int slot_time
   }
 
   uint64_t before = get_time_in_ms();
-  l3_repeatedprobe(this_app_state->l3, number_of_samples, this_app_state->res, slot_time, this_app_state->type);
+
+  if(this_app_state->l3->nmonitored == 1)
+    l3_repeatedprobe_fast(this_app_state->l3, number_of_samples, this_app_state->res);
+  else
+    l3_repeatedprobe(this_app_state->l3, number_of_samples, this_app_state->res, slot_time, this_app_state->type);
   uint64_t after = get_time_in_ms();
   printf("time from l3_repeatedprobe %" PRIu64 "ms\n", after-before);
  

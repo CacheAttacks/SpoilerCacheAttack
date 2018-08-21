@@ -97,6 +97,7 @@ void l3_bprobe(l3pp_t l3, RES_TYPE *results, p_probetime func_ptr);
 void l3_probecount(l3pp_t l3, RES_TYPE *results);
 void l3_bprobecount(l3pp_t l3, RES_TYPE *results);
 
+int l3_repeatedprobe_fast(l3pp_t l3, int nrecords, RES_TYPE *results);
 int l3_repeatedprobe(l3pp_t l3, int nrecords, RES_TYPE *results, int slot, int type);
 int l3_repeatedprobecount(l3pp_t l3, int nrecords, RES_TYPE *results, int slot);
 

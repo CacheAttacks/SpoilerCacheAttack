@@ -177,6 +177,10 @@ int main(int ac, char **av) {
 
   printf("%i", val);
 
+  for(int i=0; i<1 * 1000* 1000; i++){
+
+  }
+
   //counter_consistency_test(1, 5000000, 1000000);
 
   this_app_state->l3_threshold = mem_access_testing(100000, 0);

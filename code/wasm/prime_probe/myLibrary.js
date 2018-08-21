@@ -171,3 +171,92 @@ if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
     dummy_for_wat: function() {
     }
 });
+
+
+
+if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
+    JSprobeTime: function(uint32Arr, uint32ptr){
+        var old_ptr = uint32ptr;
+        var t1 = Atomics.load(Module['sharedArrayCounter'], 0);
+    
+        do{
+            uint32ptr = uint8Arr[uint32ptr / [Module['byteFactor']]];
+        } while(uint32ptr != old_ptr);
+        
+        return Atomics.load(Module['sharedArrayCounter'], 0) - t1;
+    }
+});
+
+// int probetime(void *pp) {
+//     if (pp == NULL)
+//       return 0;
+//     int rv = 0;
+//     void *p = (void *)pp;
+//     uint32_t s = rdtscp();
+//     do {
+//       p = LNEXT(p);
+//     } while (p != (void *) pp);
+//     return rdtscp()-s;
+//   }
+
+if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
+    //accepts direct wasm c pointers
+    JSrepeatedprobe: function(uint8ptrMonitorhead, uint8ptrBmonitorhead, records, uint8ptrResults){
+    var uint32wasmMemory = new Uint32Array(Module['wasmMemory'].buffer);
+    var uint16wasmMemory = new Uint16Array(Module['wasmMemory'].buffer);
+    var uint8wasmMemory = new Uint8Array(Module['wasmMemory'].buffer);
+
+    var uint16ptrResults = uint8ptrResults / 2; //cause we index uint16 array
+    var uint32ptrMonitorhead = uint8ptrMonitorhead / 4;
+    var uint32ptrBmonitorhead = uint8ptrBmonitorhead / 4;
+
+    var even = true;
+    for (var i = 0; i < nrecords; i++, results+=len){
+        if (even)
+            uint16wasmMemory[uint16ptrResults + i] = JSprobeTime(uint32wasmMemory, uint32ptrMonitorhead);
+        else
+            uint16wasmMemory[uint16ptrResults + i] = JSprobeTime(uint32wasmMemory, uint32ptrBmonitorhead);
+        even = !even;
+    }
+}
+});
+
+
+
+
+
+
+
+//cycles through all memory-blocks in a eviction-set
+//access them and count accesses with (accesstime > L3_THRESHOLD)
+// int l3_repeatedprobe(l3pp_t l3, int nrecords, RES_TYPE *results, int slot, int type) {
+//     assert(l3 != NULL);
+//     assert(results != NULL);
+  
+//     if (nrecords == 0)
+//       return 0;
+  
+//     int len = l3->nmonitored;
+//     int (*probetime)(void* pp) = get_probetime_by_type(type);
+  
+//     int even = 1;
+//     int missed = 0;
+//     uint64_t prev_time = rdtscp64();
+//     for (int i = 0; i < nrecords; i++, results+=len) {
+//       if (missed) {
+//         for (int j = 0; j < len; j++)
+//             results[j] = 0;
+//       } else {
+//         if (even)
+//             l3_probe(l3, results, probetime);
+//         else
+//             l3_bprobe(l3, results, probetime);
+//         even = !even;
+//       }
+//       if (slot > 0) {
+//         prev_time += slot;
+//         missed = slotwait(prev_time);
+//       }
+//     }
+//     return nrecords;
+//   }

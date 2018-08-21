@@ -80,9 +80,11 @@ function(newdata){
 #* @param newdata monitored es index vec
 #* @post /changeindexvec
 function(newdata){
-  indexvec <<- newdata
+  indexvecdata <<- newdata
   #print(indexvec)
-  indexvec <<- sapply(which(sapply(strsplit(indexvec, split=","), as.numeric) == 257)-1, as.character)
+  indexvec <<- sapply(which(sapply(strsplit(indexvecdata, split=","), as.numeric) != 0)-1, as.character)
+  if(length(indexvec) == 0)
+    warning("length(indexvec) == 0")
   print(indexvec)
 }
 
