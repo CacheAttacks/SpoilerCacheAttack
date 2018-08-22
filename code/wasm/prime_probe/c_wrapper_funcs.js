@@ -1,6 +1,6 @@
 sampleEsWrapper = function(numberOfSamples, slotTime, printToBrowser){
     Module['startTimer']();
-    Module['asm']._sample_es(Module['appStatePtr'], numberOfSamples, slotTime, printToBrowser);
+    Module['asm']._sample_es(Module['appStatePtr'], numberOfSamples, slotTime, printToBrowser, document.getElementById('selectPrimeprobe').value);
     Module['stopTimer']();
   }
 

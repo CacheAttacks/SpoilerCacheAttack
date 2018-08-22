@@ -172,21 +172,6 @@ if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
     }
 });
 
-
-
-if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
-    JSprobeTime: function(uint32Arr, uint32ptr){
-        var old_ptr = uint32ptr;
-        var t1 = Atomics.load(Module['sharedArrayCounter'], 0);
-    
-        do{
-            uint32ptr = uint8Arr[uint32ptr / [Module['byteFactor']]];
-        } while(uint32ptr != old_ptr);
-        
-        return Atomics.load(Module['sharedArrayCounter'], 0) - t1;
-    }
-});
-
 // int probetime(void *pp) {
 //     if (pp == NULL)
 //       return 0;
@@ -201,23 +186,13 @@ if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
 
 if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
     //accepts direct wasm c pointers
-    JSrepeatedprobe: function(uint8ptrMonitorhead, uint8ptrBmonitorhead, records, uint8ptrResults){
-    var uint32wasmMemory = new Uint32Array(Module['wasmMemory'].buffer);
-    var uint16wasmMemory = new Uint16Array(Module['wasmMemory'].buffer);
-    var uint8wasmMemory = new Uint8Array(Module['wasmMemory'].buffer);
+    js_repeatedprobe: function(uint8ptrMonitorhead, uint8ptrBmonitorhead, nrecords, uint8ptrResults){
+        Module['jsrepeatedprobe'] = {uint8ptrMonitorhead: uint8ptrMonitorhead,
+        uint8ptrBmonitorhead: uint8ptrBmonitorhead,
+        nrecords: nrecords,
+        uint8ptrResults: uint8ptrResults};
 
-    var uint16ptrResults = uint8ptrResults / 2; //cause we index uint16 array
-    var uint32ptrMonitorhead = uint8ptrMonitorhead / 4;
-    var uint32ptrBmonitorhead = uint8ptrBmonitorhead / 4;
-
-    var even = true;
-    for (var i = 0; i < nrecords; i++, results+=len){
-        if (even)
-            uint16wasmMemory[uint16ptrResults + i] = JSprobeTime(uint32wasmMemory, uint32ptrMonitorhead);
-        else
-            uint16wasmMemory[uint16ptrResults + i] = JSprobeTime(uint32wasmMemory, uint32ptrBmonitorhead);
-        even = !even;
-    }
+        $.loadScriptSync('primeprobe.js', function(){});    
 }
 });
 

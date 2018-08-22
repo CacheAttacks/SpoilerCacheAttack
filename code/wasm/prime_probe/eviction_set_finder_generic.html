@@ -1234,6 +1234,11 @@
   <span><input type="button" id="btnChangeType" value="Change probe type"></span>
   <span><input type="button" id="btnBenchmarkType" value="Benchmark probe types"></span> 
 
+  <select id="selectPrimeprobe">
+    <option value="0">Primeprobe wasm</option>
+    <option value="1">Primeprobe js</option>
+</select> 
+
 </span></br>
 <span id='covertChannel'>
   <span><input type="button" id="btnSearchForCovertChannel" value="Search covert channel"></span>
@@ -1244,7 +1249,7 @@
   Plot select es
   <span><input type="text" id="numberRangeEs" value="all" width="1"></span>
   Samples
-  <span><input type="number" id="numberSamples" value="200" width="1"></span>
+  <span><input type="number" id="numberSamples" value="5000000" width="1"></span>
   Time between samples
   <span><input type="number" id="numberSlotTime" value="0" width="1"></span>
   <span><input type="button" id="btnSampleEs" value="Sample es"></span>
@@ -1253,9 +1258,9 @@
 </span></br>
 <span id='setMonitoredEsGroup'>
   lower limit monitored es
-  <span><input type="number" id="numberLowerLimitMonitoredEs" value="-1" width="1"></span>
+  <span><input type="number" id="numberLowerLimitMonitoredEs" value="0" width="1"></span>
   upper limit monitored es
-  <span><input type="number" id="numberUpperLimitMonitoredEs" value="-1" width="1"></span>
+  <span><input type="number" id="numberUpperLimitMonitoredEs" value="0" width="1"></span>
   <span><input type="button" id="btnSetMonitoredEs" value="Set monitored es"></span></br>
 
   list es
@@ -1266,7 +1271,7 @@
 </span></br>
 <span id='buildEs'>
   upper limit es
-  <span><input type="number" id="numberUpperLimitEs" value="0" width="1"></span>
+  <span><input type="number" id="numberUpperLimitEs" value="1" width="1"></span>
   <span><input type="button" id="btnBuildEs" value="Build es"></span>
   <span><input type="number" id="numberBenchmarksruns" value="20" width="1"></span>
   <span><input type="button" id="btnBenchmarkmode" value="Benchmark es"></span>
@@ -1481,6 +1486,15 @@
               dataType: 'script',
               success: callback,
               async: true
+          });
+      }
+
+      jQuery.loadScriptSync = function (url, callback) {
+          jQuery.ajax({
+              url: url,
+              dataType: 'script',
+              success: callback,
+              async: false
           });
       }
 

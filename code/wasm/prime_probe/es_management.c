@@ -26,7 +26,7 @@ uint64_t get_time_in_ms(){
 double measure_mean_access_time(struct app_state* this_app_state, int samples){
   sample_es((void*)this_app_state, samples, 0
   #ifdef WASM
-  , 0
+  , 0, 0
   #endif
   );
   double access_time_mean = 0;
@@ -261,7 +261,7 @@ void prime_spam_es(void* app_state_ptr, int duration_sec)
 
 void sample_es(void* app_state_ptr, int number_of_samples, int slot_time
 #ifdef WASM
-, int plot
+, int plot, int primeprobe_js
 #endif
 ){
   struct app_state* this_app_state = (struct app_state*)app_state_ptr;
@@ -291,12 +291,22 @@ void sample_es(void* app_state_ptr, int number_of_samples, int slot_time
 
   uint64_t before = get_time_in_ms();
 
-  if(this_app_state->l3->nmonitored == 1)
-    l3_repeatedprobe_fast(this_app_state->l3, number_of_samples, this_app_state->res);
-  else
-    l3_repeatedprobe(this_app_state->l3, number_of_samples, this_app_state->res, slot_time, this_app_state->type);
-  uint64_t after = get_time_in_ms();
-  printf("time from l3_repeatedprobe %" PRIu64 "ms\n", after-before);
+  if(this_app_state->l3->nmonitored == 1){
+    if(primeprobe_js){
+      void *monitorhead = this_app_state->l3->monitoredhead[0];
+      js_repeatedprobe((uint32_t)monitorhead, (uint32_t)NEXTPTR(monitorhead), number_of_samples, (uint32_t)this_app_state->res);
+    } else {
+      l3_repeatedprobe_fast(this_app_state->l3, number_of_samples, this_app_state->res);
+    }
+  }
+     
+   else{
+     l3_repeatedprobe(this_app_state->l3, number_of_samples, this_app_state->res, slot_time, this_app_state->type);
+   }
+
+  uint64_t time_dur = get_time_in_ms() - before;
+  uint64_t primeprobe_ops = this_app_state->l3->nmonitored * number_of_samples;
+  printf("l3_repeatedprobe %" PRIu64 "ms (primeprobe_js:%i) per primeprobe op: %f ns\n", time_dur, primeprobe_js, (double)time_dur/primeprobe_ops*1000*1000);
  
 #ifdef WASM
   //update ptr, type = 0 => Uint16
