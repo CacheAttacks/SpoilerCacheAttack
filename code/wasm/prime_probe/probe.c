@@ -43,7 +43,7 @@ extern int L3_THRESHOLD;
 #else 
   __attribute__((optimize("O0"))) 
 #endif
-int probetime(void *pp) {
+uint32_t probetime(void *pp) {
   if (pp == NULL)
     return 0;
   int rv = 0;
@@ -60,7 +60,7 @@ int probetime(void *pp) {
 #else
   __attribute__((optimize("O0")))
 #endif
-int probetime_adv_1(void *pp) {
+uint32_t probetime_adv_1(void *pp) {
   if (pp == NULL)
     return 0;
     //void *p = (void *)pp;  
@@ -76,7 +76,7 @@ int probetime_adv_1(void *pp) {
 #else
   __attribute__((optimize("O0")))
 #endif
-int probetime_adv_2(void *pp) {
+uint32_t probetime_adv_2(void *pp) {
   if (pp == NULL)
     return 0;
     //void *p = (void *)pp;  
@@ -92,7 +92,7 @@ int probetime_adv_2(void *pp) {
 #else     
   __attribute__((optimize("O0")))
 #endif
-int probetime_adv_3(void *pp) {
+uint32_t probetime_adv_3(void *pp) {
   if (pp == NULL)
     return 0;
     //void *p = (void *)pp;  
@@ -108,7 +108,7 @@ int probetime_adv_3(void *pp) {
 #else
   __attribute__((optimize("O0")))
 #endif
-int probetime_adv_4(void *pp) {
+uint32_t probetime_adv_4(void *pp) {
   if (pp == NULL)
     return 0;
     //void *p = (void *)pp;  
@@ -124,7 +124,7 @@ int probetime_adv_4(void *pp) {
 #else     
   __attribute__((optimize("O0")))
 #endif
-int probetime_adv_5(void *pp) {
+uint32_t probetime_adv_5(void *pp) {
   if (pp == NULL)
     return 0;
     //void *p = (void *)pp;  
@@ -140,7 +140,7 @@ int probetime_adv_5(void *pp) {
 #else     
   __attribute__((optimize("O0")))
 #endif
-int probetime_adv_6(void *pp) {
+uint32_t probetime_adv_6(void *pp) {
   if (pp == NULL)
     return 0;
     //void *p = (void *)pp;  
@@ -156,7 +156,7 @@ int probetime_adv_6(void *pp) {
 #else     
   __attribute__((optimize("O0"))) 
 #endif
-int probetime_adv_7(void *pp) {
+uint32_t probetime_adv_7(void *pp) {
   if (pp == NULL)
     return 0;
     //void *p = (void *)pp;  
@@ -172,7 +172,7 @@ int probetime_adv_7(void *pp) {
 #else     
   __attribute__((optimize("O0"))) 
 #endif
-int probetime_adv_8(void *pp) {
+uint32_t probetime_adv_8(void *pp) {
   if (pp == NULL)
     return 0;
     //void *p = (void *)pp;  
@@ -188,7 +188,7 @@ int probetime_adv_8(void *pp) {
 #else     
   __attribute__((optimize("O0"))) 
 #endif
-int probetime_adv_9(void *pp) {
+uint32_t probetime_adv_9(void *pp) {
   if (pp == NULL)
     return 0;
     //void *p = (void *)pp;  
@@ -204,7 +204,7 @@ int probetime_adv_9(void *pp) {
 #else     
   __attribute__((optimize("O0"))) 
 #endif
-int probetime_adv_10(void *pp) {
+uint32_t probetime_adv_10(void *pp) {
   if (pp == NULL)
     return 0;
     //void *p = (void *)pp;  
@@ -220,7 +220,7 @@ int probetime_adv_10(void *pp) {
 #else     
   __attribute__((optimize("O0"))) 
 #endif
-int probetime_adv_11(void *pp) {
+uint32_t probetime_adv_11(void *pp) {
   if (pp == NULL)
     return 0;
     //void *p = (void *)pp;  
@@ -236,7 +236,7 @@ int probetime_adv_11(void *pp) {
 #else     
   __attribute__((optimize("O0"))) 
 #endif
-int probetime_adv_12(void *pp) {
+uint32_t probetime_adv_12(void *pp) {
   if (pp == NULL)
     return 0;
     //void *p = (void *)pp;  
@@ -252,7 +252,7 @@ int probetime_adv_12(void *pp) {
 #else     
   __attribute__((optimize("O0"))) 
 #endif
-int probetime_adv_13(void *pp) {
+uint32_t probetime_adv_13(void *pp) {
   if (pp == NULL)
     return 0;
     //void *p = (void *)pp;  
@@ -268,7 +268,7 @@ int probetime_adv_13(void *pp) {
 #else     
   __attribute__((optimize("O0"))) 
 #endif
-int probetime_adv_14(void *pp) {
+uint32_t probetime_adv_14(void *pp) {
   if (pp == NULL)
     return 0;
     //void *p = (void *)pp;  
@@ -284,7 +284,7 @@ int probetime_adv_14(void *pp) {
 #else     
   __attribute__((optimize("O0"))) 
 #endif
-int probetime_adv_15(void *pp) {
+uint32_t probetime_adv_15(void *pp) {
   if (pp == NULL)
     return 0;
     //void *p = (void *)pp;  
@@ -300,7 +300,7 @@ int probetime_adv_15(void *pp) {
 #else     
   __attribute__((optimize("O0"))) 
 #endif
-int probetime_adv_16(void *pp) {
+uint32_t probetime_adv_16(void *pp) {
   if (pp == NULL)
     return 0;
     //void *p = (void *)pp;  
@@ -316,7 +316,7 @@ int probetime_adv_16(void *pp) {
 #else     
   __attribute__((optimize("O0"))) 
 #endif
-int probetime_adv_generic(void *pp, int max_it) {
+uint32_t probetime_adv_generic(void *pp, int max_it) {
   if (pp == NULL)
     return 0;
     //void *p = (void *)pp;  
@@ -332,13 +332,14 @@ int probetime_adv_generic(void *pp, int max_it) {
 #else     
   __attribute__((optimize("O0"))) 
 #endif
-int probetime_split_2(void *pp) {
+uint32_t probetime_split_2(void *pp) {
+  //printf("called\n");
   if (pp == NULL)
     return 0;
   //void *p = (void *)pp;  
   void *bp = NEXTPTR((void *)pp);  
   uint32_t s = rdtscp();
-  for(int i=0; i<8; i++){
+  for(int i=0; i<9; i++){
     pp = LNEXT(pp);
     bp = LNEXT(bp);
   }
@@ -350,7 +351,7 @@ int probetime_split_2(void *pp) {
 #else     
   __attribute__((optimize("O0"))) 
 #endif
-int probetime_split_4(void *pp) {
+uint32_t probetime_split_4(void *pp) {
   if (pp == NULL)
     return 0;
   //void *p = (void *)pp;  
@@ -358,7 +359,7 @@ int probetime_split_4(void *pp) {
   void *b_off_8 = PROBE_PTR_OFFSET8((void *)pp);
   void *b_off_12 = PROBE_PTR_OFFSET12((void *)pp);
   uint32_t s = rdtscp();
-  for(int i=0; i<4; i++){
+  for(int i=0; i<5; i++){
     pp = LNEXT(pp);
     b_off_4 = LNEXT(b_off_4);
     b_off_8 = LNEXT(b_off_8);
@@ -372,7 +373,7 @@ int probetime_split_4(void *pp) {
 #else     
   __attribute__((optimize("O0"))) 
 #endif
-int probetime_split_8(void *pp) {
+uint32_t probetime_split_8(void *pp) {
   if (pp == NULL)
     return 0;
   //void *p = (void *)pp;  
@@ -384,7 +385,7 @@ int probetime_split_8(void *pp) {
   void *b_off_12 = PROBE_PTR_OFFSET12((void *)pp);
   void *b_off_14 = PROBE_PTR_OFFSET14((void *)pp);
   uint32_t s = rdtscp();
-  for(int i=0; i<2; i++){
+  for(int i=0; i<3; i++){
     pp = LNEXT(pp);
     b_off_2 = LNEXT(b_off_2);
     b_off_4 = LNEXT(b_off_4);
@@ -474,7 +475,7 @@ int bprobecount(void *pp) {
   return probecount(NEXTPTR(pp));
 }
 
-int bprobetime(void *pp, p_probetime func_ptr) {
+uint32_t bprobetime(void *pp, p_probetime func_ptr) {
   if (pp == NULL)
     return 0;
   return (*func_ptr)(NEXTPTR(pp));

@@ -933,14 +933,14 @@ void l3_randomise(l3pp_t l3) {
   }
 }
 
-void l3_probe(l3pp_t l3, RES_TYPE *results, int (*probetime)(void* pp)) {
+void l3_probe(l3pp_t l3, RES_TYPE *results, uint32_t (*probetime)(void* pp)) {
   for (int i = 0; i < l3->nmonitored; i++) {
     int t = (*probetime)(l3->monitoredhead[i]);
     results[i] = t > RES_TYPE_MAX ? RES_TYPE_MAX : t;
   }
 }
 
-void l3_bprobe(l3pp_t l3, RES_TYPE *results, int (*probetime)(void* pp)) {
+void l3_bprobe(l3pp_t l3, RES_TYPE *results, uint32_t (*probetime)(void* pp)) {
   for (int i = 0; i < l3->nmonitored; i++) {
     int t = bprobetime(l3->monitoredhead[i], probetime);
     results[i] = t > RES_TYPE_MAX ? RES_TYPE_MAX : t;
@@ -983,7 +983,7 @@ int l3_repeatedprobe(l3pp_t l3, int nrecords, RES_TYPE *results, int slot, int t
     return 0;
 
   int len = l3->nmonitored;
-  int (*probetime)(void* pp) = get_probetime_by_type(type);
+  uint32_t (*probetime)(void* pp) = get_probetime_by_type(type);
 
   int even = 1;
   int missed = 0;
@@ -1007,7 +1007,7 @@ int l3_repeatedprobe(l3pp_t l3, int nrecords, RES_TYPE *results, int slot, int t
   return nrecords;
 }
 
-int l3_repeatedprobe_fast(l3pp_t l3, int nrecords, RES_TYPE *results) {
+int l3_repeatedprobe_fast(l3pp_t l3, int nrecords, RES_TYPE *results, int type) {
   assert(l3 != NULL);
   assert(results != NULL);
 
@@ -1018,19 +1018,24 @@ int l3_repeatedprobe_fast(l3pp_t l3, int nrecords, RES_TYPE *results) {
   if(len > 1)
     return -1;
 
+  uint32_t (*probetime)(void* pp) = get_probetime_by_type(type);
+
   void* monitoredes1 = l3->monitoredhead[0];
+  void* monitoredes1b = NEXTPTR(monitoredes1);
   //int monitoredes2 = l3->monitoredhead[1];
 
   int even = 1;
   for (int i = 0; i < nrecords;){ //i++, results+=len) {
       if (even){
           //for (int i = 0; i < len; i++) {
-            results[++i] = (uint16_t)probetime(monitoredes1);
+            //results[++i] = (RES_TYPE)probetime(monitoredes1);
+            results[++i] = (RES_TYPE)(*probetime)(monitoredes1);
           //}
       }
       else {
           //for (int i = 0; i < len; i++) {
-            results[++i] = (uint16_t)probetime(NEXTPTR(monitoredes1));
+            //results[++i] = (RES_TYPE)probetime(NEXTPTR(monitoredes1));
+            results[++i] = (RES_TYPE)(*probetime)(monitoredes1b);
           //}
       }
       even = !even;

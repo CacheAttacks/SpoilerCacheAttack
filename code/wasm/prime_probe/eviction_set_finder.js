@@ -1140,7 +1140,7 @@ function enlargeMemory() {
 
 
 var TOTAL_STACK = Module['TOTAL_STACK'] || 5242880;
-var TOTAL_MEMORY = Module['TOTAL_MEMORY'] || 536870912;
+var TOTAL_MEMORY = Module['TOTAL_MEMORY'] || 1073741824;
 if (TOTAL_MEMORY < TOTAL_STACK) err('TOTAL_MEMORY should be larger than TOTAL_STACK, was ' + TOTAL_MEMORY + '! (TOTAL_STACK=' + TOTAL_STACK + ')');
 
 // Initialize the runtime's memory
@@ -1737,7 +1737,7 @@ var ASM_CONSTS = [];
 
 STATIC_BASE = GLOBAL_BASE;
 
-STATICTOP = STATIC_BASE + 7264;
+STATICTOP = STATIC_BASE + 7280;
 /* global initializers */  __ATINIT__.push();
 
 
@@ -1746,7 +1746,7 @@ STATICTOP = STATIC_BASE + 7264;
 
 
 
-var STATIC_BUMP = 7264;
+var STATIC_BUMP = 7280;
 Module["STATIC_BASE"] = STATIC_BASE;
 Module["STATIC_BUMP"] = STATIC_BUMP;
 
@@ -1817,9 +1817,9 @@ function copyTempDouble(ptr) {
 
   function _SAB_lib_get_counter_value()
       {
-          //return Module['sharedArrayCounter'][0];
+          return Module['sharedArrayCounter'][0];
           //far more consistent
-          return Atomics.load(Module['sharedArrayCounter'], 0);
+          //return Atomics.load(Module['sharedArrayCounter'], 0);
       }
 
   function ___assert_fail(condition, filename, line, func) {
@@ -5136,9 +5136,9 @@ function copyTempDouble(ptr) {
           Module['currentTimesPtr'] = ptr;
       }
 
-  function _set_idle_times_ptr(ptr) {
+  function _set_idle_times_ptr(ptr, byteFactor) {
           Module['idleTimesPtr'] = ptr;
-          Module['timesArrayByteFactor'] = 4;
+          Module['timesArrayByteFactor'] = byteFactor;
       }
 
   function _set_monitored_es_index_vec_ptr(ptr, size) {

@@ -26,7 +26,7 @@ visualize_times("test7.txt")
 setwd("~/MA_2/master-moritz_krebbel-drive_by_cache_attacks//code/r/prime_probe/")
 plumber::plumb("plumber.R")$run(port=8000)
 
-sapply(strtoi(c("0x43c","0x617")), function(x) floor(x/64))
+sapply(strtoi(c("0x9f9","0xa17")), function(x) floor(x/64))
 
 
 
@@ -34,7 +34,7 @@ tbl_melt <- reshape2::melt(tbl)
 tbl_melt[["sample"]] <- rep(1:nrow(tbl), ncol(tbl))
 colnames(tbl_melt)[1] <- "es"
 #cap at 3500
-max_value <- 2000
+max_value <- 4000
 tbl_melt[tbl_melt$value>max_value,"value"] <- max_value
 
 plot <- ggplot2::ggplot(tbl_melt, ggplot2::aes(x=sample,y=es)) + 

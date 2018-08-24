@@ -1,18 +1,18 @@
 #include "l3.h"
 
-int probetime(void *pp);
+uint32_t probetime(void *pp);
 
-int probetime_adv_1(void *pp);
-int probetime_adv_2(void *pp);
-int probetime_adv_4(void *pp);
-int probetime_adv_8(void *pp);
-int probetime_adv_16(void *pp);
+uint32_t probetime_adv_1(void *pp);
+uint32_t probetime_adv_2(void *pp);
+uint32_t probetime_adv_4(void *pp);
+uint32_t probetime_adv_8(void *pp);
+uint32_t probetime_adv_16(void *pp);
 
-int probetime_adv_genric(void *pp, int max_it);
+uint32_t probetime_adv_genric(void *pp, int max_it);
 
-int probetime_split_2(void *pp);
-int probetime_split_4(void *pp);
-int probetime_split_8(void *pp);
+uint32_t probetime_split_2(void *pp);
+uint32_t probetime_split_4(void *pp);
+uint32_t probetime_split_8(void *pp);
 
 p_probetime get_probetime_by_type(int type);
 int probecount(void *pp);

@@ -39,8 +39,9 @@
 #define PAGE_SIZE_BITS 12
 #define PAGE_SIZE 4096
 
-#define RES_TYPE uint16_t
-#define RES_TYPE_MAX UINT16_MAX
+#define RES_TYPE uint32_t//uint16_t
+#define RES_TYPE_MAX UINT32_MAX//UINT16_MAX
+#define RES_TYPE_JS 1 //res_type_js = 0 => uint16, 1 => uint32
 
 //ifdef => try to find es repeatly
 //#define BENCHMARKMODE

@@ -6,7 +6,7 @@ $.loadScript('interesting_cache_sets.js', function(){
 //         arr1.filter(value => -1 !== arr2.indexOf(value));
 //     }
 
-    var cache_set_s_mp_div_2 = 37;
+    var cache_set_s_mp_div_2 = 39;
     var cache_set_mp_sub = 7;
 
     var interestingCacheSetsShiftFiltered = Module['interestingCacheSetsShift'].filter(value => -1 == Module['interestingCacheSetsSub'].indexOf(value));
@@ -14,13 +14,13 @@ $.loadScript('interesting_cache_sets.js', function(){
     //console.log(interestingCacheSetsShiftFiltered);
     //console.log(interestingCacheSetsSubFiltered);
 
-    const reducerShift = (accumulator, currentValue) => accumulator + currentValue + "(" +  Math.floor(currentValue/64) + "," + ((currentValue % 64 == cache_set_s_mp_div_2) ? cache_set_s_mp_div_2 + "(s_mp_div_2)" : currentValue) + ") ";
+    const reducerShift = (accumulator, currentValue) => accumulator + currentValue + "(" +  Math.floor(currentValue/64) + "," + ((currentValue % 64 == cache_set_s_mp_div_2) ? cache_set_s_mp_div_2 + "(s_mp_div_2)" : currentValue % 64) + ") ";
 
     //intersection of shift and gcd
     var intersectGcdShift = Module['interestingCacheSetsGcd'].filter(value => -1 !== interestingCacheSetsShiftFiltered.indexOf(value));
     console.log("%cintersectGcdShift: " + intersectGcdShift.reduce(reducerShift, ""), 'color: red');
 
-    const reducerSub = (accumulator, currentValue) => accumulator + currentValue + "(" +  Math.floor(currentValue/64) + "," + ((currentValue % 64 == cache_set_mp_sub) ? cache_set_mp_sub + "(mp_sub)" : currentValue) + ") ";
+    const reducerSub = (accumulator, currentValue) => accumulator + currentValue + "(" +  Math.floor(currentValue/64) + "," + ((currentValue % 64 == cache_set_mp_sub) ? cache_set_mp_sub + "(mp_sub)" : currentValue % 64) + ") ";
 
     //intersection of sub and gcd
     var intersectGcdSub = Module['interestingCacheSetsGcd'].filter(value => -1 !== interestingCacheSetsSubFiltered.indexOf(value));

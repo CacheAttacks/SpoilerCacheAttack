@@ -70,7 +70,7 @@ struct l3pp {
 #define L3FLAG_USEPTE		0x02 
 #define L3FLAG_NOPROBE		0x04 
 
-typedef int (*p_probetime)(void*);
+typedef uint32_t (*p_probetime)(void*);
 
 
 l3pp_t l3_prepare(l3info_t l3info, int L3_THRESHOLD, int max_es);
@@ -97,7 +97,7 @@ void l3_bprobe(l3pp_t l3, RES_TYPE *results, p_probetime func_ptr);
 void l3_probecount(l3pp_t l3, RES_TYPE *results);
 void l3_bprobecount(l3pp_t l3, RES_TYPE *results);
 
-int l3_repeatedprobe_fast(l3pp_t l3, int nrecords, RES_TYPE *results);
+int l3_repeatedprobe_fast(l3pp_t l3, int nrecords, RES_TYPE *results, int type);
 int l3_repeatedprobe(l3pp_t l3, int nrecords, RES_TYPE *results, int slot, int type);
 int l3_repeatedprobecount(l3pp_t l3, int nrecords, RES_TYPE *results, int slot);
 

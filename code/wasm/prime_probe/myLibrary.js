@@ -142,9 +142,9 @@ if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
 });
 
 if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
-    set_idle_times_ptr: function(ptr) {
+    set_idle_times_ptr: function(ptr, byteFactor) {
         Module['idleTimesPtr'] = ptr;
-        Module['timesArrayByteFactor'] = 4;
+        Module['timesArrayByteFactor'] = byteFactor;
     }
 });
 

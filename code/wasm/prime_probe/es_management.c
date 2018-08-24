@@ -65,7 +65,7 @@ void change_type(void* app_state_ptr, int type){
     this_app_state->type = type;
     printf("type changed to %i\n", type);
   } else {
-    printf("type not found! type still %i\n", type);
+    printf("type not found! type still %i\n", this_app_state->type);
   }
 }
 
@@ -296,7 +296,7 @@ void sample_es(void* app_state_ptr, int number_of_samples, int slot_time
       void *monitorhead = this_app_state->l3->monitoredhead[0];
       js_repeatedprobe((uint32_t)monitorhead, (uint32_t)NEXTPTR(monitorhead), number_of_samples, (uint32_t)this_app_state->res);
     } else {
-      l3_repeatedprobe_fast(this_app_state->l3, number_of_samples, this_app_state->res);
+      l3_repeatedprobe_fast(this_app_state->l3, number_of_samples, this_app_state->res, this_app_state->type);
     }
   }
      
@@ -305,12 +305,13 @@ void sample_es(void* app_state_ptr, int number_of_samples, int slot_time
    }
 
   uint64_t time_dur = get_time_in_ms() - before;
+  int opt_primeprobe = (this_app_state->l3->nmonitored == 1)? 1 : 0;
   uint64_t primeprobe_ops = this_app_state->l3->nmonitored * number_of_samples;
-  printf("l3_repeatedprobe %" PRIu64 "ms (primeprobe_js:%i) per primeprobe op: %f ns\n", time_dur, primeprobe_js, (double)time_dur/primeprobe_ops*1000*1000);
+  printf("l3_repeatedprobe %" PRIu64 "ms (primeprobe_js:%i, opt:%i) per primeprobe op: %f ns\n", time_dur, primeprobe_js, opt_primeprobe, (double)time_dur/primeprobe_ops*1000*1000);
  
 #ifdef WASM
   //update ptr, type = 0 => Uint16
-  set_ptr_to_data((uint32_t)this_app_state->res, number_of_samples, this_app_state->l3->nmonitored, 0);
+  set_ptr_to_data((uint32_t)this_app_state->res, number_of_samples, this_app_state->l3->nmonitored, RES_TYPE_JS);
 
   //printf("set_ptr_to_data: %p\n", this_app_state->res);
 
@@ -346,7 +347,7 @@ void get_mean_evictions_sets(void* app_state_ptr, int *idle_mean_values, int num
     set_monitored_es(app_state_ptr, i, i);
     
     l3_repeatedprobe(this_app_state->l3, number_of_samples, res, 0, this_app_state->type);
-    long mean = 0;
+    uint32_t mean = 0;
     for(int a=0; a<number_of_samples; a++){
       mean += res[a];
     }
@@ -387,11 +388,11 @@ void get_idle_times(void* app_state_ptr, int min_index, int max_index, int numbe
   if(this_app_state->idle_mean_values){
     free(this_app_state->idle_mean_values);
   }
-  this_app_state->idle_mean_values = calloc(max_index-min_index+1, sizeof(int));
+  this_app_state->idle_mean_values = calloc(max_index-min_index+1, sizeof(RES_TYPE));
   get_mean_evictions_sets(app_state_ptr, this_app_state->idle_mean_values, number_of_samples);
   
   //set ptr for javascript env
-  set_idle_times_ptr((uint32_t)this_app_state->idle_mean_values);
+  set_idle_times_ptr((uint32_t)this_app_state->idle_mean_values, sizeof(RES_TYPE));
 }
 
 //threshold_factor: compare idle values with current values to get interesting cache sets
@@ -404,7 +405,7 @@ void find_interesting_eviction_sets(void* app_state_ptr, float threshold_factor,
   set_number_of_observed_cache_sets(number_of_observed_cache_sets);
 
   //get current mean access time values for selected cache sets
-  this_app_state->current_mean_values = calloc(number_of_observed_cache_sets, sizeof(int));
+  this_app_state->current_mean_values = calloc(number_of_observed_cache_sets, sizeof(RES_TYPE));
   get_mean_evictions_sets(app_state_ptr, this_app_state->current_mean_values, number_of_samples);
   
   //set ptr for javascript env
@@ -412,7 +413,7 @@ void find_interesting_eviction_sets(void* app_state_ptr, float threshold_factor,
 
   if(this_app_state->interesting_cache_sets)
    free(this_app_state->interesting_cache_sets);
-  this_app_state->interesting_cache_sets = calloc(number_of_observed_cache_sets, sizeof(int));
+  this_app_state->interesting_cache_sets = calloc(number_of_observed_cache_sets, sizeof(RES_TYPE));
 
   //printf("interesting cache sets: ");
   for(int i=0; i<number_of_observed_cache_sets; i++){

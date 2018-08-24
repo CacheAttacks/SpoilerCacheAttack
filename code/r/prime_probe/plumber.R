@@ -137,7 +137,7 @@ a <- Sys.time()
   if(es_vec != "none")
     tbl <- tbl[,es_vec, drop=F]
   
-  tbl <- tbl[-(1:150),]
+  tbl <- tbl[-(1:15000),]
   #tbl <- tbl[-(nrow(tbl)-10:nrow(tbl)),]
   colnames(tbl) <- indexvec
   tmp_tbl <<- tbl

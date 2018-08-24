@@ -22,7 +22,7 @@ struct app_state {
 //tell javascript main thread ptr add from res array in wasm memory region
 extern void set_ptr_to_data(uint32_t, int, int, int);
 extern void set_current_times_ptr(uint32_t);
-extern void set_idle_times_ptr(uint32_t);
+extern void set_idle_times_ptr(uint32_t, uint32_t);
 extern void set_number_of_observed_cache_sets(int);
 extern void set_monitored_es_index_vec_ptr(uint32_t, uint32_t);
 extern void js_repeatedprobe(uint32_t, uint32_t, int, uint32_t); //uint8ptrMonitorhead, uint8ptrBmonitorhead, records, uint8ptrResults

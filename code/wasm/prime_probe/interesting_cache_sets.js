@@ -18,7 +18,7 @@ for(var rounds=0; rounds<numberOfRounds; rounds++){
     var interestingCounter = 0;
     for(var i=0; i<numberOfObservedCacheSets; i++){
         //console.log(wasmMemoryArray[idleArrOffset] + " " + wasmMemoryArray[current_arr_offset] + " ");
-        if(wasmMemoryArray[idleArrOffset++] * 2.5 < wasmMemoryArray[currentArrOffset++]){
+        if(wasmMemoryArray[idleArrOffset++] * 2 < wasmMemoryArray[currentArrOffset++]){
             arrNumberOfObservedCacheSets[i]++;
             interestingCacheSets += i + " ";
             interestingCounter++;
