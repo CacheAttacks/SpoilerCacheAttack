@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en-us">
   <head>
-    <script src="jquery-3.3.1.min.js"></script>
+    <script src="javascript/jquery-3.3.1.min.js"></script>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Emscripten-Generated Code</title>
@@ -1291,6 +1291,12 @@
 <span><input type="button" id="btnInterestingSub" value="Find interesting sub"></span>
 <span><input type="button" id="btnInterestingGcd" value="Find interesting gcd"></span>
 </span>
+<span id='findInterestingCacheSetsTemplate'>
+  <span><input type="button" id="btnTemplateDetection" value="Template detection"></span>
+  <span><input type="button" id="btnInterestingShift" value="Find interesting shift"></span>
+  <span><input type="button" id="btnInterestingSub" value="Find interesting sub"></span>
+  <span><input type="button" id="btnInterestingGcd" value="Find interesting gcd"></span>
+  </span>
 
     <div class="emscripten">
       <progress value="0" max="100" id="progress" hidden=1></progress>
@@ -1301,9 +1307,9 @@
     </div>
     <textarea id="output" rows="8"></textarea>-->
 
-    <script type="text/javascript" src="c_wrapper_funcs.js"></script>
-    <script type="text/javascript" src="timer_SAB.js"></script>
-    <script type="text/javascript" src="timer_clock_edge.js"></script>
+    <script type="text/javascript" src="javascript/c_wrapper_funcs.js"></script>
+    <script type="text/javascript" src="javascript/timer_SAB.js"></script>
+    <script type="text/javascript" src="javascript/timer_clock_edge.js"></script>
     <script type='text/javascript'>
       var NOISY_CHANNEL_OFFSET_SEND_START = 0;
       var NOISY_CHANNEL_OFFSET_SEND_END = 31;
@@ -1531,13 +1537,13 @@
         }
       }
       document.getElementById('btnSetMonitoredEsArr').onclick = function() {
-        $.loadScript('set_monitor_es_arr.js', function(){});
+        $.loadScript('javascript/set_monitor_es_arr.js', function(){});
       }
 
       document.getElementById('btnSearchForCovertChannel').onclick = function() {
         if(Module['appStatePtr'] != 0){
           
-          $.loadScript('covert_channel.js', function(){});
+          $.loadScript('javascript/covert_channel.js', function(){});
 
         } else {
           console.log("Module['appStatePtr'] is null!");
@@ -1546,7 +1552,7 @@
       document.getElementById('btnListeningChannel').onclick = function() {
         if(Module['appStatePtr'] != 0){
           
-          $.loadScript('listening_channel.js', function(){});
+          $.loadScript('javascript/listening_channel.js', function(){});
 
         } else {
           console.log("Module['appStatePtr'] is null!");
@@ -1555,7 +1561,7 @@
       document.getElementById('btnBenchmarkType').onclick = function() {
         if(Module['appStatePtr'] != 0){
           
-          $.loadScript('benchmark_probe_type.js', function(){});
+          $.loadScript('javascript/benchmark_probe_type.js', function(){});
 
         } else {
           console.log("Module['appStatePtr'] is null!");
@@ -1584,29 +1590,29 @@
       }
 
       document.getElementById('btnFindInterestingCacheSets').onclick = function() {
-        $.loadScript('interesting_cache_sets.js', function(){});
+        $.loadScript('javascript/interesting_cache_sets.js', function(){});
       }
 
       document.getElementById('btnTemplateDetection').onclick = function() {
-        $.loadScript('template_detection.js', function(){});
+        $.loadScript('javascript/template_detection.js', function(){});
       }
 
       document.getElementById('btnInterestingShift').onclick = function() {
-        $.loadScript('interesting_shift.js', function(){});
+        $.loadScript('javascript/interesting_shift.js', function(){});
       }
 
       document.getElementById('btnInterestingSub').onclick = function() {
-        $.loadScript('interesting_sub.js', function(){});
+        $.loadScript('javascript/interesting_sub.js', function(){});
       }
 
       document.getElementById('btnInterestingGcd').onclick = function() {
-        $.loadScript('interesting_gcd.js', function(){});
+        $.loadScript('javascript/interesting_gcd.js', function(){});
       }
 
       document.getElementById('btnPrimeSpam').onclick = function() {       
         primeSpamEsWrapper(document.getElementById('numberPrimeSpamDurationSec').value);
       }
-
+      
       var wasmBinaryFile = 'eviction_set_finder.wasm';
       const workerWasm1 = new Worker('worker_wasm_generic.js');
       workerWasm1.postMessage(sharedBuffer);

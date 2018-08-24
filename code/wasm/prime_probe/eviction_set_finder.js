@@ -1817,9 +1817,9 @@ function copyTempDouble(ptr) {
 
   function _SAB_lib_get_counter_value()
       {
-          return Module['sharedArrayCounter'][0];
+          //return Module['sharedArrayCounter'][0];
           //far more consistent
-          //return Atomics.load(Module['sharedArrayCounter'], 0);
+          return Atomics.load(Module['sharedArrayCounter'], 0);
       }
 
   function ___assert_fail(condition, filename, line, func) {
@@ -5094,7 +5094,7 @@ function copyTempDouble(ptr) {
           nrecords: nrecords,
           uint8ptrResults: uint8ptrResults};
   
-          $.loadScriptSync('primeprobe.js', function(){});    
+          $.loadScriptSync('javascript/primeprobe.js', function(){});    
   }
 
    

@@ -192,7 +192,7 @@ if (typeof mergeInto !== 'undefined') mergeInto(LibraryManager.library, {
         nrecords: nrecords,
         uint8ptrResults: uint8ptrResults};
 
-        $.loadScriptSync('primeprobe.js', function(){});    
+        $.loadScriptSync('javascript/primeprobe.js', function(){});    
 }
 });
 

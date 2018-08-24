@@ -7,7 +7,7 @@ function shared_array_counter_init(sharedBuffer)
 {
     //const sharedBuffer = new SharedArrayBuffer(Uint32Array.BYTES_PER_ELEMENT);
     //const sharedArray = new Uint32Array(sharedBuffer);
-    const counterWorker = new Worker('worker.js');
+    const counterWorker = new Worker('javascript/worker.js');
     counterWorker.postMessage(sharedBuffer);
     return counterWorker;
 }
@@ -21,7 +21,7 @@ function shared_array_counter_test(fnc)
     console.log("call shared_array_counter_test");
     const sharedBuffer = new SharedArrayBuffer(Uint32Array.BYTES_PER_ELEMENT);
     const arr = new Uint32Array(sharedBuffer);
-    const counter = new Worker('worker.js');
+    const counter = new Worker('javascript/worker.js');
     counter.postMessage(sharedBuffer);
 
     //const test = new Worker("test_worker.js");
@@ -58,7 +58,7 @@ function get_resolution_shared_array_buffer(count_arr, samples)
 
 
 function shared_test(){
-    const worker = new Worker('worker.js')
+    const worker = new Worker('javascript/worker.js')
     const length = 10;
 
     // Creating a shared buffer
