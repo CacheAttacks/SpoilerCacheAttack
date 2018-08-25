@@ -20,7 +20,7 @@
 #ifndef __TIMESTATS_H__
 #define __TIMESTATS_H__ 1
 
-#define TIME_MAX	1024
+#define TIME_MAX 1024
 
 typedef struct ts *ts_t;
 

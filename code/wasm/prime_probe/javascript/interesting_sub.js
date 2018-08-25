@@ -1,5 +1,4 @@
-$.loadScript('javascript/interesting_cache_sets.js', function(){
-    //after load script
-    Module['interestingCacheSetsSub'] = listInterestingCacheSets;
+$.loadScript('javascript/interesting_cache_sets.js', function() {
+  // after load script
+  Module['interestingCacheSetsSub'] = listInterestingCacheSets;
 });
-

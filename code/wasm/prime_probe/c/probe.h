@@ -43,4 +43,4 @@ void probe_only_split_8(void *pp);
 
 void probe_only_adv_generic(void *pp, int max_it);
 
-void* get_probe_only_by_type(int type);
+void *get_probe_only_by_type(int type);

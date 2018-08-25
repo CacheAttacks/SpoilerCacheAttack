@@ -18,25 +18,24 @@
  */
 
 #include "config.h"
-#include <stdio.h>
+#include <assert.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
-#include <assert.h>
 
 #include "timestats.h"
 
-
-
-struct ts {
+struct ts
+{
   uint32_t data[TIME_MAX];
 };
 
-
 static ts_t lastfree = NULL;
 
-ts_t ts_alloc() {
-  ts_t rv = lastfree; 
+ts_t ts_alloc()
+{
+  ts_t rv = lastfree;
   if (rv == NULL)
     rv = (ts_t)malloc(sizeof(struct ts));
   else
@@ -45,34 +44,33 @@ ts_t ts_alloc() {
   return rv;
 }
 
-void ts_free(ts_t ts) {
+void ts_free(ts_t ts)
+{
   if (lastfree == NULL)
     lastfree = ts;
   else
     free(ts);
 }
 
-void ts_clear(ts_t ts) {
-  bzero(ts, sizeof(struct ts));
-}
+void ts_clear(ts_t ts) { bzero(ts, sizeof(struct ts)); }
 
-void ts_add(ts_t ts, int tm) {
-  if (tm < TIME_MAX &&  tm >= 0)
+void ts_add(ts_t ts, int tm)
+{
+  if (tm < TIME_MAX && tm >= 0)
     ts->data[tm]++;
   else
     ts->data[0]++;
 }
 
-uint32_t ts_get(ts_t ts, int tm) {
+uint32_t ts_get(ts_t ts, int tm)
+{
   return tm < TIME_MAX && tm > 0 ? ts->data[tm] : 0;
 }
 
-uint32_t ts_outliers(ts_t ts) {
-  return ts->data[0];
-}
+uint32_t ts_outliers(ts_t ts) { return ts->data[0]; }
 
-
-int ts_median(ts_t ts) {
+int ts_median(ts_t ts)
+{
   int c = 0;
   for (int i = 0; i < TIME_MAX; i++)
     c += ts->data[i];
@@ -83,14 +81,16 @@ int ts_median(ts_t ts) {
   return 0;
 }
 
-int ts_max(ts_t ts) {
-  for (int i = TIME_MAX; --i; )
+int ts_max(ts_t ts)
+{
+  for (int i = TIME_MAX; --i;)
     if (ts->data[i] != 0)
       return i;
   return 0;
 }
 
-int ts_percentile(ts_t ts, int percentile) {
+int ts_percentile(ts_t ts, int percentile)
+{
   int c = 0;
   for (int i = 0; i < TIME_MAX; i++)
     c += ts->data[i];
@@ -100,14 +100,15 @@ int ts_percentile(ts_t ts, int percentile) {
       return i;
   return ts_max(ts);
 }
-  
 
-int ts_mean(ts_t ts, int scale) {
+int ts_mean(ts_t ts, int scale)
+{
   uint64_t sum = 0;
   int count = 0;
-  for (int i = 0; i < TIME_MAX; i++) {
+  for (int i = 0; i < TIME_MAX; i++)
+  {
     count += ts->data[i];
-    sum += i* (uint64_t)ts->data[i];
+    sum += i * (uint64_t)ts->data[i];
   }
-  return (int)((sum * scale)/count);
+  return (int)((sum * scale) / count);
 }

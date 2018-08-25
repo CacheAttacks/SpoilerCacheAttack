@@ -27,7 +27,8 @@ struct timer_info *info;
 #define NEXTPTR(p) (OFFSET((p), sizeof(void *)))
 
 typedef void (*l3progressNotification_t)(int count, int est, void *data);
-struct l3info {
+struct l3info
+{
   int associativity;
   int slices;
   int setsperslice;
@@ -41,15 +42,16 @@ struct l3info {
 typedef struct l3pp *l3pp_t;
 typedef struct l3info *l3info_t;
 
-struct l3pp {
+struct l3pp
+{
   struct l3info l3info;
   union cpuid cpuidInfo;
 
-  // To reduce probe time we group sets in cases that we know that a group of consecutive cache lines will
-  // always map to equivalent sets. In the absence of user input (yet to be implemented) the decision is:
-  // Non linear mappings - 1 set per group (to be implemeneted)
-  // Huge pages - L3_SETS_PER_SLICE sets per group (to be impolemented)
-  // Otherwise - L3_SETS_PER_PAGE sets per group.
+  // To reduce probe time we group sets in cases that we know that a group of
+  // consecutive cache lines will always map to equivalent sets. In the absence
+  // of user input (yet to be implemented) the decision is: Non linear mappings
+  // - 1 set per group (to be implemeneted) Huge pages - L3_SETS_PER_SLICE sets
+  // per group (to be impolemented) Otherwise - L3_SETS_PER_PAGE sets per group.
   int ngroups;
   int groupsize;
   vlist_t *groups;
@@ -65,13 +67,11 @@ struct l3pp {
 #endif
 };
 
+#define L3FLAG_NOHUGEPAGES 0x01
+#define L3FLAG_USEPTE 0x02
+#define L3FLAG_NOPROBE 0x04
 
-#define L3FLAG_NOHUGEPAGES	0x01
-#define L3FLAG_USEPTE		0x02 
-#define L3FLAG_NOPROBE		0x04 
-
-typedef uint32_t (*p_probetime)(void*);
-
+typedef uint32_t (*p_probetime)(void *);
 
 l3pp_t l3_prepare(l3info_t l3info, int L3_THRESHOLD, int max_es);
 void l3_release(l3pp_t l3);
@@ -98,8 +98,8 @@ void l3_probecount(l3pp_t l3, RES_TYPE *results);
 void l3_bprobecount(l3pp_t l3, RES_TYPE *results);
 
 int l3_repeatedprobe_fast(l3pp_t l3, int nrecords, RES_TYPE *results, int type);
-int l3_repeatedprobe(l3pp_t l3, int nrecords, RES_TYPE *results, int slot, int type);
+int l3_repeatedprobe(l3pp_t l3, int nrecords, RES_TYPE *results, int slot,
+                     int type);
 int l3_repeatedprobecount(l3pp_t l3, int nrecords, RES_TYPE *results, int slot);
 
 #endif // __L3_H__
-

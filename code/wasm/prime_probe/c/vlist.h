@@ -35,28 +35,28 @@ inline int vl_len(vlist_t vl);
 void vl_insert(vlist_t vl, int ind, void *dat);
 int vl_find(vlist_t vl, void *dat);
 
-
 //---------------------------------------------
 // Implementation details
 //---------------------------------------------
 
-struct vlist {
+struct vlist
+{
   int size;
   int len;
   void **data;
 };
 
-inline void *vl_get(vlist_t vl, int ind) {
+inline void *vl_get(vlist_t vl, int ind)
+{
   assert(vl != NULL);
   assert(ind < vl->len);
   return vl->data[ind];
 }
 
-inline int vl_len(vlist_t vl) {
+inline int vl_len(vlist_t vl)
+{
   assert(vl != NULL);
   return vl->len;
 }
-
-
 
 #endif // __VLIST_H__

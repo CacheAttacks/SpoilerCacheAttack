@@ -18,8 +18,8 @@
  */
 
 #include "config.h"
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <strings.h>
 
@@ -30,7 +30,8 @@ extern int vl_len(vlist_t vl);
 
 #define VLIST_DEF_SIZE 16
 
-vlist_t vl_new() {
+vlist_t vl_new()
+{
   vlist_t vl = (vlist_t)malloc(sizeof(struct vlist));
   vl->size = VLIST_DEF_SIZE;
   vl->data = (void **)calloc(VLIST_DEF_SIZE, sizeof(void *));
@@ -38,21 +39,24 @@ vlist_t vl_new() {
   return vl;
 }
 
-void vl_free(vlist_t vl) {
+void vl_free(vlist_t vl)
+{
   assert(vl != NULL);
   free(vl->data);
   bzero(vl, sizeof(struct vlist));
   free(vl);
 }
 
-void vl_set(vlist_t vl, int ind, void *dat) {
+void vl_set(vlist_t vl, int ind, void *dat)
+{
   assert(vl != NULL);
   assert(dat != NULL);
   assert(ind < vl->len);
   vl->data[ind] = dat;
 }
 
-static void vl_setsize(vlist_t vl, int size) {
+static void vl_setsize(vlist_t vl, int size)
+{
   assert(vl != NULL);
   assert(size >= vl->len);
   void **old = vl->data;
@@ -60,8 +64,8 @@ static void vl_setsize(vlist_t vl, int size) {
   vl->size = size;
 }
 
-
-int vl_push(vlist_t vl, void *dat) {
+int vl_push(vlist_t vl, void *dat)
+{
   assert(vl != NULL);
   assert(dat != NULL);
   if (vl->len == vl->size)
@@ -71,22 +75,25 @@ int vl_push(vlist_t vl, void *dat) {
   return vl->len - 1;
 }
 
-void *vl_pop(vlist_t vl) {
+void *vl_pop(vlist_t vl)
+{
   assert(vl != NULL);
   if (vl->len == 0)
     return NULL;
   return vl->data[--vl->len];
 }
 
-void *vl_del(vlist_t vl, int ind) {
+void *vl_del(vlist_t vl, int ind)
+{
   assert(vl != NULL);
   assert(ind < vl->len);
-  void * rv = vl->data[ind];
+  void *rv = vl->data[ind];
   vl->data[ind] = vl->data[--vl->len];
   return rv;
 }
 
-void *vl_poprand(vlist_t vl) {
+void *vl_poprand(vlist_t vl)
+{
   assert(vl != NULL);
   if (vl->len == 0)
     return NULL;
@@ -96,19 +103,24 @@ void *vl_poprand(vlist_t vl) {
   return rv;
 }
 
-void vl_insert(vlist_t vl, int ind, void *dat) {
+void vl_insert(vlist_t vl, int ind, void *dat)
+{
   assert(vl != NULL);
   assert(dat != NULL);
   assert(ind <= vl->len);
-  if (ind == vl->len) {
+  if (ind == vl->len)
+  {
     vl_push(vl, dat);
-  } else {
+  }
+  else
+  {
     vl_push(vl, vl->data[ind]);
     vl->data[ind] = dat;
   }
 }
 
-int vl_find(vlist_t vl, void *dat) {
+int vl_find(vlist_t vl, void *dat)
+{
   assert(vl != NULL);
   assert(dat != NULL);
   for (int i = 0; i < vl->len; i++)
@@ -116,4 +128,3 @@ int vl_find(vlist_t vl, void *dat) {
       return i;
   return -1;
 }
-
