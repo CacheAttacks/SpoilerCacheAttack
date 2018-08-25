@@ -1,4 +1,15 @@
+#include <emscripten.h>
+#include <inttypes.h>
+//#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/mman.h>
+//#include <sys/stat.h>
+//#include <unistd.h>
+
+#include "config.h"
 #include "SABcounter.h"
+#include "printf_wrapper.h"
 
 // used for SAB_wasmMemory_write_counter_value
 uint32_t *SAB_global_counter_buffer = 0;
@@ -10,7 +21,7 @@ void SAB_test_resolution(uint32_t (*measure_func)(), float resolution_ns)
     uint32_t v1 = (*measure_func)();
     uint32_t v2 = (*measure_func)();
     float diff_ns = (v2 - v1) * resolution_ns;
-    printf("%" PRIu32 " (%0.1fns), ", v2 - v1, diff_ns);
+    printf_ex("%" PRIu32 " (%0.1fns), ", v2 - v1, diff_ns);
   }
   putchar('\n');
 }

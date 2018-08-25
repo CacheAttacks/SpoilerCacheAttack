@@ -1737,7 +1737,7 @@ var ASM_CONSTS = [];
 
 STATIC_BASE = GLOBAL_BASE;
 
-STATICTOP = STATIC_BASE + 7280;
+STATICTOP = STATIC_BASE + 7408;
 /* global initializers */  __ATINIT__.push();
 
 
@@ -1746,7 +1746,7 @@ STATICTOP = STATIC_BASE + 7280;
 
 
 
-var STATIC_BUMP = 7280;
+var STATIC_BUMP = 7408;
 Module["STATIC_BASE"] = STATIC_BASE;
 Module["STATIC_BUMP"] = STATIC_BUMP;
 
@@ -1790,36 +1790,32 @@ function copyTempDouble(ptr) {
 // {{PRE_LIBRARY}}
 
 
-  function _Performance_now()
-      {
-          return performance.now();
+  function _Performance_now() {
+        return performance.now();
       }
 
-  function _SAB_get_resolution_ns(samples)
-      {
-          var nsPerTick = 0;
-          for(var i=0; i<samples; i++)
-          {
-              var start = wait_edge();
-              var start_count = Atomics.load(Module['sharedArrayCounter'], 0);
-              var end = wait_edge();
-              var end_count = Atomics.load(Module['sharedArrayCounter'], 0);
-              if(end_count - start_count == 0){
-                  break;
-              }
-              nsPerTick += (end - start) / (end_count - start_count) ;
-              //console.log(start_count + " " + end_count);
+  function _SAB_get_resolution_ns(samples) {
+        var nsPerTick = 0;
+        for (var i = 0; i < samples; i++) {
+          var start = wait_edge();
+          var start_count = Atomics.load(Module['sharedArrayCounter'], 0);
+          var end = wait_edge();
+          var end_count = Atomics.load(Module['sharedArrayCounter'], 0);
+          if (end_count - start_count == 0) {
+            break;
           }
-          nsPerTick /= samples;
-          //convert from ms to ns
-          return nsPerTick * 1000 * 1000;
+          nsPerTick += (end - start) / (end_count - start_count);
+          // console.log(start_count + " " + end_count);
+        }
+        nsPerTick /= samples;
+        // convert from ms to ns
+        return nsPerTick * 1000 * 1000;
       }
 
-  function _SAB_lib_get_counter_value()
-      {
-          //return Module['sharedArrayCounter'][0];
-          //far more consistent
-          return Atomics.load(Module['sharedArrayCounter'], 0);
+  function _SAB_lib_get_counter_value() {
+        // return Module['sharedArrayCounter'][0];
+        // far more consistent
+        return Atomics.load(Module['sharedArrayCounter'], 0);
       }
 
   function ___assert_fail(condition, filename, line, func) {
@@ -5076,8 +5072,7 @@ function copyTempDouble(ptr) {
       Module['abort']();
     }
 
-  function _dummy_for_wat() {
-      }
+  function _dummy_for_wat() {}
 
   
   function __exit(status) {
@@ -5088,14 +5083,17 @@ function copyTempDouble(ptr) {
       __exit(status);
     }
 
-  function _js_repeatedprobe(uint8ptrMonitorhead, uint8ptrBmonitorhead, nrecords, uint8ptrResults){
-          Module['jsrepeatedprobe'] = {uint8ptrMonitorhead: uint8ptrMonitorhead,
+  function _js_repeatedprobe(
+          uint8ptrMonitorhead, uint8ptrBmonitorhead, nrecords, uint8ptrResults) {
+        Module['jsrepeatedprobe'] = {
+          uint8ptrMonitorhead: uint8ptrMonitorhead,
           uint8ptrBmonitorhead: uint8ptrBmonitorhead,
           nrecords: nrecords,
-          uint8ptrResults: uint8ptrResults};
+          uint8ptrResults: uint8ptrResults
+        };
   
-          $.loadScriptSync('javascript/primeprobe.js', function(){});    
-  }
+        $.loadScriptSync('javascript/primeprobe.js', function() {});
+      }
 
    
 
@@ -5108,63 +5106,74 @@ function copyTempDouble(ptr) {
    
 
   function _print_plot_data() {
-          if(Module['byteFactor'] != 0){
-              var POSTstr = Module['createPOSTStr'](Module['wasmMemoryArr'], Module['res']/Module['byteFactor'], Module['nrow'], Module['ncol']);
-              Module['postxhr']('http://localhost:8000/changedata', POSTstr);
+        if (Module['byteFactor'] != 0) {
+          var POSTstr = Module['createPOSTStr'](
+              Module['wasmMemoryArr'], Module['res'] / Module['byteFactor'],
+              Module['nrow'], Module['ncol']);
+          Module['postxhr']('http://localhost:8000/changedata', POSTstr);
   
-              var indexVecStartAdd = Module['monitoredEsIndexVecPtr']/Module['byteFactor'];
-              var indexVecSize = Module['monitoredEsIndexVecSize'];
-              var indexString = "";
-              for(var i=0; i<indexVecSize; i++){
-                  indexString += Module['wasmMemoryArr'][indexVecStartAdd + i].toString() + ",";
-              }
-  
-              Module['postxhr']('http://localhost:8000/changeindexvec', indexString);
-  
-              d = new Date();
-              Module['imgElement'].src = 'http://localhost:8000/plotdata?selected_es=' + document.getElementById('numberRangeEs').value + "&" + d.getTime();
+          var indexVecStartAdd =
+              Module['monitoredEsIndexVecPtr'] / Module['byteFactor'];
+          var indexVecSize = Module['monitoredEsIndexVecSize'];
+          var indexString = '';
+          for (var i = 0; i < indexVecSize; i++) {
+            indexString +=
+                Module['wasmMemoryArr'][indexVecStartAdd + i].toString() + ',';
           }
+  
+          Module['postxhr']('http://localhost:8000/changeindexvec', indexString);
+  
+          d = new Date();
+          Module['imgElement'].src =
+              'http://localhost:8000/plotdata?selected_es=' +
+              document.getElementById('numberRangeEs').value + '&' + d.getTime();
+        }
+      }
+
+  function _printf_ex_js(cStringPtr) {
+        consoleLogExNoNewLine(Pointer_stringify(cStringPtr));
       }
 
    
 
   function _set_app_state_ptr(ptr) {
-          Module['appStatePtr'] = ptr;
+        Module['appStatePtr'] = ptr;
       }
 
   function _set_current_times_ptr(ptr) {
-          Module['currentTimesPtr'] = ptr;
+        Module['currentTimesPtr'] = ptr;
       }
 
   function _set_idle_times_ptr(ptr, byteFactor) {
-          Module['idleTimesPtr'] = ptr;
-          Module['timesArrayByteFactor'] = byteFactor;
+        Module['idleTimesPtr'] = ptr;
+        Module['timesArrayByteFactor'] = byteFactor;
       }
 
   function _set_monitored_es_index_vec_ptr(ptr, size) {
-          Module['monitoredEsIndexVecPtr'] = ptr;
-          Module['monitoredEsIndexVecSize'] = size;
+        Module['monitoredEsIndexVecPtr'] = ptr;
+        Module['monitoredEsIndexVecSize'] = size;
       }
 
-  function _set_number_of_observed_cache_sets(number_of_observed_cache_setsptr) {
-          Module['numberOfObservedCacheSets'] = number_of_observed_cache_setsptr;
+  function _set_number_of_observed_cache_sets(
+          number_of_observed_cache_setsptr) {
+        Module['numberOfObservedCacheSets'] = number_of_observed_cache_setsptr;
       }
 
   function _set_ptr_to_data(ptr, nrow, ncol, type) {
-          Module['res'] = ptr;
-          Module['nrow'] = nrow;
-          Module['ncol'] = ncol;
-          if(type == 0){//"UInt16"
-              Module['byteFactor'] = 2;
-              Module['wasmMemoryArr'] = new Uint16Array(Module['wasmMemory'].buffer);
-          } else if(type == 1){//"UInt32"
-              Module['byteFactor'] = 4;
-              Module['wasmMemoryArr'] = new Uint32Array(Module['wasmMemory'].buffer);
-          } else {
-              console.log("type: " + type + " not supported. Set byteFactor = 4");
-              Module['byteFactor'] = 4;
-              Module['wasmMemoryArr'] = new Uint32Array(Module['wasmMemory'].buffer);
-          }
+        Module['res'] = ptr;
+        Module['nrow'] = nrow;
+        Module['ncol'] = ncol;
+        if (type == 0) {  //"UInt16"
+          Module['byteFactor'] = 2;
+          Module['wasmMemoryArr'] = new Uint16Array(Module['wasmMemory'].buffer);
+        } else if (type == 1) {  //"UInt32"
+          Module['byteFactor'] = 4;
+          Module['wasmMemoryArr'] = new Uint32Array(Module['wasmMemory'].buffer);
+        } else {
+          console.log('type: ' + type + ' not supported. Set byteFactor = 4');
+          Module['byteFactor'] = 4;
+          Module['wasmMemoryArr'] = new Uint32Array(Module['wasmMemory'].buffer);
+        }
       }
 FS.staticInit();__ATINIT__.unshift(function() { if (!Module["noFSInit"] && !FS.init.initialized) FS.init() });__ATMAIN__.push(function() { FS.ignorePermissions = false });__ATEXIT__.push(function() { FS.quit() });;
 __ATINIT__.unshift(function() { TTY.init() });__ATEXIT__.push(function() { TTY.shutdown() });;
@@ -5256,7 +5265,7 @@ function invoke_viii(index,a1,a2,a3) {
 
 Module.asmGlobalArg = {};
 
-Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "nullFunc_viii": nullFunc_viii, "invoke_ii": invoke_ii, "invoke_iiii": invoke_iiii, "invoke_viii": invoke_viii, "_Performance_now": _Performance_now, "_SAB_get_resolution_ns": _SAB_get_resolution_ns, "_SAB_lib_get_counter_value": _SAB_lib_get_counter_value, "___assert_fail": ___assert_fail, "___lock": ___lock, "___setErrNo": ___setErrNo, "___syscall140": ___syscall140, "___syscall146": ___syscall146, "___syscall192": ___syscall192, "___syscall54": ___syscall54, "___syscall6": ___syscall6, "___syscall91": ___syscall91, "___unlock": ___unlock, "__exit": __exit, "_abort": _abort, "_dummy_for_wat": _dummy_for_wat, "_emscripten_memcpy_big": _emscripten_memcpy_big, "_exit": _exit, "_js_repeatedprobe": _js_repeatedprobe, "_print_plot_data": _print_plot_data, "_set_app_state_ptr": _set_app_state_ptr, "_set_current_times_ptr": _set_current_times_ptr, "_set_idle_times_ptr": _set_idle_times_ptr, "_set_monitored_es_index_vec_ptr": _set_monitored_es_index_vec_ptr, "_set_number_of_observed_cache_sets": _set_number_of_observed_cache_sets, "_set_ptr_to_data": _set_ptr_to_data, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
+Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "nullFunc_viii": nullFunc_viii, "invoke_ii": invoke_ii, "invoke_iiii": invoke_iiii, "invoke_viii": invoke_viii, "_Performance_now": _Performance_now, "_SAB_get_resolution_ns": _SAB_get_resolution_ns, "_SAB_lib_get_counter_value": _SAB_lib_get_counter_value, "___assert_fail": ___assert_fail, "___lock": ___lock, "___setErrNo": ___setErrNo, "___syscall140": ___syscall140, "___syscall146": ___syscall146, "___syscall192": ___syscall192, "___syscall54": ___syscall54, "___syscall6": ___syscall6, "___syscall91": ___syscall91, "___unlock": ___unlock, "__exit": __exit, "_abort": _abort, "_dummy_for_wat": _dummy_for_wat, "_emscripten_memcpy_big": _emscripten_memcpy_big, "_exit": _exit, "_js_repeatedprobe": _js_repeatedprobe, "_print_plot_data": _print_plot_data, "_printf_ex_js": _printf_ex_js, "_set_app_state_ptr": _set_app_state_ptr, "_set_current_times_ptr": _set_current_times_ptr, "_set_idle_times_ptr": _set_idle_times_ptr, "_set_monitored_es_index_vec_ptr": _set_monitored_es_index_vec_ptr, "_set_number_of_observed_cache_sets": _set_number_of_observed_cache_sets, "_set_ptr_to_data": _set_ptr_to_data, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
 // EMSCRIPTEN_START_ASM
 var asm =Module["asm"]// EMSCRIPTEN_END_ASM
 (Module.asmGlobalArg, Module.asmLibraryArg, buffer);

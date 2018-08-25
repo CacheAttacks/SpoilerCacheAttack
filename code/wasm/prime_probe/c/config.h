@@ -12,3 +12,5 @@
 #define HAVE_SCHED_SETAFFINITY 1
 
 #define HAVE_SYMBOLS 1
+
+#define WASM

@@ -1,7 +1,3 @@
-#include "es_management.h"
-#include "l3.h"
-#include "low.h"
-#include "vlist.h"
 #include <assert.h>
 #include <inttypes.h>
 #include <limits.h>
@@ -9,6 +5,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include "low.h"
+#include "vlist.h"
+#include "l3.h"
+#include "printf_wrapper.h"
+#include "es_management.h"
+
 
 #define CHECK_BIT(var, pos) ((var) & (1 << (pos)))
 
@@ -53,7 +55,7 @@ void set_monitored_es_lower_half(void *app_state_ptr)
 
   l3_unmonitorall(this_app_state->l3);
 
-  // printf("monitor from %i to %i\n", min_index, max_index);
+  // printf_ex("monitor from %i to %i\n", min_index, max_index);
 
   for (int i = min_index * 64; i < (max_index + 1) * 64; i += 64)
     if (!CHECK_BIT(i / 64, 5))
@@ -70,11 +72,11 @@ void change_type(void *app_state_ptr, int type)
       type == 28)
   {
     this_app_state->type = type;
-    printf("type changed to %i\n", type);
+    printf_ex("type changed to %i\n", type);
   }
   else
   {
-    printf("type not found! type still %i\n", this_app_state->type);
+    printf_ex("type not found! type still %i\n", this_app_state->type);
   }
 }
 
@@ -88,20 +90,20 @@ void set_monitored_es_arr(void *app_state_ptr, int *indices_arr,
   int nsets = l3_getSets(this_app_state->l3);
   int nmonitored = nsets / 64;
   int max_index = nmonitored - 1;
-  printf("add: %p\n", indices_arr);
+  printf_ex("add: %p\n", indices_arr);
 
   for (int i = 0; i < indices_arr_size; i++)
   {
     int current_index = indices_arr[i];
-    printf("cur: %i\n", current_index);
+    printf_ex("cur: %i\n", current_index);
     if (current_index < 0)
     {
-      printf("%i < 0\n", current_index);
+      printf_ex("%i < 0\n", current_index);
       return;
     }
     if (current_index >= max_index)
     {
-      printf("%i >= number_of_es\n", current_index);
+      printf_ex("%i >= number_of_es\n", current_index);
       return;
     }
   }
@@ -132,10 +134,10 @@ void set_monitored_es(void *app_state_ptr, int min_index, int max_index)
   {
     return;
   }
-  // printf("min_index:%i ,max_index:%i\n", min_index, max_index);
+  // printf_ex("min_index:%i ,max_index:%i\n", min_index, max_index);
   int nsets = l3_getSets(this_app_state->l3);
   int nmonitored = nsets / 64;
-  // printf("nmonitored: %i\n", nmonitored);
+  // printf_ex("nmonitored: %i\n", nmonitored);
   if (min_index == -1 && max_index == -1)
   {
     max_index = nmonitored - 1;
@@ -143,23 +145,23 @@ void set_monitored_es(void *app_state_ptr, int min_index, int max_index)
   }
   if (min_index < 0)
   {
-    printf("min_index < 0\n");
+    printf_ex("min_index < 0\n");
     return;
   }
   if (max_index >= nmonitored)
   {
-    printf("max_index >= number_of_es\n");
+    printf_ex("max_index >= number_of_es\n");
     return;
   }
   if (max_index < min_index)
   {
-    printf("max_index < min_index\n");
+    printf_ex("max_index < min_index\n");
     return;
   }
 
   l3_unmonitorall(this_app_state->l3);
 
-  // printf("monitor from %i to %i\n", min_index, max_index);
+  // printf_ex("monitor from %i to %i\n", min_index, max_index);
 
   for (int i = min_index * 64; i < (max_index + 1) * 64; i += 64)
     l3_monitor(this_app_state->l3, i);
@@ -195,7 +197,7 @@ int build_es_ex(void *app_state_ptr, int max_es, int benchmarkmode,
 
   if (!this_app_state->l3_threshold)
   {
-    printf("l3_threshold not set!\n");
+    printf_ex("l3_threshold not set!\n");
     exit(1);
   }
 
@@ -222,7 +224,7 @@ int build_es_ex(void *app_state_ptr, int max_es, int benchmarkmode,
 #ifdef WASM
   warmup(1024 * 1024 * 128); // warm up 2^27 counts operations ~ 2^30
                              // cyclesthis_app_state->last_min_index
-  printf("warm-up finished\n");
+  printf_ex("warm-up finished\n");
 #endif
 
   if (benchmarkmode)
@@ -235,16 +237,16 @@ int build_es_ex(void *app_state_ptr, int max_es, int benchmarkmode,
           l3_prepare(NULL, this_app_state->l3_threshold, max_es);
       uint32_t timer_after = get_time_in_ms();
 
-      printf("Eviction set total time: %u sec\n",
+      printf_ex("Eviction set total time: %u sec\n",
              (timer_after - timer_before) / 1000);
       l3_release(this_app_state->l3);
       timer_array[i] = timer_after - timer_before;
     }
     for (int i = 0; i < BENCHMARKRUNS; i++)
     {
-      printf("%u ", timer_array[i]);
+      printf_ex("%u ", timer_array[i]);
     }
-    printf("\n");
+    printf_ex("\n");
   }
   else
   {
@@ -252,12 +254,12 @@ int build_es_ex(void *app_state_ptr, int max_es, int benchmarkmode,
     this_app_state->l3 = l3_prepare(NULL, this_app_state->l3_threshold, max_es);
     uint32_t timer_after = get_time_in_ms();
 
-    printf("Eviction set total time: %u sec\n",
+    printf_ex("Eviction set total time: %u sec\n",
            (timer_after - timer_before) / 1000);
   }
   int nsets = l3_getSets(this_app_state->l3);
   int nmonitored = nsets / 64;
-  printf("nmonitored: %i\n", nmonitored);
+  printf_ex("nmonitored: %i\n", nmonitored);
 
   // create and set monitored es index vec
   // size of this vector is not known in advance
@@ -270,7 +272,7 @@ int build_es_ex(void *app_state_ptr, int max_es, int benchmarkmode,
   set_monitored_es_index_vec_ptr(
       (uint32_t)this_app_state->monitored_es_index_vec, (uint32_t)nmonitored);
 
-  printf("ncol: %i\n", this_app_state->l3->nmonitored);
+  printf_ex("ncol: %i\n", this_app_state->l3->nmonitored);
 
   return this_app_state->l3->ngroups;
 }
@@ -282,7 +284,7 @@ void prime_spam_es(void *app_state_ptr, int duration_sec)
 
   if (!this_app_state->l3)
   {
-    printf("app_state_ptr->l3 is null! Already called build_es?\n");
+    printf_ex("app_state_ptr->l3 is null! Already called build_es?\n");
     return;
   }
   int number_of_samples = 100000;
@@ -314,7 +316,7 @@ void sample_es(void *app_state_ptr, int number_of_samples, int slot_time
 
   if (!this_app_state->l3)
   {
-    printf("app_state_ptr->l3 is null! Already called build_es?\n");
+    printf_ex("app_state_ptr->l3 is null! Already called build_es?\n");
     return;
   }
 
@@ -366,7 +368,7 @@ void sample_es(void *app_state_ptr, int number_of_samples, int slot_time
   uint64_t time_dur = get_time_in_ms() - before;
   int opt_primeprobe = (this_app_state->l3->nmonitored == 1) ? 1 : 0;
   uint64_t primeprobe_ops = this_app_state->l3->nmonitored * number_of_samples;
-  printf("l3_repeatedprobe %" PRIu64
+  printf_ex("l3_repeatedprobe %" PRIu64
          "ms (primeprobe_js:%i, opt:%i) per primeprobe op: %f ns\n",
          time_dur, primeprobe_js, opt_primeprobe,
          (double)time_dur / primeprobe_ops * 1000 * 1000);
@@ -376,7 +378,7 @@ void sample_es(void *app_state_ptr, int number_of_samples, int slot_time
   set_ptr_to_data((uint32_t)this_app_state->res, number_of_samples,
                   this_app_state->l3->nmonitored, RES_TYPE_JS);
 
-  // printf("set_ptr_to_data: %p\n", this_app_state->res);
+  // printf_ex("set_ptr_to_data: %p\n", this_app_state->res);
 
   if (plot)
     print_plot_data();
@@ -391,7 +393,7 @@ void get_mean_evictions_sets(void *app_state_ptr, int *idle_mean_values,
   struct app_state *this_app_state = (struct app_state *)app_state_ptr;
   if (!this_app_state->l3)
   {
-    printf("app_state_ptr->l3 is null! Already called build_es?\n");
+    printf_ex("app_state_ptr->l3 is null! Already called build_es?\n");
     return;
   }
 
@@ -420,7 +422,7 @@ void get_mean_evictions_sets(void *app_state_ptr, int *idle_mean_values,
       mean += res[a];
     }
     mean /= number_of_samples;
-    // printf("%li ", mean);
+    // printf_ex("%li ", mean);
 
     idle_mean_values[i - min_index] = mean;
   }
@@ -441,17 +443,17 @@ void get_idle_times(void *app_state_ptr, int min_index, int max_index,
   }
   if (min_index < 0)
   {
-    printf("min_index < 0\n");
+    printf_ex("min_index < 0\n");
     return;
   }
   if (max_index >= nmonitored)
   {
-    printf("max_index >= number_of_es\n");
+    printf_ex("max_index >= number_of_es\n");
     return;
   }
   if (max_index < min_index)
   {
-    printf("max_index < min_index\n");
+    printf_ex("max_index < min_index\n");
     return;
   }
 
@@ -497,16 +499,16 @@ void find_interesting_eviction_sets(void *app_state_ptr, float threshold_factor,
   this_app_state->interesting_cache_sets =
       calloc(number_of_observed_cache_sets, sizeof(RES_TYPE));
 
-  // printf("interesting cache sets: ");
+  // printf_ex("interesting cache sets: ");
   for (int i = 0; i < number_of_observed_cache_sets; i++)
   {
-    // printf("%i(%i) ", this_app_state->current_mean_values[i],
+    // printf_ex("%i(%i) ", this_app_state->current_mean_values[i],
     // this_app_state->idle_mean_values[i]);
     if (this_app_state->current_mean_values[i] >
         threshold_factor * this_app_state->idle_mean_values[i])
     {
       this_app_state->interesting_cache_sets[i] = 1;
-      // printf("%i ", i);
+      // printf_ex("%i ", i);
     }
   }
   // putchar('\n');

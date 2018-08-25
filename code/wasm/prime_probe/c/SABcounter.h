@@ -1,12 +1,3 @@
-#include <emscripten.h>
-#include <inttypes.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <unistd.h>
-
 // javascript function stubs
 extern uint32_t
 SAB_lib_get_counter_value(void); // uses lib call to get counter value

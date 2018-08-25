@@ -6,6 +6,18 @@
         "stdlib.h": "c",
         "stdio.h": "c",
         "stat.h": "c",
-        "strings.h": "c"
+        "strings.h": "c",
+        "ratio": "cpp",
+        "low.h": "c",
+        "assert.h": "c",
+        "l3.h": "c",
+        "probe.h": "c",
+        "mman.h": "c",
+        "stdint.h": "c",
+        "config.h": "c",
+        "timestats.h": "c",
+        "inttypes.h": "c",
+        "printf_wrapper.h": "c",
+        "sabcounter.h": "c"
     }
 }

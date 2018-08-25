@@ -20,7 +20,7 @@
 #ifndef __LOW_H__
 #define __LOW_H__
 
-#define WASM
+#include "config.h"
 
 // warm up timers before measurement operation
 #define WARMUP
@@ -28,6 +28,8 @@
 #ifdef WASM
 #include "SABcounter.h"
 #endif
+
+#include <sys/mman.h>
 
 #define L3_CACHELINE_BITS 6
 #define L3_CACHELINE 64

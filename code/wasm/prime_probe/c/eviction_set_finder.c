@@ -8,11 +8,12 @@
 #include <strings.h>
 
 //#include <util.h>
-#include "SABcounter.h"
-#include "es_management.h"
-#include "l3.h"
 #include "low.h"
 #include "vlist.h"
+#include "SABcounter.h"
+#include "l3.h"
+#include "es_management.h"
+#include "printf_wrapper.h"
 
 // set ptr to app state for context switches between wasm and javascript
 // called by javascript
@@ -29,7 +30,7 @@ int test_mem_access(int random, int rounds, int print)
   int bufsize = BLOCK_SIZE * pages;
   if (bufsize > 1024 * 1024 * 200)
   {
-    printf("bufsize to big!");
+    printf_ex("bufsize to big!");
     exit(1);
   }
   char *buffer = mmap(NULL, bufsize, PROT_READ | PROT_WRITE,
@@ -76,13 +77,13 @@ int test_mem_access(int random, int rounds, int print)
   {
     for (int i = 0; i < rounds; i++)
     {
-      printf("index: %p ,", randomPtr);
-      printf("%" PRIu32 ", %" PRIu32 ", ", counter[i * 4], counter[i * 4 + 1]);
+      printf_ex("index: %p ,", randomPtr);
+      printf_ex("%" PRIu32 ", %" PRIu32 ", ", counter[i * 4], counter[i * 4 + 1]);
 
       if (flush)
-        printf("flush L3, ");
+        printf_ex("flush L3, ");
 
-      printf("%" PRIu32 ", %" PRIu32 "\n", counter[i * 4 + 2],
+      printf_ex("%" PRIu32 ", %" PRIu32 "\n", counter[i * 4 + 2],
              counter[i * 4 + 3]);
     }
   }
@@ -102,7 +103,7 @@ void counter_consistency_test(int mean, uint32_t counts, uint32_t range)
     iterations++;
     sum += b - a;
     if (!mean)
-      printf("%i ", b - a);
+      printf_ex("%i ", b - a);
     if (i % 1000 == 999)
     {
       if (!mean)
@@ -111,7 +112,7 @@ void counter_consistency_test(int mean, uint32_t counts, uint32_t range)
     if (i % range == range - 1)
     {
       if (mean)
-        printf("mean last %i: %i, iterations %llu, last counter tick %" PRIu32
+        printf_ex("mean last %i: %i, iterations %llu, last counter tick %" PRIu32
                "\n",
                range, sum / range, iterations, b);
       sum = 0;
@@ -123,26 +124,26 @@ void counter_consistency_test(int mean, uint32_t counts, uint32_t range)
 
 int mem_access_testing(int rounds, int print)
 {
-  printf("random access %i rounds\n", rounds);
+  printf_ex("random access %i rounds\n", rounds);
   int mean_random = test_mem_access(1, rounds, print);
-  printf("mean:%i\n", mean_random);
-  printf("linear access\n");
+  printf_ex("mean:%i\n", mean_random);
+  printf_ex("linear access\n");
   int mean_linear = test_mem_access(0, rounds, print);
-  printf("mean:%i\n", mean_linear);
+  printf_ex("mean:%i\n", mean_linear);
   // SAB_terminate_counter_sub_worker();
   // exit(1);
   if (mean_random < mean_linear - 10)
   {
-    printf("cannot differ random/linear accesses!\n");
+    printf_ex("cannot differ random/linear accesses!\n");
   }
   if (mean_random - mean_linear <= 10)
   {
-    printf("mean_random - mean_linear < 10\n");
+    printf_ex("mean_random - mean_linear < 10\n");
     // exit(1);
   }
 
   int threshold = mean_linear + (((mean_random - mean_linear) / 2));
-  printf("random/linear threshold: %i\n", threshold);
+  printf_ex("random/linear threshold: %i\n", threshold);
   return threshold;
 }
 
@@ -152,26 +153,26 @@ float get_timer_resolution()
   // while(resolution_ns > 100){
   resolution_ns = SAB_get_resolution_ns(1000);
   //}
-  printf("resolution SAB-timer: %f ns\n", resolution_ns);
+  printf_ex("resolution SAB-timer: %f ns\n", resolution_ns);
   return resolution_ns;
 }
 
 void print_res(l3pp_t l3, RES_TYPE *res, int nmonitored)
 {
-  printf("size of eviction sets\n");
+  printf_ex("size of eviction sets\n");
   for (int i = 0; i < nmonitored; i++)
   {
     vlist_t list = l3->groups[l3->monitoredset[i] / l3->groupsize];
-    printf("%d ", list->len);
+    printf_ex("%d ", list->len);
   }
-  printf("\naccess_time for each evictionset per timeslot\n");
-  printf("x-axis eviction-sets, y-axis sample\n");
+  printf_ex("\naccess_time for each evictionset per timeslot\n");
+  printf_ex("x-axis eviction-sets, y-axis sample\n");
 
   for (int i = 0; i < SAMPLES; i++)
   {
     for (int j = 0; j < nmonitored; j++)
     {
-      printf("%d ", res[i * nmonitored + j]);
+      printf_ex("%d ", res[i * nmonitored + j]);
     }
     if (nmonitored > 0)
       putchar('\n');
@@ -196,11 +197,11 @@ int main(int ac, char **av)
 
   uint32_t val = gcc_test_opt((void *)ptr);
 
-  printf("%i", val);
+  printf_ex("%i", val);
 
-  for (int i = 0; i < 1 * 1000 * 1000; i++)
-  {
-  }
+  // for (int i = 0; i < 1 * 1000 * 1000; i++)
+  // {
+  // }
 
   // counter_consistency_test(1, 5000000, 1000000);
 
@@ -210,7 +211,7 @@ int main(int ac, char **av)
   // flush_l3(0,0,0);
   // mem_access_testing(100000, 0);
   // exit(1);
-  printf("----------------TESTS FINISHED------------------\n");
+  printf_ex("----------------TESTS FINISHED------------------\n");
 
   // energy saving option, counter is started on demand
   // SAB_terminate_counter_sub_worker();

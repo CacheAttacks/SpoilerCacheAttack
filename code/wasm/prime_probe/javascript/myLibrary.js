@@ -1,5 +1,12 @@
 if (typeof mergeInto !== 'undefined')
   mergeInto(LibraryManager.library, {
+    printf_ex_js: function(cStringPtr) {
+      consoleLogExNoNewLine(Pointer_stringify(cStringPtr));
+    }
+  });
+
+if (typeof mergeInto !== 'undefined')
+  mergeInto(LibraryManager.library, {
     SAB_lib_get_counter_value: function() {
       // return Module['sharedArrayCounter'][0];
       // far more consistent

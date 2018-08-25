@@ -10,10 +10,11 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "l3.h"
 #include "low.h"
-#include "timestats.h"
 #include "vlist.h"
+#include "l3.h"
+#include "timestats.h"
+#include "printf_wrapper.h"
 
 extern int L3_THRESHOLD;
 
@@ -389,7 +390,7 @@ __attribute__((optimize("O0")))
 uint32_t
 probetime_split_2(void *pp)
 {
-  // printf("called\n");
+  // printf_ex("called\n");
   if (pp == NULL)
     return 0;
   // void *p = (void *)pp;
@@ -503,7 +504,7 @@ p_probetime get_probetime_by_type(int type)
     return &probetime_adv_15;
   else if (type == 116)
     return &probetime_adv_16;
-  printf("type unknown!\n");
+  printf_ex("type unknown!\n");
   return 0;
 }
 
@@ -778,6 +779,6 @@ void *get_probe_only_by_type(int type)
     return &probe_only_adv_8;
   else if (type == 9)
     return &probe_only_adv_16;
-  printf("type unknown!\n");
+  printf_ex("type unknown!\n");
   return 0;
 }
