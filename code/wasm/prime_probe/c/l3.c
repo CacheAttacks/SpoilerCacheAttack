@@ -1080,6 +1080,40 @@ int l3_repeatedprobe_fast(l3pp_t l3, int nrecords, RES_TYPE *results,
   return nrecords;
 }
 
+int l3_repeatedprobe_spam_fast(l3pp_t l3, int nrecords) {
+  assert(l3 != NULL);
+
+  if (nrecords == 0)
+    return 0;
+
+  int len = l3->nmonitored;
+  if (len > 1)
+    return -1;
+
+  void *monitoredes1 = l3->monitoredhead[0];
+  void *monitoredes1b = NEXTPTR(monitoredes1);
+  // int monitoredes2 = l3->monitoredhead[1];
+
+  //int even = 1;
+  for (int i = 0; i < nrecords; i++) { // i++, results+=len) {
+    //if (even) {
+      // for (int i = 0; i < len; i++) {
+      // results[++i] = (RES_TYPE)probetime(monitoredes1);
+      probe_only(monitoredes1);
+      //results[++i] = (RES_TYPE)(*probetime)(monitoredes1);
+      //}
+    //} else {
+      // for (int i = 0; i < len; i++) {
+      // results[++i] = (RES_TYPE)probetime(NEXTPTR(monitoredes1));
+      probe_only(monitoredes1b);
+      //results[++i] = (RES_TYPE)(*probetime)(monitoredes1b);
+      //}
+    //}
+    //even = !even;
+  }
+  return nrecords;
+}
+
 // cycles through all memory-blocks in a eviction-set
 // access them and count accesses with (accesstime > L3_THRESHOLD)
 int l3_repeatedprobecount(l3pp_t l3, int nrecords, RES_TYPE *results,

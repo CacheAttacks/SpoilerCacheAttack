@@ -288,7 +288,8 @@ void prime_spam_es(void *app_state_ptr, int duration_sec)
     printf_ex("app_state_ptr->l3 is null! Already called build_es?\n");
     return;
   }
-  int number_of_samples = 100000;
+  int number_of_samples = 1000000;
+  int nmonitored = this_app_state->l3->nmonitored;
 
   if (this_app_state->res)
   {
@@ -300,8 +301,15 @@ void prime_spam_es(void *app_state_ptr, int duration_sec)
   uint64_t before = get_time_in_ms();
   while (get_time_in_ms() - before < duration_sec * 1000)
   {
-    l3_repeatedprobe(this_app_state->l3, number_of_samples, this_app_state->res,
-                     0, this_app_state->type);
+    if(nmonitored == 1)
+    {
+      l3_repeatedprobe_spam_fast(this_app_state->l3, number_of_samples);
+    } 
+    else 
+    {
+      l3_repeatedprobe(this_app_state->l3, number_of_samples, this_app_state->res,
+                      0, this_app_state->type);
+    }
   }
 }
 

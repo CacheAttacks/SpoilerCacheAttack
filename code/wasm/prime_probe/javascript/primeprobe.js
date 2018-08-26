@@ -13,12 +13,12 @@ function JSprobeTime(uint32Arr, uint8ptr) {
   var old_ptr = uint8ptr;
   var t1 = Module['sharedArrayCounter'][0];
   // var t1 = Atomics.load(Module['sharedArrayCounter'], 0);
-  // do{
-  //     uint8ptr = uint32Arr[uint8ptr / 4];
-  // } while(uint8ptr != old_ptr);
-  for (var i = 0; i < 9; i++) {
-    uint8ptr = uint32Arr[uint8ptr / 4];
-  }
+  do{
+      uint8ptr = uint32Arr[uint8ptr / 4];
+  } while(uint8ptr != old_ptr);
+  // for (var i = 0; i < 16; i++) {
+  //   uint8ptr = uint32Arr[uint8ptr / 4];
+  // }
   return Module['sharedArrayCounter'][0] - t1;
   // return Atomics.load(Module['sharedArrayCounter'], 0) - t1;
 }
@@ -62,21 +62,21 @@ var uint32ptrResults = uint8ptrResults / 4;  // cause we index uint16 array
 
 var even = true;
 for (var bound = uint32ptrResults + nrecords; uint32ptrResults < bound;) {
-  uint32wasmMemory[++uint32ptrResults] = JSprobeTimeSplit2(
-      uint32wasmMemory, uint8ptrMonitorhead, uint8ptrBmonitorhead);
+  //uint32wasmMemory[++uint32ptrResults] = JSprobeTimeSplit2(
+  //    uint32wasmMemory, uint8ptrMonitorhead, uint8ptrBmonitorhead);
   // break;
 
-  // if (even){
-  //     uint32wasmMemory[++uint32ptrResults] = JSprobeTime(uint32wasmMemory,
-  //     uint8ptrMonitorhead);
-  //     //localuint16[i] = JSprobeTime(uint32wasmMemory, uint8ptrMonitorhead);
-  //     //uint32wasmMemory[++uint16ptrResults] = uint16ptrResults;
-  // }
-  // else{
-  //     uint32wasmMemory[++uint32ptrResults] = JSprobeTime(uint32wasmMemory,
-  //     uint8ptrBmonitorhead);
-  //     //localuint16[i] = JSprobeTime(uint32wasmMemory, uint8ptrBmonitorhead);
-  //     //uint32wasmMemory[++uint16ptrResults] = uint16ptrResults;
-  // }
-  // even = !even;
+  if (even){
+      uint32wasmMemory[++uint32ptrResults] = JSprobeTime(uint32wasmMemory,
+      uint8ptrMonitorhead);
+      //localuint16[i] = JSprobeTime(uint32wasmMemory, uint8ptrMonitorhead);
+      //uint32wasmMemory[++uint16ptrResults] = uint16ptrResults;
+  }
+  else{
+      uint32wasmMemory[++uint32ptrResults] = JSprobeTime(uint32wasmMemory,
+      uint8ptrBmonitorhead);
+      //localuint16[i] = JSprobeTime(uint32wasmMemory, uint8ptrBmonitorhead);
+      //uint32wasmMemory[++uint16ptrResults] = uint16ptrResults;
+  }
+  even = !even;
 }
