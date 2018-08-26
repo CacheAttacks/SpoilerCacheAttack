@@ -18,6 +18,7 @@
         "timestats.h": "c",
         "inttypes.h": "c",
         "printf_wrapper.h": "c",
-        "sabcounter.h": "c"
+        "sabcounter.h": "c",
+        "storefor_find_es.h": "c"
     }
 }

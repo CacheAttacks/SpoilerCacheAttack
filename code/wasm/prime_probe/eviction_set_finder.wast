@@ -2320,7 +2320,7 @@
   (set_global $STACKTOP
    (get_local $sp)
   )
-  ;;@ c/eviction_set_finder.c:228:0
+  ;;@ c/eviction_set_finder.c:230:0
   (return
    (i32.const 0)
   )
@@ -5130,7 +5130,7 @@
   (set_local $sp
    (get_global $STACKTOP)
   )
-  ;;@ c/es_management.c:20:0
+  ;;@ c/es_management.c:21:0
   (set_local $$0
    (call $_Performance_now)
   )
@@ -5204,7 +5204,7 @@
   (set_local $$3
    (get_local $$1)
   )
-  ;;@ c/es_management.c:31:0
+  ;;@ c/es_management.c:32:0
   (set_local $$7
    (get_local $$2)
   )
@@ -5218,11 +5218,11 @@
    (i32.const 0)
    (i32.const 0)
   )
-  ;;@ c/es_management.c:37:0
+  ;;@ c/es_management.c:38:0
   (set_local $$4
    (f64.const 0)
   )
-  ;;@ c/es_management.c:39:0
+  ;;@ c/es_management.c:40:0
   (set_local $$9
    (get_local $$2)
   )
@@ -5262,11 +5262,11 @@
     (get_local $$15)
    )
   )
-  ;;@ c/es_management.c:38:0
+  ;;@ c/es_management.c:39:0
   (set_local $$5
    (get_local $$16)
   )
-  ;;@ c/es_management.c:40:0
+  ;;@ c/es_management.c:41:0
   (set_local $$6
    (i32.const 0)
   )
@@ -5290,7 +5290,7 @@
      )
      (br $while-out)
     )
-    ;;@ c/es_management.c:42:0
+    ;;@ c/es_management.c:43:0
     (set_local $$20
      (get_local $$2)
     )
@@ -5339,7 +5339,7 @@
     (set_local $$4
      (get_local $$28)
     )
-    ;;@ c/es_management.c:40:0
+    ;;@ c/es_management.c:41:0
     (set_local $$29
      (get_local $$6)
     )
@@ -5355,7 +5355,7 @@
     (br $while-in)
    )
   )
-  ;;@ c/es_management.c:44:0
+  ;;@ c/es_management.c:45:0
   (set_local $$31
    (get_local $$5)
   )
@@ -5376,7 +5376,7 @@
   (set_local $$4
    (get_local $$34)
   )
-  ;;@ c/es_management.c:45:0
+  ;;@ c/es_management.c:46:0
   (set_local $$35
    (get_local $$4)
   )
@@ -5570,14 +5570,14 @@
   (set_local $$9
    (get_local $$4)
   )
-  ;;@ c/es_management.c:314:0
+  ;;@ c/es_management.c:315:0
   (set_local $$16
    (get_local $$5)
   )
   (set_local $$10
    (get_local $$16)
   )
-  ;;@ c/es_management.c:317:0
+  ;;@ c/es_management.c:318:0
   (set_local $$17
    (get_local $$10)
   )
@@ -5597,7 +5597,7 @@
     (get_local $$19)
    )
    (block
-    ;;@ c/es_management.c:319:0
+    ;;@ c/es_management.c:320:0
     (drop
      (call $_printf_ex
       (i32.const 4514)
@@ -5607,11 +5607,11 @@
     (set_global $STACKTOP
      (get_local $sp)
     )
-    ;;@ c/es_management.c:388:0
+    ;;@ c/es_management.c:389:0
     (return)
    )
   )
-  ;;@ c/es_management.c:323:0
+  ;;@ c/es_management.c:324:0
   (set_local $$20
    (get_local $$6)
   )
@@ -5623,12 +5623,12 @@
   )
   (if
    (get_local $$21)
-   ;;@ c/es_management.c:325:0
+   ;;@ c/es_management.c:326:0
    (set_local $$6
     (i32.const 50)
    )
   )
-  ;;@ c/es_management.c:329:0
+  ;;@ c/es_management.c:330:0
   (set_local $$22
    (get_local $$10)
   )
@@ -5655,7 +5655,7 @@
     (i32.const 8)
    )
    (block
-    ;;@ c/es_management.c:330:0
+    ;;@ c/es_management.c:331:0
     (set_local $$26
      (get_local $$10)
     )
@@ -5679,7 +5679,7 @@
     (if
      (get_local $$29)
      (block
-      ;;@ c/es_management.c:331:0
+      ;;@ c/es_management.c:332:0
       (set_local $$30
        (get_local $$10)
       )
@@ -5722,7 +5722,7 @@
     (i32.const 8)
    )
    (block
-    ;;@ c/es_management.c:333:0
+    ;;@ c/es_management.c:334:0
     (set_local $$35
      (get_local $$10)
     )
@@ -5746,7 +5746,7 @@
     (if
      (get_local $$38)
      (block
-      ;;@ c/es_management.c:335:0
+      ;;@ c/es_management.c:336:0
       (set_local $$39
        (get_local $$10)
       )
@@ -5766,7 +5766,7 @@
       )
      )
     )
-    ;;@ c/es_management.c:337:0
+    ;;@ c/es_management.c:338:0
     (set_local $$42
      (get_local $$10)
     )
@@ -5780,7 +5780,7 @@
      (get_local $$43)
      (i32.const 0)
     )
-    ;;@ c/es_management.c:339:0
+    ;;@ c/es_management.c:340:0
     (set_local $$44
      (get_local $$6)
     )
@@ -5809,7 +5809,7 @@
       (get_local $$48)
      )
     )
-    ;;@ c/es_management.c:338:0
+    ;;@ c/es_management.c:339:0
     (set_local $$50
      (call $_calloc
       (get_local $$49)
@@ -5831,14 +5831,14 @@
     )
    )
   )
-  ;;@ c/es_management.c:345:0
+  ;;@ c/es_management.c:346:0
   (set_local $$53
    (call $_get_time_in_ms)
   )
   (set_local $$11
    (get_local $$53)
   )
-  ;;@ c/es_management.c:347:0
+  ;;@ c/es_management.c:348:0
   (set_local $$54
    (get_local $$10)
   )
@@ -5868,7 +5868,7 @@
    (if
     (get_local $$58)
     (block
-     ;;@ c/es_management.c:349:0
+     ;;@ c/es_management.c:350:0
      (set_local $$59
       (get_local $$9)
      )
@@ -5889,7 +5889,7 @@
      (if
       (get_local $$60)
       (block
-       ;;@ c/es_management.c:351:0
+       ;;@ c/es_management.c:352:0
        (set_local $$63
         (i32.add
          (get_local $$62)
@@ -5909,7 +5909,7 @@
        (set_local $$12
         (get_local $$65)
        )
-       ;;@ c/es_management.c:352:0
+       ;;@ c/es_management.c:353:0
        (set_local $$66
         (get_local $$12)
        )
@@ -5934,7 +5934,7 @@
        (set_local $$72
         (get_local $$71)
        )
-       ;;@ c/es_management.c:353:0
+       ;;@ c/es_management.c:354:0
        (set_local $$73
         (get_local $$6)
        )
@@ -5955,7 +5955,7 @@
        (set_local $$77
         (get_local $$76)
        )
-       ;;@ c/es_management.c:352:0
+       ;;@ c/es_management.c:353:0
        (call $_js_repeatedprobe
         (get_local $$67)
         (get_local $$72)
@@ -5965,11 +5965,11 @@
        (br $do-once)
       )
       (block
-       ;;@ c/es_management.c:357:0
+       ;;@ c/es_management.c:358:0
        (set_local $$78
         (get_local $$6)
        )
-       ;;@ c/es_management.c:358:0
+       ;;@ c/es_management.c:359:0
        (set_local $$79
         (get_local $$10)
        )
@@ -5998,7 +5998,7 @@
          (get_local $$83)
         )
        )
-       ;;@ c/es_management.c:357:0
+       ;;@ c/es_management.c:358:0
        (drop
         (call $_l3_repeatedprobe_fast
          (get_local $$62)
@@ -6012,7 +6012,7 @@
      )
     )
     (block
-     ;;@ c/es_management.c:364:0
+     ;;@ c/es_management.c:365:0
      (set_local $$85
       (get_local $$10)
      )
@@ -6038,7 +6038,7 @@
        (get_local $$89)
       )
      )
-     ;;@ c/es_management.c:365:0
+     ;;@ c/es_management.c:366:0
      (set_local $$91
       (get_local $$7)
      )
@@ -6056,7 +6056,7 @@
        (get_local $$93)
       )
      )
-     ;;@ c/es_management.c:364:0
+     ;;@ c/es_management.c:365:0
      (drop
       (call $_l3_repeatedprobe
        (get_local $$86)
@@ -6069,7 +6069,7 @@
     )
    )
   )
-  ;;@ c/es_management.c:368:0
+  ;;@ c/es_management.c:369:0
   (set_local $$95
    (call $_get_time_in_ms)
   )
@@ -6085,7 +6085,7 @@
   (set_local $$13
    (get_local $$97)
   )
-  ;;@ c/es_management.c:369:0
+  ;;@ c/es_management.c:370:0
   (set_local $$98
    (get_local $$10)
   )
@@ -6121,7 +6121,7 @@
   (set_local $$14
    (get_local $$103)
   )
-  ;;@ c/es_management.c:370:0
+  ;;@ c/es_management.c:371:0
   (set_local $$104
    (get_local $$10)
   )
@@ -6158,7 +6158,7 @@
   (set_local $$15
    (get_local $$110)
   )
-  ;;@ c/es_management.c:373:0
+  ;;@ c/es_management.c:374:0
   (set_local $$111
    (get_local $$13)
   )
@@ -6168,7 +6168,7 @@
   (set_local $$113
    (get_local $$14)
   )
-  ;;@ c/es_management.c:374:0
+  ;;@ c/es_management.c:375:0
   (set_local $$114
    (get_local $$13)
   )
@@ -6203,7 +6203,7 @@
     (f64.const 1e3)
    )
   )
-  ;;@ c/es_management.c:371:0
+  ;;@ c/es_management.c:372:0
   (i64.store
    (get_local $$vararg_buffer1)
    (get_local $$111)
@@ -6244,7 +6244,7 @@
     (get_local $$vararg_buffer1)
    )
   )
-  ;;@ c/es_management.c:378:0
+  ;;@ c/es_management.c:379:0
   (set_local $$121
    (get_local $$10)
   )
@@ -6265,7 +6265,7 @@
   (set_local $$125
    (get_local $$6)
   )
-  ;;@ c/es_management.c:379:0
+  ;;@ c/es_management.c:380:0
   (set_local $$126
    (get_local $$10)
   )
@@ -6285,14 +6285,14 @@
     (get_local $$128)
    )
   )
-  ;;@ c/es_management.c:378:0
+  ;;@ c/es_management.c:379:0
   (call $_set_ptr_to_data
    (get_local $$124)
    (get_local $$125)
    (get_local $$129)
    (i32.const 1)
   )
-  ;;@ c/es_management.c:383:0
+  ;;@ c/es_management.c:384:0
   (set_local $$130
    (get_local $$8)
   )
@@ -6304,10 +6304,10 @@
   )
   (if
    (get_local $$131)
-   ;;@ c/es_management.c:384:0
+   ;;@ c/es_management.c:385:0
    (call $_print_plot_data)
   )
-  ;;@ c/es_management.c:387:0
+  ;;@ c/es_management.c:388:0
   (set_local $$132
    (get_local $$6)
   )
@@ -6327,7 +6327,7 @@
   (set_global $STACKTOP
    (get_local $sp)
   )
-  ;;@ c/es_management.c:388:0
+  ;;@ c/es_management.c:389:0
   (return)
  )
  (func $_set_monitored_es_lower_half (; 69 ;) (param $$0 i32)
@@ -6389,14 +6389,14 @@
   (set_local $$1
    (get_local $$0)
   )
-  ;;@ c/es_management.c:50:0
+  ;;@ c/es_management.c:51:0
   (set_local $$8
    (get_local $$1)
   )
   (set_local $$2
    (get_local $$8)
   )
-  ;;@ c/es_management.c:51:0
+  ;;@ c/es_management.c:52:0
   (set_local $$9
    (get_local $$2)
   )
@@ -6413,7 +6413,7 @@
   (set_local $$3
    (get_local $$11)
   )
-  ;;@ c/es_management.c:52:0
+  ;;@ c/es_management.c:53:0
   (set_local $$12
    (get_local $$3)
   )
@@ -6429,7 +6429,7 @@
   (set_local $$4
    (get_local $$13)
   )
-  ;;@ c/es_management.c:53:0
+  ;;@ c/es_management.c:54:0
   (set_local $$14
    (get_local $$4)
   )
@@ -6442,11 +6442,11 @@
   (set_local $$5
    (get_local $$15)
   )
-  ;;@ c/es_management.c:54:0
+  ;;@ c/es_management.c:55:0
   (set_local $$6
    (i32.const 0)
   )
-  ;;@ c/es_management.c:56:0
+  ;;@ c/es_management.c:57:0
   (set_local $$16
    (get_local $$2)
   )
@@ -6458,7 +6458,7 @@
   (call $_l3_unmonitorall
    (get_local $$17)
   )
-  ;;@ c/es_management.c:60:0
+  ;;@ c/es_management.c:61:0
   (set_local $$18
    (get_local $$6)
   )
@@ -6503,7 +6503,7 @@
      )
      (br $while-out)
     )
-    ;;@ c/es_management.c:61:0
+    ;;@ c/es_management.c:62:0
     (set_local $$25
      (get_local $$7)
     )
@@ -6533,7 +6533,7 @@
       (get_local $$28)
      )
      (block
-      ;;@ c/es_management.c:62:0
+      ;;@ c/es_management.c:63:0
       (set_local $$29
        (get_local $$2)
       )
@@ -6553,7 +6553,7 @@
       )
      )
     )
-    ;;@ c/es_management.c:60:0
+    ;;@ c/es_management.c:61:0
     (set_local $$32
      (get_local $$7)
     )
@@ -6569,7 +6569,7 @@
     (br $while-in)
    )
   )
-  ;;@ c/es_management.c:64:0
+  ;;@ c/es_management.c:65:0
   (set_local $$34
    (get_local $$2)
   )
@@ -6586,7 +6586,7 @@
   (set_global $STACKTOP
    (get_local $sp)
   )
-  ;;@ c/es_management.c:65:0
+  ;;@ c/es_management.c:66:0
   (return)
  )
  (func $_change_type (; 70 ;) (param $$0 i32) (param $$1 i32)
@@ -6668,14 +6668,14 @@
   (set_local $$3
    (get_local $$1)
   )
-  ;;@ c/es_management.c:69:0
+  ;;@ c/es_management.c:70:0
   (set_local $$5
    (get_local $$2)
   )
   (set_local $$4
    (get_local $$5)
   )
-  ;;@ c/es_management.c:70:0
+  ;;@ c/es_management.c:71:0
   (set_local $$6
    (get_local $$3)
   )
@@ -6730,7 +6730,7 @@
        )
       )
      )
-     ;;@ c/es_management.c:71:0
+     ;;@ c/es_management.c:72:0
      (set_local $$14
       (get_local $$3)
      )
@@ -6794,7 +6794,7 @@
          (get_local $$23)
         )
        )
-       ;;@ c/es_management.c:72:0
+       ;;@ c/es_management.c:73:0
        (set_local $$$old7
         (get_local $$3)
        )
@@ -6804,7 +6804,7 @@
          (i32.const 28)
         )
        )
-       ;;@ c/es_management.c:71:0
+       ;;@ c/es_management.c:72:0
        (set_local $$or$cond11
         (i32.or
          (get_local $$or$cond4)
@@ -6838,7 +6838,7 @@
          (get_local $$$old3)
         )
        )
-       ;;@ c/es_management.c:72:0
+       ;;@ c/es_management.c:73:0
        (set_local $$24
         (get_local $$3)
        )
@@ -6848,7 +6848,7 @@
          (i32.const 28)
         )
        )
-       ;;@ c/es_management.c:71:0
+       ;;@ c/es_management.c:72:0
        (set_local $$or$cond9
         (i32.or
          (get_local $$or$cond6)
@@ -6861,7 +6861,7 @@
        )
       )
      )
-     ;;@ c/es_management.c:79:0
+     ;;@ c/es_management.c:80:0
      (set_local $$30
       (get_local $$4)
      )
@@ -6889,12 +6889,12 @@
      (set_global $STACKTOP
       (get_local $sp)
      )
-     ;;@ c/es_management.c:81:0
+     ;;@ c/es_management.c:82:0
      (return)
     )
    )
   )
-  ;;@ c/es_management.c:74:0
+  ;;@ c/es_management.c:75:0
   (set_local $$26
    (get_local $$3)
   )
@@ -6911,7 +6911,7 @@
    (get_local $$28)
    (get_local $$26)
   )
-  ;;@ c/es_management.c:75:0
+  ;;@ c/es_management.c:76:0
   (set_local $$29
    (get_local $$3)
   )
@@ -6928,7 +6928,7 @@
   (set_global $STACKTOP
    (get_local $sp)
   )
-  ;;@ c/es_management.c:81:0
+  ;;@ c/es_management.c:82:0
   (return)
  )
  (func $_set_monitored_es_arr (; 71 ;) (param $$0 i32) (param $$1 i32) (param $$2 i32)
@@ -7053,14 +7053,14 @@
   (set_local $$5
    (get_local $$2)
   )
-  ;;@ c/es_management.c:88:0
+  ;;@ c/es_management.c:89:0
   (set_local $$13
    (get_local $$3)
   )
   (set_local $$6
    (get_local $$13)
   )
-  ;;@ c/es_management.c:90:0
+  ;;@ c/es_management.c:91:0
   (set_local $$14
    (get_local $$6)
   )
@@ -7077,7 +7077,7 @@
   (set_local $$7
    (get_local $$16)
   )
-  ;;@ c/es_management.c:91:0
+  ;;@ c/es_management.c:92:0
   (set_local $$17
    (get_local $$7)
   )
@@ -7093,7 +7093,7 @@
   (set_local $$8
    (get_local $$18)
   )
-  ;;@ c/es_management.c:92:0
+  ;;@ c/es_management.c:93:0
   (set_local $$19
    (get_local $$8)
   )
@@ -7106,7 +7106,7 @@
   (set_local $$9
    (get_local $$20)
   )
-  ;;@ c/es_management.c:93:0
+  ;;@ c/es_management.c:94:0
   (set_local $$21
    (get_local $$4)
   )
@@ -7120,7 +7120,7 @@
     (get_local $$vararg_buffer)
    )
   )
-  ;;@ c/es_management.c:95:0
+  ;;@ c/es_management.c:96:0
   (set_local $$10
    (i32.const 0)
   )
@@ -7149,7 +7149,7 @@
       (br $while-out)
      )
     )
-    ;;@ c/es_management.c:97:0
+    ;;@ c/es_management.c:98:0
     (set_local $$25
      (get_local $$4)
     )
@@ -7173,7 +7173,7 @@
     (set_local $$11
      (get_local $$28)
     )
-    ;;@ c/es_management.c:98:0
+    ;;@ c/es_management.c:99:0
     (set_local $$29
      (get_local $$11)
     )
@@ -7187,7 +7187,7 @@
       (get_local $$vararg_buffer1)
      )
     )
-    ;;@ c/es_management.c:99:0
+    ;;@ c/es_management.c:100:0
     (set_local $$30
      (get_local $$11)
     )
@@ -7209,7 +7209,7 @@
       (br $while-out)
      )
     )
-    ;;@ c/es_management.c:104:0
+    ;;@ c/es_management.c:105:0
     (set_local $$33
      (get_local $$9)
     )
@@ -7228,7 +7228,7 @@
       (br $while-out)
      )
     )
-    ;;@ c/es_management.c:95:0
+    ;;@ c/es_management.c:96:0
     (set_local $$36
      (get_local $$10)
     )
@@ -7250,7 +7250,7 @@
     (i32.const 4)
    )
    (block
-    ;;@ c/es_management.c:101:0
+    ;;@ c/es_management.c:102:0
     (i32.store
      (get_local $$vararg_buffer4)
      (get_local $$32)
@@ -7264,7 +7264,7 @@
     (set_global $STACKTOP
      (get_local $sp)
     )
-    ;;@ c/es_management.c:126:0
+    ;;@ c/es_management.c:127:0
     (return)
    )
    (if
@@ -7273,7 +7273,7 @@
      (i32.const 6)
     )
     (block
-     ;;@ c/es_management.c:106:0
+     ;;@ c/es_management.c:107:0
      (set_local $$35
       (get_local $$11)
      )
@@ -7290,7 +7290,7 @@
      (set_global $STACKTOP
       (get_local $sp)
      )
-     ;;@ c/es_management.c:126:0
+     ;;@ c/es_management.c:127:0
      (return)
     )
     (if
@@ -7299,7 +7299,7 @@
       (i32.const 8)
      )
      (block
-      ;;@ c/es_management.c:111:0
+      ;;@ c/es_management.c:112:0
       (set_local $$38
        (get_local $$6)
       )
@@ -7311,7 +7311,7 @@
       (call $_l3_unmonitorall
        (get_local $$39)
       )
-      ;;@ c/es_management.c:113:0
+      ;;@ c/es_management.c:114:0
       (set_local $$40
        (get_local $$6)
       )
@@ -7326,7 +7326,7 @@
         (get_local $$41)
        )
       )
-      ;;@ c/es_management.c:114:0
+      ;;@ c/es_management.c:115:0
       (set_local $$43
        (get_local $$8)
       )
@@ -7336,7 +7336,7 @@
         (i32.const 2)
        )
       )
-      ;;@ c/es_management.c:113:0
+      ;;@ c/es_management.c:114:0
       (drop
        (call $_memset
         (get_local $$42)
@@ -7344,7 +7344,7 @@
         (get_local $$44)
        )
       )
-      ;;@ c/es_management.c:116:0
+      ;;@ c/es_management.c:117:0
       (set_local $$12
        (i32.const 0)
       )
@@ -7371,7 +7371,7 @@
          )
          (br $while-out0)
         )
-        ;;@ c/es_management.c:118:0
+        ;;@ c/es_management.c:119:0
         (set_local $$49
          (i32.load
           (get_local $$48)
@@ -7409,7 +7409,7 @@
           (get_local $$54)
          )
         )
-        ;;@ c/es_management.c:119:0
+        ;;@ c/es_management.c:120:0
         (set_local $$55
          (get_local $$6)
         )
@@ -7457,7 +7457,7 @@
          (get_local $$62)
          (i32.const -1)
         )
-        ;;@ c/es_management.c:116:0
+        ;;@ c/es_management.c:117:0
         (set_local $$63
          (get_local $$12)
         )
@@ -7473,7 +7473,7 @@
         (br $while-in1)
        )
       )
-      ;;@ c/es_management.c:123:0
+      ;;@ c/es_management.c:124:0
       (set_local $$65
        (i32.add
         (get_local $$48)
@@ -7484,7 +7484,7 @@
        (get_local $$65)
        (i32.const 1)
       )
-      ;;@ c/es_management.c:124:0
+      ;;@ c/es_management.c:125:0
       (set_local $$66
        (get_local $$6)
       )
@@ -7498,7 +7498,7 @@
        (get_local $$67)
        (i32.const -2)
       )
-      ;;@ c/es_management.c:125:0
+      ;;@ c/es_management.c:126:0
       (set_local $$68
        (get_local $$6)
       )
@@ -7515,7 +7515,7 @@
       (set_global $STACKTOP
        (get_local $sp)
       )
-      ;;@ c/es_management.c:126:0
+      ;;@ c/es_management.c:127:0
       (return)
      )
     )
@@ -7644,14 +7644,14 @@
   (set_local $$5
    (get_local $$2)
   )
-  ;;@ c/es_management.c:130:0
+  ;;@ c/es_management.c:131:0
   (set_local $$10
    (get_local $$3)
   )
   (set_local $$6
    (get_local $$10)
   )
-  ;;@ c/es_management.c:132:0
+  ;;@ c/es_management.c:133:0
   (set_local $$11
    (get_local $$6)
   )
@@ -7678,7 +7678,7 @@
   (if
    (get_local $$15)
    (block
-    ;;@ c/es_management.c:133:0
+    ;;@ c/es_management.c:134:0
     (set_local $$16
      (get_local $$6)
     )
@@ -7708,13 +7708,13 @@
       (set_global $STACKTOP
        (get_local $sp)
       )
-      ;;@ c/es_management.c:176:0
+      ;;@ c/es_management.c:177:0
       (return)
      )
     )
    )
   )
-  ;;@ c/es_management.c:138:0
+  ;;@ c/es_management.c:139:0
   (set_local $$21
    (get_local $$6)
   )
@@ -7731,7 +7731,7 @@
   (set_local $$7
    (get_local $$23)
   )
-  ;;@ c/es_management.c:139:0
+  ;;@ c/es_management.c:140:0
   (set_local $$24
    (get_local $$7)
   )
@@ -7747,7 +7747,7 @@
   (set_local $$8
    (get_local $$25)
   )
-  ;;@ c/es_management.c:141:0
+  ;;@ c/es_management.c:142:0
   (set_local $$26
    (get_local $$4)
   )
@@ -7775,7 +7775,7 @@
   (if
    (get_local $$or$cond)
    (block
-    ;;@ c/es_management.c:143:0
+    ;;@ c/es_management.c:144:0
     (set_local $$30
      (get_local $$8)
     )
@@ -7788,13 +7788,13 @@
     (set_local $$5
      (get_local $$31)
     )
-    ;;@ c/es_management.c:144:0
+    ;;@ c/es_management.c:145:0
     (set_local $$4
      (i32.const 0)
     )
    )
   )
-  ;;@ c/es_management.c:146:0
+  ;;@ c/es_management.c:147:0
   (set_local $$32
    (get_local $$4)
   )
@@ -7807,7 +7807,7 @@
   (if
    (get_local $$33)
    (block
-    ;;@ c/es_management.c:148:0
+    ;;@ c/es_management.c:149:0
     (drop
      (call $_printf_ex
       (i32.const 4741)
@@ -7817,11 +7817,11 @@
     (set_global $STACKTOP
      (get_local $sp)
     )
-    ;;@ c/es_management.c:176:0
+    ;;@ c/es_management.c:177:0
     (return)
    )
   )
-  ;;@ c/es_management.c:151:0
+  ;;@ c/es_management.c:152:0
   (set_local $$34
    (get_local $$5)
   )
@@ -7837,7 +7837,7 @@
   (if
    (get_local $$36)
    (block
-    ;;@ c/es_management.c:153:0
+    ;;@ c/es_management.c:154:0
     (drop
      (call $_printf_ex
       (i32.const 4756)
@@ -7847,11 +7847,11 @@
     (set_global $STACKTOP
      (get_local $sp)
     )
-    ;;@ c/es_management.c:176:0
+    ;;@ c/es_management.c:177:0
     (return)
    )
   )
-  ;;@ c/es_management.c:156:0
+  ;;@ c/es_management.c:157:0
   (set_local $$37
    (get_local $$5)
   )
@@ -7867,7 +7867,7 @@
   (if
    (get_local $$39)
    (block
-    ;;@ c/es_management.c:158:0
+    ;;@ c/es_management.c:159:0
     (drop
      (call $_printf_ex
       (i32.const 4783)
@@ -7877,11 +7877,11 @@
     (set_global $STACKTOP
      (get_local $sp)
     )
-    ;;@ c/es_management.c:176:0
+    ;;@ c/es_management.c:177:0
     (return)
    )
   )
-  ;;@ c/es_management.c:162:0
+  ;;@ c/es_management.c:163:0
   (set_local $$40
    (get_local $$6)
   )
@@ -7893,7 +7893,7 @@
   (call $_l3_unmonitorall
    (get_local $$41)
   )
-  ;;@ c/es_management.c:166:0
+  ;;@ c/es_management.c:167:0
   (set_local $$42
    (get_local $$4)
   )
@@ -7941,7 +7941,7 @@
      )
      (br $while-out)
     )
-    ;;@ c/es_management.c:167:0
+    ;;@ c/es_management.c:168:0
     (set_local $$50
      (i32.load
       (get_local $$49)
@@ -7956,7 +7956,7 @@
       (get_local $$51)
      )
     )
-    ;;@ c/es_management.c:166:0
+    ;;@ c/es_management.c:167:0
     (set_local $$52
      (get_local $$9)
     )
@@ -7972,7 +7972,7 @@
     (br $while-in)
    )
   )
-  ;;@ c/es_management.c:168:0
+  ;;@ c/es_management.c:169:0
   (set_local $$54
    (i32.add
     (get_local $$49)
@@ -7983,7 +7983,7 @@
    (get_local $$54)
    (i32.const 1)
   )
-  ;;@ c/es_management.c:169:0
+  ;;@ c/es_management.c:170:0
   (set_local $$55
    (get_local $$4)
   )
@@ -8000,7 +8000,7 @@
    (get_local $$57)
    (get_local $$55)
   )
-  ;;@ c/es_management.c:170:0
+  ;;@ c/es_management.c:171:0
   (set_local $$58
    (get_local $$5)
   )
@@ -8017,7 +8017,7 @@
    (get_local $$60)
    (get_local $$58)
   )
-  ;;@ c/es_management.c:172:0
+  ;;@ c/es_management.c:173:0
   (set_local $$61
    (get_local $$6)
   )
@@ -8032,7 +8032,7 @@
     (get_local $$62)
    )
   )
-  ;;@ c/es_management.c:173:0
+  ;;@ c/es_management.c:174:0
   (set_local $$64
    (get_local $$8)
   )
@@ -8042,7 +8042,7 @@
     (i32.const 2)
    )
   )
-  ;;@ c/es_management.c:172:0
+  ;;@ c/es_management.c:173:0
   (drop
    (call $_memset
     (get_local $$63)
@@ -8050,7 +8050,7 @@
     (get_local $$65)
    )
   )
-  ;;@ c/es_management.c:174:0
+  ;;@ c/es_management.c:175:0
   (set_local $$66
    (get_local $$6)
   )
@@ -8077,7 +8077,7 @@
     )
    )
   )
-  ;;@ c/es_management.c:175:0
+  ;;@ c/es_management.c:176:0
   (set_local $$71
    (get_local $$5)
   )
@@ -8102,7 +8102,7 @@
     (i32.const 2)
    )
   )
-  ;;@ c/es_management.c:174:0
+  ;;@ c/es_management.c:175:0
   (drop
    (call $_memset
     (get_local $$70)
@@ -8113,7 +8113,7 @@
   (set_global $STACKTOP
    (get_local $sp)
   )
-  ;;@ c/es_management.c:176:0
+  ;;@ c/es_management.c:177:0
   (return)
  )
  (func $_build_es (; 73 ;) (param $$0 i32) (param $$1 i32)
@@ -8159,7 +8159,7 @@
   )
   (loop $while-in
    (block $while-out
-    ;;@ c/es_management.c:183:0
+    ;;@ c/es_management.c:184:0
     (set_local $$5
      (get_local $$2)
     )
@@ -8177,7 +8177,7 @@
     (set_local $$4
      (get_local $$7)
     )
-    ;;@ c/es_management.c:190:0
+    ;;@ c/es_management.c:191:0
     (set_local $$8
      (get_local $$4)
     )
@@ -8249,7 +8249,7 @@
     (set_global $STACKTOP
      (get_local $sp)
     )
-    ;;@ c/es_management.c:191:0
+    ;;@ c/es_management.c:192:0
     (return)
    )
   )
@@ -8460,14 +8460,14 @@
   (set_local $$7
    (get_local $$3)
   )
-  ;;@ c/es_management.c:196:0
+  ;;@ c/es_management.c:197:0
   (set_local $$18
    (get_local $$4)
   )
   (set_local $$8
    (get_local $$18)
   )
-  ;;@ c/es_management.c:198:0
+  ;;@ c/es_management.c:199:0
   (set_local $$19
    (get_local $$8)
   )
@@ -8493,20 +8493,20 @@
     (get_local $$22)
    )
    (block
-    ;;@ c/es_management.c:200:0
+    ;;@ c/es_management.c:201:0
     (drop
      (call $_printf_ex
       (i32.const 4806)
       (get_local $$vararg_buffer)
      )
     )
-    ;;@ c/es_management.c:201:0
+    ;;@ c/es_management.c:202:0
     (call $_exit
      (i32.const 1)
     )
    )
   )
-  ;;@ c/es_management.c:205:0
+  ;;@ c/es_management.c:206:0
   (set_local $$23
    (get_local $$8)
   )
@@ -8524,7 +8524,7 @@
   (if
    (get_local $$25)
    (block
-    ;;@ c/es_management.c:207:0
+    ;;@ c/es_management.c:208:0
     (set_local $$26
      (get_local $$8)
     )
@@ -8536,7 +8536,7 @@
     (call $_l3_release
      (get_local $$27)
     )
-    ;;@ c/es_management.c:208:0
+    ;;@ c/es_management.c:209:0
     (set_local $$28
      (get_local $$8)
     )
@@ -8546,7 +8546,7 @@
     )
    )
   )
-  ;;@ c/es_management.c:210:0
+  ;;@ c/es_management.c:211:0
   (set_local $$29
    (get_local $$8)
   )
@@ -8570,7 +8570,7 @@
   (if
    (get_local $$32)
    (block
-    ;;@ c/es_management.c:212:0
+    ;;@ c/es_management.c:213:0
     (set_local $$33
      (get_local $$8)
     )
@@ -8588,7 +8588,7 @@
     (call $_free
      (get_local $$35)
     )
-    ;;@ c/es_management.c:213:0
+    ;;@ c/es_management.c:214:0
     (set_local $$36
      (get_local $$8)
     )
@@ -8604,7 +8604,7 @@
     )
    )
   )
-  ;;@ c/es_management.c:216:0
+  ;;@ c/es_management.c:217:0
   (set_local $$38
    (get_local $$5)
   )
@@ -8618,12 +8618,12 @@
    (i32.eqz
     (get_local $$39)
    )
-   ;;@ c/es_management.c:218:0
+   ;;@ c/es_management.c:219:0
    (set_local $$5
     (i32.const 2147483647)
    )
   )
-  ;;@ c/es_management.c:222:0
+  ;;@ c/es_management.c:223:0
   (set_local $$40
    (get_local $$8)
   )
@@ -8637,18 +8637,18 @@
    (get_local $$41)
    (i32.const 0)
   )
-  ;;@ c/es_management.c:225:0
+  ;;@ c/es_management.c:226:0
   (call $_warmup
    (i32.const 134217728)
   )
-  ;;@ c/es_management.c:227:0
+  ;;@ c/es_management.c:228:0
   (drop
    (call $_printf_ex
     (i32.const 4829)
     (get_local $$vararg_buffer1)
    )
   )
-  ;;@ c/es_management.c:230:0
+  ;;@ c/es_management.c:231:0
   (set_local $$42
    (get_local $$6)
   )
@@ -8661,7 +8661,7 @@
   (if
    (get_local $$43)
    (block
-    ;;@ c/es_management.c:232:0
+    ;;@ c/es_management.c:233:0
     (set_local $$44
      (call $_calloc
       (i32.const 20)
@@ -8671,7 +8671,7 @@
     (set_local $$9
      (get_local $$44)
     )
-    ;;@ c/es_management.c:233:0
+    ;;@ c/es_management.c:234:0
     (set_local $$10
      (i32.const 0)
     )
@@ -8692,7 +8692,7 @@
        )
        (br $while-out)
       )
-      ;;@ c/es_management.c:235:0
+      ;;@ c/es_management.c:236:0
       (set_local $$47
        (call $_get_time_in_ms)
       )
@@ -8704,7 +8704,7 @@
       (set_local $$11
        (get_local $$48)
       )
-      ;;@ c/es_management.c:237:0
+      ;;@ c/es_management.c:238:0
       (set_local $$49
        (get_local $$8)
       )
@@ -8729,7 +8729,7 @@
         (get_local $$52)
        )
       )
-      ;;@ c/es_management.c:236:0
+      ;;@ c/es_management.c:237:0
       (set_local $$54
        (get_local $$8)
       )
@@ -8737,7 +8737,7 @@
        (get_local $$54)
        (get_local $$53)
       )
-      ;;@ c/es_management.c:238:0
+      ;;@ c/es_management.c:239:0
       (set_local $$55
        (call $_get_time_in_ms)
       )
@@ -8749,7 +8749,7 @@
       (set_local $$12
        (get_local $$56)
       )
-      ;;@ c/es_management.c:241:0
+      ;;@ c/es_management.c:242:0
       (set_local $$57
        (get_local $$12)
       )
@@ -8771,7 +8771,7 @@
         (i32.const -1)
        )
       )
-      ;;@ c/es_management.c:240:0
+      ;;@ c/es_management.c:241:0
       (i32.store
        (get_local $$vararg_buffer3)
        (get_local $$60)
@@ -8782,7 +8782,7 @@
         (get_local $$vararg_buffer3)
        )
       )
-      ;;@ c/es_management.c:242:0
+      ;;@ c/es_management.c:243:0
       (set_local $$61
        (get_local $$8)
       )
@@ -8794,7 +8794,7 @@
       (call $_l3_release
        (get_local $$62)
       )
-      ;;@ c/es_management.c:243:0
+      ;;@ c/es_management.c:244:0
       (set_local $$63
        (get_local $$12)
       )
@@ -8826,7 +8826,7 @@
        (get_local $$68)
        (get_local $$65)
       )
-      ;;@ c/es_management.c:233:0
+      ;;@ c/es_management.c:234:0
       (set_local $$69
        (get_local $$10)
       )
@@ -8842,7 +8842,7 @@
       (br $while-in)
      )
     )
-    ;;@ c/es_management.c:245:0
+    ;;@ c/es_management.c:246:0
     (set_local $$13
      (i32.const 0)
     )
@@ -8863,7 +8863,7 @@
        )
        (br $while-out0)
       )
-      ;;@ c/es_management.c:247:0
+      ;;@ c/es_management.c:248:0
       (set_local $$73
        (get_local $$9)
       )
@@ -8894,7 +8894,7 @@
         (get_local $$vararg_buffer5)
        )
       )
-      ;;@ c/es_management.c:245:0
+      ;;@ c/es_management.c:246:0
       (set_local $$77
        (get_local $$13)
       )
@@ -8910,7 +8910,7 @@
       (br $while-in1)
      )
     )
-    ;;@ c/es_management.c:249:0
+    ;;@ c/es_management.c:250:0
     (drop
      (call $_printf_ex
       (i32.const 4884)
@@ -8919,7 +8919,7 @@
     )
    )
    (block
-    ;;@ c/es_management.c:253:0
+    ;;@ c/es_management.c:254:0
     (set_local $$79
      (call $_get_time_in_ms)
     )
@@ -8931,7 +8931,7 @@
     (set_local $$14
      (get_local $$80)
     )
-    ;;@ c/es_management.c:254:0
+    ;;@ c/es_management.c:255:0
     (set_local $$81
      (get_local $$8)
     )
@@ -8963,7 +8963,7 @@
      (get_local $$86)
      (get_local $$85)
     )
-    ;;@ c/es_management.c:255:0
+    ;;@ c/es_management.c:256:0
     (set_local $$87
      (call $_get_time_in_ms)
     )
@@ -8975,7 +8975,7 @@
     (set_local $$15
      (get_local $$88)
     )
-    ;;@ c/es_management.c:258:0
+    ;;@ c/es_management.c:259:0
     (set_local $$89
      (get_local $$15)
     )
@@ -8997,7 +8997,7 @@
       (i32.const -1)
      )
     )
-    ;;@ c/es_management.c:257:0
+    ;;@ c/es_management.c:258:0
     (i32.store
      (get_local $$vararg_buffer10)
      (get_local $$92)
@@ -9010,7 +9010,7 @@
     )
    )
   )
-  ;;@ c/es_management.c:260:0
+  ;;@ c/es_management.c:261:0
   (set_local $$93
    (get_local $$8)
   )
@@ -9027,7 +9027,7 @@
   (set_local $$16
    (get_local $$95)
   )
-  ;;@ c/es_management.c:261:0
+  ;;@ c/es_management.c:262:0
   (set_local $$96
    (get_local $$16)
   )
@@ -9043,7 +9043,7 @@
   (set_local $$17
    (get_local $$97)
   )
-  ;;@ c/es_management.c:262:0
+  ;;@ c/es_management.c:263:0
   (set_local $$98
    (get_local $$17)
   )
@@ -9057,7 +9057,7 @@
     (get_local $$vararg_buffer13)
    )
   )
-  ;;@ c/es_management.c:266:0
+  ;;@ c/es_management.c:267:0
   (set_local $$99
    (get_local $$8)
   )
@@ -9083,7 +9083,7 @@
     (get_local $$102)
    )
    (block
-    ;;@ c/es_management.c:268:0
+    ;;@ c/es_management.c:269:0
     (set_local $$106
      (get_local $$17)
     )
@@ -9106,7 +9106,7 @@
      (get_local $$109)
      (get_local $$107)
     )
-    ;;@ c/es_management.c:270:0
+    ;;@ c/es_management.c:271:0
     (set_local $$110
      (get_local $$4)
     )
@@ -9115,7 +9115,7 @@
      (i32.const -1)
      (i32.const -1)
     )
-    ;;@ c/es_management.c:273:0
+    ;;@ c/es_management.c:274:0
     (set_local $$111
      (get_local $$8)
     )
@@ -9136,12 +9136,12 @@
     (set_local $$115
      (get_local $$17)
     )
-    ;;@ c/es_management.c:272:0
+    ;;@ c/es_management.c:273:0
     (call $_set_monitored_es_index_vec_ptr
      (get_local $$114)
      (get_local $$115)
     )
-    ;;@ c/es_management.c:275:0
+    ;;@ c/es_management.c:276:0
     (set_local $$116
      (get_local $$8)
     )
@@ -9171,7 +9171,7 @@
       (get_local $$vararg_buffer16)
      )
     )
-    ;;@ c/es_management.c:277:0
+    ;;@ c/es_management.c:278:0
     (set_local $$120
      (get_local $$8)
     )
@@ -9199,7 +9199,7 @@
     )
    )
   )
-  ;;@ c/es_management.c:267:0
+  ;;@ c/es_management.c:268:0
   (set_local $$103
    (get_local $$8)
   )
@@ -9217,7 +9217,7 @@
   (call $_free
    (get_local $$105)
   )
-  ;;@ c/es_management.c:268:0
+  ;;@ c/es_management.c:269:0
   (set_local $$106
    (get_local $$17)
   )
@@ -9240,7 +9240,7 @@
    (get_local $$109)
    (get_local $$107)
   )
-  ;;@ c/es_management.c:270:0
+  ;;@ c/es_management.c:271:0
   (set_local $$110
    (get_local $$4)
   )
@@ -9249,7 +9249,7 @@
    (i32.const -1)
    (i32.const -1)
   )
-  ;;@ c/es_management.c:273:0
+  ;;@ c/es_management.c:274:0
   (set_local $$111
    (get_local $$8)
   )
@@ -9270,12 +9270,12 @@
   (set_local $$115
    (get_local $$17)
   )
-  ;;@ c/es_management.c:272:0
+  ;;@ c/es_management.c:273:0
   (call $_set_monitored_es_index_vec_ptr
    (get_local $$114)
    (get_local $$115)
   )
-  ;;@ c/es_management.c:275:0
+  ;;@ c/es_management.c:276:0
   (set_local $$116
    (get_local $$8)
   )
@@ -9305,7 +9305,7 @@
     (get_local $$vararg_buffer16)
    )
   )
-  ;;@ c/es_management.c:277:0
+  ;;@ c/es_management.c:278:0
   (set_local $$120
    (get_local $$8)
   )
@@ -9656,14 +9656,14 @@
   (set_local $$3
    (get_local $$1)
   )
-  ;;@ c/es_management.c:282:0
+  ;;@ c/es_management.c:283:0
   (set_local $$7
    (get_local $$2)
   )
   (set_local $$4
    (get_local $$7)
   )
-  ;;@ c/es_management.c:285:0
+  ;;@ c/es_management.c:286:0
   (set_local $$8
    (get_local $$4)
   )
@@ -9683,7 +9683,7 @@
     (get_local $$10)
    )
    (block
-    ;;@ c/es_management.c:287:0
+    ;;@ c/es_management.c:288:0
     (drop
      (call $_printf_ex
       (i32.const 4514)
@@ -9693,15 +9693,15 @@
     (set_global $STACKTOP
      (get_local $sp)
     )
-    ;;@ c/es_management.c:305:0
+    ;;@ c/es_management.c:306:0
     (return)
    )
   )
-  ;;@ c/es_management.c:290:0
+  ;;@ c/es_management.c:291:0
   (set_local $$5
    (i32.const 100000)
   )
-  ;;@ c/es_management.c:292:0
+  ;;@ c/es_management.c:293:0
   (set_local $$11
    (get_local $$4)
   )
@@ -9725,7 +9725,7 @@
   (if
    (get_local $$14)
    (block
-    ;;@ c/es_management.c:294:0
+    ;;@ c/es_management.c:295:0
     (set_local $$15
      (get_local $$4)
     )
@@ -9745,7 +9745,7 @@
     )
    )
   )
-  ;;@ c/es_management.c:297:0
+  ;;@ c/es_management.c:298:0
   (set_local $$18
    (get_local $$5)
   )
@@ -9774,7 +9774,7 @@
     (get_local $$22)
    )
   )
-  ;;@ c/es_management.c:296:0
+  ;;@ c/es_management.c:297:0
   (set_local $$24
    (call $_calloc
     (get_local $$23)
@@ -9794,7 +9794,7 @@
    (get_local $$26)
    (get_local $$24)
   )
-  ;;@ c/es_management.c:299:0
+  ;;@ c/es_management.c:300:0
   (set_local $$27
    (call $_get_time_in_ms)
   )
@@ -9803,7 +9803,7 @@
   )
   (loop $while-in
    (block $while-out
-    ;;@ c/es_management.c:300:0
+    ;;@ c/es_management.c:301:0
     (set_local $$28
      (call $_get_time_in_ms)
     )
@@ -9842,7 +9842,7 @@
      )
      (br $while-out)
     )
-    ;;@ c/es_management.c:302:0
+    ;;@ c/es_management.c:303:0
     (set_local $$35
      (get_local $$4)
     )
@@ -9868,7 +9868,7 @@
       (get_local $$39)
      )
     )
-    ;;@ c/es_management.c:303:0
+    ;;@ c/es_management.c:304:0
     (set_local $$41
      (get_local $$4)
     )
@@ -9883,7 +9883,7 @@
       (get_local $$42)
      )
     )
-    ;;@ c/es_management.c:302:0
+    ;;@ c/es_management.c:303:0
     (drop
      (call $_l3_repeatedprobe
       (get_local $$36)
@@ -9899,7 +9899,7 @@
   (set_global $STACKTOP
    (get_local $sp)
   )
-  ;;@ c/es_management.c:305:0
+  ;;@ c/es_management.c:306:0
   (return)
  )
  (func $_get_mean_evictions_sets (; 78 ;) (param $$0 i32) (param $$1 i32) (param $$2 i32)
@@ -9995,14 +9995,14 @@
   (set_local $$5
    (get_local $$2)
   )
-  ;;@ c/es_management.c:393:0
+  ;;@ c/es_management.c:394:0
   (set_local $$13
    (get_local $$3)
   )
   (set_local $$6
    (get_local $$13)
   )
-  ;;@ c/es_management.c:394:0
+  ;;@ c/es_management.c:395:0
   (set_local $$14
    (get_local $$6)
   )
@@ -10022,7 +10022,7 @@
     (get_local $$16)
    )
    (block
-    ;;@ c/es_management.c:396:0
+    ;;@ c/es_management.c:397:0
     (drop
      (call $_printf_ex
       (i32.const 4514)
@@ -10032,11 +10032,11 @@
     (set_global $STACKTOP
      (get_local $sp)
     )
-    ;;@ c/es_management.c:431:0
+    ;;@ c/es_management.c:432:0
     (return)
    )
   )
-  ;;@ c/es_management.c:400:0
+  ;;@ c/es_management.c:401:0
   (set_local $$17
    (get_local $$6)
   )
@@ -10054,7 +10054,7 @@
   (set_local $$7
    (get_local $$19)
   )
-  ;;@ c/es_management.c:401:0
+  ;;@ c/es_management.c:402:0
   (set_local $$20
    (get_local $$6)
   )
@@ -10072,7 +10072,7 @@
   (set_local $$8
    (get_local $$22)
   )
-  ;;@ c/es_management.c:409:0
+  ;;@ c/es_management.c:410:0
   (set_local $$23
    (get_local $$5)
   )
@@ -10088,7 +10088,7 @@
   (set_local $$9
    (get_local $$25)
   )
-  ;;@ c/es_management.c:411:0
+  ;;@ c/es_management.c:412:0
   (set_local $$26
    (get_local $$7)
   )
@@ -10115,7 +10115,7 @@
      )
      (br $while-out)
     )
-    ;;@ c/es_management.c:415:0
+    ;;@ c/es_management.c:416:0
     (set_local $$30
      (get_local $$3)
     )
@@ -10130,7 +10130,7 @@
      (get_local $$31)
      (get_local $$32)
     )
-    ;;@ c/es_management.c:417:0
+    ;;@ c/es_management.c:418:0
     (set_local $$33
      (get_local $$6)
     )
@@ -10145,7 +10145,7 @@
     (set_local $$36
      (get_local $$9)
     )
-    ;;@ c/es_management.c:418:0
+    ;;@ c/es_management.c:419:0
     (set_local $$37
      (get_local $$6)
     )
@@ -10160,7 +10160,7 @@
       (get_local $$38)
      )
     )
-    ;;@ c/es_management.c:417:0
+    ;;@ c/es_management.c:418:0
     (drop
      (call $_l3_repeatedprobe
       (get_local $$34)
@@ -10170,11 +10170,11 @@
       (get_local $$39)
      )
     )
-    ;;@ c/es_management.c:419:0
+    ;;@ c/es_management.c:420:0
     (set_local $$11
      (i32.const 0)
     )
-    ;;@ c/es_management.c:420:0
+    ;;@ c/es_management.c:421:0
     (set_local $$12
      (i32.const 0)
     )
@@ -10198,7 +10198,7 @@
        )
        (br $while-out0)
       )
-      ;;@ c/es_management.c:422:0
+      ;;@ c/es_management.c:423:0
       (set_local $$43
        (get_local $$9)
       )
@@ -10231,7 +10231,7 @@
       (set_local $$11
        (get_local $$48)
       )
-      ;;@ c/es_management.c:420:0
+      ;;@ c/es_management.c:421:0
       (set_local $$49
        (get_local $$12)
       )
@@ -10247,7 +10247,7 @@
       (br $while-in1)
      )
     )
-    ;;@ c/es_management.c:424:0
+    ;;@ c/es_management.c:425:0
     (set_local $$51
      (get_local $$5)
     )
@@ -10266,7 +10266,7 @@
     (set_local $$11
      (get_local $$53)
     )
-    ;;@ c/es_management.c:427:0
+    ;;@ c/es_management.c:428:0
     (set_local $$54
      (get_local $$11)
     )
@@ -10298,7 +10298,7 @@
      (get_local $$59)
      (get_local $$54)
     )
-    ;;@ c/es_management.c:411:0
+    ;;@ c/es_management.c:412:0
     (set_local $$60
      (get_local $$10)
     )
@@ -10317,7 +10317,7 @@
   (set_global $STACKTOP
    (get_local $sp)
   )
-  ;;@ c/es_management.c:431:0
+  ;;@ c/es_management.c:432:0
   (return)
  )
  (func $_get_idle_times (; 79 ;) (param $$0 i32) (param $$1 i32) (param $$2 i32) (param $$3 i32)
@@ -10426,14 +10426,14 @@
   (set_local $$7
    (get_local $$3)
   )
-  ;;@ c/es_management.c:436:0
+  ;;@ c/es_management.c:437:0
   (set_local $$10
    (get_local $$4)
   )
   (set_local $$8
    (get_local $$10)
   )
-  ;;@ c/es_management.c:438:0
+  ;;@ c/es_management.c:439:0
   (set_local $$11
    (get_local $$8)
   )
@@ -10459,7 +10459,7 @@
   (set_local $$9
    (get_local $$14)
   )
-  ;;@ c/es_management.c:439:0
+  ;;@ c/es_management.c:440:0
   (set_local $$15
    (get_local $$5)
   )
@@ -10487,7 +10487,7 @@
   (if
    (get_local $$or$cond)
    (block
-    ;;@ c/es_management.c:441:0
+    ;;@ c/es_management.c:442:0
     (set_local $$19
      (get_local $$9)
     )
@@ -10500,13 +10500,13 @@
     (set_local $$6
      (get_local $$20)
     )
-    ;;@ c/es_management.c:442:0
+    ;;@ c/es_management.c:443:0
     (set_local $$5
      (i32.const 0)
     )
    )
   )
-  ;;@ c/es_management.c:444:0
+  ;;@ c/es_management.c:445:0
   (set_local $$21
    (get_local $$5)
   )
@@ -10519,7 +10519,7 @@
   (if
    (get_local $$22)
    (block
-    ;;@ c/es_management.c:446:0
+    ;;@ c/es_management.c:447:0
     (drop
      (call $_printf_ex
       (i32.const 4741)
@@ -10529,11 +10529,11 @@
     (set_global $STACKTOP
      (get_local $sp)
     )
-    ;;@ c/es_management.c:474:0
+    ;;@ c/es_management.c:475:0
     (return)
    )
   )
-  ;;@ c/es_management.c:449:0
+  ;;@ c/es_management.c:450:0
   (set_local $$23
    (get_local $$6)
   )
@@ -10549,7 +10549,7 @@
   (if
    (get_local $$25)
    (block
-    ;;@ c/es_management.c:451:0
+    ;;@ c/es_management.c:452:0
     (drop
      (call $_printf_ex
       (i32.const 4756)
@@ -10559,11 +10559,11 @@
     (set_global $STACKTOP
      (get_local $sp)
     )
-    ;;@ c/es_management.c:474:0
+    ;;@ c/es_management.c:475:0
     (return)
    )
   )
-  ;;@ c/es_management.c:454:0
+  ;;@ c/es_management.c:455:0
   (set_local $$26
    (get_local $$6)
   )
@@ -10579,7 +10579,7 @@
   (if
    (get_local $$28)
    (block
-    ;;@ c/es_management.c:456:0
+    ;;@ c/es_management.c:457:0
     (drop
      (call $_printf_ex
       (i32.const 4783)
@@ -10589,11 +10589,11 @@
     (set_global $STACKTOP
      (get_local $sp)
     )
-    ;;@ c/es_management.c:474:0
+    ;;@ c/es_management.c:475:0
     (return)
    )
   )
-  ;;@ c/es_management.c:460:0
+  ;;@ c/es_management.c:461:0
   (set_local $$29
    (get_local $$5)
   )
@@ -10610,7 +10610,7 @@
    (get_local $$31)
    (get_local $$29)
   )
-  ;;@ c/es_management.c:461:0
+  ;;@ c/es_management.c:462:0
   (set_local $$32
    (get_local $$6)
   )
@@ -10627,7 +10627,7 @@
    (get_local $$34)
    (get_local $$32)
   )
-  ;;@ c/es_management.c:462:0
+  ;;@ c/es_management.c:463:0
   (set_local $$35
    (get_local $$8)
   )
@@ -10651,7 +10651,7 @@
   (if
    (get_local $$38)
    (block
-    ;;@ c/es_management.c:464:0
+    ;;@ c/es_management.c:465:0
     (set_local $$39
      (get_local $$8)
     )
@@ -10671,7 +10671,7 @@
     )
    )
   )
-  ;;@ c/es_management.c:467:0
+  ;;@ c/es_management.c:468:0
   (set_local $$42
    (get_local $$6)
   )
@@ -10696,7 +10696,7 @@
     (i32.const 4)
    )
   )
-  ;;@ c/es_management.c:466:0
+  ;;@ c/es_management.c:467:0
   (set_local $$47
    (get_local $$8)
   )
@@ -10710,7 +10710,7 @@
    (get_local $$48)
    (get_local $$46)
   )
-  ;;@ c/es_management.c:468:0
+  ;;@ c/es_management.c:469:0
   (set_local $$49
    (get_local $$4)
   )
@@ -10728,17 +10728,17 @@
     (get_local $$51)
    )
   )
-  ;;@ c/es_management.c:469:0
+  ;;@ c/es_management.c:470:0
   (set_local $$53
    (get_local $$7)
   )
-  ;;@ c/es_management.c:468:0
+  ;;@ c/es_management.c:469:0
   (call $_get_mean_evictions_sets
    (get_local $$49)
    (get_local $$52)
    (get_local $$53)
   )
-  ;;@ c/es_management.c:472:0
+  ;;@ c/es_management.c:473:0
   (set_local $$54
    (get_local $$8)
   )
@@ -10763,7 +10763,7 @@
   (set_global $STACKTOP
    (get_local $sp)
   )
-  ;;@ c/es_management.c:474:0
+  ;;@ c/es_management.c:475:0
   (return)
  )
  (func $_find_interesting_eviction_sets (; 80 ;) (param $$0 i32) (param $$1 f32) (param $$2 i32)
@@ -10863,14 +10863,14 @@
   (set_local $$5
    (get_local $$2)
   )
-  ;;@ c/es_management.c:481:0
+  ;;@ c/es_management.c:482:0
   (set_local $$9
    (get_local $$3)
   )
   (set_local $$6
    (get_local $$9)
   )
-  ;;@ c/es_management.c:483:0
+  ;;@ c/es_management.c:484:0
   (set_local $$10
    (get_local $$6)
   )
@@ -10885,7 +10885,7 @@
     (get_local $$11)
    )
   )
-  ;;@ c/es_management.c:484:0
+  ;;@ c/es_management.c:485:0
   (set_local $$13
    (get_local $$6)
   )
@@ -10900,32 +10900,32 @@
     (get_local $$14)
    )
   )
-  ;;@ c/es_management.c:483:0
+  ;;@ c/es_management.c:484:0
   (set_local $$16
    (i32.sub
     (get_local $$12)
     (get_local $$15)
    )
   )
-  ;;@ c/es_management.c:484:0
+  ;;@ c/es_management.c:485:0
   (set_local $$17
    (i32.add
     (get_local $$16)
     (i32.const 1)
    )
   )
-  ;;@ c/es_management.c:483:0
+  ;;@ c/es_management.c:484:0
   (set_local $$7
    (get_local $$17)
   )
-  ;;@ c/es_management.c:486:0
+  ;;@ c/es_management.c:487:0
   (set_local $$18
    (get_local $$7)
   )
   (call $_set_number_of_observed_cache_sets
    (get_local $$18)
   )
-  ;;@ c/es_management.c:490:0
+  ;;@ c/es_management.c:491:0
   (set_local $$19
    (get_local $$7)
   )
@@ -10935,7 +10935,7 @@
     (i32.const 4)
    )
   )
-  ;;@ c/es_management.c:489:0
+  ;;@ c/es_management.c:490:0
   (set_local $$21
    (get_local $$6)
   )
@@ -10949,7 +10949,7 @@
    (get_local $$22)
    (get_local $$20)
   )
-  ;;@ c/es_management.c:491:0
+  ;;@ c/es_management.c:492:0
   (set_local $$23
    (get_local $$3)
   )
@@ -10967,17 +10967,17 @@
     (get_local $$25)
    )
   )
-  ;;@ c/es_management.c:492:0
+  ;;@ c/es_management.c:493:0
   (set_local $$27
    (get_local $$5)
   )
-  ;;@ c/es_management.c:491:0
+  ;;@ c/es_management.c:492:0
   (call $_get_mean_evictions_sets
    (get_local $$23)
    (get_local $$26)
    (get_local $$27)
   )
-  ;;@ c/es_management.c:495:0
+  ;;@ c/es_management.c:496:0
   (set_local $$28
    (get_local $$6)
   )
@@ -10998,7 +10998,7 @@
   (call $_set_current_times_ptr
    (get_local $$31)
   )
-  ;;@ c/es_management.c:497:0
+  ;;@ c/es_management.c:498:0
   (set_local $$32
    (get_local $$6)
   )
@@ -11022,7 +11022,7 @@
   (if
    (get_local $$35)
    (block
-    ;;@ c/es_management.c:498:0
+    ;;@ c/es_management.c:499:0
     (set_local $$36
      (get_local $$6)
     )
@@ -11042,7 +11042,7 @@
     )
    )
   )
-  ;;@ c/es_management.c:500:0
+  ;;@ c/es_management.c:501:0
   (set_local $$39
    (get_local $$7)
   )
@@ -11052,7 +11052,7 @@
     (i32.const 4)
    )
   )
-  ;;@ c/es_management.c:499:0
+  ;;@ c/es_management.c:500:0
   (set_local $$41
    (get_local $$6)
   )
@@ -11066,7 +11066,7 @@
    (get_local $$42)
    (get_local $$40)
   )
-  ;;@ c/es_management.c:503:0
+  ;;@ c/es_management.c:504:0
   (set_local $$8
    (i32.const 0)
   )
@@ -11090,7 +11090,7 @@
      )
      (br $while-out)
     )
-    ;;@ c/es_management.c:507:0
+    ;;@ c/es_management.c:508:0
     (set_local $$46
      (get_local $$6)
     )
@@ -11127,7 +11127,7 @@
       (get_local $$51)
      )
     )
-    ;;@ c/es_management.c:508:0
+    ;;@ c/es_management.c:509:0
     (set_local $$53
      (get_local $$4)
     )
@@ -11173,7 +11173,7 @@
       (get_local $$60)
      )
     )
-    ;;@ c/es_management.c:507:0
+    ;;@ c/es_management.c:508:0
     (set_local $$62
      (f32.gt
       (get_local $$52)
@@ -11183,7 +11183,7 @@
     (if
      (get_local $$62)
      (block
-      ;;@ c/es_management.c:510:0
+      ;;@ c/es_management.c:511:0
       (set_local $$63
        (get_local $$6)
       )
@@ -11216,7 +11216,7 @@
       )
      )
     )
-    ;;@ c/es_management.c:503:0
+    ;;@ c/es_management.c:504:0
     (set_local $$68
      (get_local $$8)
     )
@@ -11235,7 +11235,7 @@
   (set_global $STACKTOP
    (get_local $sp)
   )
-  ;;@ c/es_management.c:515:0
+  ;;@ c/es_management.c:516:0
   (return)
  )
  (func $_sethead_ex (; 81 ;) (param $$0 i32) (param $$1 i32) (param $$2 i32) (result i32)

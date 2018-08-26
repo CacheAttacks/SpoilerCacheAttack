@@ -14,6 +14,17 @@ if (typeof mergeInto !== 'undefined')
     }
   });
 
+
+  if (typeof mergeInto !== 'undefined')
+  mergeInto(LibraryManager.library, {
+    read_mem_ptr: function(ptr) {
+      //console.log(ptr);
+      var myarr = new Uint32Array(Module['wasmMemory'].buffer);
+      return myarr[ptr/4];
+    }
+  });
+
+
 if (typeof mergeInto !== 'undefined')
   mergeInto(LibraryManager.library, {
     SAB_terminate_counter_sub_worker: function() {

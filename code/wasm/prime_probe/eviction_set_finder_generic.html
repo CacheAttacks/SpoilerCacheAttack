@@ -1035,10 +1035,11 @@
 //----------------------workerWasm--------------------------
 //----------------------------------------------------------
 
+    var workerWasmCounter = 0;
     var workerWasmArr = {};
     var colorVec = { 0: 'color: red', 1: 'color: blue' };
     var selectWorkerWasm = document.getElementById("selectWorkerWasm");
-    for (var i = 0; i < 2; i++) {
+    for (var i = 0; i < workerWasmCounter; i++) {
       workerWasmArr[i] = new Worker('worker_wasm_generic.js');
       workerWasmArr[i].postMessage(["initWasmAndCounter", sharedBuffer, colorVec[i], i]);
       var option = document.createElement("option");

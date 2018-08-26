@@ -10,6 +10,7 @@
 #include "l3.h"
 #include "printf_wrapper.h"
 #include "es_management.h"
+#include "storefor_find_es.h"
 
 
 #define CHECK_BIT(var, pos) ((var) & (1 << (pos)))
@@ -512,4 +513,10 @@ void find_interesting_eviction_sets(void *app_state_ptr, float threshold_factor,
     }
   }
   // putchar('\n');
+}
+
+void storefor_build_es(void *app_state_ptr, int max_es){
+  struct app_state *this_app_state = (struct app_state *)app_state_ptr;
+
+  storefor_write();
 }
