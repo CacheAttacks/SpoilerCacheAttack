@@ -16,6 +16,7 @@ int printf_ex(const char *format, ...)
   int ret = vsprintf(buffer, format, valist);
 
   printf_ex_js((uint32_t)buffer);
+  free(buffer);
   return ret;
 }
 #endif

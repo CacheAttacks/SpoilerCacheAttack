@@ -2660,6 +2660,7 @@
   (local $$1 i32)
   (local $$10 i32)
   (local $$11 i32)
+  (local $$12 i32)
   (local $$2 i32)
   (local $$3 i32)
   (local $$4 i32)
@@ -2738,13 +2739,20 @@
   )
   ;;@ c/printf_wrapper.c:19:0
   (set_local $$11
+   (get_local $$3)
+  )
+  (call $_free
+   (get_local $$11)
+  )
+  ;;@ c/printf_wrapper.c:20:0
+  (set_local $$12
    (get_local $$4)
   )
   (set_global $STACKTOP
    (get_local $sp)
   )
   (return
-   (get_local $$11)
+   (get_local $$12)
   )
  )
  (func $_vl_get (; 51 ;) (param $$0 i32) (param $$1 i32) (result i32)

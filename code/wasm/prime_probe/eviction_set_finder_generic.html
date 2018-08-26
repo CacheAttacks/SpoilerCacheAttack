@@ -682,12 +682,21 @@
     <span><input type="button" id="btnInterestingSub" value="Find interesting sub"></span>
     <span><input type="button" id="btnInterestingGcd" value="Find interesting gcd"></span>
   </span>
-  <!-- <span id='findInterestingCacheSetsTemplate'>
-    <span><input type="button" id="btnTemplateDetection" value="Template detection"></span>
-    <span><input type="button" id="btnInterestingShift" value="Find interesting shift"></span>
+  </br>
+
+
+
+
+  <span id='spanWorkerWasm'>
+    <select id="selectWorkerWasm"></select>
+    <span><input type="button" id="btnWorkerWasmBuildEs" value="build es workerWasm"></span>
+    <span><input type="text" id="textWorkerWasmListEs" value="1,2,3" width="1"></span>
+    <span><input type="button" id="btnWorkerWasmSetMonitoredEsArr" value="Set monitored es arr workerWasm"></span>
+    <!-- <span><input type="button" id="btnInterestingShift" value="Find interesting shift"></span>
     <span><input type="button" id="btnInterestingSub" value="Find interesting sub"></span>
-    <span><input type="button" id="btnInterestingGcd" value="Find interesting gcd"></span>
-  </span> -->
+    <span><input type="button" id="btnInterestingGcd" value="Find interesting gcd"></span> -->
+  </span>
+
 
   <div class="emscripten">
     <progress value="0" max="100" id="progress" hidden=1></progress>
@@ -702,14 +711,14 @@
   <script type="text/javascript" src="javascript/timer_SAB.js"></script>
   <script type="text/javascript" src="javascript/timer_clock_edge.js"></script>
   <script type='text/javascript'>
-    var textColor = 'color: blue';
+    var textColor = 'color: black';
     var textBuffer = "";
     function consoleLogExNoNewLine(str) {
       textBuffer += str;
-      if(str.substr(str.length - 1) == '\n'){
+      if (str.substr(str.length - 1) == '\n') {
         console.log('%c' + textBuffer.substr(0, textBuffer.length - 1), textColor);
         textBuffer = "";
-      }  
+      }
     }
     function consoleLogEx(str) {
       console.log('%c' + str, textColor);
@@ -940,7 +949,13 @@
       }
     }
     document.getElementById('btnSetMonitoredEsArr').onclick = function () {
-      $.loadScript('javascript/set_monitor_es_arr.js', function () { });
+      if (Module['appStatePtr'] != 0) {  // decode listEs string
+        var listEsString = document.getElementById('textListEs').value;
+        var listEsArr = listEsString.split(',');
+        $.loadScript('javascript/set_monitor_es_arr.js', function () { });
+      } else {
+        console.log('Module[\'appStatePtr\'] is null!');
+      }
     }
 
     document.getElementById('btnSearchForCovertChannel').onclick = function () {
@@ -1016,10 +1031,42 @@
       primeSpamEsWrapper(document.getElementById('numberPrimeSpamDurationSec').value);
     }
 
-    var colorVec = { 1: 'color: red', 2: 'color: blue' };
-    var wasmBinaryFile = 'eviction_set_finder.wasm';
-    const workerWasm1 = new Worker('worker_wasm_generic.js');
-    workerWasm1.postMessage(["initWasmAndCounter", sharedBuffer, colorVec["1"]]);
+//----------------------------------------------------------
+//----------------------workerWasm--------------------------
+//----------------------------------------------------------
+
+    var workerWasmArr = {};
+    var colorVec = { 0: 'color: red', 1: 'color: blue' };
+    var selectWorkerWasm = document.getElementById("selectWorkerWasm");
+    for (var i = 0; i < 2; i++) {
+      workerWasmArr[i] = new Worker('worker_wasm_generic.js');
+      workerWasmArr[i].postMessage(["initWasmAndCounter", sharedBuffer, colorVec[i], i]);
+      var option = document.createElement("option");
+      option.id = i;
+      option.text = i + ": " + colorVec[i];
+      selectWorkerWasm.add(option);
+    }
+
+    function getSelctedWorkerWasm(){
+      var workerWasmId = document.getElementById('selectWorkerWasm').value.substr(0, 1);
+      return workerWasmArr[workerWasmId];
+    }
+
+    document.getElementById('btnWorkerWasmBuildEs').onclick = function () {
+      getSelctedWorkerWasm().postMessage(['buildEs', 0]);
+    }
+
+    document.getElementById('btnWorkerWasmSetMonitoredEsArr').onclick = function () {
+        var listEsString = document.getElementById('textWorkerWasmListEs').value;
+        var listEsArr = listEsString.split(',');
+        getSelctedWorkerWasm().postMessage(['setMonitoredEsArr', listEsArr]);
+    }
+
+
+    // const workerWasm1 = new Worker('worker_wasm_generic.js');
+    // workerWasm1.postMessage(["initWasmAndCounter", sharedBuffer, colorVec["1"]]);
+    // const workerWasm2 = new Worker('worker_wasm_generic.js');
+    // workerWasm1.postMessage(["initWasmAndCounter", sharedBuffer, colorVec["1"]]);
   </script>
 </body>
 
