@@ -1737,7 +1737,7 @@ var ASM_CONSTS = [];
 
 STATIC_BASE = GLOBAL_BASE;
 
-STATICTOP = STATIC_BASE + 7456;
+STATICTOP = STATIC_BASE + 7440;
 /* global initializers */  __ATINIT__.push();
 
 
@@ -1746,7 +1746,7 @@ STATICTOP = STATIC_BASE + 7456;
 
 
 
-var STATIC_BUMP = 7456;
+var STATIC_BUMP = 7440;
 Module["STATIC_BASE"] = STATIC_BASE;
 Module["STATIC_BUMP"] = STATIC_BUMP;
 
@@ -1813,13 +1813,7 @@ function copyTempDouble(ptr) {
       }
 
   function _SAB_lib_get_counter_value() {
-        //return Module['sharedArrayCounter'][0];
-        // far more consistent
-        return Atomics.load(Module['sharedArrayCounter'], 0);
-      }
-
-  function _SAB_lib_get_counter_value_storefor() {
-        //return Module['sharedArrayCounter'][0];
+        // return Module['sharedArrayCounter'][0];
         // far more consistent
         return Atomics.load(Module['sharedArrayCounter'], 0);
       }
@@ -5181,6 +5175,104 @@ function copyTempDouble(ptr) {
           Module['wasmMemoryArr'] = new Uint32Array(Module['wasmMemory'].buffer);
         }
       }
+
+  function _store_for_js(uint8ptrBuffer, bufferSize, uint8ptrAddressArr, addressArrSize, uint8ptrCandidate) {
+        var rounds = 100;
+        var pageSize = 4096;
+        var pageCount = bufferSize / pageSize;
+        var windowSize = 64;
+        var movingWindowSize = 10;
+  
+        var uint32wasmMem = new Uint32Array(Module['wasmMemory'].buffer);
+        var uint32ptrBuffer = uint8ptrBuffer / 4;
+        var uint16MeasurementArr = new Uint16Array(pageCount);
+        var uint32ptrAdressArr = uint8ptrAddressArr / 4;
+        var uint32ptrCandidate = uint8ptrCandidate / 4;
+        var lock = 0;
+        var numberOfStoreForAdd = 0;
+  
+        function subArrayAverage(arr, start, windowSize) {
+          var sum = 0;
+          for (var i = 0; i < windowSize; i++) {
+            sum += arr[start + i];
+          }
+          return sum / windowSize;
+        }
+  
+        var output = "";
+        
+        function checkForStoreFor(MeasurementArr, p, movingWindowSize) {
+          
+        
+          var movingWindowAverage = subArrayAverage(
+            MeasurementArr, p - movingWindowSize - 1, movingWindowSize);
+          
+          if (MeasurementArr[p] < 100 && MeasurementArr[p-1] < 100 && 
+            MeasurementArr[p] > movingWindowAverage + 5 &&
+            MeasurementArr[p-1] > movingWindowAverage + 10 &&
+            MeasurementArr[p-1] > MeasurementArr[p-2] + 10) {
+             output += "? " + MeasurementArr[p];
+            return true;
+          }
+          output += " " + MeasurementArr[p];
+          return false;
+        }
+  
+        for (var p = windowSize; p < pageCount; p++) {
+          var total = 0;
+  
+          for (var r = 0; r < rounds; r++) {
+            // Stores
+            for (var i = windowSize; i >= 0; i--) {
+              uint32wasmMem[uint32ptrBuffer + (p - i) * 1024] = 0;
+              // evictionBuffer[(p-i)*PAGE_SIZE] = 0;
+            }
+            // Measuring load
+            var before = Module['sharedArrayCounter'][0];
+  
+            var val = uint32wasmMem[uint32ptrCandidate];
+            //insert some useless commands to avoid instruction reordering
+            //this seems to work quite well, but there should exists better stuff
+            val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;
+            var after = val;
+  
+            after += Module['sharedArrayCounter'][0];
+            total += (after - before) - val;
+          }
+          uint16MeasurementArr[p] = total / rounds;
+  
+          // if(p % 1000 == 999){
+          //   console.log(output);
+          //   output = "";
+          // }
+  
+          // check for new storefor address
+          if (p > windowSize + movingWindowSize && lock < 0 &&
+            checkForStoreFor(uint16MeasurementArr, p, movingWindowSize)) {
+              //console.log(p);
+            var uint8ptrStoreForAdd = (uint8ptrBuffer + (p-1) * pageSize);
+            uint32wasmMem[uint32ptrAdressArr + numberOfStoreForAdd] = uint8ptrStoreForAdd;
+            numberOfStoreForAdd++;
+  
+            if(numberOfStoreForAdd >= 30){ //try to create es
+              if(Module['asm']._try_to_create_es(uint8ptrAddressArr, numberOfStoreForAdd) != 0)
+                return true;
+            }
+            //size of AddressArr is limited
+            if(numberOfStoreForAdd == addressArrSize){
+              return false;
+            }
+            lock = 10;
+          }
+          lock--;
+        }
+  
+  
+        // average = arr => arr.reduce((p, c) => p + c, 0) / arr.length;
+        // var measurementAverage = average(measurementArr);
+        // console.log('measurementAverage:' + measurementAverage);
+        // console.log(output);
+      }
 FS.staticInit();__ATINIT__.unshift(function() { if (!Module["noFSInit"] && !FS.init.initialized) FS.init() });__ATMAIN__.push(function() { FS.ignorePermissions = false });__ATEXIT__.push(function() { FS.quit() });;
 __ATINIT__.unshift(function() { TTY.init() });__ATEXIT__.push(function() { TTY.shutdown() });;
 if (ENVIRONMENT_IS_NODE) { var fs = require("fs"); var NODEJS_PATH = require("path"); NODEFS.staticInit(); };
@@ -5271,7 +5363,7 @@ function invoke_viii(index,a1,a2,a3) {
 
 Module.asmGlobalArg = {};
 
-Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "nullFunc_viii": nullFunc_viii, "invoke_ii": invoke_ii, "invoke_iiii": invoke_iiii, "invoke_viii": invoke_viii, "_Performance_now": _Performance_now, "_SAB_get_resolution_ns": _SAB_get_resolution_ns, "_SAB_lib_get_counter_value": _SAB_lib_get_counter_value, "_SAB_lib_get_counter_value_storefor": _SAB_lib_get_counter_value_storefor, "___assert_fail": ___assert_fail, "___lock": ___lock, "___setErrNo": ___setErrNo, "___syscall140": ___syscall140, "___syscall146": ___syscall146, "___syscall192": ___syscall192, "___syscall54": ___syscall54, "___syscall6": ___syscall6, "___syscall91": ___syscall91, "___unlock": ___unlock, "__exit": __exit, "_abort": _abort, "_dummy_for_wat": _dummy_for_wat, "_emscripten_memcpy_big": _emscripten_memcpy_big, "_exit": _exit, "_js_repeatedprobe": _js_repeatedprobe, "_print_plot_data": _print_plot_data, "_printf_ex_js": _printf_ex_js, "_set_app_state_ptr": _set_app_state_ptr, "_set_current_times_ptr": _set_current_times_ptr, "_set_idle_times_ptr": _set_idle_times_ptr, "_set_monitored_es_index_vec_ptr": _set_monitored_es_index_vec_ptr, "_set_number_of_observed_cache_sets": _set_number_of_observed_cache_sets, "_set_ptr_to_data": _set_ptr_to_data, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
+Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "nullFunc_viii": nullFunc_viii, "invoke_ii": invoke_ii, "invoke_iiii": invoke_iiii, "invoke_viii": invoke_viii, "_Performance_now": _Performance_now, "_SAB_get_resolution_ns": _SAB_get_resolution_ns, "_SAB_lib_get_counter_value": _SAB_lib_get_counter_value, "___assert_fail": ___assert_fail, "___lock": ___lock, "___setErrNo": ___setErrNo, "___syscall140": ___syscall140, "___syscall146": ___syscall146, "___syscall192": ___syscall192, "___syscall54": ___syscall54, "___syscall6": ___syscall6, "___syscall91": ___syscall91, "___unlock": ___unlock, "__exit": __exit, "_abort": _abort, "_dummy_for_wat": _dummy_for_wat, "_emscripten_memcpy_big": _emscripten_memcpy_big, "_exit": _exit, "_js_repeatedprobe": _js_repeatedprobe, "_print_plot_data": _print_plot_data, "_printf_ex_js": _printf_ex_js, "_set_app_state_ptr": _set_app_state_ptr, "_set_current_times_ptr": _set_current_times_ptr, "_set_idle_times_ptr": _set_idle_times_ptr, "_set_monitored_es_index_vec_ptr": _set_monitored_es_index_vec_ptr, "_set_number_of_observed_cache_sets": _set_number_of_observed_cache_sets, "_set_ptr_to_data": _set_ptr_to_data, "_store_for_js": _store_for_js, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
 // EMSCRIPTEN_START_ASM
 var asm =Module["asm"]// EMSCRIPTEN_END_ASM
 (Module.asmGlobalArg, Module.asmLibraryArg, buffer);
@@ -5388,6 +5480,12 @@ var real__set_monitored_es_lower_half = asm["_set_monitored_es_lower_half"]; asm
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return real__set_monitored_es_lower_half.apply(null, arguments);
+};
+
+var real__try_to_create_es = asm["_try_to_create_es"]; asm["_try_to_create_es"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return real__try_to_create_es.apply(null, arguments);
 };
 
 var real_establishStackSpace = asm["establishStackSpace"]; asm["establishStackSpace"] = function() {
@@ -5516,6 +5614,10 @@ var _set_monitored_es_lower_half = Module["_set_monitored_es_lower_half"] = func
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return Module["asm"]["_set_monitored_es_lower_half"].apply(null, arguments) };
+var _try_to_create_es = Module["_try_to_create_es"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["_try_to_create_es"].apply(null, arguments) };
 var establishStackSpace = Module["establishStackSpace"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');

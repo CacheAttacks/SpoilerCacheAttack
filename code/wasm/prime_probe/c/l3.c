@@ -429,6 +429,23 @@ static void expand_test(vlist_t es, void *current) {
   }
 }
 
+static void *expand_storefor(vlist_t es, vlist_t candidates) {
+  for(int i=0; vl_len(candidates)>0;i++) {
+    vl_push(es, vl_pop(candidates));
+  }
+  printf_ex("%i\n",vl_len(es));
+
+  for(int i=0; i<vl_len(es);i++) {
+    void* current = vl_del(es,i);
+    if(checkevict_safe(es, current, vl_len(es), 0, EXPAND_ITERATIONS)){
+      printf_ex("found\n");
+      return current;
+    }
+    vl_insert(es, i, current);
+  }
+  return NULL;
+}
+
 static void *expand(vlist_t es, vlist_t candidates) {
   while (vl_len(candidates) > 0) {
     void *current = vl_poprand(candidates);
@@ -541,7 +558,7 @@ static int collect(vlist_t es, vlist_t candidates /*, vlist_t set*/) {
 
 // get l3 struct and list of addresses with page size gaps
 // tries to find evicitions sets
-static vlist_t map(l3pp_t l3, vlist_t lines) {
+vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
 #ifdef DEBUG
   printf_ex("lines aka memory-blocks %d\n", vl_len(lines));
   printf_ex("---------------------INFO END--------------------------\n");
@@ -581,7 +598,11 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
     }
 
     before = rdtscp();
-    void *c = expand(es, lines);
+    void *c;
+    //if(storefor_mode)
+    //  c = expand_storefor(es, lines);
+    //else
+      c = expand(es, lines);
     time_expand += (uint64_t)get_diff(before, rdtscp());
 
 #ifdef DEBUG
@@ -599,6 +620,9 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
              d_l2);
 #endif // DEBUG
       fail += 50;
+      if(storefor_mode){
+        fail = FAIL_MAX+1;
+      }
       continue;
       time_datahandling += (uint64_t)get_diff(before, rdtscp());
     }
@@ -766,7 +790,7 @@ static vlist_t map(l3pp_t l3, vlist_t lines) {
 // expand_group function expand these 2^7 es to 2^13 es
 // function uses knwon 6 bit from page
 // use property: a,b in same cache set => a + x,b + x in the same cache set
-static vlist_t expand_groups(vlist_t groups) {
+vlist_t expand_groups(vlist_t groups) {
   vlist_t all_groups = vl_new();
   for (int group_index = 0; group_index < vl_len(groups); group_index++) {
     vlist_t cur_group = (vlist_t)vl_get(groups, group_index);
@@ -799,7 +823,7 @@ static vlist_t expand_groups(vlist_t groups) {
 }
 
 // take buffer in l3 struct and try to create eviction sets
-static int probemap(l3pp_t l3) {
+int probemap(l3pp_t l3) {
   if ((l3->l3info.flags & L3FLAG_NOPROBE) != 0)
     return 0;
   printf_ex("l3info.bufsize:%i\n", l3->l3info.bufsize);
@@ -808,7 +832,7 @@ static int probemap(l3pp_t l3) {
   vlist_t pages = vl_new();
   for (int i = 0; i < l3->l3info.bufsize; i += l3->groupsize * L3_CACHELINE)
     vl_push(pages, l3->buffer + i + ADDRESS_OFFSET);
-  vlist_t groups = map(l3, pages);
+  vlist_t groups = map(l3, pages, 0);
   vlist_t all_groups = expand_groups(groups);
   vl_free(groups);
 
@@ -908,6 +932,49 @@ l3pp_t l3_prepare(l3info_t l3info, int l3_threshold, int max_es) {
            (uint32_t)vl_get(l3->contract_time, i));
   }
 #endif
+
+  return l3;
+}
+
+l3pp_t l3_create_only(int l3_threshold, int max_es, uint32_t bufsize) {
+  if (ADDRESS_OFFSET == 0) {
+    printf_ex("error ADDRESS_OFFSET 0 is used for TLB noise reduction");
+    exit(1);
+  }
+
+  info = (struct timer_info *)malloc(sizeof(struct timer_info));
+  bzero(info, sizeof(struct timer_info));
+
+  int allocatedMem = sizeof(struct l3pp);
+  // Setup
+  l3pp_t l3 = (l3pp_t)malloc(sizeof(struct l3pp));
+  bzero(l3, sizeof(struct l3pp));
+  l3->max_es = max_es;
+
+  printf_ex("l3->max_es %i\n", l3->max_es);
+
+  fillL3Info(l3);
+  L3_THRESHOLD = l3_threshold;
+
+  printf_ex("associativity:%i\n", l3->l3info.associativity);
+  printf_ex("slices:%i\n", l3->l3info.slices);
+  printf_ex("setsperslice:%i\n", l3->l3info.setsperslice);
+
+  // Allocate cache buffer
+  char *buffer = MAP_FAILED;
+
+  if (buffer == MAP_FAILED) {
+    l3->groupsize = L3_SETS_PER_PAGE; // cause 4096/64 = 64
+
+    buffer = mmap(NULL, bufsize, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE,
+                  -1, 0);
+  }
+  if (buffer == MAP_FAILED) {
+    free(l3);
+    return NULL;
+  }
+  l3->buffer = buffer;
+  l3->l3info.bufsize = bufsize;
 
   return l3;
 }

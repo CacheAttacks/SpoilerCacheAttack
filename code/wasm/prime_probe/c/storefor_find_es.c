@@ -6,50 +6,38 @@
 #include <assert.h>
 #include <sys/mman.h>
 
-#include "config.h"
+#include "low.h"
 #include "vlist.h"
 #include "SABcounter.h"
+#include "l3.h"
 #include "printf_wrapper.h"
 #include "storefor_find_es.h"
 
-static inline void warmuptimer()
-{
-  while (1)
-  {
-    uint32_t before = SAB_lib_get_counter_value();
-    uint32_t after = SAB_lib_get_counter_value();
-    if (after - before > 0 && after - before < 100)
-    {
-      break;
-    }
-  }
-}
-
-static inline uint32_t memaccesstime(void *v)
-{
-    warmuptimer();
-  uint32_t a;
-  uint32_t after;
-  uint32_t before = SAB_lib_get_counter_value();
-  if (before > 0)
-  {
-    before++;
-    a = *((uint32_t *)v);
-    a = read_mem_ptr((uint32_t)v);
-  }
-  if (a == 0)
-  {
-    after = SAB_lib_get_counter_value();
-    after++;
-  }
-  else
-  {
-    after = SAB_lib_get_counter_value();
-    if (before > 0)
-      before--;
-  }
-  return after-before;
-}
+// static inline uint32_t memaccesstime(void *v)
+// {
+//     warmuptimer();
+//   uint32_t a;
+//   uint32_t after;
+//   uint32_t before = SAB_lib_get_counter_value();
+//   if (before > 0)
+//   {
+//     before++;
+//     a = *((uint32_t *)v);
+//     a = read_mem_ptr((uint32_t)v);
+//   }
+//   if (a == 0)
+//   {
+//     after = SAB_lib_get_counter_value();
+//     after++;
+//   }
+//   else
+//   {
+//     after = SAB_lib_get_counter_value();
+//     if (before > 0)
+//       before--;
+//   }
+//   return after-before;
+// }
 
 __attribute__((optnone))
 static inline uint32_t memaccesstime_alt(void *v)
@@ -167,24 +155,64 @@ void measurement_funct(uint8_t * evictionBuffer, int window_size, uint8_t *targe
 
 }
 
+  l3pp_t l3 ;
+
 void storefor_write(){
 	
 	// 8MB Buffer
-	uint8_t * evictionBuffer;
-	evictionBuffer = (uint8_t*) malloc(PAGE_COUNT * PAGE_SIZE);
-	memset(evictionBuffer, 0, PAGE_COUNT * PAGE_SIZE);	
+	// uint8_t * evictionBuffer;
+	// evictionBuffer = (uint8_t*) malloc(PAGE_COUNT * PAGE_SIZE);
+	// memset(evictionBuffer, 0, PAGE_COUNT * PAGE_SIZE);	
 
-  int bufsize = PAGE_COUNT * PAGE_SIZE;
-  uint8_t* buffer = mmap(NULL, bufsize, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE,
+  uint32_t buffer_size = PAGE_COUNT * PAGE_SIZE;
+  uint8_t* buffer = mmap(NULL, buffer_size, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE,
                   -1, 0);
 
-
+  uint32_t storefor_add_arr_size = 100;
+  uint8_t * storefor_add_arr = (uint8_t*) malloc(sizeof(uint32_t) * storefor_add_arr_size);
+	memset(storefor_add_arr, 0, sizeof(uint32_t) * storefor_add_arr_size);	
 
 	#define WINDOW_SIZE 64
 
-	printf_ex("target_add:%p\n", buffer);
-	measurement_funct(buffer, WINDOW_SIZE, buffer);
+  l3 = l3_create_only(31, 0, buffer_size);
+
+	//printf_ex("target_add:%p\n", buffer);
+	//measurement_funct(buffer, WINDOW_SIZE, buffer);
+  for(int i=0; i<1; i++){
+  store_for_js((uint32_t)buffer, buffer_size, (uint32_t)storefor_add_arr, storefor_add_arr_size, (uint32_t)(buffer+i*PAGE_SIZE));
+  }
+
+  //store_for_js((uint32_t)buffer, bufsize);
+  //store_for_js((uint32_t)buffer, bufsize);
+
 
 	// printf("target_add:%p\n", evictionBuffer+PAGE_SIZE);
 	// measurement_funct(evictionBuffer, WINDOW_SIZE, evictionBuffer+PAGE_SIZE);
+}
+
+int try_to_create_es(uint32_t *address_arr, uint32_t number_of_storefor_add){
+  
+  vlist_t lines = vl_new();
+  for(int i=0; i<number_of_storefor_add; i++){
+    //printf_ex("%p ", address_arr[i]);
+    vl_push(lines, (void*)(address_arr[i]+2048));
+  }
+  //printf_ex("\n");
+  //vl_free(lines);
+
+  vlist_t groups = map(l3, lines, 1);
+  //printf_ex("%i\n",vl_len(lines));
+  //groups = map(l3, lines);
+  //groups = map(l3, lines);
+  //groups = map(l3, lines);
+  if(vl_len(groups) > 0){
+    vlist_t es = vl_get(groups, 0);
+    for(int i=0; i<vl_len(es); i++){
+      //printf_ex("%p ",vl_get(es,i));
+    }
+    //printf_ex("\n");
+    return 1;
+  }
+    
+  return 0;
 }

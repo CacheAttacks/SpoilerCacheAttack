@@ -74,7 +74,10 @@ struct l3pp
 typedef uint32_t (*p_probetime)(void *);
 
 l3pp_t l3_prepare(l3info_t l3info, int L3_THRESHOLD, int max_es);
+l3pp_t l3_create_only(int l3_threshold, int max_es, uint32_t bufsize);
 void l3_release(l3pp_t l3);
+
+vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode);
 
 // Returns the number of probed sets in the LLC
 int l3_getSets(l3pp_t l3);
