@@ -15,7 +15,13 @@ function consoleLogEx(str) {
   console.log('%c' + str, textColor);
 }
 
-
+function assertAppStatePtr(func) {
+  if (Module['appStatePtr'] != 0) {
+    func();
+  } else {
+    consoleLogEx('Module[\'appStatePtr\'] is null!');
+  }
+}
 
 self.addEventListener('message', (m) => {
   // const sharedArray = new Uint32Array(m.data)
@@ -33,49 +39,56 @@ self.addEventListener('message', (m) => {
     // importScripts(".js");
   } else if (command === 'buildEs') {
     var max_es = m.data[1];
-    buildEsWrapper(max_es);
+    assertAppStatePtr(function() {
+      buildEsWrapper(max_es);
+    });
   } else if (command === 'setMonitoredEsArr') {
-    if (Module['appStatePtr'] != 0) {
+    assertAppStatePtr(function() {
       var listEsInt32Arr = m.data[1];
       importScripts('set_monitor_es_arr.js');
-    } else {
-      consoleLogEx('Module[\'appStatePtr\'] is null!');
-    }
+    });
   } else if (command === 'sampleEs') {
-    if (Module['appStatePtr'] != 0) {
+    assertAppStatePtr(function() {
       var numberOfSamples = m.data[1];
       var slotTime = m.data[2];
       var printToBrowser =
           0;  // always 0, cause document obj not exists in worker context
       sampleEsWrapper(numberOfSamples, slotTime, printToBrowser);
-    } else {
-      consoleLogEx('Module[\'appStatePtr\'] is null!');
-    }
+    });
   } else if (command === 'getIdleTimes') {
-    if (Module['appStatePtr'] != 0) {
+    assertAppStatePtr(function() {
       var min_es = m.data[1];
       var max_es = m.data[2];
       var number_of_samples = 1000;
       Module['asm']._get_idle_times(
           Module['appStatePtr'], min_es, max_es, number_of_samples);
-    } else {
-      consoleLogEx('Module[\'appStatePtr\'] is null!');
-    }
+    });
   } else if (command === 'findInterestingCacheSets') {
-    if (Module['appStatePtr'] != 0) {
+    assertAppStatePtr(function() {
       importScripts('interesting_cache_sets.js');
-      //TODO
-    } else {
-      consoleLogEx('Module[\'appStatePtr\'] is null!');
-    }
-  } //TODO implement find shift or sub
-    //find gcd
-    //merge results of both observations, match by timestamps (R)
-  
-  else if (command === '') {
-    if (Module['appStatePtr'] != 0) {
-    } else {
-      consoleLogEx('Module[\'appStatePtr\'] is null!');
-    }
+      // TODO
+    });
+  }  // TODO implement find shift or sub
+     // find gcd
+     // merge results of both observations, match by timestamps (R)
+
+
+  else if (command === 'interestingShift') {
+    assertAppStatePtr(function() {
+      importScripts('interesting_cache_sets.js');
+      Module['interestingCacheSetsShift'] = listInterestingCacheSets;
+    });
+  } else if (command === 'interestingSub') {
+    assertAppStatePtr(function() {
+      importScripts('interesting_cache_sets.js');
+      Module['interestingCacheSetsSub'] = listInterestingCacheSets;
+    });
+  } else if (command === 'interestingGcd') {
+    assertAppStatePtr(function() {
+      importScripts('interesting_cache_sets.js');
+      importScripts('interesting_gcd.js');
+    });
+  } else if (command === '') {
+    assertAppStatePtr(function() {});
   }
 });

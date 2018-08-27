@@ -682,19 +682,27 @@
     <span><input type="button" id="btnInterestingSub" value="Find interesting sub"></span>
     <span><input type="button" id="btnInterestingGcd" value="Find interesting gcd"></span>
   </span>
+  </br></br>
+  ----------------------worker--------------------------
+  </br>------------------------------------------------------
   </br>
-
-
-
-
   <span id='spanWorkerWasm'>
+    Select worker:
     <select id="selectWorkerWasm"></select>
-    <span><input type="button" id="btnWorkerWasmBuildEs" value="build es workerWasm"></span>
+    </br>
+    <span><input type="button" id="btnWorkerWasmBuildEs" value="build es"></span>
     <span><input type="text" id="textWorkerWasmListEs" value="1,2,3" width="1"></span>
-    <span><input type="button" id="btnWorkerWasmSetMonitoredEsArr" value="Set monitored es arr workerWasm"></span>
-    <!-- <span><input type="button" id="btnInterestingShift" value="Find interesting shift"></span>
-    <span><input type="button" id="btnInterestingSub" value="Find interesting sub"></span>
-    <span><input type="button" id="btnInterestingGcd" value="Find interesting gcd"></span> -->
+    <span><input type="button" id="btnWorkerWasmSetMonitoredEsArr" value="Set monitored es arr"></span>
+    </br>
+    lower limit monitored es
+    <span><input type="number" id="numberWorkerWasmLowerLimitMonitoredEsInteresting" value="-1" width="1"></span>
+    upper limit monitored es
+    <span><input type="number" id="numberWorkerWasmUpperLimitMonitoredEsInteresting" value="-1" width="1"></span>
+    <span><input type="button" id="btnWorkerWasmGetIdleTimes" value="Get idle times"></span>
+    </br>
+    <span><input type="button" id="btnWorkerWasmInterestingShift" value="Find interesting shift"></span>
+    <span><input type="button" id="btnWorkerWasmInterestingSub" value="Find interesting sub"></span>
+    <span><input type="button" id="btnWorkerWasmInterestingGcd" value="Find interesting gcd"></span>
   </span>
 
 
@@ -916,6 +924,14 @@
       });
     }
 
+    function assertAppStatePtr(func) {
+      if (Module['appStatePtr'] != 0) {
+        func();
+      } else {
+        consoleLogEx('Module[\'appStatePtr\'] is null!');
+      }
+    }
+
     document.getElementById('btnPrint').onclick = function () {
       // d = new Date();
       // Module['imgElement'].src = 'http://localhost:8000/plotdata?' + d.getTime();
@@ -924,82 +940,58 @@
         'myTitle', '', '');
     }
     document.getElementById('btnSampleEs').onclick = function () {
-      if (Module['appStatePtr'] != 0) {
+      assertAppStatePtr(function () {
         var numberOfSamples = document.getElementById('numberSamples').value;
         //console.log(numberOfSamples);
         var slotTime = document.getElementById('numberSlotTime').value;
         sampleEsWrapper(numberOfSamples, slotTime, 1);
-      } else {
-        console.log("Module['appStatePtr'] is null!");
-      }
+      });
     }
     document.getElementById('btnBuildEs').onclick = function () {
-      if (Module['appStatePtr'] != 0) {
+      assertAppStatePtr(function () {
         buildEsWrapper(document.getElementById('numberUpperLimitEs').value);
         document.getElementById('btnBuildEs').value = "Rebuild es";
-      } else {
-        console.log("Module['appStatePtr'] is null!");
-      }
+      });
     }
     document.getElementById('btnSetMonitoredEs').onclick = function () {
-      if (Module['appStatePtr'] != 0) {
+      assertAppStatePtr(function () {
         Module['asm']._set_monitored_es(Module['appStatePtr'], document.getElementById('numberLowerLimitMonitoredEs').value, document.getElementById('numberUpperLimitMonitoredEs').value);
-      } else {
-        console.log("Module['appStatePtr'] is null!");
-      }
+      });
     }
     document.getElementById('btnSetMonitoredEsArr').onclick = function () {
-      if (Module['appStatePtr'] != 0) {  // decode listEs string
+      assertAppStatePtr(function () {  // decode listEs string
         var listEsString = document.getElementById('textListEs').value;
         var listEsArr = listEsString.split(',');
         $.loadScript('javascript/set_monitor_es_arr.js', function () { });
-      } else {
-        console.log('Module[\'appStatePtr\'] is null!');
-      }
+      });
     }
 
     document.getElementById('btnSearchForCovertChannel').onclick = function () {
-      if (Module['appStatePtr'] != 0) {
-
+      assertAppStatePtr(function () {
         $.loadScript('javascript/covert_channel.js', function () { });
-
-      } else {
-        console.log("Module['appStatePtr'] is null!");
-      }
+      });
     }
     document.getElementById('btnListeningChannel').onclick = function () {
-      if (Module['appStatePtr'] != 0) {
-
+      assertAppStatePtr(function () {
         $.loadScript('javascript/listening_channel.js', function () { });
-
-      } else {
-        console.log("Module['appStatePtr'] is null!");
-      }
+      });
     }
     document.getElementById('btnBenchmarkType').onclick = function () {
-      if (Module['appStatePtr'] != 0) {
-
+      assertAppStatePtr(function () {
         $.loadScript('javascript/benchmark_probe_type.js', function () { });
-
-      } else {
-        console.log("Module['appStatePtr'] is null!");
-      }
+      });
     }
     //change type of probing algo
     document.getElementById('btnChangeType').onclick = function () {
-      if (Module['appStatePtr'] != 0) {
+      assertAppStatePtr(function () {
         Module['asm']._change_type(Module['appStatePtr'], document.getElementById('selectType').value);
-      } else {
-        console.log("Module['appStatePtr'] is null!");
-      }
+      });
     }
     //runs build es multiple times to benchmark performance
     document.getElementById('btnBenchmarkmode').onclick = function () {
-      if (Module['appStatePtr'] != 0) {
+      assertAppStatePtr(function () {
         buildEsExWrapper(document.getElementById('numberUpperLimitEs').value, 1, document.getElementById('numberBenchmarksruns').value);
-      } else {
-        console.log("Module['appStatePtr'] is null!");
-      }
+      });
     }
 
     document.getElementById('btnGetIdleTimes').onclick = function () {
@@ -1016,26 +1008,35 @@
     }
 
     document.getElementById('btnInterestingShift').onclick = function () {
-      $.loadScript('javascript/interesting_shift.js', function () { });
+      $.loadScript('javascript/interesting_cache_sets.js', function () {
+        // after loadScript
+        Module['interestingCacheSetsShift'] = listInterestingCacheSets;
+      });
     }
 
     document.getElementById('btnInterestingSub').onclick = function () {
-      $.loadScript('javascript/interesting_sub.js', function () { });
+      $.loadScript('javascript/interesting_cache_sets.js', function () {
+        // after loadScript
+        Module['interestingCacheSetsSub'] = listInterestingCacheSets;
+      });
     }
 
     document.getElementById('btnInterestingGcd').onclick = function () {
-      $.loadScript('javascript/interesting_gcd.js', function () { });
+      $.loadScript('javascript/interesting_cache_sets.js', function () {
+        // after loadScript
+        $.loadScript('javascript/interesting_gcd.js', function () { });
+      });
     }
 
     document.getElementById('btnPrimeSpam').onclick = function () {
       primeSpamEsWrapper(document.getElementById('numberPrimeSpamDurationSec').value);
     }
 
-//----------------------------------------------------------
-//----------------------workerWasm--------------------------
-//----------------------------------------------------------
+    //----------------------------------------------------------
+    //----------------------workerWasm--------------------------
+    //----------------------------------------------------------
 
-    var workerWasmCounter = 0;
+    var workerWasmCounter = 2;
     var workerWasmArr = {};
     var colorVec = { 0: 'color: red', 1: 'color: blue' };
     var selectWorkerWasm = document.getElementById("selectWorkerWasm");
@@ -1048,7 +1049,7 @@
       selectWorkerWasm.add(option);
     }
 
-    function getSelctedWorkerWasm(){
+    function getSelctedWorkerWasm() {
       var workerWasmId = document.getElementById('selectWorkerWasm').value.substr(0, 1);
       return workerWasmArr[workerWasmId];
     }
@@ -1058,10 +1059,29 @@
     }
 
     document.getElementById('btnWorkerWasmSetMonitoredEsArr').onclick = function () {
-        var listEsString = document.getElementById('textWorkerWasmListEs').value;
-        var listEsArr = listEsString.split(',');
-        getSelctedWorkerWasm().postMessage(['setMonitoredEsArr', listEsArr]);
+      var listEsString = document.getElementById('textWorkerWasmListEs').value;
+      var listEsArr = listEsString.split(',');
+      getSelctedWorkerWasm().postMessage(['setMonitoredEsArr', listEsArr]);
     }
+
+    document.getElementById('btnWorkerWasmGetIdleTimes').onclick = function () {
+      var min_es = document.getElementById('numberWorkerWasmLowerLimitMonitoredEsInteresting').value;
+      var max_es = document.getElementById('numberWorkerWasmUpperLimitMonitoredEsInteresting').value;
+      getSelctedWorkerWasm().postMessage(['getIdleTimes', min_es, max_es]);
+    }
+
+
+    document.getElementById('btnWorkerWasmInterestingShift').onclick = function () {
+      getSelctedWorkerWasm().postMessage(['interestingShift']);
+    }
+    document.getElementById('btnWorkerWasmInterestingSub').onclick = function () {
+      getSelctedWorkerWasm().postMessage(['interestingSub',]);
+    }
+    document.getElementById('btnWorkerWasmInterestingGcd').onclick = function () {
+      getSelctedWorkerWasm().postMessage(['interestingGcd',]);
+    }
+
+
 
 
     // const workerWasm1 = new Worker('worker_wasm_generic.js');

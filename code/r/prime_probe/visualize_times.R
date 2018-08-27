@@ -26,7 +26,7 @@ visualize_times("test7.txt")
 setwd("~/MA_2/master-moritz_krebbel-drive_by_cache_attacks//code/r/prime_probe/")
 plumber::plumb("plumber.R")$run(port=8000)
 
-sapply(strtoi(c("0x9f9","0xa17")), function(x) floor(x/64))
+sapply(strtoi(c("0x804","0x99a")), function(x) floor(x/64))
 
 
 

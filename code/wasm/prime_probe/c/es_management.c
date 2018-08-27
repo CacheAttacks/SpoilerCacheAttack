@@ -480,6 +480,11 @@ void get_idle_times(void *app_state_ptr, int min_index, int max_index,
   // set ptr for javascript env
   set_idle_times_ptr((uint32_t)this_app_state->idle_mean_values,
                      sizeof(RES_TYPE));
+
+  int number_of_observed_cache_sets = this_app_state->idle_times_max_index -
+                this_app_state->idle_times_min_index + 1;
+
+  set_number_of_observed_cache_sets(number_of_observed_cache_sets);
 }
 
 // threshold_factor: compare idle values with current values to get interesting
@@ -491,8 +496,6 @@ void find_interesting_eviction_sets(void *app_state_ptr, float threshold_factor,
 
   int number_of_observed_cache_sets = this_app_state->idle_times_max_index -
                                       this_app_state->idle_times_min_index + 1;
-
-  set_number_of_observed_cache_sets(number_of_observed_cache_sets);
 
   // get current mean access time values for selected cache sets
   this_app_state->current_mean_values =
