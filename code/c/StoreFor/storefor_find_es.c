@@ -51,23 +51,28 @@ static inline uint64_t rdtsc() {
   return (((uint64_t)high) << 32) | low;
 }
 
-int bla(int *val){
-	*val += 3;
-	// for(int i=0; i<5; i++)
-	// 	*val *= 2;
-	return *val;
+int bla(uint32_t *val){
+	*val += 1;
+	*val += 1;
+	*val += 1;
+	*val += 1;
 }
 
-uint32_t measure_read_alt(void *memory){
-	int val;
-	volatile uint64_t before = rdtsc(), after;
-	val = *(int*)memory;
+
+uint32_t __attribute__((optimize("O0"))) measure_read_alt(void *memory){
+	uint32_t before, after, val;
+	asm volatile ("rdtsc": "=a" (before) :: "ecx");
+
+	val = *(uint32_t*)memory;
 	
-	bla(&val);
+	//bla(&val);
+	val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;
 	
 
-	//for(int i=0; i<20; i++)
-		after = rdtsc();
+	//after = (val & 1) * 3;
+
+
+	asm volatile ("rdtsc": "=a" (after) :: "ecx");
 
 	return after - before;
 
@@ -109,7 +114,7 @@ void measurement_funct(uint8_t * evictionBuffer, int window_size, uint8_t *targe
 		{
 			// Stores
 			for(int i = window_size; i >= 0; i--){
-				evictionBuffer[(p-i)*PAGE_SIZE] = r;
+				evictionBuffer[(p-i)*PAGE_SIZE] = 0;
 			}
 
 			// Measuring load
@@ -128,7 +133,7 @@ void measurement_funct(uint8_t * evictionBuffer, int window_size, uint8_t *targe
 		{
 			// Stores
 			for(int i = window_size; i >= 0; i--){
-				evictionBuffer[(p-i)*PAGE_SIZE] = r;
+				evictionBuffer[(p-i)*PAGE_SIZE] = 0;
 			}
 
 			// Measuring load

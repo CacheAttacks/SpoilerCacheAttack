@@ -4,6 +4,7 @@
 #include <string.h>
 #include <time.h>
 #include <assert.h>
+#include <sys/mman.h>
 
 #include "config.h"
 #include "vlist.h"
@@ -50,11 +51,36 @@ static inline uint32_t memaccesstime(void *v)
   return after-before;
 }
 
+__attribute__((optnone))
+static inline uint32_t memaccesstime_alt(void *v)
+{
+    warmuptimer();
+  volatile uint32_t val;
+  uint32_t after;
+  uint32_t before = SAB_lib_get_counter_value_storefor();
+  for(int i=0; i<100; i++)
+    before = SAB_lib_get_counter_value_storefor();
+
+  val = *((uint32_t *)v);
+
+  for(int i=0; i<10; i++)
+  val*=2;
+
+	//val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;	val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;	val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;
+
+  after = val;
+
+  after = after + SAB_lib_get_counter_value_storefor();
+  //after = SAB_lib_get_counter_value_storefor();
+
+  return after-before-val;
+}
+
 
 uint32_t measure_read(void *memory){
     //printf_ex("%p\n", memory);
     #ifdef WASM
-        return memaccesstime(memory);
+        return memaccesstime_alt(memory);
     #else
 		register uint32_t _delta;
         do{
@@ -90,8 +116,19 @@ void measurement_funct(uint8_t * evictionBuffer, int window_size, uint8_t *targe
 			for(int i = window_size; i >= 0; i--){
 				evictionBuffer[(p-i)*PAGE_SIZE] = 0;
 			}
+      uint32_t val;
+      uint32_t before = SAB_lib_get_counter_value_storefor();
+      for(int i=0; i<100; i++)
+        before = SAB_lib_get_counter_value_storefor();
+
+      val = *((uint32_t *)evictionBuffer);
+
+      val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;	val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;	
+
+      total += SAB_lib_get_counter_value_storefor() -before;
+
 			// Measuring load
-			total += measure_read(evictionBuffer);
+			//total += measure_read(evictionBuffer);
 		}
 		measurementBuffer[p] = total / ROUNDS;
 	}
@@ -113,7 +150,9 @@ void measurement_funct(uint8_t * evictionBuffer, int window_size, uint8_t *targe
 	}
 
 	for(int p = window_size; p < PAGE_COUNT; p++) {
-        printf_ex("%u(%u) ", measurementBuffer[p], measurementBuffer2[p]);
+        printf_ex("%u ", measurementBuffer[p]);
+        printf_ex("(%u)",  measurementBuffer2[p]);
+       printf_ex(" ");
 
 		// if(p < PAGE_COUNT-1 && measurementBuffer[p] > 150 && measurementBuffer[p+1] > 130){
 		// 	printf("%s", KRED);
@@ -135,10 +174,16 @@ void storefor_write(){
 	evictionBuffer = (uint8_t*) malloc(PAGE_COUNT * PAGE_SIZE);
 	memset(evictionBuffer, 0, PAGE_COUNT * PAGE_SIZE);	
 
+  int bufsize = PAGE_COUNT * PAGE_SIZE;
+  uint8_t* buffer = mmap(NULL, bufsize, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE,
+                  -1, 0);
+
+
+
 	#define WINDOW_SIZE 64
 
-	printf_ex("target_add:%p\n", evictionBuffer);
-	measurement_funct(evictionBuffer, WINDOW_SIZE, evictionBuffer);
+	printf_ex("target_add:%p\n", buffer);
+	measurement_funct(buffer, WINDOW_SIZE, buffer);
 
 	// printf("target_add:%p\n", evictionBuffer+PAGE_SIZE);
 	// measurement_funct(evictionBuffer, WINDOW_SIZE, evictionBuffer+PAGE_SIZE);

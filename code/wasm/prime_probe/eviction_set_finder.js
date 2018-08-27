@@ -1737,7 +1737,7 @@ var ASM_CONSTS = [];
 
 STATIC_BASE = GLOBAL_BASE;
 
-STATICTOP = STATIC_BASE + 7440;
+STATICTOP = STATIC_BASE + 7456;
 /* global initializers */  __ATINIT__.push();
 
 
@@ -1746,7 +1746,7 @@ STATICTOP = STATIC_BASE + 7440;
 
 
 
-var STATIC_BUMP = 7440;
+var STATIC_BUMP = 7456;
 Module["STATIC_BASE"] = STATIC_BASE;
 Module["STATIC_BUMP"] = STATIC_BUMP;
 
@@ -1813,7 +1813,13 @@ function copyTempDouble(ptr) {
       }
 
   function _SAB_lib_get_counter_value() {
-        // return Module['sharedArrayCounter'][0];
+        //return Module['sharedArrayCounter'][0];
+        // far more consistent
+        return Atomics.load(Module['sharedArrayCounter'], 0);
+      }
+
+  function _SAB_lib_get_counter_value_storefor() {
+        //return Module['sharedArrayCounter'][0];
         // far more consistent
         return Atomics.load(Module['sharedArrayCounter'], 0);
       }
@@ -5265,7 +5271,7 @@ function invoke_viii(index,a1,a2,a3) {
 
 Module.asmGlobalArg = {};
 
-Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "nullFunc_viii": nullFunc_viii, "invoke_ii": invoke_ii, "invoke_iiii": invoke_iiii, "invoke_viii": invoke_viii, "_Performance_now": _Performance_now, "_SAB_get_resolution_ns": _SAB_get_resolution_ns, "_SAB_lib_get_counter_value": _SAB_lib_get_counter_value, "___assert_fail": ___assert_fail, "___lock": ___lock, "___setErrNo": ___setErrNo, "___syscall140": ___syscall140, "___syscall146": ___syscall146, "___syscall192": ___syscall192, "___syscall54": ___syscall54, "___syscall6": ___syscall6, "___syscall91": ___syscall91, "___unlock": ___unlock, "__exit": __exit, "_abort": _abort, "_dummy_for_wat": _dummy_for_wat, "_emscripten_memcpy_big": _emscripten_memcpy_big, "_exit": _exit, "_js_repeatedprobe": _js_repeatedprobe, "_print_plot_data": _print_plot_data, "_printf_ex_js": _printf_ex_js, "_set_app_state_ptr": _set_app_state_ptr, "_set_current_times_ptr": _set_current_times_ptr, "_set_idle_times_ptr": _set_idle_times_ptr, "_set_monitored_es_index_vec_ptr": _set_monitored_es_index_vec_ptr, "_set_number_of_observed_cache_sets": _set_number_of_observed_cache_sets, "_set_ptr_to_data": _set_ptr_to_data, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
+Module.asmLibraryArg = { "abort": abort, "assert": assert, "enlargeMemory": enlargeMemory, "getTotalMemory": getTotalMemory, "abortOnCannotGrowMemory": abortOnCannotGrowMemory, "abortStackOverflow": abortStackOverflow, "nullFunc_ii": nullFunc_ii, "nullFunc_iiii": nullFunc_iiii, "nullFunc_viii": nullFunc_viii, "invoke_ii": invoke_ii, "invoke_iiii": invoke_iiii, "invoke_viii": invoke_viii, "_Performance_now": _Performance_now, "_SAB_get_resolution_ns": _SAB_get_resolution_ns, "_SAB_lib_get_counter_value": _SAB_lib_get_counter_value, "_SAB_lib_get_counter_value_storefor": _SAB_lib_get_counter_value_storefor, "___assert_fail": ___assert_fail, "___lock": ___lock, "___setErrNo": ___setErrNo, "___syscall140": ___syscall140, "___syscall146": ___syscall146, "___syscall192": ___syscall192, "___syscall54": ___syscall54, "___syscall6": ___syscall6, "___syscall91": ___syscall91, "___unlock": ___unlock, "__exit": __exit, "_abort": _abort, "_dummy_for_wat": _dummy_for_wat, "_emscripten_memcpy_big": _emscripten_memcpy_big, "_exit": _exit, "_js_repeatedprobe": _js_repeatedprobe, "_print_plot_data": _print_plot_data, "_printf_ex_js": _printf_ex_js, "_set_app_state_ptr": _set_app_state_ptr, "_set_current_times_ptr": _set_current_times_ptr, "_set_idle_times_ptr": _set_idle_times_ptr, "_set_monitored_es_index_vec_ptr": _set_monitored_es_index_vec_ptr, "_set_number_of_observed_cache_sets": _set_number_of_observed_cache_sets, "_set_ptr_to_data": _set_ptr_to_data, "DYNAMICTOP_PTR": DYNAMICTOP_PTR, "tempDoublePtr": tempDoublePtr, "ABORT": ABORT, "STACKTOP": STACKTOP, "STACK_MAX": STACK_MAX };
 // EMSCRIPTEN_START_ASM
 var asm =Module["asm"]// EMSCRIPTEN_END_ASM
 (Module.asmGlobalArg, Module.asmLibraryArg, buffer);

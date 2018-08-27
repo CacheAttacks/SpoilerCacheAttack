@@ -8,7 +8,16 @@ if (typeof mergeInto !== 'undefined')
 if (typeof mergeInto !== 'undefined')
   mergeInto(LibraryManager.library, {
     SAB_lib_get_counter_value: function() {
-      // return Module['sharedArrayCounter'][0];
+      //return Module['sharedArrayCounter'][0];
+      // far more consistent
+      return Atomics.load(Module['sharedArrayCounter'], 0);
+    }
+  });
+
+  if (typeof mergeInto !== 'undefined')
+  mergeInto(LibraryManager.library, {
+    SAB_lib_get_counter_value_storefor: function() {
+      //return Module['sharedArrayCounter'][0];
       // far more consistent
       return Atomics.load(Module['sharedArrayCounter'], 0);
     }

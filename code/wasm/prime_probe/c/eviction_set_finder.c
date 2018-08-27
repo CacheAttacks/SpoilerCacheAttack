@@ -213,7 +213,7 @@ int main(int ac, char **av)
   // exit(1);
   printf_ex("----------------TESTS FINISHED------------------\n");
 
-  //storefor_build_es(this_app_state, 0);
+  storefor_build_es(this_app_state, 0);
 
   // energy saving option, counter is started on demand
   // SAB_terminate_counter_sub_worker();

@@ -19,6 +19,7 @@
         "inttypes.h": "c",
         "printf_wrapper.h": "c",
         "sabcounter.h": "c",
-        "storefor_find_es.h": "c"
+        "storefor_find_es.h": "c",
+        "typeinfo": "c"
     }
 }
