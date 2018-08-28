@@ -68,6 +68,7 @@ cors_disabled <- function(a, b){
 }
 
 data <- ""
+dataworker <- ""
 
 #* @param newdata data for the file
 #* @post /changedata
@@ -77,12 +78,31 @@ function(newdata){
   #print(newdata)
 }
 
+#* @param newdata data for the file
+#* @post /changedataworker
+function(newdata){
+  dataworker <<- newdata
+  mydataworker <<- newdata
+  #print(newdata)
+}
+
 #* @param newdata monitored es index vec
 #* @post /changeindexvec
 function(newdata){
   indexvecdata <<- newdata
   #print(indexvec)
   indexvec <<- sapply(which(sapply(strsplit(indexvecdata, split=","), as.numeric) != 0)-1, as.character)
+  if(length(indexvec) == 0)
+    warning("length(indexvec) == 0")
+  print(indexvec)
+}
+
+#* @param newdata monitored es index vec
+#* @post /changeindexvecworker
+function(newdata){
+  indexvecdataworker <<- newdata
+  #print(indexvec)
+  indexvec <<- sapply(which(sapply(strsplit(indexvecdataworker, split=","), as.numeric) != 0)-1, as.character)
   if(length(indexvec) == 0)
     warning("length(indexvec) == 0")
   print(indexvec)
@@ -113,6 +133,11 @@ visualize_times <- function(selected_es){
 a <- Sys.time()
   #x-axis eviction sets, y-axis samples
   tbl <- data.table::fread(data)
+  if(dataworker != ""){
+    tblworker <- data.table::fread(dataworker)
+    
+    dataworker <- ""
+  }
   if(ncol(tbl)*nrow(tbl) > 1000000){
     warning("tbl to big!")
     return(0)
@@ -146,7 +171,7 @@ a <- Sys.time()
   colnames(tbl_melt)[1] <- "es"
   #cap at 3500
   max_value <- 250
-  tbl_melt[tbl_melt$value>max_value,"value"] <- max_value
+  #tbl_melt[tbl_melt$value>max_value,"value"] <- max_value
   b <- Sys.time()
   print(b-a)
   

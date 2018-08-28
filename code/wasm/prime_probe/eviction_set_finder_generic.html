@@ -709,6 +709,7 @@
     <span><input type="text" id="textWorkerWasmPrimeSpamWorkers" value="1,2,3,4" width="1"></span>
     <span><input type="number" id="numberWorkerWasmPrimeSpamDurationSec" value="5" width="1"></span>
     <span><input type="button" id="btnWorkerWasmPrimeSpam" value="Prime Spam"></span>
+  </br> <span><input type="button" id="btnSampleEsMerged" value="Sample es merged"></span>
   </span>
 
 
@@ -950,7 +951,8 @@
         var numberOfSamples = document.getElementById('numberSamples').value;
         //console.log(numberOfSamples);
         var slotTime = document.getElementById('numberSlotTime').value;
-        sampleEsWrapper(numberOfSamples, slotTime, 1);
+        var printToBrowser = 1;
+        sampleEsWrapper(numberOfSamples, slotTime, printToBrowser);
       });
     }
     document.getElementById('btnBuildEs').onclick = function () {

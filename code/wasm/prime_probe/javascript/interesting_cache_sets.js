@@ -44,7 +44,7 @@ for (var i = 0; i < numberOfObservedCacheSets; i++) {
     listInterestingCacheSets.push(i);
   }
 }
-console.log(interestingCacheSets);
+consoleLogEx(interestingCacheSets);
 
 
 

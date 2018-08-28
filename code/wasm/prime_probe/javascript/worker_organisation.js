@@ -1,4 +1,4 @@
-var colorVec = { 0: 'color: red', 1: 'color: blue', 2: 'color: pink', 3: 'color: green', 4: 'color: black', 5: 'color: grey', 6: 'color: yellow' };
+var colorVec = { 0: 'color: red', 1: 'color: blue', 2: 'color: DeepPink', 3: 'color: green', 4: 'color: Indigo', 5: 'color: DimGrey', 6: 'color: yellow' };
 var workerWasmCounter = 2;
 var workerWasmArr = {};
 
@@ -52,6 +52,8 @@ function nextWorkerPostMessage() {
   }
 
   var selectWorkerWasm = document.getElementById("selectWorkerWasm");
+  document.getElementById('checkWorkerWasmAll').checked = true;
+  selectWorkerWasm.disabled = true;
 
     for (var i = 0; i < workerWasmCounter; i++) {
       workerWasmArr[i] = new Worker('worker_wasm_generic.js');
@@ -100,6 +102,23 @@ function nextWorkerPostMessage() {
         var duration = document.getElementById('numberWorkerWasmPrimeSpamDurationSec').value;
         var workerIdsString = document.getElementById('textWorkerWasmPrimeSpamWorkers').value;
         var workerIdsArr = workerIdsString.split(',');
-        workerWasmPostMessageParallel(workerIdsArr, ['interestingGcd',]);
+        for(var i=0; i<workerIdsArr.length; i++){
+            if(workerIdsArr[i] > workerWasmCounter){
+                consoleLogEx("workerID: " + workerIdsArr[i] + " does not exists!");
+                return;
+            }
+        }
 
+        workerWasmPostMessageParallel(workerIdsArr, ['primeSpam',duration]);
     }
+
+    document.getElementById('btnSampleEsMerged').onclick = function () {
+      //call sample es for main thread e.g shift
+      var numberOfSamples = document.getElementById('numberSamples').value;
+      //console.log(numberOfSamples);
+      var slotTime = document.getElementById('numberSlotTime').value;
+      sampleEsWrapper(numberOfSamples, slotTime, 1);
+
+      //call sample es for webworker e.g. sub
+      workerWasmPostMessageSerial(['sampleEs', numberOfSamples, slotTime]);
+    }    

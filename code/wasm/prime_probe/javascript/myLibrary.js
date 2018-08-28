@@ -272,6 +272,30 @@ if (typeof mergeInto !== 'undefined')
     }
   });
 
+  if (typeof mergeInto !== 'undefined')
+  mergeInto(LibraryManager.library, {
+    transmit_plot_data: function() {
+      if (Module['byteFactor'] != 0) {
+        var POSTstr = Module['createPOSTStr'](
+            Module['wasmMemoryArr'], Module['res'] / Module['byteFactor'],
+            Module['nrow'], Module['ncol']);
+        Module['postxhr']('http://localhost:8000/changedataworker', POSTstr);
+
+        var indexVecStartAdd =
+            Module['monitoredEsIndexVecPtr'] / Module['byteFactor'];
+        var indexVecSize = Module['monitoredEsIndexVecSize'];
+        var indexString = '';
+        for (var i = 0; i < indexVecSize; i++) {
+          indexString +=
+              Module['wasmMemoryArr'][indexVecStartAdd + i].toString() + ',';
+        }
+
+        Module['postxhr']('http://localhost:8000/changeindexvecworker', indexString);
+      }
+    }
+  });
+
+
 
 if (typeof mergeInto !== 'undefined')
   mergeInto(LibraryManager.library, {
