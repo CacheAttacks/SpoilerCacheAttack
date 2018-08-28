@@ -23,8 +23,12 @@ function assertAppStatePtr(func) {
   }
 }
 
-self.addEventListener('message', (m) => {
+//have to be global, otherwise importScripts do not see this
+var listEsArr;
+
+onmessage = function(m) {
   // const sharedArray = new Uint32Array(m.data)
+  var returnMessage = 'Finished';
   var command = m.data[0];
   if (command === 'initWasmAndCounter') {
     var sharedBuffer = m.data[1];
@@ -44,8 +48,8 @@ self.addEventListener('message', (m) => {
     });
   } else if (command === 'setMonitoredEsArr') {
     assertAppStatePtr(function() {
-      var listEsInt32Arr = m.data[1];
-      importScripts('set_monitor_es_arr.js');
+      listEsArr = m.data[1];
+      importScripts('javascript/set_monitor_es_arr.js');
     });
   } else if (command === 'sampleEs') {
     assertAppStatePtr(function() {
@@ -65,7 +69,7 @@ self.addEventListener('message', (m) => {
     });
   } else if (command === 'findInterestingCacheSets') {
     assertAppStatePtr(function() {
-      importScripts('interesting_cache_sets.js');
+      importScripts('javascript/interesting_cache_sets.js');
       // TODO
     });
   }  // TODO implement find shift or sub
@@ -75,20 +79,28 @@ self.addEventListener('message', (m) => {
 
   else if (command === 'interestingShift') {
     assertAppStatePtr(function() {
-      importScripts('interesting_cache_sets.js');
+      importScripts('javascript/interesting_cache_sets.js');
       Module['interestingCacheSetsShift'] = listInterestingCacheSets;
+      console.log(Module['interestingCacheSetsShift']);
     });
   } else if (command === 'interestingSub') {
     assertAppStatePtr(function() {
-      importScripts('interesting_cache_sets.js');
+      importScripts('javascript/interesting_cache_sets.js');
       Module['interestingCacheSetsSub'] = listInterestingCacheSets;
     });
   } else if (command === 'interestingGcd') {
     assertAppStatePtr(function() {
-      importScripts('interesting_cache_sets.js');
-      importScripts('interesting_gcd.js');
+      importScripts('javascript/interesting_cache_sets.js');
+      importScripts('javascript/interesting_gcd.js');
+    });
+  } else if (command === 'primeSpam') {
+    assertAppStatePtr(function() {
+      var duration = m.data[1];
+      primeSpamEsWrapper(duration);
+      returnMessage = 'Finished primeSpam';
     });
   } else if (command === '') {
     assertAppStatePtr(function() {});
   }
-});
+  postMessage(returnMessage);
+};

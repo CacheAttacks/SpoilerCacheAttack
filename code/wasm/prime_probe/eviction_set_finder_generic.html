@@ -689,6 +689,7 @@
   <span id='spanWorkerWasm'>
     Select worker:
     <select id="selectWorkerWasm"></select>
+    Select all workers:<input type="checkbox" id="checkWorkerWasmAll">
     </br>
     <span><input type="button" id="btnWorkerWasmBuildEs" value="build es"></span>
     <span><input type="text" id="textWorkerWasmListEs" value="1,2,3" width="1"></span>
@@ -703,6 +704,11 @@
     <span><input type="button" id="btnWorkerWasmInterestingShift" value="Find interesting shift"></span>
     <span><input type="button" id="btnWorkerWasmInterestingSub" value="Find interesting sub"></span>
     <span><input type="button" id="btnWorkerWasmInterestingGcd" value="Find interesting gcd"></span>
+    </br>
+    Workers:
+    <span><input type="text" id="textWorkerWasmPrimeSpamWorkers" value="1,2,3,4" width="1"></span>
+    <span><input type="number" id="numberWorkerWasmPrimeSpamDurationSec" value="5" width="1"></span>
+    <span><input type="button" id="btnWorkerWasmPrimeSpam" value="Prime Spam"></span>
   </span>
 
 
@@ -1032,63 +1038,12 @@
       primeSpamEsWrapper(document.getElementById('numberPrimeSpamDurationSec').value);
     }
 
-    //----------------------------------------------------------
-    //----------------------workerWasm--------------------------
-    //----------------------------------------------------------
-
-    var workerWasmCounter = 0;
-    var workerWasmArr = {};
-    var colorVec = { 0: 'color: red', 1: 'color: blue' };
-    var selectWorkerWasm = document.getElementById("selectWorkerWasm");
-    for (var i = 0; i < workerWasmCounter; i++) {
-      workerWasmArr[i] = new Worker('worker_wasm_generic.js');
-      workerWasmArr[i].postMessage(["initWasmAndCounter", sharedBuffer, colorVec[i], i]);
-      var option = document.createElement("option");
-      option.id = i;
-      option.text = i + ": " + colorVec[i];
-      selectWorkerWasm.add(option);
-    }
-
-    function getSelctedWorkerWasm() {
-      var workerWasmId = document.getElementById('selectWorkerWasm').value.substr(0, 1);
-      return workerWasmArr[workerWasmId];
-    }
-
-    document.getElementById('btnWorkerWasmBuildEs').onclick = function () {
-      getSelctedWorkerWasm().postMessage(['buildEs', 0]);
-    }
-
-    document.getElementById('btnWorkerWasmSetMonitoredEsArr').onclick = function () {
-      var listEsString = document.getElementById('textWorkerWasmListEs').value;
-      var listEsArr = listEsString.split(',');
-      getSelctedWorkerWasm().postMessage(['setMonitoredEsArr', listEsArr]);
-    }
-
-    document.getElementById('btnWorkerWasmGetIdleTimes').onclick = function () {
-      var min_es = document.getElementById('numberWorkerWasmLowerLimitMonitoredEsInteresting').value;
-      var max_es = document.getElementById('numberWorkerWasmUpperLimitMonitoredEsInteresting').value;
-      getSelctedWorkerWasm().postMessage(['getIdleTimes', min_es, max_es]);
-    }
-
-
-    document.getElementById('btnWorkerWasmInterestingShift').onclick = function () {
-      getSelctedWorkerWasm().postMessage(['interestingShift']);
-    }
-    document.getElementById('btnWorkerWasmInterestingSub').onclick = function () {
-      getSelctedWorkerWasm().postMessage(['interestingSub',]);
-    }
-    document.getElementById('btnWorkerWasmInterestingGcd').onclick = function () {
-      getSelctedWorkerWasm().postMessage(['interestingGcd',]);
-    }
-
-
-
-
     // const workerWasm1 = new Worker('worker_wasm_generic.js');
     // workerWasm1.postMessage(["initWasmAndCounter", sharedBuffer, colorVec["1"]]);
     // const workerWasm2 = new Worker('worker_wasm_generic.js');
     // workerWasm1.postMessage(["initWasmAndCounter", sharedBuffer, colorVec["1"]]);
   </script>
+  <script type="text/javascript" src="javascript/worker_organisation.js"></script>
 </body>
 
 </html>
