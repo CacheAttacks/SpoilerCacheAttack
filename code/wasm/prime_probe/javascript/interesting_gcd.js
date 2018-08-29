@@ -42,7 +42,7 @@ function getCacheSetStr(dict, value, autoSetMonitored, mostEffectiveArr) {
   var str = (value % 64) + '';
   for (var key in dict) {
     if ((value % 64) == key) {
-      if (autoSetMonitored && value == mostEffectiveArr[workerId]) {
+      if (typeof workerId !== 'undefined' && autoSetMonitored && value == mostEffectiveArr[workerId]) {
         setMonitoredEsArrWrapper(value);
       }
       return str + '(' + dict[key] + ')';

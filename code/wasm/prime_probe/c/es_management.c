@@ -291,12 +291,12 @@ void prime_spam_es(void *app_state_ptr, int duration_sec)
   int number_of_samples = 1000000;
   int nmonitored = this_app_state->l3->nmonitored;
 
-  if (this_app_state->res)
-  {
-    free(this_app_state->res);
-  }
-  this_app_state->res = calloc(
-      number_of_samples * this_app_state->l3->nmonitored, sizeof(RES_TYPE));
+  // if (this_app_state->res)
+  // {
+  //   free(this_app_state->res);
+  // }
+  // this_app_state->res = calloc(
+  //     number_of_samples * this_app_state->l3->nmonitored, sizeof(RES_TYPE));
 
   uint64_t before = get_time_in_ms();
   while (get_time_in_ms() - before < duration_sec * 1000)
@@ -307,8 +307,9 @@ void prime_spam_es(void *app_state_ptr, int duration_sec)
     } 
     else 
     {
-      l3_repeatedprobe(this_app_state->l3, number_of_samples, this_app_state->res,
-                      0, this_app_state->type);
+      // l3_repeatedprobe(this_app_state->l3, number_of_samples, this_app_state->res,
+      //                 0, this_app_state->type);
+      l3_repeatedprobe_spam(this_app_state->l3, number_of_samples);
     }
   }
 }

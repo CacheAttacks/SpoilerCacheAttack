@@ -1045,10 +1045,22 @@ void l3_randomise(l3pp_t l3) {
   }
 }
 
+void l3_probe_spam(l3pp_t l3) {
+  for (int i = 0; i < l3->nmonitored; i++) {
+    probe_only(l3->monitoredhead[i]);
+  }
+}
+
 void l3_probe(l3pp_t l3, RES_TYPE *results, uint32_t (*probetime)(void *pp)) {
   for (int i = 0; i < l3->nmonitored; i++) {
     int t = (*probetime)(l3->monitoredhead[i]);
     results[i] = t > RES_TYPE_MAX ? RES_TYPE_MAX : t;
+  }
+}
+
+void l3_bprobe_spam(l3pp_t l3) {
+  for (int i = 0; i < l3->nmonitored; i++) {
+    probe_only(NEXTPTR(l3->monitoredhead[i]));
   }
 }
 
@@ -1077,6 +1089,25 @@ int l3_getSlices(l3pp_t l3) { return l3->l3info.slices; }
 
 // Returns the LLC associativity
 int l3_getAssociativity(l3pp_t l3) { return l3->l3info.associativity; }
+
+int l3_repeatedprobe_spam(l3pp_t l3, int nrecords) {
+  assert(l3 != NULL);
+
+  if (nrecords == 0)
+    return 0;
+
+  //uint32_t (*probetime)(void *pp) = get_probetime_by_type(type);
+
+  int even = 1;
+  for (int i = 0; i < nrecords; i++) {
+      if (even)
+        l3_probe_spam(l3);
+      else
+        l3_bprobe_spam(l3);
+      even = !even;
+  }
+  return nrecords;
+}
 
 int l3_repeatedprobe(l3pp_t l3, int nrecords, RES_TYPE *results, int slot,
                      int type) {
