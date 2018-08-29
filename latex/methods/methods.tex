@@ -39,8 +39,45 @@ Allerdings wird auf den zurückgegebenen Timestamp zusätzlich ein Timerjitter a
 
 So bieten Edge und Chrome zurzeit (Stand Juni 18) eine Auflösung von 20 \textmu s + 20 \textmu s Jitter respektive 100 \textmu s + 100 \textmu s Jitter.
 Das Paper "Fantastic Timers and where to find them" \cite{FantasticTimers} beschreibt diverse andere Methoden, um mit Hilfe von JavaScript Timer zu generieren. 
-Allerdings ist nur eine geeignete Methode dabei, da die Auflösung aller anderen mindestens im hohen einstelligen \textmu s Bereich liegt und somit der Parameter $repeatIterations$ auf Werte oberhalb von TODO x gesetzt werden müsste, um zuverlässig \textit{Eviction Sets} zu finden. 
+Allerdings ist nur eine geeignete Methode dabei, da die Auflösung aller anderen mindestens im hohen einstelligen \textmu s Bereich liegt und somit der Parameter $repeatIterations$ auf Werte von etwa 1000 gesetzt werden müsste, um zuverlässig \textit{Eviction Sets} zu finden. 
 Hierdurch würde die benötigte Ausführungszeit zum Finden der \textit{Eviction Sets} auf ein Maß ansteigen, welches dann nicht mehr zum angenommenen Angriffsmodell passen würde.
+
+Als einziges angemessenes Zeitmessungswerkzeug verbleibt der SharedArrayBuffer aus Javascript. 
+Die Ausführung von Javascript passiert in einem Thread, wobei die Möglichkeit besteht sogenannte Webworker zu starten, welche Code aus einem Skript in einem eigenen Thread ausführen.
+Diese haben von Grund auf aber einen zu Mainthread abgetrennten Speicherbereich, sodass Daten ursprünglich über Nachrichten zwischen dem Mainthread und dem Webworker ausgetauscht werden mussten. Hier setzt der SharedArrayBuffer an, welcher einen geteilten Speicherbereich zwischen Mainthread und Webworker definiert.
+
+Die Idee ist nun im Thread des Webworkers eine Zählvariable des SharedArrayBuffer in einer Endlosschleife zu iterieren (siehe auch den Pseudocode \ref{alg:sharedArrayBufferWorker}). Zuerst wird dazu dem Webworker via message die Referenz auf einen im Mainthread erstellten SharedArrayBuffer übergeben. Anschließend wird im Webworker ein \textit{Uint32Array} angelegt welches mit dem übergebenen SharedArrayBuffer verknüpft ist. Zum Schluss geht der Webworker in die Endlosschleife über, in welcher die Zählvariable \textit{sharedArray[0]} durchgehend iteriert.
+
+Das Iterieren einer Variable benötigt nur wenige Taktzyklen, weshalb der aktuelle Wert der Zählvariable als Zeitstempel interpretiert werden kann. 
+Die Auflösung dieser Methode hängt also von der Geschwindigkeit der Iteration, sowie der Speichersynchronisation des SharedArrayBuffers zwischen Mainthread und Webworker ab.
+
+In Versuchen mit verschiedenen Webbrowsern und Hardwarekonfigurationen zeigte sich, dass die Auflösung mindestens im einstelligen Nanosekundenbreich liegt und somit ausreichend genau um den Unterschied zwischen einem Cache-Miss und Hit festzustellen.
+
+Diese Methode geht allerdings mit dem Nachteil einher, dass der Webworker-Thread in der Messphase einen CPU-Kern komplett auslastet. Das heißt im Angriffsszenario rechnen das Opferprogramm, der Javascript-Mainthread und der Webworker gleichzeitig, sodass mindestens 3 CPU Kerne benötigt werden. 
+Sofern sich der Webworker einen physischen Kern mit einen anderen aktiven Prozess teilt, können die gemessen Zeiten ein stärkeren Volatilität durch die erhöhte Iterationsdauer unterliegen.
+In der Konsequenz reduziert sich die Auflösung des Zeitgebers, wobei ein ausreichende Genauigkeit dennoch gegeben ist, da beide Prozesse in etwa die gleiche Rechenzeit zugesprochen bekommen.
+
+Aufgrund der Option den SharedArrayBuffer als Timer zweckzuentfremden, wurde dieser im Zuge der Veröffentlichung von Meltdown und Spectre in allen gängigen Webbrowser deaktiviert \cite{FirefoxSharedArrayBuffer}. Jedoch planen die Hersteller das Feature in Zukunft wieder zu aktivieren, sobald die Gefahr von Angriffen wie Meltdown und Spectre reduziert ist. 
+Google ist der erste Hersteller der in seinem Chrome-Browser mit Version 68 SharedArrayBuffer wieder aktiviert hat \cite{ChromeSharedArrayBufferAgain}. 
+Als logische Konsequenz wurde angekündigt in Zukunft wieder hochauflösende Timer bereitzustellen, da ein SharedArrayBuffer genau diese Möglichkeit schon jetzt bereitstellt \cite{ChromeHighResolutionTimerAgain}.
+
+Aus diesen Gründen wird im Folgenden davon ausgegangen, dass das Opfer SharedArrayBuffer in seinem Webbrowser aktiviert hat.
+
+\begin{algorithm}[h]
+\DontPrintSemicolon
+\caption{Psuedo-Code für den Webworker welcher die Zählvariable iteriert}
+\label{alg:sharedArrayBufferWorker}
+
+self.addEventListener('message', (m) => \{\;
+  // Create an Int32Array on top of that shared memory area \;
+  const sharedArray = new Uint32Array(m.data);\;
+
+  \While{true}{
+    sharedArray[0]++;\;
+  }
+\});
+
+\end{algorithm}
 
 \subsection{Cache-Angriff in JavaScript und Webassembly}
 

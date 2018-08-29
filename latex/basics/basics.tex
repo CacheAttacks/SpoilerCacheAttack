@@ -54,9 +54,15 @@ Der Mittelweg ist die n-Wege Assoziativität, bei dem die Daten nur an n Cache-E
 Der L3-Cache eines Intel i7-4770 ist beispielsweise 8 MiB groß und verfügt daher über 131072 ($2^{17}$) Cache-Einträge in der Größe einer Cache-Line. 
 Wäre dieser Cache nun voll-assoziativ, müsste er bei jeder Anfrage komplett durchsucht werden. Aus diesem Grund ist der Cache in Cache-Sets unterteilt, wobei Daten einer spezifischen Hauptspeicheradresse nur in genau ein Cache-Set eingelagert werden können. 
 Der i7-4770 besitzt 8192 dieser Cache-Sets, womit sich eine Assoziativität von 16 ergibt, das heißt man teilt die Anzahl der Cache-Einträge durch Anzahl der Cache-Sets. Dies bedeutet, dass die Suche nach den Daten einer Hauptspeicheradresse im Cache auf 16 Einträge begrenzt ist. 
-Die Zuordnung der physischen Hauptspeicheradressen zu den Cache-Sets ist nicht öffentlich dokumentiert.
-Des Weiteren wird der Cache in \textit{Slices} unterteilt, wobei jede Slice einem Kern zugeordnet wird. Die Slices sind mittels eines Ringbuses verbunden, sodass jeder Kern auf Daten jeder Slice zugreifen kann. Die Zugriffslatenz erhöht sich mit der Anzahl der benötigten Hops, jedoch ist diese Erhöhung im Bereich von etwa 10 ns pro Hop. Diese Latenzunterschiede sind daher zu gering, um die Erkennung zwischen Cache-Hit und Cache-Miss zu gefährden, welche bei ca. 60 ns liegen \cite{TheSpyInTheSandbox}. Im Rahmen dieser Arbeit sind Slices daher vernachlässigbar, sodass etwa bei Cache-Spezifikationen Slices nicht gesondert erwähnt werden.
-\todo[size=\footnotesize]{Hier fehlt wieder Mapping durch letzte Bits der Adresse (Beschrieben in Abschnitt Prime and Probe)}
+%Die Zuordnung der physischen Hauptspeicheradressen zu den Cache-Sets ist nicht öffentlich dokumentiert.
+Des Weiteren wird der Cache in \textit{Slices} unterteilt, wobei jede Slice einem Kern zugeordnet wird. Die Slices sind mittels eines Ringbuses verbunden, sodass jeder Kern auf Daten jeder Slice zugreifen kann. Die Zugriffslatenz erhöht sich mit der Anzahl der benötigten Hops, jedoch ist diese Erhöhung im Bereich von etwa 10 ns pro Hop. Diese Latenzunterschiede sind daher zu gering, um die Erkennung zwischen Cache-Hit und Cache-Miss zu gefährden, welche bei ca. 60 ns liegen \cite{TheSpyInTheSandbox}. Bei i7-4770 sind jedem der 4 Slices 2048 Cache-Sets zugeordnet. Die Zuordnung der Cache-Sets innerhalb der Slices fest an die untersten 18 Bit der pysischen Adresse gekoppelt. ZU welchem Slice ein Adresse gemappt wird, wird durch ein nicht dokumentierte Hashfunktion bestimmt.
+
+Im Rahmen dieser Arbeit sind Slices daher vernachlässigbar, sodass etwa bei Cache-Spezifikationen Slices nicht gesondert erwähnt werden.
+\todo[size=\footnotesize]{Eventuell Slices doch nicht so vernachlässigbar, da store forward eviction set Suche Slices einbezieht)}
+
+
+
+%\todo[size=\footnotesize]{Hier fehlt wieder Mapping durch letzte Bits der Adresse (Beschrieben in Abschnitt Prime and Probe)}
 
 %Ein CPU-Cache enthält mehrere Einträge, welche folgende Bestandteile besitzen:
 %\begin{enum}
@@ -78,8 +84,35 @@ Eine Angreiferin könnte ein Programm entwickeln, welches Informationen über de
 
 \subsection{Flush and Reload}
 
-Ausgang dieses Angriffs ist ein architekturspezifische Flush-Befehl, wie etwa der x86-Assemblerbefehl \textit{clflush}, welcher eine Adresse entgegennimmt und die dazugehörige Cache-Line invalidiert. Dadurch müssen die Daten beim nächsten Zugriff aus dem Hauptspeicher geladen werden müssen. \cite{FlushReload}
-TODO \todo[size=\footnotesize]{Du hast ja schon geschrieben todo. Hier vielleicht auch eine kleine abbildung, aber defintiv irgendwas über flush WAIT reload und zeitmessungen}
+Ausgang dieses Angriffs ist ein architekturspezifische Flush-Befehl, wie etwa der x86-Assemblerbefehl \textit{clflush}, welcher eine Adresse entgegennimmt und die dazugehörige Cache-Line invalidiert. 
+Dadurch müssen die Daten beim nächsten Zugriff aus dem Hauptspeicher geladen werden müssen. Dies ist die erste Phase des Angriffs und wird als Flush bezeichnet. 
+
+Nach dem Flush folgt die Wait-Phase in welcher die Angreiferin eine bestimmte Zeitperiode wartet und anschließend die Zugriffszeit auf die geflushte Adressse misst. 
+
+Zu guter Letzt folgt die Reload-Phase in welcher die Angreiferin auf die Adresse zugreift. Sofern das Opferprogramm in der Wait-Phase auf die Adresse zugegriffen hat, ist die Zugriffszeit gering, da die Daten schon im Cache vorliegen.
+Im anderen Fall müssen die Daten erst aus dem Hauptspeicher geladen werden, womit eine messbar erhöhte Zugriffszeit einhergeht \cite{FlushReload}. Eine Übersicht der eben beschriebenen Schritte als Pseudocode findet sich in Algorithmus \ref{alg:flush_and_reload}.
+
+Ein Nachteil dieser Angriffsmethode ist die Notwendigkeit, dass sich der Opferprozess Speicherseiten mit dem Prozess der Angreiferin teilen muss. 
+Ein typisches Beispiel hierfür sind geteilte Bibliotheken, zum Beispiel .so Dateien unter Linux oder .dll Dateien unter Windows, welche etwa Kryptofunktionen bereitstellen. Des Weiteren ist der clflush-Befehl nicht in jeder Umgebung verfügbar, so ist etwa ein Angriff aus dem Browser heraus mit dieser Methode nicht möglich. 
+%\todo[size=\footnotesize]{Du hast ja schon geschrieben todo. Hier vielleicht auch eine kleine abbildung, aber defintiv irgendwas über flush WAIT reload und zeitmessungen}
+
+\SetKwProg{Fn}{Function}{}{}
+
+\begin{algorithm}[h]
+\DontPrintSemicolon
+\caption{Psuedo-Code für Flush and Reload}
+\label{alg:flush_and_reload}
+
+\Fn{$flushAndReload(address)$}{
+    clflush(address)\;
+    wait()\;
+	timestampBefore <- getTimestamp()\;
+	readMem(address)\;
+	timestampAfter <- getTimestamp()\;
+	\Return timestampAfter - timestampBefore > threshold
+}
+
+\end{algorithm}
 
 \subsection{Prime and Probe}
 
@@ -92,11 +125,30 @@ In der anschließenden Berechnungsphase werden einige Einträge aus den geprimte
 Sofern das Opferprogramm in dem zum Eviction-Set korrelierenden Cache-Set Einträge verdrängt hat, kann die Angreiferin eine Abweichung nach oben in ihrer Messung feststellen, da die verdrängten Einträge eine erhöhte Zugriffszeit verursachen. Somit kann aus den Zugriffszeiten der Eviction-Sets auf die Speicherzugriffe des Opferprogramms geschlossen werden.
 
 Die Eviction-Sets, die zur Durchführung eines Cache-Angriffs notwendig sind, lassen sich nicht immer leicht finden, da das Mapping der virtuellen auf die physischen Adressen in manchen Umgebungen nur eingeschränkt zugänglich ist.
-So ist aber in der Regel das Mapping der virtuellen und physischen Adressen bei den Adressbits der Speicher-Pages identisch, welche etwa unter Windows und Linux zur Zeit 4096 Bytes groß sind. Somit ist in diesem Fall garantiert, dass die untersten 12 virtuellen Adressbits mit den physischen Adressbits identisch sind. Der L3-Caches des Intel i7-4770 ist etwa 8 Mib groß, sodass 11 Bits des Mapping auf die physischen Adressen unbekannt sind.
-In solchen Fällen müssen die Eviction-Sets in einem Trial-and-Error-Verfahren ermittelt werden, wie es der Algorithmus TODO %\ref[alg:evictionSet}
-beschreibt.
+So ist aber in der Regel das Mapping der virtuellen und physischen Adressen bei den Adressbits der Speicher-Pages identisch, welche etwa unter Windows und Linux zur Zeit 4096 Bytes groß sind. Somit ist in diesem Fall garantiert, dass die untersten 12 virtuellen Adressbits mit den physischen Adressbits identisch sind. 
 
-TODO algorithmus prime probe pseudocode generic
+%Der L3-Caches des Intel i7-4770 ist etwa 8 Mib groß, sodass 11 Bits des Mapping auf die physischen Adressen unbekannt sind.
+%In solchen Fällen müssen die Eviction-Sets in einem Trial-and-Error-Verfahren ermittelt werden, wie es der Algorithmus TODO %\ref[alg:evictionSet} beschreibt.
+
+\begin{algorithm}[h]
+\DontPrintSemicolon
+\caption{Psuedo-Code für Prime and probe}
+\label{alg:prime_and_pribe}
+
+\Fn{$flushAndReload(address)$}{
+    \ForEach{address in evictionSet}{
+        readMem(address)\;
+    }
+    wait()\;
+	timestampBefore <- getTimestamp()\;
+	\ForEach{address in evictionSet}{
+        readMem(address)\;
+    }
+	timestampAfter <- getTimestamp()\;
+	\Return timestampAfter - timestampBefore > threshold
+}
+
+\end{algorithm}
 
 
 %Beschreibe Algorithmus
@@ -146,4 +198,16 @@ Der Empfänger wiederum nutzt sein $d$ aus dem privaten Schlüssel um $c^d \equi
 %RSA Key Gen, RSA Verschlüsselung Entschlüsselung
 
 
+\section{Javascript und Webassembly}
+
+Javascript ist eine interpretierte Hochsprache, welche zusammen mit HTML und CSS die wichtigsten Komponenten für das World Wide Web bildet. 
+Interaktive Webseiten und Applikationen werden erst mit Hilfe von Javascript möglich, weshalb jeder moderne Browser eine Javascript-Engine mitbringt.
+
+Webanwendungen mit Javascript sollen auf unterschiedlichsten Endgeräten vom Laptop über das Smartphone bis zur Heimkonsole laufen, sodass ein Vorhalten von kompilierten Binärdateien für jedes dieser Geräte schwierig ist. Dennoch soll die Webanwendung beim Anwender ohne lange Ladezeiten auskommen, womit die Kompilierung auf dem Anwendungsgerät als Lösung entfällt.
+Unter anderem deshalb ist Javascript eine interpretierte Sprache, welche jedoch ein Geschwindigkeitsnachteil gegenüber vorkompilierten Sprachen wie C oder Java hat.
+Es wurden viele Anstrengungen unternommen diesen designbedingten Performancenachteil auszugleichen, so erkennt etwa Google Javascript-Engine V8 häufig genutzte langsam laufende Codeteile und optimiert diesen während der Laufzeit \cite{GoogleTurboFan}.
+
+WebAssembly ist ein W3C-Webstandard welcher ein binäres Format für ausführbaren Code in Webseiten definiert. Dieser Standard wurde 2017 ins Leben gerufen um den Performancenachteil von Javascript gegenüber nativen Code zu reduzieren und wird von allen gängigen Webbrowsern unterstützt. Des Weiteren ermöglicht WebAssembly die Entwicklungen von Webanwendungen in anderen Sprachen wie etwa C, dessen Code abschließend in das binäre Format kompiliert wird.
+
 \todo[size=\footnotesize]{Fehlt: irgendwas in Richtung Drive-by, JIT-Environments, WebAssembly}
+
