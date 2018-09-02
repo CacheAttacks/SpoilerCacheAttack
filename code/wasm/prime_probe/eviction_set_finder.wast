@@ -19073,10 +19073,12 @@
   (local $$24 i32)
   (local $$25 i32)
   (local $$26 i32)
-  (local $$27 i32)
-  (local $$28 i32)
+  (local $$27 f64)
+  (local $$28 f64)
   (local $$29 i32)
   (local $$3 i32)
+  (local $$30 i32)
+  (local $$31 i32)
   (local $$4 i32)
   (local $$5 i32)
   (local $$6 i32)
@@ -19324,25 +19326,37 @@
     (i32.const 6)
    )
   )
+  ;;@ c/l3.c:213:0
   (set_local $$27
-   (i32.shl
+   (f64.convert_s/i32
     (get_local $$26)
-    (i32.const 1)
+   )
+  )
+  ;;@ c/l3.c:214:0
+  (set_local $$28
+   (f64.mul
+    (get_local $$27)
+    (f64.const 1.7)
    )
   )
   ;;@ c/l3.c:213:0
-  (set_local $$28
+  (set_local $$29
+   (i32.trunc_s/f64
+    (get_local $$28)
+   )
+  )
+  (set_local $$30
    (get_local $$1)
   )
-  (set_local $$29
+  (set_local $$31
    (i32.add
-    (get_local $$28)
+    (get_local $$30)
     (i32.const 12)
    )
   )
   (i32.store
+   (get_local $$31)
    (get_local $$29)
-   (get_local $$27)
   )
   (set_global $STACKTOP
    (get_local $sp)

@@ -46,7 +46,17 @@ Als einziges angemessenes Zeitmessungswerkzeug verbleibt der SharedArrayBuffer a
 Die Ausführung von Javascript passiert in einem Thread, wobei die Möglichkeit besteht sogenannte Webworker zu starten, welche Code aus einem Skript in einem eigenen Thread ausführen.
 Diese haben von Grund auf aber einen zu Mainthread abgetrennten Speicherbereich, sodass Daten ursprünglich über Nachrichten zwischen dem Mainthread und dem Webworker ausgetauscht werden mussten. Hier setzt der SharedArrayBuffer an, welcher einen geteilten Speicherbereich zwischen Mainthread und Webworker definiert.
 
-Die Idee ist nun im Thread des Webworkers eine Zählvariable des SharedArrayBuffer in einer Endlosschleife zu iterieren (siehe auch den Pseudocode \ref{alg:sharedArrayBufferWorker}). Zuerst wird dazu dem Webworker via message die Referenz auf einen im Mainthread erstellten SharedArrayBuffer übergeben. Anschließend wird im Webworker ein \textit{Uint32Array} angelegt welches mit dem übergebenen SharedArrayBuffer verknüpft ist. Zum Schluss geht der Webworker in die Endlosschleife über, in welcher die Zählvariable \textit{sharedArray[0]} durchgehend iteriert.
+Gemäß Code-Listing \ref{alg_list:sharedArrayBufferWorkerMain} wird im Mainthread zuerst ein SharedArrayBuffer von 4 Bytes angelegt. Anschließend wird der als Zeitgeber fungierende Webworker gestartet und ihm eine Referenz auf den eben angelegten SharedArrayBuffer übersandt. 
+Die Zählvariable soll hier eine Größe von 32 Bit haben, weshalb abschließend ein Uint32 Array definiert wird, welches auf den SharedArrayBuffer referenziert. 
+Ein Zählvariable kann nun durch Lesen des ersten Eintrags des Arrays erhalten werden. 
+Problematisch ist jedoch, dass auf die Zählvariable sowohl lesend vom Mainthread als auch schreibend vom Webworker zugegriffen wird. 
+Dadurch können die im Mainthread gelesenen Werte veraltet sein, da der SharedArrayBuffer noch nicht zwischen beiden Threads synchronisiert wurde. 
+Abhilfe schafft hier die von Javascript bereitgestellte Atomics-Library, welche es ermöglicht die Leseoperation atomar auszuführen.
+
+Der Webworker iteriert nun in einem eigenen Thread die Zählvariable in einer Endlosschleife (siehe auch Pseudocode \ref{alg_list:sharedArrayBufferWorker}). 
+Zuerst wird dazu dem Webworker via message die Referenz auf einen im Mainthread erstellten SharedArrayBuffer übergeben.
+Anschließend wird im Webworker ein \textit{Uint32Array} angelegt welches mit dem übergebenen SharedArrayBuffer verknüpft ist. 
+Zum Schluss geht der Webworker in die Endlosschleife über, in welcher die Zählvariable \textit{sharedArray[0]} durchgehend iteriert.
 
 Das Iterieren einer Variable benötigt nur wenige Taktzyklen, weshalb der aktuelle Wert der Zählvariable als Zeitstempel interpretiert werden kann. 
 Die Auflösung dieser Methode hängt also von der Geschwindigkeit der Iteration, sowie der Speichersynchronisation des SharedArrayBuffers zwischen Mainthread und Webworker ab.
@@ -63,75 +73,107 @@ Als logische Konsequenz wurde angekündigt in Zukunft wieder hochauflösende Tim
 
 Aus diesen Gründen wird im Folgenden davon ausgegangen, dass das Opfer SharedArrayBuffer in seinem Webbrowser aktiviert hat.
 
-\begin{algorithm}[h]
-\DontPrintSemicolon
-\caption{Psuedo-Code für den Webworker welcher die Zählvariable iteriert}
-\label{alg:sharedArrayBufferWorker}
+\label{alg_list:sharedArrayBufferWorkerMain}[h]
+\begin{lstlisting}[caption=main.js: Code welcher den counterWorker für Zeitmessungen verwendet]
+var sharedArrayBuffer = new SharedArrayBuffer(4);
+var counterWorker = new Webworker('counterWebworker.js');
+counterWorker.postMessage(sharedArrayBuffer);
+var sharedArrayBufferUin32Array = new Uint32Array(sharedArrayBuffer);
 
-self.addEventListener('message', (m) => \{\;
-  // Create an Int32Array on top of that shared memory area \;
-  const sharedArray = new Uint32Array(m.data);\;
-
-  \While{true}{
-    sharedArray[0]++;\;
-  }
-\});
-
-\end{algorithm}
-
-\subsection{Cache-Angriff in JavaScript und Webassembly}
-
-TODO
-
-\subsection{Verdeckter Kanal}
-
-Die maximale Sendegeschwindigkeit eines Kanals ist durch die Rate, mit welcher der Sender ein beliebiges Cache-Set primen kann, begrenzt.
-Damit der Empfänger ein zufälliges Rauschen von einem Priming unterscheiden kann, sollte der Sender mehrere Einträge aus dem zu primenden Cache-Set verdrängen, wobei im Optimalfall die Anzahl der zugegriffenen Speicheradressen der Assoziativität des Caches entspricht.
-Hiermit wird die Wahrscheinlichkeit erhöht, dass sich die vom Empfänger im Probe-Schritt gemessene Zugriffszeit signifikant von Fällen unterscheidet, in denen zufällig einzelne Einträge aus dem überwachten Cache-Set verdrängt werden. 
-%Daraus folgernd nehmen wir an, dass der Sender in seiner Priming-Phase auf der Assoziativität entsprechend viele Speicheradressen zugreift.
-Im Folgenden sollen verschiedene Methoden des Primens eines Cache-Sets verglichen werden, indem entweder die Anzahl der zugegriffen Speicheradressen oder die Zugriffsmethode verändert werden.
-Wenn etwa die Zahl der zugegriffenen Speicheraddressen verringert wird, sind auf der einen Seite mehr Timeslots in einem Zeitabschnitt möglich, und die Chance sinkt, dass benachbarte Timeslots zusätzlich beeinflusst werden. Auf der anderen Seite sind die messbaren Ausschläge der Zugriffszeiten verringert, wodurch ein bewusst geprimtes Cache-Set schwieriger von einem Messrauschen oder von zufälligen Zugriffen unterschieden werden kann.
-Sende- und Empfangsseite können durchaus abweichende Parameter verwenden, wenn wie etwa im vorliegenden Fall der Empfänger langsamer als der Sender arbeitet. Um die Timeslots anzugleichen, könnte der Empfänger die Dauer einer Priming-Operation durch die Senkung der Anzahl der zugegriffenen Speicheraddressen verringern und der Empfänger andersherum die Dauer für eine Priming-Operation erhöhen. 
-
-\begin{algorithm}[h]
-\DontPrintSemicolon
-\caption{Psuedo-Code für Pointer-Chasing-Methode}
-\label{alg:pointerChasing}
-
-\Fn{$AccessTimeEvictionSet(pointerToAddress)$}{
-    pointerToAddressFirst $\leftarrow$ pointerToAddress\;
-    timestampBefore $\leftarrow$ getTimeStamp()\;
-    \While{pointerToAddressFirst != pointerToAddress}{
-        pointerToAddress $\leftarrow$ readValue(pointerToAddress)\;
-    }
-    \Return getTimeStamp() - timestampBefore
+function measureTime(func){
+    var t1 = Atomics.load(sharedArrayBufferUin32Array[0]);
+    func();
+    var t2 = Atomics.load(sharedArrayBufferUin32Array[0]);
+    return t2 - t1;
 }
+\end{lstlisting}
 
-\end{algorithm}
-
-Auf dem Testrechner benötigt ein in C geschriebenes Sendeprogramm für eine Million Prime-Vorgänge mit 16 Adressen und der Single-Pointer-Chasing-Methode (siehe Algorithmus \ref{alg:pointerChasing}) etwa 323 Millionen Taktzyklen.
-Im Optimalfall kann im Timeslot $x$ ein erfolgter Prime-Vorgang als 1 und ein nicht erfolgter Prime-Vorgang als 0 interpretiert werden.
-Bei einem typischen All-Core-Turbo-Takt von 3,4 Ghz des i7-4770 ergibt sich so eine maximale Senderate von TODO ~10,5 Mbit/s.
-Diese Rate wird jedoch vom Empfänger beschränkt, welcher zusätzlich noch eine Zeitmessung durchführen muss. Der Worst-Case ist hier ein in Webassembly geschriebener Empfangsroutine, da dort eine Zeitmessung kostenintensiver ist. In Chromium 66 können eine Million Messungen eines Cache-Sets in etwa 200 ms durchgeführt werden. Im Mittel dauert eine Messung also 0,2 \textmu s, womit eine Empfangsrate von maximal ~5 MBit/s realisiert werden kann.
-
-%Um die Performance zu erhöhen kann wie erwähnt die Anzahl der zugegriffen Speicheradressen reduziert werden. 
-Im Folgenden soll die maximal mögliche Senderate unter optimalen Bedingungen ermittelt werden. 
-Hierfür wird im Voraus ein Cache-Set ausgewählt, auf dem im Idle-Zustand des Systems ein geringes Rauschen herrscht.
-Um die Synchronisation des Senders und Empfängers aufrechtzuerhalten, wird nach 10 gesendeten Bits ein Synchronisationsblock eingefügt, welcher durch $sb$-Prime-Vorgänge auf der Senderseite erzeugt wird. 
-Eine 1 wird durch $s$-Prime-Vorgänge repräsentiert und eine 0 durch das Unterlassen der Prime-Vorgänge. 
-Um die einzelnen Bits auseinanderzuhalten, wird zwischen jedem gesendeten Bit eine Pause von $p$-Taktzyklen eingelegt.
-
-%Um einen Kanal zu Initialisieren 
-
-
-%TODO: benchmark cache set finder
-%entwickle bessere benchmark prozedur, messe zeit für contract jedes es und mittle dann
-
-
-%Problem: v8 compiliert lazy, d.h. nur häufig verwendete
+\label{alg_list:sharedArrayBufferWorker}[h]
+\begin{lstlisting}[caption=counterWebworker.js: Webworker welcher die Zählvariable in einer Endlosschleife iteriert]
+self.addEventListener('message', (m) => {
+  // Create an Int32Array on top of the shared memory array 
+  const sharedArray = new Uint32Array(m.data);
+  while{true}{
+    sharedArray[0]++;
+  }
+});
+\end{lstlisting}
 
 %moved from section grundlagen
-\subsection{Eviction-Set Algorithmus in der Javascript-Umgebung}
+\section{Eviction-Set Algorithmus in der Javascript-Umgebung}
+%\section{Cache-Angriff in JavaScript und Webassembly}
+Der wichtigste Teil für ein Prime and Probe Angriff ist die Fähigkeit zuverlässig Eviction-Sets zu finden. Wie im Grundlagenkapitel beschrieben führt die CPU das Cache-Mapping anhand der physisches Adressen durch. Webassembly emuliert eine 32 Bit Umgebung, welche die internen Adressen in virtuelle Adressen des Hostprozesses, hier der Browser, übersetzt. 
+Webassembly-Code verwendet nur Adressen der emulierten Umgebung und hat keinerlei Zugriff auf das Mapping zu den virtuellen Adressen. 
+
+Somit sind die physischen Adressen in Webassembly durch gleich 2 Abstraktionsschichten geschützt. 
+Jedoch lässt sich die Eigenschaft ausnutzen, dass im Betriebssystem 4-KiB alignte Pages existieren. 
+Das heißt die letzten 12 Bit der virtuellen und physischen Adresse sind identisch. 
+Des Weiteren alloziert Webassembly 4KiB-Größe Blöcke, sodass die 12 letzten Bits der Webassembly-Adresse mit der virtuellen und physischen übereinstimmen.
+
+Um aus dieser Eigenschaft Kapital zu schlagen, wird ein Array der zweifachen Größe des L3-Caches in Webassembly angelegt. Im Folgenden soll wieder der Intel i7-4770 mit 8 MiB großem L3-Cache als Basis dienen, womit das Array 16 MiB groß ist. In diesem Array sind nun 4096 Blöcke der Größe jeweils 4 KiB dessen letzten 12 Adressbits mit der physischen Adresse übereinstimmen.  
+
+Der i7-4770 besitzt 8192 Cache-Sets die auf 4 Slices aufgeteilt sind, wobei für das Mapping der 2048 Cache-Sets innerhalb eines Slices nur die untersten 18 Bit der physischen Adresse relevant sind. Dabei bestimmen die Bits 6 bis 17 eindeutig das Cache-Set und Bits 0 bis 5 das Offset innerhalb der Cache-Line.
+
+In welchem der 4 Slices die Daten landen, wird anhand der Adressbits 18 bis 63 bestimmt.
+Durch die Kenntnis der untersten 12 Bits der physischen Adresse, sind gleichzeitig 6 Bit (6 bis 11) bekannt, welche für die Zuordnung zu den Cache-Sets verantwortlich sind.
+
+Angenommen es werden ausschließlich Adressen verwendet, bei denen die 12 untersten Bit jedes der 4 KiB großen Blöcke auf 0 gesetzt sind, dann kann erwartet werden, dass im Mittel jede 128. 
+Adresse auf das gleiche Cache-Set gemappt wird. Es gibt 8192 ein Adresse ein Cache-Sets zuzuordnen, also 13 Bit an Unsicherheit, wovon aber 6 Bit welche für eine eindeutigste Zuordnung sorgen, bekannt sind. 
+Es bleiben noch 7 Bit an Unsicherheit, die nur durch Kenntnis der restlichen Adressbits beseitigt werden könnten.
+
+Um die Anzahl der Blöcke bzw. die Arraygröße in Webassembly sinnvoll zu bestimmen, kann zuerst die vereinfachte Annahme getroffen werden, dass die physischen Adressbits 12 bis 63 der 4 KiB Blöcke zufällig sind. 
+Die unbekannte Cache-Mapping Funktion nimmt nun die zufälligen Bits 12 bis 63 und auf 0 gesetzten Bits 0 bis 11 entgegen und gibt eines von 128 möglichen Cache-Sets zurück.
+Ziel ist es mit $x$ 4-KiB Blöcken und einer hohen Wahrscheinlichkeit für jedes Cache-Sets 16 Zuordnungen bzw. ein Eviction Set zu finden.
+Gesucht sei die Wahrscheinlichkeit bei $x$ Blöcken mindestens 16 Zuordnungen zu einem fixen Cache-Set $cs$ bei 128 Möglichkeiten zu finden.
+Hierfür eignet sich das Urnenmodell mit Zurücklegen ohne Beachtung der Reihenfolge, wobei die $x$ Blöcke die Ziehungen und die Cache-Sets die Kugeln repräsentieren. Sei $P(count(cs)>=16)$ die Wahrscheinlichkeit dafür, dass in der gezogenen Folge mindestens 16 mal das Cache-Set $cs$ auftaucht, unter der Bedingung, dass die Anzahl der Adressen $\#add = x$.
+Leichter ist es hier die Gegenwahrscheinlichkeit zu berechnen die mit
+\begin{align*}
+P(count(cs)<16|\#add = x) &=
+\left( \sum\limits_{i=0}^{15}P(count(cs)=i|\#add = x) \right) \\&=
+\left( \sum\limits_{i=0}^{15} {x \choose i} \frac{127}{128}^{x-i} \cdot \frac{1}{128}^i  \right)
+\end{align*}
+beschrieben ist.
+
+Die Wahrscheinlichkeit des $P(count(cs)>=16)$ ist etwa bedeutend im ersten Szenario:
+Angenommen die Angreiferin hat es auf eine bestimmte Adresse abgesehen und möchte ein korrelierendes Eviction-Set finden. Wie wahrscheinlich ist ein erfolgreicher Angriff bzw. wie hoch ist die Wahrscheinlichkeit ein korrelierendes Eviction-Set zu finden? Das Diagramm \ref{fig:prob_specific_es} gibt die Erfolgswahrscheinlichkeiten für verschiedene $x$-Werte an.
+\label{fig:prob_specific_es}
+\begin{center}
+\begin{scaletikzpicturetowidth}{\textwidth}
+\input{methods/plot_prob_specific_es.tex}
+\end{scaletikzpicturetowidth}
+\end{center}
+Im zweiten Szenario möchte die Angreiferin in einem komplexen Angriff eine Vielzahl von Adressen in unterschiedlichen Cache-Sets überwachen. Sie interessiert sich nun dafür, wie wahrscheinlich es ist alle 8192 Cache-Sets zu finden und somit auch die für sie relevanten. 
+
+Die Wahrscheinlichkeit für alle 128 möglichen Cache-Sets jeweils 16 Zuordnungen und damit gleichbedeutend alle 8192 möglichen Eviction Sets konstruieren zu können, ist mit 
+\begin{align*}
+P(count(cs)>=16|\#add = x)^{128} = (1-P(count(cs)<16|\#add = x))^{128}
+\end{align*}
+gegeben.  
+
+Das Diagramm \ref{fig:prob_all_es} gibt die Erfolgswahrscheinlichkeiten für verschiedene $x$-Werte im zweiten Szenario an.
+\label{fig:prob_all_es}
+\begin{center}
+\begin{scaletikzpicturetowidth}{\textwidth}
+\input{methods/plot_prob_all_es.tex}
+\end{scaletikzpicturetowidth}
+\end{center}
+Häufig wird in Benchmarks angegeben wie viele Eviction-Sets überhaupt gefunden wurden. Die Wahrscheinlichkeit 
+\begin{align*}
+\sum\limits_{i=1}^{128} i {x \choose i} P(count(cs)>=16|\#add = x)^i \cdot P(count(cs)<16|\#add = x)^{128-i} 
+\end{align*}
+gibt den Erwartungswert der gefundenen Eviction-Sets an.
+
+Das Diagramm \ref{fig:avg_es} gibt die Erfolgswahrscheinlichkeiten für verschiedene $x$-Werte im zweiten Szenario an.
+\label{fig:avg_es}
+\begin{center}
+\begin{scaletikzpicturetowidth}{\textwidth}
+\input{methods/plot_avg_es.tex}
+\end{scaletikzpicturetowidth}
+\end{center}
+
+
+
+
 
 TODO Algorithmus in Einzelheiten beschreiben
 \todo[size=\footnotesize]{Beschreibe den Algorithmus bitte in einzelteilen, und gib auch den code dafür einzeln an. Der komplette Code gehört in den Anhang.}\todo[size=\footnotesize]{Nutze eine kleinere Schriftart für listings}
@@ -190,6 +232,57 @@ TODO Algorithmus in Einzelheiten beschreiben
 }
 
 \end{algorithm}
+
+
+\section{Verdeckter Kanal}
+
+Die maximale Sendegeschwindigkeit eines Kanals ist durch die Rate, mit welcher der Sender ein beliebiges Cache-Set primen kann, begrenzt.
+Damit der Empfänger ein zufälliges Rauschen von einem Priming unterscheiden kann, sollte der Sender mehrere Einträge aus dem zu primenden Cache-Set verdrängen, wobei im Optimalfall die Anzahl der zugegriffenen Speicheradressen der Assoziativität des Caches entspricht.
+Hiermit wird die Wahrscheinlichkeit erhöht, dass sich die vom Empfänger im Probe-Schritt gemessene Zugriffszeit signifikant von Fällen unterscheidet, in denen zufällig einzelne Einträge aus dem überwachten Cache-Set verdrängt werden. 
+%Daraus folgernd nehmen wir an, dass der Sender in seiner Priming-Phase auf der Assoziativität entsprechend viele Speicheradressen zugreift.
+Im Folgenden sollen verschiedene Methoden des Primens eines Cache-Sets verglichen werden, indem entweder die Anzahl der zugegriffen Speicheradressen oder die Zugriffsmethode verändert werden.
+Wenn etwa die Zahl der zugegriffenen Speicheraddressen verringert wird, sind auf der einen Seite mehr Timeslots in einem Zeitabschnitt möglich, und die Chance sinkt, dass benachbarte Timeslots zusätzlich beeinflusst werden. Auf der anderen Seite sind die messbaren Ausschläge der Zugriffszeiten verringert, wodurch ein bewusst geprimtes Cache-Set schwieriger von einem Messrauschen oder von zufälligen Zugriffen unterschieden werden kann.
+Sende- und Empfangsseite können durchaus abweichende Parameter verwenden, wenn wie etwa im vorliegenden Fall der Empfänger langsamer als der Sender arbeitet. Um die Timeslots anzugleichen, könnte der Empfänger die Dauer einer Priming-Operation durch die Senkung der Anzahl der zugegriffenen Speicheraddressen verringern und der Empfänger andersherum die Dauer für eine Priming-Operation erhöhen. 
+
+\begin{algorithm}[h]
+\DontPrintSemicolon
+\caption{Psuedo-Code für Pointer-Chasing-Methode}
+\label{alg:pointerChasing}
+
+\Fn{$AccessTimeEvictionSet(pointerToAddress)$}{
+    pointerToAddressFirst $\leftarrow$ pointerToAddress\;
+    timestampBefore $\leftarrow$ getTimeStamp()\;
+    \While{pointerToAddressFirst != pointerToAddress}{
+        pointerToAddress $\leftarrow$ readValue(pointerToAddress)\;
+    }
+    \Return getTimeStamp() - timestampBefore
+}
+
+\end{algorithm}
+
+Auf dem Testrechner benötigt ein in C geschriebenes Sendeprogramm für eine Million Prime-Vorgänge mit 16 Adressen und der Single-Pointer-Chasing-Methode (siehe Algorithmus \ref{alg:pointerChasing}) etwa 323 Millionen Taktzyklen.
+Im Optimalfall kann im Timeslot $x$ ein erfolgter Prime-Vorgang als 1 und ein nicht erfolgter Prime-Vorgang als 0 interpretiert werden.
+Bei einem typischen All-Core-Turbo-Takt von 3,4 Ghz des i7-4770 ergibt sich so eine maximale Senderate von TODO ~10,5 Mbit/s.
+Diese Rate wird jedoch vom Empfänger beschränkt, welcher zusätzlich noch eine Zeitmessung durchführen muss. Der Worst-Case ist hier ein in Webassembly geschriebener Empfangsroutine, da dort eine Zeitmessung kostenintensiver ist. In Chromium 66 können eine Million Messungen eines Cache-Sets in etwa 200 ms durchgeführt werden. Im Mittel dauert eine Messung also 0,2 \textmu s, womit eine Empfangsrate von maximal ~5 MBit/s realisiert werden kann.
+
+%Um die Performance zu erhöhen kann wie erwähnt die Anzahl der zugegriffen Speicheradressen reduziert werden. 
+Im Folgenden soll die maximal mögliche Senderate unter optimalen Bedingungen ermittelt werden. 
+Hierfür wird im Voraus ein Cache-Set ausgewählt, auf dem im Idle-Zustand des Systems ein geringes Rauschen herrscht.
+Um die Synchronisation des Senders und Empfängers aufrechtzuerhalten, wird nach 10 gesendeten Bits ein Synchronisationsblock eingefügt, welcher durch $sb$-Prime-Vorgänge auf der Senderseite erzeugt wird. 
+Eine 1 wird durch $s$-Prime-Vorgänge repräsentiert und eine 0 durch das Unterlassen der Prime-Vorgänge. 
+Um die einzelnen Bits auseinanderzuhalten, wird zwischen jedem gesendeten Bit eine Pause von $p$-Taktzyklen eingelegt.
+
+%Um einen Kanal zu Initialisieren 
+
+
+%TODO: benchmark cache set finder
+%entwickle bessere benchmark prozedur, messe zeit für contract jedes es und mittle dann
+
+
+%Problem: v8 compiliert lazy, d.h. nur häufig verwendete
+
+
+
 
 \subsection{Angriffe auf RSA Key Generierung}
 
