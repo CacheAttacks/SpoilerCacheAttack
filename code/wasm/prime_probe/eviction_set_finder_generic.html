@@ -633,14 +633,15 @@
   </span></br>
   <span id='covertChannel'>
     <span><input type="button" id="btnSearchForCovertChannel" value="Search covert channel"></span>
-    <span><input type="button" id="btnListeningChannel" value="Listing channel"></span>
+    <span><input type="button" id="btnListenChannel" value="Listen channel"></span>
 
   </span></br>
   <span id='sampleEs'>
-    Plot select es
-    <span><input type="text" id="numberRangeEs" value="all" width="1"></span>
+    Plot select x values
+    <span><input type="text" id="numberRangeX" value="all" width="1"></span>
+    <span><input type="button" id="btnReplot" value="Replot"></span>
     Samples
-    <span><input type="number" id="numberSamples" value="20000" width="1"></span>
+    <span><input type="number" id="numberSamples" value="100" width="1"></span>
     Time between samples
     <span><input type="number" id="numberSlotTime" value="0" width="1"></span>
     <span><input type="button" id="btnSampleEs" value="Sample es"></span>
@@ -657,7 +658,7 @@
     list es
     <span><input type="text" id="textListEs" value="1,2,3" width="1"></span>
     <span><input type="button" id="btnSetMonitoredEsArr" value="Set monitored es arr"></span>
-    <span><input type="number" id="numberPrimeSpamDurationSec" value="2" width="1"></span>
+    <span><input type="number" id="numberPrimeSpamDurationSec" value="10" width="1"></span>
     <span><input type="button" id="btnPrimeSpam" value="Prime Spam"></span>
   </span></br>
   <span id='buildEs'>
@@ -687,6 +688,7 @@
   </br>------------------------------------------------------
   </br>
   <span id='spanWorkerWasm'>
+    <span><input type="button" id="btnWorkerWasmAddWorker" value="Add worker"></span>
     Select worker:
     <select id="selectWorkerWasm"></select>
     Select all workers:<input type="checkbox" id="checkWorkerWasmAll">
@@ -943,7 +945,7 @@
       // d = new Date();
       // Module['imgElement'].src = 'http://localhost:8000/plotdata?' + d.getTime();
 
-      imagePopup('http://localhost:8000/plotdata?range_es=' + document.getElementById('numberRangeEs').value,
+      imagePopup('http://localhost:8000/plotdata?range_es=' + document.getElementById('numberRangeX').value,
         'myTitle', '', '');
     }
     document.getElementById('btnSampleEs').onclick = function () {
@@ -954,6 +956,12 @@
         var printToBrowser = 1;
         sampleEsWrapper(numberOfSamples, slotTime, printToBrowser);
       });
+    }
+    document.getElementById('btnReplot').onclick = function () {
+      d = new Date();
+      Module['imgElement'].src =
+          'http://localhost:8000/plotdata?selected_x=' +
+          document.getElementById('numberRangeX').value + '&' + d.getTime();
     }
     document.getElementById('btnBuildEs').onclick = function () {
       assertAppStatePtr(function () {
@@ -970,7 +978,7 @@
       assertAppStatePtr(function () {  // decode listEs string
         var listEsString = document.getElementById('textListEs').value;
         var listEsArr = listEsString.split(',');
-        $.loadScript('javascript/set_monitor_es_arr.js', function () { });
+        setMonitoredEsArrWrapper(listEsArr);
       });
     }
 
@@ -979,9 +987,9 @@
         $.loadScript('javascript/covert_channel.js', function () { });
       });
     }
-    document.getElementById('btnListeningChannel').onclick = function () {
+    document.getElementById('btnListenChannel').onclick = function () {
       assertAppStatePtr(function () {
-        $.loadScript('javascript/listening_channel.js', function () { });
+        $.loadScript('javascript/listen_channel.js', function () { });
       });
     }
     document.getElementById('btnBenchmarkType').onclick = function () {

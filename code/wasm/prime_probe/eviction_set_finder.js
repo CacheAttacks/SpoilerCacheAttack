@@ -5125,8 +5125,8 @@ function copyTempDouble(ptr) {
   
           d = new Date();
           Module['imgElement'].src =
-              'http://localhost:8000/plotdata?selected_es=' +
-              document.getElementById('numberRangeEs').value + '&' + d.getTime();
+              'http://localhost:8000/plotdata?selected_x=' +
+              document.getElementById('numberRangeX').value + '&' + d.getTime();
         }
       }
 

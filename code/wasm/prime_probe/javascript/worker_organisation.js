@@ -1,5 +1,5 @@
 var colorVec = { 0: 'color: red', 1: 'color: blue', 2: 'color: DeepPink', 3: 'color: green', 4: 'color: Indigo', 5: 'color: DimGrey', 6: 'color: yellow' };
-var workerWasmCounter = 2;
+var workerWasmCounter = 0;
 var workerWasmArr = {};
 
 var idWorkerSelected = -1;
@@ -51,21 +51,30 @@ function nextWorkerPostMessage() {
       }
   }
 
+  function addWorker(i){
+    workerWasmArr[i] = new Worker('worker_wasm_generic.js');
+    workerWasmArr[i].postMessage(["initWasmAndCounter", sharedBuffer, colorVec[i], i]);
+    //"callback" method if all workers are selected
+    workerWasmArr[i].onmessage = workerWasmOnMessage;
+
+    var option = document.createElement("option");
+    option.id = i;
+    option.text = i + ": " + colorVec[i];
+    selectWorkerWasm.add(option);
+  }
+
   var selectWorkerWasm = document.getElementById("selectWorkerWasm");
   document.getElementById('checkWorkerWasmAll').checked = true;
   selectWorkerWasm.disabled = true;
 
     for (var i = 0; i < workerWasmCounter; i++) {
-      workerWasmArr[i] = new Worker('worker_wasm_generic.js');
-      workerWasmArr[i].postMessage(["initWasmAndCounter", sharedBuffer, colorVec[i], i]);
-      //"callback" method if all workers are selected
-      workerWasmArr[i].onmessage = workerWasmOnMessage;
-
-      var option = document.createElement("option");
-      option.id = i;
-      option.text = i + ": " + colorVec[i];
-      selectWorkerWasm.add(option);
+      addWorker(i);
     }
+
+    document.getElementById('btnWorkerWasmAddWorker').onclick = function () {
+      addWorker(workerWasmCounter);
+      workerWasmCounter++;
+    }    
 
     document.getElementById('checkWorkerWasmAll').onclick = function () {
       selectWorkerWasm.disabled = !selectWorkerWasm.disabled;

@@ -71,7 +71,7 @@ consoleLogEx(interestingCacheSets);
 //         d = new Date();
 //         Module['imgElement'].src =
 //         'http://localhost:8000/plotdata?selected_es=' +
-//         document.getElementById('numberRangeEs').value + "&" + d.getTime();
+//         document.getElementById('numberRangeX').value + "&" + d.getTime();
 
 //     }
 // }

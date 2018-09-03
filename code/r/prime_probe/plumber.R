@@ -97,6 +97,17 @@ function(newdata){
   print(indexvec)
 }
 
+#* @param newdata monitored x index vec
+#* @post /changexindexvec
+function(newdata){
+  changexindexvec <<- newdata
+  #print(indexvec)
+  xindexvec <<- sapply(which(sapply(strsplit(changexindexvec, split=","), as.numeric) != 0)-1, as.character)
+  if(length(xindexvec) == 0)
+    warning("length(indexvec) == 0")
+  print(xindexvec)
+}
+
 #* @param newdata monitored es index vec
 #* @post /changeindexvecworker
 function(newdata){
@@ -127,9 +138,9 @@ find_noise_es <- function() {
 
 
 #* @png (width=1500,height=750)
-#* @param selected_es select range e.g. 1:10
+#* @param selected_x select range e.g. 1:10
 #* @get /plotdata
-visualize_times <- function(selected_es){
+visualize_times <- function(selected_x){
 a <- Sys.time()
   #x-axis eviction sets, y-axis samples
   tbl <- data.table::fread(data)
@@ -144,25 +155,30 @@ a <- Sys.time()
   }
   find_noise_es_gen(tbl)
   
-  print(selected_es)
+  print(selected_x)
   
   es_vec <- "none"
-  if(grepl(":", selected_es)){
-    es_vec <- strsplit(selected_es,":")[[1]][1]:strsplit(selected_es,":")[[1]][2]
-  } else if(grepl(",", selected_es)){
-    es_vec <- as.numeric(strsplit(selected_es, ",")[[1]])
+  if(grepl(":", selected_x)){
+    es_vec <- strsplit(selected_x,":")[[1]][1]:strsplit(selected_x,":")[[1]][2]
+  } else if(grepl(",", selected_x)){
+    es_vec <- as.numeric(strsplit(selected_x, ",")[[1]])
   } else {
-    selected_es <- as.numeric(selected_es)
-    if(!is.na(selected_es) && selected_es <= ncol(tbl) && selected_es > 0){
-      es_vec <- selected_es
+    selected_x <- as.numeric(selected_x)
+    if(!is.na(selected_x) && selected_x <= ncol(tbl) && selected_x > 0){
+      es_vec <- selected_x
     }
   }
   print(es_vec)
   
-  if(es_vec != "none")
-    tbl <- tbl[,es_vec, drop=F]
+  #if(es_vec != "none")
+  #  tbl <- tbl[,es_vec, drop=F]
   
-  tbl <- tbl[-(1:15000),]
+  #tbl <- tbl[-(1:15000),]
+  tbl <- tbl[-(1:50),]
+  
+  if(es_vec != "none")
+    tbl <- tbl[es_vec,]
+  
   #tbl <- tbl[-(nrow(tbl)-10:nrow(tbl)),]
   colnames(tbl) <- indexvec
   tmp_tbl <<- tbl
@@ -171,7 +187,7 @@ a <- Sys.time()
   colnames(tbl_melt)[1] <- "es"
   #cap at 3500
   max_value <- 250
-  #tbl_melt[tbl_melt$value>max_value,"value"] <- max_value
+  tbl_melt[tbl_melt$value>max_value,"value"] <- max_value
   b <- Sys.time()
   print(b-a)
   

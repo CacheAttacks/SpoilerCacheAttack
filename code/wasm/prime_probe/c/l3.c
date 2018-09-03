@@ -79,7 +79,7 @@ int L3_THRESHOLD_OFFSET = 0;
 
 // buffer for memoryblocks is multiple of cache size
 // 2 size enough, remember virtual
-#define CACHE_SIZE_MULTI 1.7
+#define CACHE_SIZE_MULTI 2
 
 // size(es) <= L3_ASSOCIATIVITY * MAX_L3_ASSOCIATIVITY_DIFF
 #define MAX_L3_ASSOCIATIVITY_DIFF 0
