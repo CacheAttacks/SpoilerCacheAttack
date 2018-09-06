@@ -190,17 +190,17 @@ TODO verschiedene reale bechmarks einfügen
 
 Im Folgenden soll der Algorithmus beschrieben werden, welcher die Adressen im Pool verschiedenen Eviction-Sets zuordnet.
 Der Algorithmus ist in der Lage Adressen Cache-Sets zuzuordnen ohne näheres über die CPU (L3-Cache Größe usw.) und die Adressbits 12 bis 63 zu wissen.
-Die Idee des Algorithmus ist nicht neu, sondern wurde etwa schon in \cite{} oder \cite{} in teilweise abgewandelter Form beschrieben.
+Die Idee des Algorithmus ist nicht neu, sondern wurde etwa schon in \cite{DriveByPaper} oder \cite{PrimeAndAbort} in teilweise abgewandelter Form beschrieben.
 
 Der Eviction-Set-Konstruktionsalgorithmus besteht aus 3 Hauptpahsen, der Expand, Contract und Collect-Phase. 
 Zu Anfang wird zufällig eine Zeugenadresse aus dem Adresspool ausgewählt, für welche im Folgenden ein Eviction-Set gefunden werden soll.
 Die Annahme in der Expand-Phase ist, dass eine bestimmte Teilmenge der Adressen aus dem Pool, genannt Candidate-Set, ein Eviction-Set für die Zeugenadresse bildet, sofern der Pool groß genug ist.
 Um ein Candidate-Set zu testen wird zuerst auf die Zeugenadresse zugegriffen, um sicherzustellen, dass diese im Cache landet.
 Danach wird auf alle Adressen aus dem Candidate-Set zugegriffen und abschließend die Zugriffszeit auf Zeugenadresse gemessen. 
-Sofern das Candidate-Set ein Eviction-Set für die Zeugenadresse war, wurden die Daten der Zeugenadresse aus dem Cache verdrängt und die Zugriffszeit ist hoch und andernfalls niedrig.
+Sofern das Candidate-Set ein Eviction-Set für die Zeugenadresse ist, werden die Daten der Zeugenadresse aus dem Cache verdrängt, welches bei einer erneuten Messung der Zeugenadresse mit einer erhöhten Zugriffszeit einhergeht.
 Dieser Vorgang wird mehrmals wiederholt, um den Einfluss des Timer- und System-Rauschens zu vermindern.
 
-In der Expand-Phase wird dem Addresspool iterativ eine zufällige Adresse entnommen und dem Candidate-Set hinzugefügt (siehe auch Pseudocode \ref{alg:evictionSetExpand}). 
+In der Expand-Phase wird dem Addresspool iterativ eine zufällige Adresse entnommen und dem anfangs leeren Candidate-Set hinzugefügt (siehe auch Pseudocode \ref{alg:evictionSetExpand}). 
 Nach jeder Iteration wird das Candidate-Set auf die eben beschriebene Weise getestet.
 Falls das Candidate-Set ein Eviction-Set für die Zeugenadresse ist, wird zur nächsten Phase übergegangen, andernfalls die Iteration fortgesetzt.
 
@@ -287,6 +287,23 @@ Das gefundene Eviction-Set wird gespeichert und der Vorgang solange wiederholt b
     }
 }
 \end{algorithm}
+
+\subsection{Optimierung der Phasen}
+
+\subsection{Details der realen Implementierung}
+
+Wie weiter oben beschrieben werden insbesondere der Test ob ein Set ein Eviction-Set für bestimmte
+Adresse darstellt mehrfach wiederholt um Fehler auszuschließen. Problematisch ist dies vor allem in der Expand-Phase, da das Candidate-Set eine größere von mehreren hundert Einträgen annimmt und nach jeder Iteration gegen die Zeugenadresse getestet wird. 
+Eine einzige erhöhte Zugriffszeitmessung würde das Candidate-Set fälschlicherweise als Eviction-Set für die Zeugenadresse einordnen. 
+Es wurde festgestellt, dass erhöhte Zugriffszeiten mehrmals hintereinander auftreten können, deshalb wird ein erhöhte Messung in der Expand-Phase 20 mal erneut überprüft. 
+Dabei bricht die Überprüfung ab sobald eine der Messungen eine widersprüchliche Aussage zulässt.
+
+Trotz der hohen Anzahl der Wiederholungen sind die Kosten hierfür gering, da im fehlerfreien Optimalfall nur zusätzlich 20 Prüfungen anfallen und in den meisten Fehlerfällen nur einzelne zusätzliche Überprüfungen durchgeführt werden. 
+Dem gegenüber steht Vorteil nicht fälschlicherweise in die Contract-Phase zu wechseln und dort erst spät zu merken, dass das Candidate-Set kein Eviction-Set ist.
+Wenn nun das Candidate-Set kein Eviction-Set für die Zeugenadresse ist, würde in der naiven Implementierung der Contract-Phase über alle Einträge des Candidate-Set iteriert werden, aber kein Einträgt je gelöscht.
+Denn die Zugriffszeit auf die Zeugenadresse wird immer niedrig bleiben, was den Algorithmus zur fälschlichen Annahme verleitet, alle Einträge seien für das Eviction-Set notwendig.
+Wir wissen jedoch, dass die Größe des Eviction-Set der Assoziativität des L3-Caches entsprechen muss und können die Contract-Phase abbrechen sobald mehr als der Assoziativität entsprechenden Anzahl von Einträgen des Candidate-Set als notwendig eingestuft wurden, da dann ein Fehler vorliegt.
+
 
 \newtextend
 

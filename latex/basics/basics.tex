@@ -1,15 +1,15 @@
 \chapter{Grundlagen}
 \label{chapter:basics}
 
-Im Folgenden sollen Verfahren und Techniken erläutert werden, welche für das Verständnis der späteren Kapitel essenziell sind. \todo[size=\footnotesize]{Hier sollte mehr stehen als ein Satz, ergibt sich vielleicht später} 
+Im Folgenden sollen Verfahren und Techniken erläutert werden, welche für das Verständnis der späteren Kapitel essenziell sind. \todo[size=\footnotesize]{Hier sollte mehr stehen als ein Satz, ergibt sich vielleicht später. Hier gehört die Erklärung des Themas hin sowie eine Bestimmung der Rewlevanz des Themas für die Forschung.} 
 
 %\todo[size=\footnotesize]{Generell: Du tendierst zu verschachtelten und langen Sätzen. Versuche, Simplere Sätze mit höchstens einem Komma und ohne Zwischeneinschübe zu verwenden. }
 
 \section{Virtuelle Speicherverwaltung\todo[size=\footnotesize]{Ein Quelle in Absatz einfügen?}}
 
-Virtuelle Speicherverwaltung stellt eine Abstraktion für die vorhandenen physischen Speichermedien wie etwa den Hauptspeicher oder die Festplatte bereit \cite{tanenbaumVirtualMemory}.
+Virtuelle Speicherverwaltung stellt eine Abstraktion (???) für die vorhandenen physischen Speichermedien wie etwa den Hauptspeicher oder die Festplatte bereit \cite{tanenbaumVirtualMemory}.
 Das Betriebssystem übersetzt virtuelle Adressen, welche von Prozessen genutzt werden, mit Hilfe der Hardware in physische Adressen. 
-Jedem Prozess steht der gleiche virtuelle Adressraum zur Verfügung, wobei das Betriebssystem dafür Sorge trägt, für jeden Prozess die richtige Zuordnung von virtueller zu physischer Adresse sicherzustellen.
+Jedem Prozess steht der gleiche virtuelle Adressraum zur Verfügung, wobei das Betriebssystem dafür Sorge trägt, dass für jeden Prozess die richtige Zuordnung von virtueller zu physischer Adresse sichergestellt wird.
 Ein Vorteil der virtuellen Speicherverwaltung ist eine erhöhte Sicherheit durch die Speicherisolierung aller Prozesse, da ein Prozess keinen Zugriff auf das Adressmapping eines anderen hat.
 So kann eine fehlerhafte Schreiboperation eines Prozesses keinen Fehler in anderen Prozessen verursachen, da gleiche virtuelle Adressen vom Betriebssystem auf unterschiedliche physische Adressen abgebildet werden.
 %Des Weiteren kann ein Prozess mehr Hauptspeicher nutzen als physisch vorhanden ist, indem Daten vom Betriebssystem auf andere Speichermedien wie die Festplatte ausgelagert werden. Hiermit werden beispielsweise Anwendungsentwickler entlastet, da sie ihre Software nicht für Systeme mit weniger Hauptspeicher gesondert anpassen müssen. 
@@ -18,15 +18,15 @@ So kann eine fehlerhafte Schreiboperation eines Prozesses keinen Fehler in ander
 \section{Caches}
 
 Die Geschwindigkeitsentwicklung des Hauptspeichers konnte in den letzten Jahren nicht mit der des Prozessors Schritt halten \cite{speedGapCPUandRAM}. Der Cache ist ein im Vergleich zum Hauptspeicher kleinerer, aber schnellerer Pufferspeicher, welcher im aktuellen Kontext häufig benötigte Daten vorhält. Diese Daten zeichnen sich auch häufig dadurch aus, dass sie räumlich nah beieinander liegen.
-Ohne Caches wäre ein Prozessor häufig gezwungen, auf Daten des langsamen Hauptspeichers zu warten, und würde in seiner Verarbeitungsgeschwindigkeit ausgebremst. %\todo[size=\footnotesize]{positiv formulieren: Mit cache muss man nicht warten, dadurch wirds schneller} Ist die Aussage nicht wirkungsgleich beziehungsweise genauso Pro-Caches vormuliert?
-Weiter liegt der Fokus der Arbeit auf die im Desktopbereich weit verbreitete x86-Architektur. Deshalb werden mit Intel-Prozessoren der Core-Architektur bestückte Testrechner verwendet, da Intels Core-Architektur im x86-Desktopsegment zurzeit den höchsten Marktanteil besitzt \cite{AMDIntelMarketShare}. Aus diesem Grund werden Erklärungen im Folgenden häufig mit Beispielen der Intel Core-Architektur veranschaulicht.
+Ohne Caches wäre ein Prozessor häufig gezwungen, auf Daten des langsamen Hauptspeichers zu warten, und würde in seiner Verarbeitungsgeschwindigkeit gebremst. %\todo[size=\footnotesize]{positiv formulieren: Mit cache muss man nicht warten, dadurch wirds schneller} Ist die Aussage nicht wirkungsgleich beziehungsweise genauso Pro-Caches vormuliert?
+Weiter liegt der Fokus der Arbeit auf der im Desktopbereich weit verbreiteten x86-Architektur. Deshalb werden mit Intel-Prozessoren der Core-Architektur bestückte Testrechner verwendet, da Intels Core-Architektur im x86-Desktopsegment zurzeit den höchsten Marktanteil besitzt \cite{AMDIntelMarketShare}. Aus diesem Grund werden Erklärungen im Folgenden häufig mit Beispielen der Intel Core-Architektur veranschaulicht.
 
 Ein Cache der Core-Architektur lagert nicht einzelne Bytes, sondern immer gleich 64 Bytes, Cache-Line genannt, auf einmal ein. Dabei werden die 64 Bytes beginnend ab der größten Adresse, welche zugleich kleiner als die Zieladresse und ein Vielfaches von 64 ist, angefragt.
 Angenommen 4 Bytes Daten an Adresse \lstinline!0b10110111! %\todo[size=\footnotesize]{bitte lstinline an allen Stellen}
 werden angefordert, dann lagert der Cache die 64 Bytes beginnend mit der Adresse \lstinline!0b10000000! ein.
 Heutige Arbeitsspeichermodule liefern 8 Bytes zeitgleich, wobei die CPU mit einem einzigen Befehl einen Burst von 8 Übertragungen initiieren kann, die das Lesen und Schreiben einer gesamten 64-Bytes-Cache-Line ermöglichen.
-Das vorausladen von aktuell nicht benötigten Daten liegt in der Lokalitätseigenschaft typischer Programme begründet \cite{tanenbaumLocality}. So besagt die zeitliche Lokalität, dass aktuell verwendete Daten mit hoher Wahrscheinlichkeit in naher Zukunft erneut benötigt werden. Räumlich Lokalität hingegen besagt, dass beim Zugriff einer bestimmten Speicheradresse benachbarte Speicheradressen in naher Zukunft mit hoher Wahrscheinlichkeit benötigt werden.
-Somit ist es von Vorteil gleichzeitig 64 Bytes zu Laden, da die zusätzlich geladenen Bytes mit hoher Wahrscheinlichkeit in den nächsten Zyklen ebenfalls benötigt werden. Der Performancenachteil, welcher durch ein Laden von gleichzeitig 64 Bytes entsteht, ist daher vernachlässigbar.
+Das Vorausladen von aktuell nicht benötigten Daten liegt in der Lokalitätseigenschaft typischer Programme begründet \cite{tanenbaumLocality}. So besagt die zeitliche Lokalität, dass aktuell verwendete Daten mit hoher Wahrscheinlichkeit in naher Zukunft erneut benötigt werden. Räumlich Lokalität hingegen besagt, dass beim Zugriff einer bestimmten Speicheradresse benachbarte Speicheradressen in naher Zukunft mit hoher Wahrscheinlichkeit benötigt werden.
+Somit ist es von Vorteil, gleichzeitig 64 Bytes zu Laden, da die zusätzlich geladenen Bytes mit hoher Wahrscheinlichkeit in den nächsten Zyklen ebenfalls benötigt werden. Der Performancenachteil, welcher durch ein Laden von gleichzeitig 64 Bytes entsteht, ist daher vernachlässigbar.
 
 Ein Prozessorcache besteht üblicherweise aus mehreren Ebenen, Cache-Levels genannt, wobei die Core-Architektur etwa 3 Cache-Levels besitzt, welche absteigend größer und langsamer werden. Ein Intel i7-4770 besitzt pro physischen Kern beispielsweise einen 32 KiB-L1-Datencache mit einer Zugriffslatenz von 4 bis 5 Taktzyklen und einen 256 KiB-L2-Cache mit einer Latenz von 12 Taktzyklen \cite{CacheStatsHaswell}.
 Im Unterschied zu den beiden ersten Cache-Levels teilen sich in der Core-Architektur alle Kerne den L3-Cache. 
