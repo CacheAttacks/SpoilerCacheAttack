@@ -1284,7 +1284,7 @@ ggplot2TikzPlot('plot_prob_all_es.tex', plot)
 
 
 data_avg_set_relevant <- data_avg_set[data_avg_set[,2]>85 & data_avg_set[,2]<127.9,]
-data_avg_set_relevant[,2] <- round(data_avg_set_relevant[,2])*64
+data_avg_set_relevant[,2] <- (data_avg_set_relevant[,2])*64
 #colnames(data_avg_set_relevant) <- c("Anzahl an Adressen im Pool (x)", "Erwartungswert der gefundenen Eviction Sets")
 #plot(data_avg_set_relevant)
 #tikzPlot('plot_avg_es.tex', data_avg_set_relevant)
