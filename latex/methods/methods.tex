@@ -1,6 +1,8 @@
 \chapter{Implementierung}
 \label{chapter:preparation}
 
+\SetKwProg{Fn}{Function}{}{}
+
 Das folgende Kapitel beschreibt, mit Hilfe welcher Softwaretools der Cache-Angriff implementiert wird.
 
 Um das allgemeinere und praxisnähere Angriffsmodell umzusetzen und den Angriff schon durch den Besuch einer Website zu starten, liegt der komplette Angriffscode in JavaScript und Webassembly vor. 
@@ -41,6 +43,8 @@ So bieten Edge und Chrome zurzeit (Stand Juni 18) eine Auflösung von 20 \textmu
 Das Paper "Fantastic Timers and where to find them" \cite{FantasticTimers} beschreibt diverse andere Methoden, um mit Hilfe von JavaScript Timer zu generieren. 
 Allerdings ist nur eine geeignete Methode dabei, da die Auflösung aller anderen mindestens im hohen einstelligen \textmu s Bereich liegt und somit der Parameter $repeatIterations$ auf Werte von etwa 1000 gesetzt werden müsste, um zuverlässig \textit{Eviction Sets} zu finden. 
 Hierdurch würde die benötigte Ausführungszeit zum Finden der \textit{Eviction Sets} auf ein Maß ansteigen, welches dann nicht mehr zum angenommenen Angriffsmodell passen würde.
+
+\newtext
 
 Als einziges angemessenes Zeitmessungswerkzeug verbleibt der SharedArrayBuffer aus Javascript. 
 Die Ausführung von Javascript passiert in einem Thread, wobei die Möglichkeit besteht sogenannte Webworker zu starten, welche Code aus einem Skript in einem eigenen Thread ausführen.
@@ -110,22 +114,25 @@ Jedoch lässt sich die Eigenschaft ausnutzen, dass im Betriebssystem 4-KiB align
 Das heißt die letzten 12 Bit der virtuellen und physischen Adresse sind identisch. 
 Des Weiteren alloziert Webassembly 4KiB-Größe Blöcke, sodass die 12 letzten Bits der Webassembly-Adresse mit der virtuellen und physischen übereinstimmen.
 
-Um aus dieser Eigenschaft Kapital zu schlagen, wird ein Array der zweifachen Größe des L3-Caches in Webassembly angelegt. Im Folgenden soll wieder der Intel i7-4770 mit 8 MiB großem L3-Cache als Basis dienen, womit das Array 16 MiB groß ist. In diesem Array sind nun 4096 Blöcke der Größe jeweils 4 KiB dessen letzten 12 Adressbits mit der physischen Adresse übereinstimmen.  
+Um aus dieser Eigenschaft Kapital zu schlagen, wird ein Array mindestens entsprechend der Größe des L3-Caches in Webassembly angelegt. Im Folgenden soll wieder der Intel i7-4770 mit 8 MiB großem L3-Cache als Basis dienen. In diesem Array sind nun $x$ Blöcke der Größe jeweils 4 KiB dessen letzten 12 Adressbits mit der physischen Adresse übereinstimmen. Im sogenannten Adresspool seien nun die Adressen des Arrays bei denen die letzten 12 Bit gleich sind, also insgesamt $x$ Stück.
 
 Der i7-4770 besitzt 8192 Cache-Sets die auf 4 Slices aufgeteilt sind, wobei für das Mapping der 2048 Cache-Sets innerhalb eines Slices nur die untersten 18 Bit der physischen Adresse relevant sind. Dabei bestimmen die Bits 6 bis 17 eindeutig das Cache-Set und Bits 0 bis 5 das Offset innerhalb der Cache-Line.
 
 In welchem der 4 Slices die Daten landen, wird anhand der Adressbits 18 bis 63 bestimmt.
 Durch die Kenntnis der untersten 12 Bits der physischen Adresse, sind gleichzeitig 6 Bit (6 bis 11) bekannt, welche für die Zuordnung zu den Cache-Sets verantwortlich sind.
 
-Angenommen es werden ausschließlich Adressen verwendet, bei denen die 12 untersten Bit jedes der 4 KiB großen Blöcke auf 0 gesetzt sind, dann kann erwartet werden, dass im Mittel jede 128. 
-Adresse auf das gleiche Cache-Set gemappt wird. Es gibt 8192 ein Adresse ein Cache-Sets zuzuordnen, also 13 Bit an Unsicherheit, wovon aber 6 Bit welche für eine eindeutigste Zuordnung sorgen, bekannt sind. 
-Es bleiben noch 7 Bit an Unsicherheit, die nur durch Kenntnis der restlichen Adressbits beseitigt werden könnten.
+Angenommen im Pool sind ausschließlich Adressen, bei denen die 12 untersten Bit jedes der 4 KiB großen Blöcke auf 0 gesetzt sind, dann kann erwartet werden, dass im Mittel jede 128. 
+Adresse auf das gleiche Cache-Set gemappt wird. Es gibt 8192 Möglichkeiten eine Adresse einem Cache-Sets zuzuordnen, also 13 Bit an Unsicherheit.
+Durch die Kenntnis der untersten 12 Bit der Adresse, sind davon 6 Bit bekannt, welche für eine eindeutige Zuordnung sorgen. 
+Es bleiben noch 7 Bit an Unsicherheit, die durch Kenntnis der restlichen Adressbits beseitigt werden könnten.
 
-Um die Anzahl der Blöcke bzw. die Arraygröße in Webassembly sinnvoll zu bestimmen, kann zuerst die vereinfachte Annahme getroffen werden, dass die physischen Adressbits 12 bis 63 der 4 KiB Blöcke zufällig sind. 
-Die unbekannte Cache-Mapping Funktion nimmt nun die zufälligen Bits 12 bis 63 und auf 0 gesetzten Bits 0 bis 11 entgegen und gibt eines von 128 möglichen Cache-Sets zurück.
-Ziel ist es mit $x$ 4-KiB Blöcken und einer hohen Wahrscheinlichkeit für jedes Cache-Sets 16 Zuordnungen bzw. ein Eviction Set zu finden.
-Gesucht sei die Wahrscheinlichkeit bei $x$ Blöcken mindestens 16 Zuordnungen zu einem fixen Cache-Set $cs$ bei 128 Möglichkeiten zu finden.
-Hierfür eignet sich das Urnenmodell mit Zurücklegen ohne Beachtung der Reihenfolge, wobei die $x$ Blöcke die Ziehungen und die Cache-Sets die Kugeln repräsentieren. Sei $P(count(cs)>=16)$ die Wahrscheinlichkeit dafür, dass in der gezogenen Folge mindestens 16 mal das Cache-Set $cs$ auftaucht, unter der Bedingung, dass die Anzahl der Adressen $\#add = x$.
+\subsection{Wahl der Adresspoolgröße}
+
+Um die Anzahl der Blöcke beziehungsweise die Arraygröße in Webassembly sinnvoll zu bestimmen, kann zuerst die vereinfachte Annahme getroffen werden, dass die physischen Adressbits 12 bis 63 der 4 KiB Blöcke zufällig sind. 
+Die unbekannte Cache-Mapping Funktion nimmt nun die zufälligen Bits 12 bis 63 und die auf 0 gesetzten Bits 0 bis 11 entgegen und gibt eines von 128 möglichen Cache-Sets zurück.
+Ziel ist es mit einer Poolgröße $x$ und einer hohen Wahrscheinlichkeit für jedes Cache-Sets 16 Zuordnungen beziehungsweise ein Eviction Set zu finden.
+Gesucht sei die Wahrscheinlichkeit bei einer Poolgröße $x$ mindestens 16 Zuordnungen zu einem fixen Cache-Set $cs$ bei 128 Möglichkeiten zu finden.
+Hierfür eignet sich das Urnenmodell mit Zurücklegen ohne Beachtung der Reihenfolge, wobei die $x$ Adressen im Pool die Ziehungen und die Cache-Sets die Kugeln repräsentieren. Sei $P(count(cs)>=16)$ die Wahrscheinlichkeit dafür, dass in der gezogenen Folge mindestens 16 mal das Cache-Set $cs$ auftaucht, unter der Bedingung, dass die Poolgröße $\#add = x$.
 Leichter ist es hier die Gegenwahrscheinlichkeit zu berechnen die mit
 \begin{align*}
 P(count(cs)<16|\#add = x) &=
@@ -135,14 +142,18 @@ P(count(cs)<16|\#add = x) &=
 beschrieben ist.
 
 Die Wahrscheinlichkeit des $P(count(cs)>=16)$ ist etwa bedeutend im ersten Szenario:
-Angenommen die Angreiferin hat es auf eine bestimmte Adresse abgesehen und möchte ein korrelierendes Eviction-Set finden. Wie wahrscheinlich ist ein erfolgreicher Angriff bzw. wie hoch ist die Wahrscheinlichkeit ein korrelierendes Eviction-Set zu finden? Das Diagramm \ref{fig:prob_specific_es} gibt die Erfolgswahrscheinlichkeiten für verschiedene $x$-Werte an.
+Angenommen die Angreiferin hat es auf eine bestimmte Adresse abgesehen und möchte ein korrelierendes Eviction-Set finden. 
+Wie wahrscheinlich ist ein erfolgreicher Angriff beziehungsweise wie hoch ist die Wahrscheinlichkeit ein korrelierendes Eviction-Set zu finden? 
+Das Diagramm \ref{fig:prob_specific_es} gibt die Erfolgswahrscheinlichkeiten für verschiedene $x$-Werte an.
 \label{fig:prob_specific_es}
 \begin{center}
 \begin{scaletikzpicturetowidth}{\textwidth}
 \input{methods/plot_prob_specific_es.tex}
+\caption{Beschreibt den Zusammenhang zwischen der Poolgröße und der Wahrscheinlichkeit ein Eviction Set zu einer vorher festgelegten Adresse zu finden}
 \end{scaletikzpicturetowidth}
 \end{center}
-Im zweiten Szenario möchte die Angreiferin in einem komplexen Angriff eine Vielzahl von Adressen in unterschiedlichen Cache-Sets überwachen. Sie interessiert sich nun dafür, wie wahrscheinlich es ist alle 8192 Cache-Sets zu finden und somit auch die für sie relevanten. 
+Im zweiten Szenario möchte die Angreiferin in einem komplexen Angriff eine Vielzahl von Adressen in unterschiedlichen Cache-Sets überwachen. 
+Sie interessiert sich nun dafür, wie wahrscheinlich es ist alle 8192 Cache-Sets zu finden und somit auch die für sie relevanten. 
 
 Die Wahrscheinlichkeit für alle 128 möglichen Cache-Sets jeweils 16 Zuordnungen und damit gleichbedeutend alle 8192 möglichen Eviction Sets konstruieren zu können, ist mit 
 \begin{align*}
@@ -155,6 +166,7 @@ Das Diagramm \ref{fig:prob_all_es} gibt die Erfolgswahrscheinlichkeiten für ver
 \begin{center}
 \begin{scaletikzpicturetowidth}{\textwidth}
 \input{methods/plot_prob_all_es.tex}
+\caption{Beschreibt den Zusammenhang zwischen der Poolgröße und der Wahrscheinlichkeit alle Eviction Sets zu finden}
 \end{scaletikzpicturetowidth}
 \end{center}
 Häufig wird in Benchmarks angegeben wie viele Eviction-Sets überhaupt gefunden wurden. Die Wahrscheinlichkeit 
@@ -168,23 +180,98 @@ Das Diagramm \ref{fig:avg_es} gibt die Erfolgswahrscheinlichkeiten für verschie
 \begin{center}
 \begin{scaletikzpicturetowidth}{\textwidth}
 \input{methods/plot_avg_es.tex}
+\caption{Beschreibt das Verhältnis der Poolgröße zu der Größe des Erwartungswertes der gefundenen Eviction Sets}
 \end{scaletikzpicturetowidth}
 \end{center}
 
+TODO verschiedene reale bechmarks einfügen
 
+\subsection{Eviction-Set Suchalgorithmus}
 
+Im Folgenden soll der Algorithmus beschrieben werden, welcher die Adressen im Pool verschiedenen Eviction-Sets zuordnet.
+Der Algorithmus ist in der Lage Adressen Cache-Sets zuzuordnen ohne näheres über die CPU (L3-Cache Größe usw.) und die Adressbits 12 bis 63 zu wissen.
+Die Idee des Algorithmus ist nicht neu, sondern wurde etwa schon in \cite{} oder \cite{} in teilweise abgewandelter Form beschrieben.
 
+Der Eviction-Set-Konstruktionsalgorithmus besteht aus 3 Hauptpahsen, der Expand, Contract und Collect-Phase. 
+Zu Anfang wird zufällig eine Zeugenadresse aus dem Adresspool ausgewählt, für welche im Folgenden ein Eviction-Set gefunden werden soll.
+Die Annahme in der Expand-Phase ist, dass eine bestimmte Teilmenge der Adressen aus dem Pool, genannt Candidate-Set, ein Eviction-Set für die Zeugenadresse bildet, sofern der Pool groß genug ist.
+Um ein Candidate-Set zu testen wird zuerst auf die Zeugenadresse zugegriffen, um sicherzustellen, dass diese im Cache landet.
+Danach wird auf alle Adressen aus dem Candidate-Set zugegriffen und abschließend die Zugriffszeit auf Zeugenadresse gemessen. 
+Sofern das Candidate-Set ein Eviction-Set für die Zeugenadresse war, wurden die Daten der Zeugenadresse aus dem Cache verdrängt und die Zugriffszeit ist hoch und andernfalls niedrig.
+Dieser Vorgang wird mehrmals wiederholt, um den Einfluss des Timer- und System-Rauschens zu vermindern.
 
-TODO Algorithmus in Einzelheiten beschreiben
-\todo[size=\footnotesize]{Beschreibe den Algorithmus bitte in einzelteilen, und gib auch den code dafür einzeln an. Der komplette Code gehört in den Anhang.}\todo[size=\footnotesize]{Nutze eine kleinere Schriftart für listings}
+In der Expand-Phase wird dem Addresspool iterativ eine zufällige Adresse entnommen und dem Candidate-Set hinzugefügt (siehe auch Pseudocode \ref{alg:evictionSetExpand}). 
+Nach jeder Iteration wird das Candidate-Set auf die eben beschriebene Weise getestet.
+Falls das Candidate-Set ein Eviction-Set für die Zeugenadresse ist, wird zur nächsten Phase übergegangen, andernfalls die Iteration fortgesetzt.
 
+\begin{algorithm}[h]
+\DontPrintSemicolon
+\caption{Psuedo-Code für Expand-Phase des Eviction-Set Algorithmus}
+\label{alg:evictionSetExpand}
 
-\SetKwProg{Fn}{Function}{}{}
+\Fn{$Expand(evictionSet, memoryBlocks)$}{
+	\While{size(candidateSet) > 0}{
+		witnesss = SelectRandomItem(candidateSet)\;
+		\If{checkevict(evictionSet, witnesss)}{
+			\Return witnesss
+		}
+		evictionSet.add(witnesss)\;
+	}
+	\Return failed;
+}
+\end{algorithm}
+
+Im Allgemeinen beinhaltet das Candidate-Set nach der Expand-Phase mehrere hundert Einträge von denen eine Teilmenge der Größe 16 ebenfalls ein Eviction-Set für die Zeugenadresse bilden würde.
+Diese überflüssigen Einträge würden den Prime and Probe Vorgang erheblich verlangsamen, weswegen in der Contract-Phase versucht wird das Candidate-Set auf die Größe 16 einzudampfen (siehe auch Pseudocode \ref{alg:evictionSetContract}).
+Hierzu wird ein Element aus dem Candidate-Set entfernt und erneut getestet ob diese reduzierte Candidate-Set noch ein Eviction-Set für die Zeugenadresse ist.
+Falls ja wird dieses Element wieder da Adresspool hinzugefügt, andernfalls verbleibt es im Candidate-Set da es  notwendiger Bestandteil des Eviction-Sets ist.
+Dieser Vorgang wird für jedes Element im Candidate-Set einmal durchgeführt, sodass im fehlerfreien Fall schlussendlich 16 Elemente im Candidate-Set verbleiben.
+
+\begin{algorithm}[h]
+\DontPrintSemicolon
+\caption{Psuedo-Code für Contract-Phase des Eviction-Set Algorithmus}
+\label{alg:evictionSetContract}
+\Fn{$Contract(evictionSet, memoryBlocks, witness)$}{
+	\ForEach{candidate in evictionSet}{
+		\If{checkevict(evictionSet, witness)}{
+			mermoryBlocks.add(candidate)\;
+			evictionSet.add(candidate)\;	
+		}		
+	}
+}
+\end{algorithm}
+
+Wenn im Anschluss sofort wieder eine neue Zeugenadresse aus dem Pool gewählt würde, dann könnte eine Adresse gewählt werden, welche auf das selbe Cache-Set wie die vorherige Zeugenadresse abgebildet werden würde.
+Deshalb folgt im Anschluss an eine erfolgreiche Contract-Phase die Collect-Phase.
+In dieser werden alle Adressen aus dem Pool entfernt, welche ebenfalls von dem in der Contract-Phase gefundenen Eviction-Set aus dem Cache verdrängt werden (siehe auch Pseudocode \ref{alg:evictionSetCollect}).
+Durch diesen Schritt wird also vermieden, dass die spätere Menge von Eviction-Set dahingehend überprüft werden müsste, ob Eviction-Sets paarweise das selbe zugrundeliegende Cache-Set besitzen.
+Hierzu wird eine Adresse aus dem Pool durch einen Zugriff in den Cache geladen und anschließend auf alle Einträge im Eviction-Set zugegriffen.
+Danach wird die Zugriffszeit auf die Adresse gemessen und bei einer erhöhten Zeit aus dem Pool entfernt, da dann die Adresse auf das selbe Cache-Set wie die Einträge des Eviction-Set bzw. die letzte Zeugenadresse abgebildet wird.
+
+\begin{algorithm}[h]
+\DontPrintSemicolon
+\caption{Psuedo-Code für Collect-Phase des Eviction-Set Algorithmus}
+\label{alg:evictionSetCollect}
+
+\Fn{$Collect(evictionSet, memoryBlocks)$}{
+	witnessSet = empty\;
+	\ForEach{candidate in mermoryBlocks}{
+		\If{checkevict(evictionSet, candidate)}{
+			memoryBlocks.delete(candidate)\;
+			witnessSet.add(candidate)\;
+		}
+	}
+	\Return witnessSet;
+}
+\end{algorithm}
+
+Zusammenfassend wird in der Expand-Phase das Candidate-Set soweit vergrößert bis es ein Eviction-Set bildet, dann in der Contract-Phase auf die Größe 16 verkleinert und anschließend in der Collect-Phase alle auf das selbe Cache-Set abbildende Adressen aus dem Pool entfernt (siehe auch Pseudocode \ref{alg:evictionSetOverview}).
+Das gefundene Eviction-Set wird gespeichert und der Vorgang solange wiederholt bis die Anzahl der Pooladressen kleiner als 16 ist oder aufgrund von Fehlern in einer Phase mehrmals kein Eviction-Set gefunden wurde.
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
 \caption{Psuedo-Code für Eviction-Set Algorithmus}
-\label{alg:evictionSet}
+\label{alg:evictionSetOverview}
 
 \Fn{$EvictionSetFinder(memoryBlocks)$}{
     groups $\leftarrow$ empty\;
@@ -199,39 +286,12 @@ TODO Algorithmus in Einzelheiten beschreiben
 		}
     }
 }
-
-\Fn{$Expand(evictionSet, memoryBlocks)$}{
-	\While{size(candidateSet) > 0}{
-		witnesss = SelectRandomItem(candidateSet)\;
-		\If{checkevict(evictionSet, witnesss)}{
-			\Return witnesss
-		}
-		evictionSet.add(witnesss)\;
-	}
-	\Return failed;
-}
-
-\Fn{$Contract(evictionSet, memoryBlocks, witness)$}{
-	\ForEach{candidate in evictionSet}{
-		\If{checkevict(evictionSet, witness)}{
-			mermoryBlocks.add(candidate)\;
-			evictionSet.add(candidate)\;	
-		}		
-	}
-}
-
-\Fn{$Collect(evictionSet, memoryBlocks)$}{
-	witnessSet = empty\;
-	\ForEach{candidate in mermoryBlocks}{
-		\If{checkevict(evictionSet, candidate)}{
-			memoryBlocks.delete(candidate)\;
-			witnessSet.add(candidate)\;
-		}
-	}
-	\Return witnessSet;
-}
-
 \end{algorithm}
+
+\newtextend
+
+TODO Algorithmus in Einzelheiten beschreiben
+\todo[size=\footnotesize]{Beschreibe den Algorithmus bitte in einzelteilen, und gib auch den code dafür einzeln an. Der komplette Code gehört in den Anhang.}\todo[size=\footnotesize]{Nutze eine kleinere Schriftart für listings}
 
 
 \section{Verdeckter Kanal}
@@ -281,7 +341,7 @@ Um die einzelnen Bits auseinanderzuhalten, wird zwischen jedem gesendeten Bit ei
 
 %Problem: v8 compiliert lazy, d.h. nur häufig verwendete
 
-
+\newtext
 
 
 \subsection{Angriffe auf RSA Key Generierung}
@@ -366,6 +426,8 @@ Die Zeilen 1 bis 6 der Funktion $mp_gcd$ können in diesem Fall ignoriert werden
     \Return u*2^k
 }
 \end{algorithm}
+
+\newtextend
 
 %Was wird angegriffen
 

@@ -151,6 +151,12 @@
    captionpos=b
 }
 
+\newif\ifonline
+\IfFileExists{nored.tex}{\onlinefalse}{\onlinetrue}
+
+\newcommand{\newtext}{\ifonline\color{red}\fi}
+\newcommand{\newtextend}{\ifonline\color{black}\fi}
+
 % If you want to list your bib as a usual section listed in the table of
 % contents, you can use the following commands.
 %\makeatletter
@@ -190,7 +196,6 @@
 
 % The actual document starts here
 \begin{document}
-
   % The pages in the front are numbered with roman numerals.
   \frontmatter
   \include{front/titlepage}

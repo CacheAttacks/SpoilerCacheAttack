@@ -18,7 +18,7 @@ So kann eine fehlerhafte Schreiboperation eines Prozesses keinen Fehler in ander
 \section{Caches}
 
 Die Geschwindigkeitsentwicklung des Hauptspeichers konnte in den letzten Jahren nicht mit der des Prozessors Schritt halten \cite{speedGapCPUandRAM}. Der Cache ist ein im Vergleich zum Hauptspeicher kleinerer, aber schnellerer Pufferspeicher, welcher im aktuellen Kontext häufig benötigte Daten vorhält. Diese Daten zeichnen sich auch häufig dadurch aus, dass sie räumlich nah beieinander liegen.
-Ohne Caches wäre ein Prozessor häufig gezwungen, auf Daten des langsamen Hauptspeichers zu warten, und würde in seiner Verarbeitungsgeschwindigkeit ausgebremst. %\todo[size=\footnotesize]{positiv formulieren: Mit cache muss man nicht warten, dadurch wirds schneller} Ist die Aussage nicht wirkungsgleich bzw. genauso Pro-Caches vormuliert?
+Ohne Caches wäre ein Prozessor häufig gezwungen, auf Daten des langsamen Hauptspeichers zu warten, und würde in seiner Verarbeitungsgeschwindigkeit ausgebremst. %\todo[size=\footnotesize]{positiv formulieren: Mit cache muss man nicht warten, dadurch wirds schneller} Ist die Aussage nicht wirkungsgleich beziehungsweise genauso Pro-Caches vormuliert?
 Weiter liegt der Fokus der Arbeit auf die im Desktopbereich weit verbreitete x86-Architektur. Deshalb werden mit Intel-Prozessoren der Core-Architektur bestückte Testrechner verwendet, da Intels Core-Architektur im x86-Desktopsegment zurzeit den höchsten Marktanteil besitzt \cite{AMDIntelMarketShare}. Aus diesem Grund werden Erklärungen im Folgenden häufig mit Beispielen der Intel Core-Architektur veranschaulicht.
 
 Ein Cache der Core-Architektur lagert nicht einzelne Bytes, sondern immer gleich 64 Bytes, Cache-Line genannt, auf einmal ein. Dabei werden die 64 Bytes beginnend ab der größten Adresse, welche zugleich kleiner als die Zieladresse und ein Vielfaches von 64 ist, angefragt.
@@ -40,6 +40,8 @@ Bei Ivy-Bridge Prozessoren stellten die Autoren fest, dass manche Cache-Set die 
 
 \subsection{Assoziativität}
 
+\newtext
+
 Sofern die Auswahl des Cache-Eintrags für die Daten einer bestimmten Hauptspeicheradresse keinerlei Beschränkungen unterliegt, wird von einem voll-assoziativen Cache gesprochen. 
 Das andere Extrem wäre ein einfach-assoziativer Cache beziehungsweise eine direkte Abbildung, wobei die Adresse des Hauptspeichers, von der die Daten stammen, den zu wählenden Cache-Eintrag eindeutig festlegt.
 Der Mittelweg ist die n-Wege Assoziativität, bei dem die Daten nur an n Cache-Einträgen liegen können (siehe auch Abb.\ref{fig:CacheAsso}).
@@ -50,6 +52,8 @@ Der Mittelweg ist die n-Wege Assoziativität, bei dem die Daten nur an n Cache-E
 \centering
 \includegraphics[width=0.8\textwidth]{basics/Cache_Asso.png}
 \end{figure}
+
+\newtextend
 
 Der L3-Cache eines Intel i7-4770 ist beispielsweise 8 MiB groß und verfügt daher über 131072 ($2^{17}$) Cache-Einträge in der Größe einer Cache-Line. 
 Wäre dieser Cache nun voll-assoziativ, müsste er bei jeder Anfrage komplett durchsucht werden. Aus diesem Grund ist der Cache in Cache-Sets unterteilt, wobei Daten einer spezifischen Hauptspeicheradresse nur in genau ein Cache-Set eingelagert werden können. 
@@ -82,6 +86,8 @@ Wegen des großen Marktanteils von Intel-CPUs kann festgehalten werden, dass der
 Cache-Angriffe beschreiben eine generelle Klasse von Mikro-Architektur-Seitenkanalangriffen, welche den Cache verwenden um Informationen abzugreifen, wobei der Cache als geteilte Ressource zwischen verschiedenen Prozessen fungiert. Durch diesen Angriff können sichere und unsichere Prozesse über den geteilten Cache trotz höher liegender Schutzmechanismen wie virtualisiertem Speicher oder Hypervisor-Systemen kommunizieren. 
 Eine Angreiferin könnte ein Programm entwickeln, welches Informationen über den inneren Zustand eines anderen Prozesses sammelt, und so AES-Schlüssel \cite{BernsteinAES} sowie RSA-Schlüssel \cite{CacheAttackRSA} abgreifen auch über die Grenzen von virtuellen Maschinen hinweg.
 
+\newtext
+
 \subsection{Flush and Reload}
 
 Ausgang dieses Angriffs ist ein architekturspezifische Flush-Befehl, wie etwa der x86-Assemblerbefehl \textit{clflush}, welcher eine Adresse entgegennimmt und die dazugehörige Cache-Line invalidiert. 
@@ -95,6 +101,8 @@ Im anderen Fall müssen die Daten erst aus dem Hauptspeicher geladen werden, wom
 Ein Nachteil dieser Angriffsmethode ist die Notwendigkeit, dass sich der Opferprozess Speicherseiten mit dem Prozess der Angreiferin teilen muss. 
 Ein typisches Beispiel hierfür sind geteilte Bibliotheken, zum Beispiel .so Dateien unter Linux oder .dll Dateien unter Windows, welche etwa Kryptofunktionen bereitstellen. Des Weiteren ist der clflush-Befehl nicht in jeder Umgebung verfügbar, so ist etwa ein Angriff aus dem Browser heraus mit dieser Methode nicht möglich. 
 %\todo[size=\footnotesize]{Du hast ja schon geschrieben todo. Hier vielleicht auch eine kleine abbildung, aber defintiv irgendwas über flush WAIT reload und zeitmessungen}
+
+
 
 \SetKwProg{Fn}{Function}{}{}
 
@@ -111,6 +119,8 @@ Ein typisches Beispiel hierfür sind geteilte Bibliotheken, zum Beispiel .so Dat
 	timestampAfter <- getTimestamp()\;
 	\Return timestampAfter - timestampBefore > threshold
 }
+
+\newtextend
 
 \end{algorithm}
 
@@ -153,6 +163,8 @@ So ist aber in der Regel das Mapping der virtuellen und physischen Adressen bei 
 
 %Beschreibe Algorithmus
 %Hierfür werden zuerst wiederholt Speicherblöcke angefordert, wobei solche in einer Menge gesammelt werden, welche 
+
+\newtext
 
 \subsection{Timer}
 
@@ -211,3 +223,4 @@ WebAssembly ist ein W3C-Webstandard welcher ein binäres Format für ausführbar
 
 \todo[size=\footnotesize]{Fehlt: irgendwas in Richtung Drive-by, JIT-Environments, WebAssembly}
 
+\newtextend
