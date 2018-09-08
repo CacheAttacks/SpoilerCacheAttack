@@ -157,7 +157,13 @@ void measurement_funct(uint8_t * evictionBuffer, int window_size, uint8_t *targe
 
   l3pp_t l3 ;
 
+void storefor_write_SAB(){
+  uint32_t buffer_size = PAGE_COUNT * PAGE_SIZE;
+  store_for_js_SAB(buffer_size);
+}
+
 void storefor_write(){
+  //test if allocated buffer is continous physical memory (speed eviction set search by a factor of 2^8)
 	
 	// 8MB Buffer
 	// uint8_t * evictionBuffer;
@@ -168,13 +174,13 @@ void storefor_write(){
   uint8_t* buffer = mmap(NULL, buffer_size, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE,
                   -1, 0);
 
-  uint32_t storefor_add_arr_size = 100;
+  uint32_t storefor_add_arr_size = 120;
   uint8_t * storefor_add_arr = (uint8_t*) malloc(sizeof(uint32_t) * storefor_add_arr_size);
 	memset(storefor_add_arr, 0, sizeof(uint32_t) * storefor_add_arr_size);	
 
 	#define WINDOW_SIZE 64
 
-  l3 = l3_create_only(31, 0, buffer_size);
+  l3 = l3_create_only(31, 5, buffer_size);
 
 	//printf_ex("target_add:%p\n", buffer);
 	//measurement_funct(buffer, WINDOW_SIZE, buffer);
@@ -200,7 +206,7 @@ int try_to_create_es(uint32_t *address_arr, uint32_t number_of_storefor_add){
   //printf_ex("\n");
   //vl_free(lines);
 
-  vlist_t groups = map(l3, lines, 1);
+  vlist_t groups = map(l3, lines, 0);
   //printf_ex("%i\n",vl_len(lines));
   //groups = map(l3, lines);
   //groups = map(l3, lines);

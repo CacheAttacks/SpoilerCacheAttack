@@ -40,6 +40,10 @@ if (typeof mergeInto !== 'undefined')
       var lock = 0;
       var numberOfStoreForAdd = 0;
 
+      var nextCollidingAdressOffset = 20;
+
+      //var bufferedOutput = "";
+
       function subArrayAverage(arr, start, windowSize) {
         var sum = 0;
         for (var i = 0; i < windowSize; i++) {
@@ -66,6 +70,7 @@ if (typeof mergeInto !== 'undefined')
         output += " " + MeasurementArr[p];
         return false;
       }
+      //var savedp = 0;
 
       for (var p = windowSize; p < pageCount; p++) {
         var total = 0;
@@ -98,12 +103,15 @@ if (typeof mergeInto !== 'undefined')
         // check for new storefor address
         if (p > windowSize + movingWindowSize && lock < 0 &&
           checkForStoreFor(uint16MeasurementArr, p, movingWindowSize)) {
-            //console.log(p);
+            //console.log((p-1) + ": " + ((p-1)-savedp));
+            //bufferedOutput += ((p-1)-savedp) + " ";
+            //savedp = p-1;
           var uint8ptrStoreForAdd = (uint8ptrBuffer + (p-1) * pageSize);
           uint32wasmMem[uint32ptrAdressArr + numberOfStoreForAdd] = uint8ptrStoreForAdd;
           numberOfStoreForAdd++;
 
-          if(numberOfStoreForAdd >= 30){ //try to create es
+          if(numberOfStoreForAdd >= 115){ //try to create es
+            //console.log(bufferedOutput);
             if(Module['asm']._try_to_create_es(uint8ptrAddressArr, numberOfStoreForAdd) != 0)
               return true;
           }
@@ -115,12 +123,67 @@ if (typeof mergeInto !== 'undefined')
         }
         lock--;
       }
+      console.log("end");
 
 
       // average = arr => arr.reduce((p, c) => p + c, 0) / arr.length;
       // var measurementAverage = average(measurementArr);
       // console.log('measurementAverage:' + measurementAverage);
       // console.log(output);
+    }
+  });
+
+
+  if (typeof mergeInto !== 'undefined')
+  mergeInto(LibraryManager.library, {
+    store_for_js_SAB: function(bufferSize) {
+      const testBuffer = new SharedArrayBuffer(bufferSize);
+      const SABBuff = new Uint32Array(testBuffer);
+
+      var rounds = 100;
+      var pageSize = 4096;
+      var pageCount = bufferSize / pageSize;
+      var windowSize = 64;
+
+      //const counterWorker = new Worker('javascript/worker2.js');
+      //counterWorker.postMessage(testBuffer);
+      // while(true){
+      //   if(SABBuff[0] != 0)
+      //     break;
+      // }
+
+      var uint16MeasurementArr = new Uint16Array(pageCount);
+      var output = "";
+
+      for (var p = windowSize; p < pageCount; p++) {
+        var total = 0;
+
+        for (var r = 0; r < rounds; r++) {
+          // Stores
+          for (var i = windowSize; i >= 0; i--) {
+            SABBuff[(p - i) * 1024] = 0;
+            // evictionBuffer[(p-i)*PAGE_SIZE] = 0;
+          }
+          var before = Module['sharedArrayCounter'][0];
+
+          var val = Atomics.load(SABBuff,0);
+          //insert some useless commands to avoid instruction reordering
+          //this seems to work quite well, but there should exists better stuff
+          // val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;
+          Atomics.store(SABBuff,0,0);
+          var after = val;
+
+          after += Module['sharedArrayCounter'][0];
+          total += (after - before) - val;
+        }
+        uint16MeasurementArr[p] = total / rounds;
+        output += uint16MeasurementArr[p] + " ";
+
+        if(p % 1000 == 999){
+          console.log(output);
+          output = "";
+        }
+      }
     }
   });
 

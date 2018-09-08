@@ -752,8 +752,11 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
     time_collect += (uint64_t)get_diff(before, rdtscp());
 
     before = rdtscp();
-    while (vl_len(es))
+    while (vl_len(es)){
+      //printf_ex("%#08x\n", vl_get(es, 0));
       vl_push(set, vl_del(es, 0));
+    }
+      
 #ifdef DEBUG
     printf_ex("set %3d: lines: %4d expanded: %4d contracted: %2d collected: %d\n",
            vl_len(groups), d_l1, d_l2, d_l3, deleted);

@@ -48,9 +48,9 @@ Der Mittelweg ist die n-Wege-Assoziativität, bei der die Daten nur an n Cache-E
 
 \begin{figure}[h]
 \label{fig:CacheAsso}
-\caption{Links ist ein direkt abgebildeter Cache zu sehen, bei dem die Hauptspeicheradresse den Cache-Index vollumfänglich festlegt. Rechts ist ein 2-Wege assoziativer Cache zu sehen bei dem etwa die Hauptspeicheradresse 0 sowohl auf \textit{Index 0, Way 0} als auch auf \textit{Index 0, Way 1} im Cache abgebildet werden kann \cite{CacheAssoWiki}.}
 \centering
 \includegraphics[width=0.8\textwidth]{basics/Cache_Asso.png}
+\caption{Links ist ein direkt abgebildeter Cache zu sehen, bei dem die Hauptspeicheradresse den Cache-Index vollumfänglich festlegt. Rechts ist ein 2-Wege assoziativer Cache zu sehen bei dem etwa die Hauptspeicheradresse 0 sowohl auf \textit{Index 0, Way 0} als auch auf \textit{Index 0, Way 1} im Cache abgebildet werden kann \cite{CacheAssoWiki}.}
 \end{figure}
 
 \newtextend
@@ -110,6 +110,7 @@ Ein typisches Beispiel hierfür sind geteilte Bibliotheken, zum Beispiel .so Dat
 \DontPrintSemicolon
 \caption{Psuedo-Code für Flush and Reload}
 \label{alg:flush_and_reload}
+\SetAlgoNlRelativeSize{-2}
 
 \Fn{$flushAndReload(address)$}{
     clflush(address)\;
@@ -172,9 +173,9 @@ Beide eben beschrieben Angriffsmethoden setzen voraus, dass die Angreifern Laufz
 
 \begin{figure}[h]
 \label{fig:RAMCacheLatency}
-\caption{Wahrscheinlichkeitsverteilung der Zugriffszeiten für eine aus dem Cache verdrängte und dort vorliegende Variable \cite{TheSpyInTheSandbox}}
 \centering
 \includegraphics[width=0.55\textwidth]{basics/i7-4790HQ_latency_plot.pdf}
+\caption{Wahrscheinlichkeitsverteilung der Zugriffszeiten für eine aus dem Cache verdrängte und dort vorliegende Variable \cite{TheSpyInTheSandbox}}
 \end{figure}
 
 

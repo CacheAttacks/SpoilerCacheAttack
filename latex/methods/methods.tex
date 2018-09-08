@@ -145,17 +145,19 @@ Die Wahrscheinlichkeit des $P(count(cs)>=16)$ ist etwa bedeutend im ersten Szena
 Angenommen, die Angreiferin hat es auf eine bestimmte Adresse abgesehen und möchte ein korrelierendes Eviction-Set finden. 
 Wie wahrscheinlich ist ein erfolgreicher Angriff beziehungsweise wie hoch ist die Wahrscheinlichkeit, ein korrelierendes Eviction-Set zu finden? 
 Das Diagramm \ref{fig:prob_specific_es} gibt die Erfolgswahrscheinlichkeiten für verschiedene $x$-Werte an.
+
+\begin{figure}[h]
 \label{fig:prob_specific_es}
-\begin{center}
+\centering
 \begin{scaletikzpicturetowidth}{\textwidth}
 \input{methods/plot_prob_specific_es.tex}
-\caption{Beschreibt den Zusammenhang zwischen der Poolgröße und der Wahrscheinlichkeit ein Eviction Set zu einer vorher festgelegten Adresse zu finden}
 \end{scaletikzpicturetowidth}
-\end{center}
+\caption{Beschreibt den Zusammenhang zwischen der Poolgröße und der Wahrscheinlichkeit ein Eviction Set zu einer vorher festgelegten Adresse zu finden}
+\end{figure}
 Im zweiten Szenario möchte die Angreiferin in einem komplexen Angriff eine Vielzahl von Adressen in unterschiedlichen Cache-Sets überwachen. 
 Sie interessiert sich nun dafür, wie wahrscheinlich es ist, alle 8192 Cache-Sets zu finden und somit auch die für sie relevanten. 
 
-Die Wahrscheinlichkeit, für alle 128 möglichen Cache-Sets jeweils 16 Zuordnungen und damit gleichbedeutend alle 8192 möglichen Eviction Sets konstruieren zu können, ist mit 
+Die Wahrscheinlichkeit, für alle 128 möglichen Cache-Sets jeweils 16 Zuordnungen und damit gleichbedeutend alle 8192 möglichen Eviction Sets konstruieren zu können, ist mit TODO Berechnung prüfen!!!!
 \begin{align*}
 P(count(cs)>=16|\#add = x)^{128} = (1-P(count(cs)<16|\#add = x))^{128}
 \end{align*}
@@ -163,12 +165,13 @@ gegeben.
 
 Das Diagramm \ref{fig:prob_all_es} gibt die Erfolgswahrscheinlichkeiten für verschiedene $x$-Werte im zweiten Szenario an.
 \label{fig:prob_all_es}
-\begin{center}
+\begin{figure}[h]
+\centering
 \begin{scaletikzpicturetowidth}{\textwidth}
 \input{methods/plot_prob_all_es.tex}
-\caption{Beschreibt den Zusammenhang zwischen der Poolgröße und der Wahrscheinlichkeit alle Eviction Sets zu finden}
 \end{scaletikzpicturetowidth}
-\end{center}
+\caption{TODO Berechnung prüfen!!!! Beschreibt den Zusammenhang zwischen der Poolgröße und der Wahrscheinlichkeit alle Eviction Sets zu finden}
+\end{figure}
 Häufig wird in Benchmarks angegeben wie viele Eviction-Sets überhaupt gefunden wurden. Die Wahrscheinlichkeit 
 \begin{align*}
 \sum\limits_{i=1}^{128} i {x \choose i} P(count(cs)>=16|\#add = x)^i \cdot P(count(cs)<16|\#add = x)^{128-i} 
@@ -177,12 +180,13 @@ gibt den Erwartungswert der gefundenen Eviction-Sets an.
 
 Das Diagramm \ref{fig:avg_es} gibt die Erfolgswahrscheinlichkeiten für verschiedene $x$-Werte im zweiten Szenario an.
 \label{fig:avg_es}
-\begin{center}
+\begin{figure}[h]
+\centering
 \begin{scaletikzpicturetowidth}{\textwidth}
 \input{methods/plot_avg_es.tex}
-\caption{Beschreibt das Verhältnis der Poolgröße zu der Größe des Erwartungswertes der gefundenen Eviction Sets}
 \end{scaletikzpicturetowidth}
-\end{center}
+\caption{Beschreibt das Verhältnis der Poolgröße zu der Größe des Erwartungswertes der gefundenen Eviction Sets}
+\end{figure}
 
 TODO verschiedene reale bechmarks einfügen
 
@@ -266,7 +270,7 @@ Danach wird die Zugriffszeit auf die Adresse gemessen und bei einer erhöhten Ze
 \end{algorithm}
 
 Zusammenfassend wird in der Expand-Phase das Candidate-Set soweit vergrößert, bis es ein Eviction-Set bildet, dann in der Contract-Phase auf die Größe 16 verkleinert und anschließend in der Collect-Phase alle auf das selbe Cache-Set abbildende Adressen aus dem Pool entfernt (siehe auch Pseudocode \ref{alg:evictionSetOverview}).
-Das gefundene Eviction-Set wird gespeichert und der Vorgang solange wiederholt bis die Anzahl der Pooladressen kleiner als 16 ist oder aufgrund von Fehlern in einer Phase mehrmals kein Eviction-Set gefunden wurde.
+Das gefundene Eviction-Set wird gespeichert und der Vorgang solange wiederholt, bis die Anzahl der Pooladressen kleiner als 16 ist oder aufgrund von Fehlern in einer Phase mehrmals kein Eviction-Set gefunden wurde.
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
@@ -292,23 +296,38 @@ Das gefundene Eviction-Set wird gespeichert und der Vorgang solange wiederholt b
 
 Ein Eviction-Set muss mindestens die Größe der Assoziativität besitzen, weshalb es naheliegend ist in der Expand-Phase nicht mit einem leeren sondern mit einem Candidate-Set der Größe der Assoziativität zu starten und so in jeder Expand-Phase Assoziativität - 1 viele Überprüfungen einzusparen.
 Außerdem ist es nicht optimal in jeder Iteration dem Candidate-Set nur eine Adresse hinzuzufügen, da insbesondere bei einem kleinen Candidate-Set eine geringe Wahrscheinlichkeit besteht, dass eine zusätzliche Adresse dieses zu einem Eviction-Set werden lässt.
-Die Idee ist daher bei einem noch kleinen Candidate-Set in jeder Iteration viele Adressen aus dem Pool hinzuzufügen und mit zunehmender Größe des Candidate-Set die Anzahl der in jeder Iteration hinzukommenden Adressen zu verringern.
+Die Idee ist, daher bei einem noch kleinen Candidate-Set in jeder Iteration viele Adressen aus dem Pool hinzuzufügen und mit zunehmender Größe des Candidate-Set die Anzahl der in jeder Iteration hinzukommenden Adressen zu verringern.
 
 
 \subsection{Details der realen Implementierung}
 
-Wie weiter oben beschrieben werden insbesondere der Test ob ein Set ein Eviction-Set für bestimmte
-Adresse darstellt mehrfach wiederholt um Fehler auszuschließen. Problematisch ist dies vor allem in der Expand-Phase, da das Candidate-Set eine größere von mehreren hundert Einträgen annimmt und nach jeder Iteration gegen die Zeugenadresse getestet wird. 
+Wie weiter oben beschrieben, wird insbesondere der Test, ob ein Set ein Eviction-Set für bestimmte
+Adresse darstellt, mehrfach wiederholt, um Fehler auszuschließen. Problematisch ist dies vor allem in der Expand-Phase, da das Candidate-Set eine Größe von mehreren hundert Einträgen annimmt und nach jeder Iteration gegen die Zeugenadresse getestet wird. 
 Eine einzige erhöhte Zugriffszeitmessung würde das Candidate-Set fälschlicherweise als Eviction-Set für die Zeugenadresse einordnen. 
-Es wurde festgestellt, dass erhöhte Zugriffszeiten mehrmals hintereinander auftreten können, deshalb wird ein erhöhte Messung in der Expand-Phase 20 mal erneut überprüft. 
-Dabei bricht die Überprüfung ab sobald eine der Messungen eine widersprüchliche Aussage zulässt.
+Es wurde festgestellt, dass erhöhte Zugriffszeiten mehrmals hintereinander auftreten können, deshalb wird eine erhöhte Messung in der Expand-Phase 20 mal erneut überprüft. 
+Dabei bricht die Überprüfung ab, sobald eine der Messungen eine widersprüchliche Aussage zulässt.
 
 Trotz der hohen Anzahl der Wiederholungen sind die Kosten hierfür gering, da im fehlerfreien Optimalfall nur zusätzlich 20 Prüfungen anfallen und in den meisten Fehlerfällen nur einzelne zusätzliche Überprüfungen durchgeführt werden. 
-Dem gegenüber steht Vorteil nicht fälschlicherweise in die Contract-Phase zu wechseln und dort erst spät zu merken, dass das Candidate-Set kein Eviction-Set ist.
-Wenn nun das Candidate-Set kein Eviction-Set für die Zeugenadresse ist, würde in der naiven Implementierung der Contract-Phase über alle Einträge des Candidate-Set iteriert werden, aber kein Einträgt je gelöscht.
+Demgegenüber steht der Vorteil, nicht fälschlicherweise in die Contract-Phase zu wechseln und dort erst spät zu merken, dass das Candidate-Set kein Eviction-Set ist.
+Wenn nun das Candidate-Set kein Eviction-Set für die Zeugenadresse ist, würde in der naiven Implementierung der Contract-Phase über alle Einträge des Candidate-Set iteriert werden, aber kein Eintrag je gelöscht.
 Denn die Zugriffszeit auf die Zeugenadresse wird immer niedrig bleiben, was den Algorithmus zur fälschlichen Annahme verleitet, alle Einträge seien für das Eviction-Set notwendig.
-Wir wissen jedoch, dass die Größe des Eviction-Set der Assoziativität des L3-Caches entsprechen muss und können die Contract-Phase abbrechen sobald mehr als der Assoziativität entsprechenden Anzahl von Einträgen des Candidate-Set als notwendig eingestuft wurden, da dann ein Fehler vorliegt.
+Wir wissen jedoch, dass die Größe des Eviction-Set der Assoziativität des L3-Caches entsprechen muss und können die Contract-Phase abbrechen, sobald mehr als der Assoziativität entsprechenden Anzahl von Einträgen des Candidate-Set als notwendig eingestuft wurden, da dann ein Fehler vorliegt.
 
+\section{Verbesserte Eviction-Set Suche mittels Store-to-load-forwarding}
+
+Heutige Prozessoren wie etwa die Intel Core Reihe führen auch Store- und Load-Befehle Out-of-Order aus und stehen damit vor der Aufgabe auf Datenabhängigkeiten zu reagieren.
+Die Techniken für eine Speicher-Disambiguierung erkennen echte Abhängigkeiten zwischen Speicheroperationen während Ausführung. 
+Außerdem erlauben die Techniken der CPU zu einem vorherigen Zustand zurückzukehren sobald eine Abhängigkeit verletzt wurde.
+Die Möglichkeit Load- und Store-Befehle Out-of-Order auszuführen, sorgt für eine erhöhte Parallelität auf Instruktionsebene und eine damit verbesserte Single-Thread-Performance.
+
+\begin{figure}[h]
+\label{fig:CacheAsso}
+\centering
+\includegraphics[width=0.6\textwidth]{methods/memory_disambiguation.pdf}
+\caption{Beispiel für eine Speicher-Disambiguierung. Die Nummern in den Kreisen geben die chronologische Ausführungsreihenfolge an und der weiße Pfeil am linken Rand die Reihenfolge im Quellcode. Load 2 kann nicht früher ausgeführt werden, da er von Store 1 abhängig ist. Load 4 hingegen ist von den anderen Operationen unabhängig und kann daher vor Store 1 und Store 3 ausgeführt werden. Durch diese vorgezogene Ausführung können Instruktionen die den Wert von X benötigen im Folgenden von einer geringen Zugriffslatenz proftieren. \cite{CacheAssoWiki}.}
+
+
+\end{figure}
 
 \newtextend
 
@@ -345,7 +364,7 @@ Sende- und Empfangsseite können durchaus abweichende Parameter verwenden, wenn 
 Auf dem Testrechner benötigt ein in C geschriebenes Sendeprogramm für eine Million Prime-Vorgänge mit 16 Adressen und der Single-Pointer-Chasing-Methode (siehe Algorithmus \ref{alg:pointerChasing}) etwa 323 Millionen Taktzyklen.
 Im Optimalfall kann im Timeslot $x$ ein erfolgter Prime-Vorgang als 1 und ein nicht erfolgter Prime-Vorgang als 0 interpretiert werden.
 Bei einem typischen All-Core-Turbo-Takt von 3,4 Ghz des i7-4770 ergibt sich so eine maximale Senderate von TODO ~10,5 Mbit/s.
-Diese Rate wird jedoch vom Empfänger beschränkt, welcher zusätzlich noch eine Zeitmessung durchführen muss. Der Worst-Case ist hier ein in Webassembly geschriebener Empfangsroutine, da dort eine Zeitmessung kostenintensiver ist. In Chromium 66 können eine Million Messungen eines Cache-Sets in etwa 200 ms durchgeführt werden. Im Mittel dauert eine Messung also 0,2 \textmu s, womit eine Empfangsrate von maximal ~5 MBit/s realisiert werden kann.
+Diese Rate wird jedoch vom Empfänger beschränkt, welcher zusätzlich noch eine Zeitmessung durchführen muss. Der Worst-Case ist hier eine in Webassembly geschriebene Empfangsroutine, da dort eine Zeitmessung kostenintensiver ist. In Chromium 66 können eine Million Messungen eines Cache-Sets in etwa 200 ms durchgeführt werden. Im Mittel dauert eine Messung also 0,2 \textmu s, womit eine Empfangsrate von maximal ~5 MBit/s realisiert werden kann.
 
 %Um die Performance zu erhöhen kann wie erwähnt die Anzahl der zugegriffen Speicheradressen reduziert werden. 
 Im Folgenden soll die maximal mögliche Senderate unter optimalen Bedingungen ermittelt werden. 
@@ -370,10 +389,10 @@ Um die einzelnen Bits auseinanderzuhalten, wird zwischen jedem gesendeten Bit ei
 
 Details zu Implementierung in Mozilla NSS
 
-Mozilla Network Security Services(NSS) ist ein Menge von Bibliotheken welche eine plattformübergreifende Entwicklung von sicheren Client- und Server-Anwendungen anstrebt. Dabei wird unterem anderem TLS oder S/MIME implementiert. Mozilla NSS wird etwa im Firefox-Browser und der Mail-Anwendung Thunderbird eingesetzt.
+Mozilla Network Security Services(NSS) ist ein Menge von Bibliotheken, welche eine plattformübergreifende Entwicklung von sicheren Client- und Server-Anwendungen anstrebt. Dabei wird unter anderem TLS oder S/MIME implementiert. Mozilla NSS wird etwa im Firefox-Browser und der Mail-Anwendung Thunderbird eingesetzt.
 Der Quellcode ist unter der Mozilla Public License verfügbar und kann online etwa im Firefox-Repository \cite{MozillaDXR} eingesehen werden.
 
-Im folgenden soll die Schlüsselerzuegung für das RSA-Verfahren in Mozilla NSS beschrieben werden.
+Im folgenden soll die Schlüsselerzeugung für das RSA-Verfahren in Mozilla NSS beschrieben werden.
 
 Der Code zur Schlüsselerzeugung liegt im Unterordner lib/freebl. Sobald die Schlüsselparameter $p,q,n,d,e$ bestimmt wurden, werden diese in der Funktion RSA_PrivateKeyCheck auf Gültigkeit überprüft (siehe Pseudo-Code \ref{alg:RSA_PrivateKeyCheck}).
 
@@ -409,10 +428,10 @@ Der Code zur Schlüsselerzeugung liegt im Unterordner lib/freebl. Sobald die Sch
 %}
 %\end{algorithm}
 
-Relvant für diese Arbeit sind im Wesentlichen Zeile 4 und 5 in denen die Teilerfremdheit von $e$ zu $p-1$ und $q-1$, d.h. $gcd(e,p-1) = 1$ und $gcd(e,q-1) = 1$ geprüft wird.
+Relvant für diese Arbeit sind im Wesentlichen die Zeilen 4 und 5, in denen die Teilerfremdheit von $e$ zu $p-1$ und $q-1$, d.h. $gcd(e,p-1) = 1$ und $gcd(e,q-1) = 1$ geprüft wird.
 Aus Performancegründen wird der Exponent $e$, anders als ursprünglich im RSA-Algorithmus beschrieben, auf den Wert 65537 fixiert.
-Interessant ist die Funktion $mp_gcd$ (Pseudocode siehe \ref{alg:mp_gcd}), welche den größten gemeinsamen Teiler nachdem binären Verfahren von Josef Strein \cite{} berechnet. Dieser Algorithmus verwendet zum berechnen des ggT ausschließlich Rechts-Shift-Operationen (Teilen durch 2) und Subtraktionen, wodurch dieser besonders für die in diesem Kontext verwendeten großen Zahlen interessant ist.
-Die Zeilen 1 bis 6 der Funktion $mp_gcd$ können in diesem Fall ignoriert werden, da der Exponent $e$ wie oben beschrieben immer 65537 und damit ungerade ist. Bedeutender hingegen ist die $while$-Schleife in den Zeilen 11 bis 17, welche abhängig von den Eingaben Fallunterscheidungen durchführt. Das Ziel ist hier die Rechts-Shift-Operation (Zeile 13) von der Subtraktionsfunktion (Zeile 17) zu unterscheiden, um die Zustände während der Berechnung zu rekonstruieren.
+Interessant ist die Funktion $mp_gcd$ (Pseudocode siehe \ref{alg:mp_gcd}), welche den größten gemeinsamen Teiler nach dem binären Verfahren von Josef Strein \cite{} berechnet. Dieser Algorithmus verwendet zum Berechnen des ggT ausschließlich Rechts-Shift-Operationen (Teilen durch 2) und Subtraktionen, wodurch dieser besonders für die in diesem Kontext verwendeten großen Zahlen interessant ist.
+Die Zeilen 1 bis 6 der Funktion $mp_gcd$ können in diesem Fall ignoriert werden, da der Exponent $e$ wie oben beschrieben immer 65537 und damit ungerade ist. Bedeutender hingegen ist die $while$-Schleife in den Zeilen 11 bis 17, welche abhängig von den Eingaben Fallunterscheidungen durchführt. Das Ziel ist hier, die Rechts-Shift-Operation (Zeile 13) von der Subtraktionsfunktion (Zeile 17) zu unterscheiden, um die Zustände während der Berechnung zu rekonstruieren.
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
