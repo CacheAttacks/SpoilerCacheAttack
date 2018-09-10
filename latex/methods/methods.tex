@@ -5,7 +5,7 @@
 
 Das folgende Kapitel beschreibt, mit Hilfe welcher Softwaretools der Cache-Angriff implementiert wird.
 
-Um das allgemeinere und praxisnähere Angriffsmodell umzusetzen und den Angriff schon durch den Besuch einer Website zu starten, liegt der komplette Angriffscode in JavaScript und Webassembly vor. 
+Um das allgemeinere und praxisnähere Angriffsmodell \todo{allgemeiner und praxisnäher als was?} umzusetzen und den Angriff schon durch den Besuch einer Website zu starten, liegt der komplette Angriffscode in JavaScript und Webassembly vor. 
 Frühere Implementierungen von Cache-Angriffen im Browser \cite{TheSpyInTheSandbox} hatten noch keine Möglichkeit, Webassembly zu verwenden, weshalb diese mit ihrem kompletten Angriffscode in JavaScript geschrieben waren. 
 Webassembly ermöglicht hardwarenähere Programmierung und den Vorteil, dass der Code nicht wie in JavaScript während der Laufzeit optimiert werden muss. 
 Des Weiteren steht mit dem Emscripten-Compiler ein Tool bereit, welches die Übersetzung von C-Code in Webassembly anbietet. Somit kann ein bestehender Angriffscode in C, in diesem Fall von Mastik, als Grundlage verwendet werden, und eine komplette fehleranfällige Neuimplementierung in JavaScript entfällt.
@@ -13,14 +13,14 @@ Des Weiteren steht mit dem Emscripten-Compiler ein Tool bereit, welches die Übe
 
 \section{Timer in JavaScript}
 
-Der hier ausgeführte Cache-Angriff benötigt wie in \ref beschrieben präzise Timer, welche eine Auflösung von unter 30 ns bereitstellen sollten. Dennoch könnte die Suche nach \textit{Eviction-Sets} auch mit schlechteren Timerauflösungen bewerkstelligt werden, indem Operationen mehrfach ausgeführt werden und die Differenz der aufsummierten Zeiten zur Bewertung herangezogen wird.
+Der hier ausgeführte Cache-Angriff benötigt wie in \ref \todo{ref was?} beschrieben präzise Timer, welche eine Auflösung von unter 30 ns bereitstellen sollten. Dennoch könnte die Suche nach \textit{Eviction-Sets} auch mit schlechteren Timerauflösungen bewerkstelligt werden, indem Operationen mehrfach ausgeführt werden und die Differenz der aufsummierten Zeiten zur Bewertung herangezogen wird.
 Im \textit{Eviction-Set}-Algorithmus könnte etwa die Funktion $checkevict$ wie in Algorithmus \ref{alg:checkevict_low_resolution} angepasst werden, wobei der Parameter $repeatIterations$ abhängig von der Timerauflösung gewählt wird. 
-Weiter besteht jedoch das Problem, schwache Aktivitäten im Cache-Set während des eigentlichen Angriffs aufzudecken, da im Worst-Case nur ein Eintrag aus dem beobachteten Cache-Set verdrängt wird und somit lediglich die Zugriffszeit zwischen einem Hit und einem Miss ausschlaggebend ist. 
-In diesem Fall könnte die Dauer mehrerer Prime and Probe-Iterationen gesamtheitlich gemessen werden, und zwar unter der Vermutung, dass auf die für die Verdrängung verantwortliche Adresse über die Zeit mehrfach zugegriffen wird. Die direkten Auswirkungen eines niedrig aufgelösten Timers sind also eine geringere zeitliche Auflösung von Cache-Aktivitäten oder die Nichtregestrierung von schwachen.
+Weiter besteht jedoch \todo{Füllwort weg} das Problem, schwache Aktivitäten im Cache-Set während des eigentlichen Angriffs aufzudecken, da im Worst-Case nur ein Eintrag aus dem beobachteten Cache-Set verdrängt wird und somit lediglich die Zugriffszeit zwischen einem Hit und einem Miss ausschlaggebend ist. 
+In diesem Fall könnte die Dauer mehrerer Prime and Probe-Iterationen gesamtheitlich gemessen werden, und zwar unter der Vermutung, dass auf die für die Verdrängung verantwortliche Adresse über die Zeit mehrfach zugegriffen wird. \todo{Ich verstehe den nächsten Satz nicht.} Die direkten Auswirkungen eines niedrig aufgelösten Timers sind also eine geringere zeitliche Auflösung von Cache-Aktivitäten oder die Nichtregestrierung von schwachen.
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
-\caption{Psuedo-Code für $checkevict$ im Fall von einer niedrig aufgelösten getTimestamp}
+\caption{Pseudo-Code für $checkevict$ im Fall von einer niedrig aufgelösten getTimestamp}
 \label{alg:checkevict_low_resolution}
 
 \Fn{$checkevict(possibleEvictionSet, witness)$}{
@@ -37,12 +37,12 @@ In diesem Fall könnte die Dauer mehrerer Prime and Probe-Iterationen gesamtheit
 
 Der W3C hat die High-Resolution-Time-API spezifiziert, welche die Methode performance.now() beinhaltet, die einen aktuellen Timestamp zurückgibt. Im Firefox hatte die Methode in früheren Versionen eine hinreichend genaue Auflösung im Nanosekundenbereich, wobei in Reaktion auf die Sicherheitslücken Meltdown und Spectre die Auflösung schrittweise auf 2 ms im aktuellen Firefox 60 abgesenkt wurde. 
 Auch in den Browsern Edge und Chrome wurden im Zuge der Veröffentlichung von Meltdown und Spectre die Auflösung von perfomance.now() verringert.
-Allerdings wird auf den zurückgegebenen Timestamp zusätzlich ein Timerjitter addiert. 
+Allerdings \todo{Allerdings, nicht außerdem? Auch wieder Füllwort, hier sogar sinn verändernd} wird auf den zurückgegebenen Timestamp zusätzlich ein Timerjitter addiert. 
 
 So bieten Edge und Chrome zurzeit (Stand Juni 2018) eine Auflösung von 20 \textmu s + 20 \textmu s Jitter respektive 100 \textmu s + 100 \textmu s Jitter.
 Das Paper "Fantastic Timers and where to find them" \cite{FantasticTimers} beschreibt diverse andere Methoden, um mit Hilfe von JavaScript Timer zu generieren (??? Was?). 
 Allerdings ist nur eine geeignete Methode dabei, da die Auflösung aller anderen mindestens im hohen einstelligen \textmu s Bereich liegt und somit der Parameter $repeatIterations$ auf Werte von etwa 1000 gesetzt werden müsste, um zuverlässig \textit{Eviction Sets} zu finden. 
-Hierdurch würde die benötigte Ausführungszeit zum Finden der \textit{Eviction Sets} auf ein Maß ansteigen, welches dann nicht mehr zum angenommenen Angriffsmodell passen würde.
+Hierdurch würde die benötigte Ausführungszeit zum Finden der \textit{Eviction Sets} auf ein Maß ansteigen, welches \todo{Füllwort weg} dann nicht mehr zum angenommenen Angriffsmodell passen würde.
 
 \newtext
 
