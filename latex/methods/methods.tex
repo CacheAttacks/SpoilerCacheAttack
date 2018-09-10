@@ -13,7 +13,7 @@ Des Weiteren steht mit dem Emscripten-Compiler ein Tool bereit, welches die Übe
 
 \section{Timer in JavaScript}
 
-Der hier ausgeführte Cache-Angriff benötigt wie in \ref \todo{ref was?} beschrieben präzise Timer, welche eine Auflösung von unter 30 ns bereitstellen sollten. Dennoch könnte die Suche nach \textit{Eviction-Sets} auch mit schlechteren Timerauflösungen bewerkstelligt werden, indem Operationen mehrfach ausgeführt werden und die Differenz der aufsummierten Zeiten zur Bewertung herangezogen wird.
+Der hier ausgeführte Cache-Angriff benötigt wie in \ref{} \todo{ref was?} beschrieben präzise Timer, welche eine Auflösung von unter 30 ns bereitstellen sollten. Dennoch könnte die Suche nach \textit{Eviction-Sets} auch mit schlechteren Timerauflösungen bewerkstelligt werden, indem Operationen mehrfach ausgeführt werden und die Differenz der aufsummierten Zeiten zur Bewertung herangezogen wird.
 Im \textit{Eviction-Set}-Algorithmus könnte etwa die Funktion $checkevict$ wie in Algorithmus \ref{alg:checkevict_low_resolution} angepasst werden, wobei der Parameter $repeatIterations$ abhängig von der Timerauflösung gewählt wird. 
 Weiter besteht jedoch \todo{Füllwort weg} das Problem, schwache Aktivitäten im Cache-Set während des eigentlichen Angriffs aufzudecken, da im Worst-Case nur ein Eintrag aus dem beobachteten Cache-Set verdrängt wird und somit lediglich die Zugriffszeit zwischen einem Hit und einem Miss ausschlaggebend ist. 
 In diesem Fall könnte die Dauer mehrerer Prime and Probe-Iterationen gesamtheitlich gemessen werden, und zwar unter der Vermutung, dass auf die für die Verdrängung verantwortliche Adresse über die Zeit mehrfach zugegriffen wird. \todo{Ich verstehe den nächsten Satz nicht.} Die direkten Auswirkungen eines niedrig aufgelösten Timers sind also eine geringere zeitliche Auflösung von Cache-Aktivitäten oder die Nichtregestrierung von schwachen.
@@ -47,7 +47,7 @@ Hierdurch würde die benötigte Ausführungszeit zum Finden der \textit{Eviction
 \newtext
 
 Als einziges angemessenes Zeitmessungswerkzeug verbleibt der SharedArrayBuffer aus Javascript. 
-Die Ausführung von Javascript passiert in einem Thread, wobei die Möglichkeit besteht, sogenannte Webworker zu starten, welche Code aus einem Skript in einem eigenen Thread ausführen.
+Die Ausführung von Javascript passiert in einem Thread, wobei die Möglichkeit besteht, sogenannte Webworker zu starten, welche Code aus einem Skript in einem eigenen Thread ausführen. \todo{sehr verschachtelt}
 Diese haben von Grund auf aber einen zu Mainthread abgetrennten Speicherbereich, so dass Daten ursprünglich über Nachrichten zwischen dem Mainthread und dem Webworker ausgetauscht werden mussten. Hier setzt der SharedArrayBuffer an, welcher einen geteilten Speicherbereich zwischen Mainthread und Webworker definiert.
 
 Gemäß Code-Listing \ref{alg_list:sharedArrayBufferWorkerMain} wird im Mainthread zuerst ein SharedArrayBuffer von 4 Bytes angelegt. Anschließend wird der als Zeitgeber fungierende Webworker gestartet und ihm eine Referenz auf den eben angelegten SharedArrayBuffer übersandt. 
@@ -65,7 +65,7 @@ Zum Schluss geht der Webworker in die Endlosschleife über, in welcher die Zähl
 Das Iterieren einer Variable benötigt nur wenige Taktzyklen, weshalb der aktuelle Wert der Zählvariable als Zeitstempel interpretiert werden kann. 
 Die Auflösung dieser Methode hängt also von der Geschwindigkeit der Iteration sowie der Speichersynchronisation des SharedArrayBuffers zwischen Mainthread und Webworker ab.
 
-In Versuchen mit verschiedenen Webbrowsern und Hardwarekonfigurationen zeigte sich, dass die Auflösung mindestens im einstelligen Nanosekundenbreich liegt und somit ausreichend genau ist, um den Unterschied zwischen einem Cache-Miss und Hit festzustellen.
+In Versuchen mit verschiedenen Webbrowsern und Hardwarekonfigurationen zeigte sich, dass die Auflösung mindestens im einstelligen Nanosekundenbreich liegt und somit ausreichend genau ist, um den Unterschied zwischen einem Cache-Miss und Hit festzustellen. \todo{wie viel configs un brwoeser? lohnt es sich, das in einer tabelle darzustellen?}
 
 Diese Methode geht allerdings mit dem Nachteil einher, dass der Webworker-Thread in der Messphase einen CPU-Kern komplett auslastet. Das heißt, dass im Angriffsszenario das Opferprogramm, der Javascript-Mainthread und der Webworker gleichzeitig rechnen, so dass mindestens 3 CPU Kerne benötigt werden. 
 Sofern sich der Webworker einen physischen Kern mit einen anderen aktiven Prozess teilt, können die gemessen Zeiten einer stärkeren Volatilität durch die erhöhte Iterationsdauer unterliegen.
@@ -77,6 +77,7 @@ Als logische Konsequenz wurde angekündigt, in Zukunft wieder hochauflösende Ti
 
 Aus diesen Gründen wird im Folgenden davon ausgegangen, dass das Opfer SharedArrayBuffer in seinem Webbrowser aktiviert hat.
 
+\todo{Hier steht ein h in eckigen Klammern. Listings funktionieren nicht so, das sind keine float-umgebungen. Darum bricht auch mitten im Listing die Seite um. Um es "hübsch" in den text einzufügen musst du das listing in eine figure packen. Ansonsten taucht es einfach immer genau da auf, wo du es hinsetzt.}
 \label{alg_list:sharedArrayBufferWorkerMain}[h]
 \begin{lstlisting}[caption=main.js: Code welcher den counterWorker für Zeitmessungen verwendet]
 var sharedArrayBuffer = new SharedArrayBuffer(4);
@@ -114,14 +115,14 @@ Jedoch lässt sich die Eigenschaft ausnutzen, dass im Betriebssystem 4-KiB align
 Das heißt, die letzten 12 Bit der virtuellen und physischen Adresse sind identisch. 
 Des Weiteren alloziert (???) Webassembly 4KiB-Größe Blöcke, so dass die 12 letzten Bits der Webassembly-Adresse mit der virtuellen und physischen übereinstimmen.
 
-Um aus dieser Eigenschaft Kapital zu schlagen, wird ein Array mindestens entsprechend der Größe des L3-Caches in Webassembly angelegt. Im Folgenden soll wieder der Intel i7-4770 mit 8 MiB großem L3-Cache als Basis dienen. In diesem Array sind nun $x$ Blöcke der Größe jeweils 4 KiB dessen letzten 12 Adressbits mit der physischen Adresse übereinstimmen. Im sogenannten Adresspool seien nun die Adressen des Arrays, bei denen die letzten 12 Bit gleich sind, also insgesamt $x$ Stück.
+Um aus dieser Eigenschaft Kapital zu schlagen, wird ein Array mindestens entsprechend der Größe des L3-Caches in Webassembly angelegt. Im Folgenden soll wieder der Intel i7-4770 mit 8 MiB großem L3-Cache als Basis dienen. In diesem Array sind nun $x$ Blöcke der Größe jeweils 4 KiB, deren letzten 12 Adressbits mit der physischen Adresse übereinstimmen. Im sogenannten Adresspool seien nun die Adressen des Arrays, bei denen die letzten 12 Bit gleich sind, also insgesamt $x$ Stück.
 
 Der i7-4770 besitzt 8192 Cache-Sets die auf 4 Slices aufgeteilt sind, wobei für das Mapping der 2048 Cache-Sets innerhalb eines Slices nur die untersten 18 Bit der physischen Adresse relevant sind. Dabei bestimmen die Bits 6 bis 17 eindeutig das Cache-Set und die Bits 0 bis 5 das Offset innerhalb der Cache-Line.
 
 In welchem der 4 Slices die Daten landen, wird anhand der Adressbits 18 bis 63 bestimmt.
 Durch die Kenntnis der untersten 12 Bits der physischen Adresse sind gleichzeitig 6 Bits (6 bis 11) bekannt, welche für die Zuordnung zu den Cache-Sets verantwortlich sind.
 
-Angenommen, im Pool sind ausschließlich Adressen, bei denen die 12 untersten Bits jedes der 4 KiB großen Blöcke auf 0 gesetzt sind, dann kann erwartet werden, dass im Mittel jede 128. 
+Angenommen, im Pool sind ausschließlich Adressen, bei denen die 12 untersten Bits jedes der 4 KiB großen Blöcke auf 0 gesetzt sind. Dann kann erwartet werden, dass im Mittel jede 128. 
 Adresse auf das gleiche Cache-Set gemappt wird. Es gibt 8192 Möglichkeiten, eine Adresse einem Cache-Sets zuzuordnen, also 13 Bits an Unsicherheit.
 Durch die Kenntnis der untersten 12 Bits der Adresse sind davon 6 Bits bekannt, welche für eine eindeutige Zuordnung sorgen. 
 Es bleiben noch 7 Bits an Unsicherheit, die durch Kenntnis der restlichen Adressbits beseitigt werden könnten.
@@ -132,7 +133,7 @@ Um die Anzahl der Blöcke beziehungsweise die Arraygröße in Webassembly sinnvo
 Die unbekannte Cache-Mapping Funktion nimmt nun die zufälligen Bits 12 bis 63 und die auf 0 gesetzten Bits 0 bis 11 entgegen und gibt eines von 128 möglichen Cache-Sets zurück.
 Ziel ist es, mit einer Poolgröße $x$ und einer hohen Wahrscheinlichkeit für jedes Cache-Sets 16 Zuordnungen beziehungsweise ein Eviction Set zu finden.
 Gesucht sei die Wahrscheinlichkeit, bei einer Poolgröße $x$ mindestens 16 Zuordnungen zu einem fixen Cache-Set $cs$ bei 128 Möglichkeiten zu finden.
-Hierfür eignet sich das Urnenmodell für Ziehungen mit Zurücklegen ohne Beachtung der Reihenfolge, wobei die $x$ Adressen im Pool die Ziehungen und die Cache-Sets die Kugeln repräsentieren. Sei $P(count(cs)>=16)$ die Wahrscheinlichkeit dafür, dass in der gezogenen Folge mindestens 16 mal das Cache-Set $cs$ auftaucht, unter der Bedingung, dass die Poolgröße $\#add = x$.
+Hierfür eignet sich das Urnenmodell für Ziehungen mit Zurücklegen ohne Beachtung der Reihenfolge, wobei die $x$ Adressen im Pool die Ziehungen und die Cache-Sets die Kugeln repräsentieren. \todo{das klingt nicht logisch. Müssten nicht x alle kugeln und die cache-sets die farben der kugeln entsprechen?} Sei $P(count(cs)>=16)$ die Wahrscheinlichkeit dafür, dass in der gezogenen Folge mindestens 16 mal das Cache-Set $cs$ auftaucht, unter der Bedingung, dass die Poolgröße $\#add = x$.
 Leichter ist es hier, die Gegenwahrscheinlichkeit zu berechnen, die mit
 \begin{align*}
 P(count(cs)<16|\#add = x) &=
@@ -144,7 +145,7 @@ beschrieben ist.
 Die Wahrscheinlichkeit des $P(count(cs)>=16)$ ist etwa bedeutend im ersten Szenario:
 Angenommen, die Angreiferin hat es auf eine bestimmte Adresse abgesehen und möchte ein korrelierendes Eviction-Set finden. 
 Wie wahrscheinlich ist ein erfolgreicher Angriff beziehungsweise wie hoch ist die Wahrscheinlichkeit, ein korrelierendes Eviction-Set zu finden? 
-Das Diagramm \ref{fig:prob_specific_es} gibt die Erfolgswahrscheinlichkeiten für verschiedene $x$-Werte an.
+Das Diagramm \ref{fig:prob_specific_es} gibt die Erfolgswahrscheinlichkeiten für verschiedene $x$-Werte an. \todo{Die Linie muss dünner. Die Bildunterschrift muss die cache-sets und die assoziativität beeinhalten. Das Bild soll mit der Unterschrift verständlich sein, ohne den restlichen text lesen zu müssen. Schriftgröße für Bildunterschriften und beschriftungen gern kleiner.}
 
 \begin{figure}[h]
 \label{fig:prob_specific_es}
@@ -163,7 +164,7 @@ P(count(cs)>=16|\#add = x)^{128} = (1-P(count(cs)<16|\#add = x))^{128}
 \end{align*}
 gegeben.  
 
-Das Diagramm \ref{fig:prob_all_es} gibt die Erfolgswahrscheinlichkeiten für verschiedene $x$-Werte im zweiten Szenario an.
+Das Diagramm \ref{fig:prob_all_es} gibt die Erfolgswahrscheinlichkeiten für verschiedene $x$-Werte im zweiten Szenario an. \todo{siehe oben. Du hast drei mal den gleichen graphen! vielleicht kann man die in ein Diagramm zeichnen? Wie viel Mehrwert bieten sie?}
 \label{fig:prob_all_es}
 \begin{figure}[h]
 \centering
@@ -188,29 +189,30 @@ Das Diagramm \ref{fig:avg_es} gibt die Erfolgswahrscheinlichkeiten für verschie
 \caption{Beschreibt das Verhältnis der Poolgröße zu der Größe des Erwartungswertes der gefundenen Eviction Sets}
 \end{figure}
 
-TODO verschiedene reale bechmarks einfügen
+TODO verschiedene reale bechmarks einfügen \todo{ja, das finde ich auch. dringend.}
 
 \subsection{Eviction-Set Suchalgorithmus}
 
 Im Folgenden soll der Algorithmus beschrieben werden, welcher die Adressen im Pool verschiedenen Eviction-Sets zuordnet.
 Der Algorithmus ist in der Lage, Adressen Cache-Sets zuzuordnen, ohne Näheres über die CPU (L3-Cache Größe usw.) und die Adressbits 12 bis 63 zu wissen.
+\todo{schöner: Der Algorithmus basiert auf den von \cite und \cite beschriebenen Algorithmen zum finden von ES. Zusätzlich wurden einige Optimierungen und Modifikationen getestet.}
 Die Idee des Algorithmus ist nicht neu, sondern wurde etwa schon in \cite{DriveByPaper} oder \cite{PrimeAndAbort} in teilweise abgewandelter Form beschrieben.
 
 Der Eviction-Set-Konstruktionsalgorithmus besteht aus 3 Hauptphasen, der Expand-, Contract- und Collect-Phase. 
 Zu Anfang wird zufällig eine Zeugenadresse aus dem Adresspool ausgewählt, für welche im Folgenden ein Eviction-Set gefunden werden soll.
-Die Annahme in der Expand-Phase ist, dass eine bestimmte Teilmenge der Adressen aus dem Pool, genannt Candidate-Set, ein Eviction-Set für die Zeugenadresse bildet, sofern der Pool groß genug ist.
+Die Annahme in der Expand-Phase ist, dass eine bestimmte Teilmenge der Adressen aus dem Pool, genannt Candidate-Set, ein Eviction-Set für die Zeugenadresse bildet, sofern der Pool groß genug ist. 
 Um ein Candidate-Set zu testen, wird zuerst auf die Zeugenadresse zugegriffen, um sicherzustellen, dass diese im Cache landet.
 Danach wird auf alle Adressen aus dem Candidate-Set zugegriffen und abschließend die Zugriffszeit auf die Zeugenadresse gemessen. 
 Sofern das Candidate-Set ein Eviction-Set für die Zeugenadresse ist, werden die Daten der Zeugenadresse aus dem Cache verdrängt, welches bei einer erneuten Messung der Zeugenadresse mit einer erhöhten Zugriffszeit einhergeht.
 Dieser Vorgang wird mehrmals wiederholt, um den Einfluss des Timer- und System-Rauschens zu vermindern.
 
-In der Expand-Phase wird dem Addresspool iterativ eine zufällige Adresse entnommen und dem anfangs leeren Candidate-Set hinzugefügt (siehe auch Pseudocode \ref{alg:evictionSetExpand}). 
+In der Expand-Phase wird dem Addresspool iterativ eine zufällige Adresse entnommen und dem anfangs leeren Candidate-Set hinzugefügt (siehe auch Pseudocode \ref{alg:evictionSetExpand}). \todo{wird der Zeuge dem CS zugefügt oder beleibt der Zeuge gleich? Stochastisch ein riesen unterschied!}
 Nach jeder Iteration wird das Candidate-Set auf die eben beschriebene Weise getestet.
 Falls das Candidate-Set ein Eviction-Set für die Zeugenadresse ist, wird zur nächsten Phase übergegangen, andernfalls die Iteration fortgesetzt.
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
-\caption{Psuedo-Code für Expand-Phase des Eviction-Set Algorithmus}
+\caption{Pseudo-Code für Expand-Phase des Eviction-Set Algorithmus}
 \label{alg:evictionSetExpand}
 
 \Fn{$Expand(evictionSet, memoryBlocks)$}{
@@ -225,15 +227,15 @@ Falls das Candidate-Set ein Eviction-Set für die Zeugenadresse ist, wird zur n�
 }
 \end{algorithm}
 
-Im Allgemeinen beinhaltet das Candidate-Set nach der Expand-Phase mehrere hundert Einträge, von denen eine Teilmenge der Größe 16 ebenfalls ein Eviction-Set für die Zeugenadresse bilden würde.
+Im Allgemeinen beinhaltet das Candidate-Set nach der Expand-Phase mehrere hundert Einträge, von denen eine Teilmenge der Größe 16 ebenfalls ein Eviction-Set für die Zeugenadresse bilden würde. \todo{es enthält auch EInträge, die gar nicht zu dem set der witness-adresse gehören!}
 Diese überflüssigen Einträge würden den Prime and Probe Vorgang erheblich verlangsamen, weswegen in der Contract-Phase versucht wird, das Candidate-Set auf die Größe 16 einzudampfen (siehe auch Pseudocode \ref{alg:evictionSetContract}).
 Hierzu wird ein Element aus dem Candidate-Set entfernt und erneut getestet, ob dieses reduzierte Candidate-Set noch ein Eviction-Set für die Zeugenadresse ist.
 Falls ja, wird dieses Element wieder dem Adresspool hinzugefügt, andernfalls verbleibt es im Candidate-Set, da es  notwendiger Bestandteil des Eviction-Sets ist.
-Dieser Vorgang wird für jedes Element im Candidate-Set einmal durchgeführt, so dass im fehlerfreien Fall schlussendlich 16 Elemente im Candidate-Set verbleiben.
+Dieser Vorgang wird für jedes Element im Candidate-Set einmal durchgeführt, so dass im fehlerfreien Fall schlussendlich 16 Elemente im Candidate-Set verbleiben. \todo{oben wiederholst du mehrfach, um noise zu reduzieren. Hier machst du das nicht? Warum nicht?}
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
-\caption{Psuedo-Code für Contract-Phase des Eviction-Set Algorithmus}
+\caption{Pseudo-Code für Contract-Phase des Eviction-Set Algorithmus}
 \label{alg:evictionSetContract}
 \Fn{$Contract(evictionSet, memoryBlocks, witness)$}{
 	\ForEach{candidate in evictionSet}{
@@ -245,16 +247,16 @@ Dieser Vorgang wird für jedes Element im Candidate-Set einmal durchgeführt, so
 }
 \end{algorithm}
 
-Wenn im Anschluss sofort wieder eine neue Zeugenadresse aus dem Pool gewählt würde, dann könnte eine Adresse gewählt werden, welche auf das selbe Cache-Set wie die vorherige Zeugenadresse abgebildet werden würde.
+Wenn im Anschluss sofort wieder eine neue Zeugenadresse aus dem Pool gewählt würde, dann könnte eine Adresse gewählt werden, welche auf das selbe Cache-Set wie die vorherige Zeugenadresse abgebildet werden würde. \todo{zu viele konjunktive. umformulieren bitte}
 Deshalb folgt im Anschluss an eine erfolgreiche Contract-Phase die Collect-Phase.
 In dieser werden alle Adressen aus dem Pool entfernt, welche ebenfalls von dem in der Contract-Phase gefundenen Eviction-Set aus dem Cache verdrängt werden (siehe auch Pseudocode \ref{alg:evictionSetCollect}).
-Durch diesen Schritt wird also vermieden, dass die spätere Menge von Eviction-Set dahingehend überprüft werden müsste, ob Eviction-Sets paarweise das selbe zugrundeliegende Cache-Set besitzen.
+Durch diesen Schritt wird also vermieden, dass die spätere Menge von Eviction-Set dahingehend überprüft werden müsste, ob Eviction-Sets paarweise das selbe zugrundeliegende Cache-Set besitzen. \todo{Und es macht die expand-phase bei späteren evicition sets relevant schneller, weil weniger adressen zufällig wählbar sind => x wird immer kleiner}
 Hierzu wird eine Adresse aus dem Pool durch einen Zugriff in den Cache geladen und anschließend auf alle Einträge im Eviction-Set zugegriffen.
 Danach wird die Zugriffszeit auf die Adresse gemessen und bei einer erhöhten Zeit aus dem Pool entfernt, da dann die Adresse auf das selbe Cache-Set wie die Einträge des Eviction-Set bzw. die letzte Zeugenadresse abgebildet wird.
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
-\caption{Psuedo-Code für Collect-Phase des Eviction-Set Algorithmus}
+\caption{Pseudo-Code für Collect-Phase des Eviction-Set Algorithmus}
 \label{alg:evictionSetCollect}
 
 \Fn{$Collect(evictionSet, memoryBlocks)$}{
@@ -274,7 +276,7 @@ Das gefundene Eviction-Set wird gespeichert und der Vorgang solange wiederholt, 
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
-\caption{Psuedo-Code für Eviction-Set Algorithmus}
+\caption{Pseudo-Code für Eviction-Set Algorithmus}
 \label{alg:evictionSetOverview}
 
 \Fn{$EvictionSetFinder(memoryBlocks)$}{
@@ -312,10 +314,11 @@ Demgegenüber steht der Vorteil, nicht fälschlicherweise in die Contract-Phase 
 Wenn nun das Candidate-Set kein Eviction-Set für die Zeugenadresse ist, würde in der naiven Implementierung der Contract-Phase über alle Einträge des Candidate-Set iteriert werden, aber kein Eintrag je gelöscht.
 Denn die Zugriffszeit auf die Zeugenadresse wird immer niedrig bleiben, was den Algorithmus zur fälschlichen Annahme verleitet, alle Einträge seien für das Eviction-Set notwendig.
 Wir wissen jedoch, dass die Größe des Eviction-Set der Assoziativität des L3-Caches entsprechen muss und können die Contract-Phase abbrechen, sobald mehr als der Assoziativität entsprechenden Anzahl von Einträgen des Candidate-Set als notwendig eingestuft wurden, da dann ein Fehler vorliegt.
+\todo{hattest du nicht auch getestet, in der contract-phase aussortierte Adressen direkt wieder dem CS zuzufügen?}
 
 \section{Verbesserte Eviction-Set Suche mittels Store-to-load-forwarding}
 
-Heutige Prozessoren wie etwa die Intel Core Reihe führen auch Store- und Load-Befehle Out-of-Order aus und stehen damit vor der Aufgabe auf Datenabhängigkeiten zu reagieren.
+Heutige Prozessoren wie etwa die Intel Core Reihe führen auch Store- und Load-Befehle Out-of-Order aus und stehen damit vor der Aufgabe, auf Datenabhängigkeiten zu reagieren.
 Die Techniken für eine Speicher-Disambiguierung erkennen echte Abhängigkeiten zwischen Speicheroperationen während Ausführung. 
 Außerdem erlauben die Techniken der CPU zu einem vorherigen Zustand zurückzukehren sobald eine Abhängigkeit verletzt wurde.
 Die Möglichkeit Load- und Store-Befehle Out-of-Order auszuführen, sorgt für eine erhöhte Parallelität auf Instruktionsebene und eine damit verbesserte Single-Thread-Performance.
@@ -347,7 +350,7 @@ Sende- und Empfangsseite können durchaus abweichende Parameter verwenden, wenn 
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
-\caption{Psuedo-Code für Pointer-Chasing-Methode}
+\caption{Pseudo-Code für Pointer-Chasing-Methode}
 \label{alg:pointerChasing}
 
 \Fn{$AccessTimeEvictionSet(pointerToAddress)$}{
@@ -361,8 +364,8 @@ Sende- und Empfangsseite können durchaus abweichende Parameter verwenden, wenn 
 
 \end{algorithm}
 
-Auf dem Testrechner benötigt ein in C geschriebenes Sendeprogramm für eine Million Prime-Vorgänge mit 16 Adressen und der Single-Pointer-Chasing-Methode (siehe Algorithmus \ref{alg:pointerChasing}) etwa 323 Millionen Taktzyklen.
-Im Optimalfall kann im Timeslot $x$ ein erfolgter Prime-Vorgang als 1 und ein nicht erfolgter Prime-Vorgang als 0 interpretiert werden.
+Auf dem Testrechner benötigt ein in C geschriebenes Sendeprogramm für eine Million Prime-Vorgänge mit 16 Adressen und der Single-Pointer-Chasing-Methode \todo{du erklärst nicht, wozu du pointer chasing einsetzt} (siehe Algorithmus \ref{alg:pointerChasing}) etwa 323 Millionen Taktzyklen.
+Im Optimalfall kann im Timeslot $x$ ein erfolgter Prime-Vorgang als 1 und ein nicht erfolgter Prime-Vorgang \todo{was ist ein erfolgreicher/nicht erfolgreicher prime-vorgang?} als 0 interpretiert werden.
 Bei einem typischen All-Core-Turbo-Takt von 3,4 Ghz des i7-4770 ergibt sich so eine maximale Senderate von TODO ~10,5 Mbit/s.
 Diese Rate wird jedoch vom Empfänger beschränkt, welcher zusätzlich noch eine Zeitmessung durchführen muss. Der Worst-Case ist hier eine in Webassembly geschriebene Empfangsroutine, da dort eine Zeitmessung kostenintensiver ist. In Chromium 66 können eine Million Messungen eines Cache-Sets in etwa 200 ms durchgeführt werden. Im Mittel dauert eine Messung also 0,2 \textmu s, womit eine Empfangsrate von maximal ~5 MBit/s realisiert werden kann.
 
@@ -371,7 +374,7 @@ Im Folgenden soll die maximal mögliche Senderate unter optimalen Bedingungen er
 Hierfür wird im Voraus ein Cache-Set ausgewählt, auf dem im Idle-Zustand des Systems ein geringes Rauschen herrscht.
 Um die Synchronisation des Senders und Empfängers aufrechtzuerhalten, wird nach 10 gesendeten Bits ein Synchronisationsblock eingefügt, welcher durch $sb$-Prime-Vorgänge auf der Senderseite erzeugt wird. 
 Eine 1 wird durch $s$-Prime-Vorgänge repräsentiert und eine 0 durch das Unterlassen der Prime-Vorgänge. 
-Um die einzelnen Bits auseinanderzuhalten, wird zwischen jedem gesendeten Bit eine Pause von $p$-Taktzyklen eingelegt.
+Um die einzelnen Bits auseinanderzuhalten, wird zwischen jedem gesendeten Bit eine Pause von $p$-Taktzyklen eingelegt. \todo{vielleicht mal ein bild, mit dem ein konkreter btistring übertragen wird?}
 
 %Um einen Kanal zu Initialisieren 
 
@@ -431,11 +434,11 @@ Der Code zur Schlüsselerzeugung liegt im Unterordner lib/freebl. Sobald die Sch
 Relvant für diese Arbeit sind im Wesentlichen die Zeilen 4 und 5, in denen die Teilerfremdheit von $e$ zu $p-1$ und $q-1$, d.h. $gcd(e,p-1) = 1$ und $gcd(e,q-1) = 1$ geprüft wird.
 Aus Performancegründen wird der Exponent $e$, anders als ursprünglich im RSA-Algorithmus beschrieben, auf den Wert 65537 fixiert.
 Interessant ist die Funktion $mp_gcd$ (Pseudocode siehe \ref{alg:mp_gcd}), welche den größten gemeinsamen Teiler nach dem binären Verfahren von Josef Strein \cite{} berechnet. Dieser Algorithmus verwendet zum Berechnen des ggT ausschließlich Rechts-Shift-Operationen (Teilen durch 2) und Subtraktionen, wodurch dieser besonders für die in diesem Kontext verwendeten großen Zahlen interessant ist.
-Die Zeilen 1 bis 6 der Funktion $mp_gcd$ können in diesem Fall ignoriert werden, da der Exponent $e$ wie oben beschrieben immer 65537 und damit ungerade ist. Bedeutender hingegen ist die $while$-Schleife in den Zeilen 11 bis 17, welche abhängig von den Eingaben Fallunterscheidungen durchführt. Das Ziel ist hier, die Rechts-Shift-Operation (Zeile 13) von der Subtraktionsfunktion (Zeile 17) zu unterscheiden, um die Zustände während der Berechnung zu rekonstruieren.
+Die Zeilen 1 bis 6 der Funktion $mp_gcd$ können in diesem Fall ignoriert werden, da der Exponent $e$ wie oben beschrieben immer 65537 und damit ungerade ist. Bedeutender hingegen ist die $while$-Schleife in den Zeilen 11 bis 17, welche abhängig von den Eingaben Fallunterscheidungen durchführt. Das Ziel ist hier, die Rechts-Shift-Operation (Zeile 13) von der Subtraktionsfunktion (Zeile 17) zu unterscheiden, um die Zustände während der Berechnung zu rekonstruieren. \todo{hier fehlt der verweis auf das paper}
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
-\caption{Psuedo-Code für mp_gcd nach Josef Stein}
+\caption{Pseudo-Code für mp_gcd nach Josef Stein}
 \label{alg:mp_gcd}
 
 \Fn{$mp_gcd(u,v)$}{
