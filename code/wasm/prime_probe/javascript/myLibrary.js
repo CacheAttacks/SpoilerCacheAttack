@@ -54,9 +54,7 @@ if (typeof mergeInto !== 'undefined')
 
       var output = "";
       
-      function checkForStoreFor(MeasurementArr, p, movingWindowSize) {
-        
-      
+      function checkForStoreFor(MeasurementArr, p, movingWindowSize) {      
         var movingWindowAverage = subArrayAverage(
           MeasurementArr, p - movingWindowSize - 1, movingWindowSize);
         
@@ -67,10 +65,12 @@ if (typeof mergeInto !== 'undefined')
            output += "? " + MeasurementArr[p];
           return true;
         }
-        output += " " + MeasurementArr[p];
+        //output += " " + MeasurementArr[p];
         return false;
       }
       //var savedp = 0;
+
+      console.log(uint8ptrBuffer);
 
       for (var p = windowSize; p < pageCount; p++) {
         var total = 0;
@@ -112,14 +112,19 @@ if (typeof mergeInto !== 'undefined')
 
           if(numberOfStoreForAdd >= 115){ //try to create es
             //console.log(bufferedOutput);
-            if(Module['asm']._try_to_create_es(uint8ptrAddressArr, numberOfStoreForAdd) != 0)
+            if(Module['asm']._try_to_create_es(uint8ptrAddressArr, numberOfStoreForAdd) != 0){
+              //console.log(output);
               return true;
+            }
+              
           }
           //size of AddressArr is limited
           if(numberOfStoreForAdd == addressArrSize){
             return false;
           }
           lock = 10;
+        } else {
+          output += " " + uint16MeasurementArr[p];
         }
         lock--;
       }

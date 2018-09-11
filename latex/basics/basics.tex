@@ -35,8 +35,11 @@ Dagegen muss die Angreiferin bei einem Angriff auf den L1- beziehungsweise L2-Ca
 
 Die Ersetzungsstrategie legt fest, welcher Eintrag aus dem Cache verdrängt wird, sofern alle Einträge des zugehörigen Cache-Sets belegt sind. 
 Intels Core-Prozessoren verdrängen typischerweise den Eintrag, welcher bezogen auf die letzte Zugriffszeit am ältesten ist, auch least-recently-used-Strategie (LRU) genannt. 
-Ab der Ivy-Bridge-Generation passt Intel diese Strategie situationsbedingt an \cite{CacheReplacementPolicy} und verwendet ebenfalls  die bimodul insertion policy (BIP), welche häufig den zuletzt hinzugefügten Eintrag löscht. Dies kann von Vorteil sein, wenn das Working-Set des Programms die Größe des Caches übersteigt und die LRU-Strategie zu keinen Cache-Hits führen würde.
-Bei Ivy-Bridge Prozessoren stellten die Autoren\todo{wer? die autoren dieser arbeit, also du, oder die Autoren deiner Quelle?} fest, dass manche Cache-Sets die LRU-Strategie und manche die BIP-Strategie verfolgen. Es wird daher ein Echtzeitvergleich zwischen beiden Strategien vermutet, um herauszufinden, welche Strategie weniger Cache-Misses produziert. Bei den Nachfolger- Generationen Haswell und Broadwell stellten die Autoren fest, dass zwischen beiden Strategien mit hoher Frequenz gewechselt wird, wobei der Algorithmus hinter den Ersetzungsstrategien ebenfalls nicht öffentlich zugänglich ist.
+Ab der Ivy-Bridge-Generation passt Intel diese Strategie situationsbedingt an \cite{CacheReplacementPolicy} und verwendet ebenfalls  die bimodul insertion policy (BIP), welche häufig den zuletzt hinzugefügten Eintrag löscht. 
+Dies kann von Vorteil sein, wenn das Working-Set des Programms die Größe des Caches übersteigt und die LRU-Strategie zu keinen Cache-Hits führen würde.
+Bei Ivy-Bridge Prozessoren stellten die Autoren des Papers fest, dass manche Cache-Sets die LRU-Strategie und manche die BIP-Strategie verfolgen. 
+Es wird daher ein Echtzeitvergleich zwischen beiden Strategien vermutet, um herauszufinden, welche Strategie weniger Cache-Misses produziert. 
+Bei den Nachfolger- Generationen Haswell und Broadwell stellten die Autoren fest, dass zwischen beiden Strategien mit hoher Frequenz gewechselt wird, wobei der Algorithmus hinter den Ersetzungsstrategien ebenfalls nicht öffentlich zugänglich ist.
 
 \subsection{Assoziativität}
 
@@ -129,7 +132,7 @@ Ein typisches Beispiel hierfür sind geteilte Bibliotheken, zum Beispiel .so Dat
 \subsection{Prime and Probe}
 
 Ein \textit{Eviction-Set} sei eine Menge Adressen, welche einen Cache-Eintrag aus einem Cache verdrängen kann. D.h. ein Eviction-Set, welches einen Eintrag aus dem L3-Cache löscht, würde den gleichen Zweck wie der \textit {clflush}-Assemblerbefehl im Flush-and-Reload-Angriff erfüllen. 
-Um einen Eintrag aus dem Cache zu verdrängen, müssen mehrere Adressen der Daten aus dem Eviction-Set von der CPU auf das gleiche Cache-Set wie der zu verdrängende Eintrag abgebildet werden, so dass die Größe eines Eviction-Sets mindestens die Assoziativität des Caches erreichen sollte. \todo{warum die Konjunktive? Es würde nicht nur verdrängen, sondern tut es tatsächlich. Es sollte nicht nur, sondern muss.}
+Um einen Eintrag aus dem Cache zu verdrängen, müssen mehrere Adressen der Daten aus dem Eviction-Set von der CPU auf das gleiche Cache-Set wie der zu verdrängende Eintrag abgebildet werden, so dass die Größe eines Eviction-Sets mindestens die Assoziativität des Caches erreichen muss.
 
 Die Idee beim Prime and Probe Angriff besteht darin, in einer sich wiederholenden Abfolge zuerst den Cache zu primen, dann das Opferprogramm rechnen zu lassen und anschließend zu proben.
 In der Priming-Phase werden mittels der Eviction-Sets gezielt Cache-Sets vollständig mit den Daten aus dem Eviction-Sets belegt.

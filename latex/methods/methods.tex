@@ -5,18 +5,21 @@
 
 Das folgende Kapitel beschreibt, mit Hilfe welcher Softwaretools der Cache-Angriff implementiert wird.
 
-Um das allgemeinere und praxisnähere Angriffsmodell \todo{allgemeiner und praxisnäher als was?} umzusetzen und den Angriff schon durch den Besuch einer Website zu starten, liegt der komplette Angriffscode in JavaScript und Webassembly vor. 
-Frühere Implementierungen von Cache-Angriffen im Browser \cite{TheSpyInTheSandbox} hatten noch keine Möglichkeit, Webassembly zu verwenden, weshalb diese mit ihrem kompletten Angriffscode in JavaScript geschrieben waren. 
-Webassembly ermöglicht hardwarenähere Programmierung und den Vorteil, dass der Code nicht wie in JavaScript während der Laufzeit optimiert werden muss. 
+In dem in dieser Arbeit verwendeten praxisnahen Angriffsmodell reicht für den Start eines Angriffs der Besuch des Opfers auf einer vorher präparierten Website, auch Drive-By-Angriff genannt, aus. 
+Dafür genügt bereits eine eingebundene JavaScript-Werbeanzeige, die von der Angreiferin kontrolliert wird. 
+Gegenüber Angriffen die ein Ausführen von nativen Code auf dem Endgerät des Opfers verlangen, ist mit diesen Voraussetzungen ein deutlich größerer Angriffsvektor gegeben.
+Da Aufgrund des Angriffsmodells nur Webtechnologien verfügbar sind, liegt komplette Angriffscode in JavaScript und Webassembly vor. 
+Frühere Implementierungen von Cache-Angriffen im Browser \cite{TheSpyInTheSandbox} hatten noch keine Möglichkeit, Webassembly zu verwenden, weshalb deren kompletter Angriffscode in JavaScript geschrieben war. 
+Webassembly ermöglicht hardwarenähere Programmierung und den Vorteil, dass der Code anders als in JavaScript nicht während der Laufzeit optimiert werden muss. 
 Des Weiteren steht mit dem Emscripten-Compiler ein Tool bereit, welches die Übersetzung von C-Code in Webassembly anbietet. Somit kann ein bestehender Angriffscode in C, in diesem Fall von Mastik, als Grundlage verwendet werden, und eine komplette fehleranfällige Neuimplementierung in JavaScript entfällt.
-
 
 \section{Timer in JavaScript}
 
 Der hier ausgeführte Cache-Angriff benötigt wie in \ref{} \todo{ref was?} beschrieben präzise Timer, welche eine Auflösung von unter 30 ns bereitstellen sollten. Dennoch könnte die Suche nach \textit{Eviction-Sets} auch mit schlechteren Timerauflösungen bewerkstelligt werden, indem Operationen mehrfach ausgeführt werden und die Differenz der aufsummierten Zeiten zur Bewertung herangezogen wird.
 Im \textit{Eviction-Set}-Algorithmus könnte etwa die Funktion $checkevict$ wie in Algorithmus \ref{alg:checkevict_low_resolution} angepasst werden, wobei der Parameter $repeatIterations$ abhängig von der Timerauflösung gewählt wird. 
-Weiter besteht jedoch \todo{Füllwort weg} das Problem, schwache Aktivitäten im Cache-Set während des eigentlichen Angriffs aufzudecken, da im Worst-Case nur ein Eintrag aus dem beobachteten Cache-Set verdrängt wird und somit lediglich die Zugriffszeit zwischen einem Hit und einem Miss ausschlaggebend ist. 
-In diesem Fall könnte die Dauer mehrerer Prime and Probe-Iterationen gesamtheitlich gemessen werden, und zwar unter der Vermutung, dass auf die für die Verdrängung verantwortliche Adresse über die Zeit mehrfach zugegriffen wird. \todo{Ich verstehe den nächsten Satz nicht.} Die direkten Auswirkungen eines niedrig aufgelösten Timers sind also eine geringere zeitliche Auflösung von Cache-Aktivitäten oder die Nichtregestrierung von schwachen.
+Es besteht jedoch das Problem, schwache Aktivitäten im Cache-Set während des eigentlichen Angriffs aufzudecken, da im Worst-Case nur ein Eintrag aus dem beobachteten Cache-Set verdrängt wird und somit lediglich die Zugriffszeit zwischen einem Hit und einem Miss ausschlaggebend ist. 
+In diesem Fall könnte die Dauer mehrerer Prime and Probe-Iterationen gesamtheitlich gemessen werden, und zwar unter der Vermutung, dass auf die für die Verdrängung verantwortliche Adresse über die Zeit mehrfach zugegriffen wird. \todo{Ich verstehe den nächsten Satz nicht. Satz redesignt}
+Die direkten Auswirkungen eines niedrig aufgelösten Timers sind also eine geringere zeitliche Auflösung von Cache-Aktivitäten oder die Nichtregestrierung von schwachen.
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
@@ -37,18 +40,18 @@ In diesem Fall könnte die Dauer mehrerer Prime and Probe-Iterationen gesamtheit
 
 Der W3C hat die High-Resolution-Time-API spezifiziert, welche die Methode performance.now() beinhaltet, die einen aktuellen Timestamp zurückgibt. Im Firefox hatte die Methode in früheren Versionen eine hinreichend genaue Auflösung im Nanosekundenbereich, wobei in Reaktion auf die Sicherheitslücken Meltdown und Spectre die Auflösung schrittweise auf 2 ms im aktuellen Firefox 60 abgesenkt wurde. 
 Auch in den Browsern Edge und Chrome wurden im Zuge der Veröffentlichung von Meltdown und Spectre die Auflösung von perfomance.now() verringert.
-Allerdings \todo{Allerdings, nicht außerdem? Auch wieder Füllwort, hier sogar sinn verändernd} wird auf den zurückgegebenen Timestamp zusätzlich ein Timerjitter addiert. 
+Darüber hinaus wird bei beiden Browsern auf den zurückgegebenen Timestamp ein Timerjitter addiert.
 
 So bieten Edge und Chrome zurzeit (Stand Juni 2018) eine Auflösung von 20 \textmu s + 20 \textmu s Jitter respektive 100 \textmu s + 100 \textmu s Jitter.
 Das Paper "Fantastic Timers and where to find them" \cite{FantasticTimers} beschreibt diverse andere Methoden, um mit Hilfe von JavaScript Timer zu generieren (??? Was?). 
 Allerdings ist nur eine geeignete Methode dabei, da die Auflösung aller anderen mindestens im hohen einstelligen \textmu s Bereich liegt und somit der Parameter $repeatIterations$ auf Werte von etwa 1000 gesetzt werden müsste, um zuverlässig \textit{Eviction Sets} zu finden. 
-Hierdurch würde die benötigte Ausführungszeit zum Finden der \textit{Eviction Sets} auf ein Maß ansteigen, welches \todo{Füllwort weg} dann nicht mehr zum angenommenen Angriffsmodell passen würde.
+Hierdurch würde die benötigte Ausführungszeit zum Finden der \textit{Eviction Sets} auf ein Maß ansteigen, welches nicht mehr zum angenommenen Angriffsmodell passen würde.
 
 \newtext
 
 Als einziges angemessenes Zeitmessungswerkzeug verbleibt der SharedArrayBuffer aus Javascript. 
-Die Ausführung von Javascript passiert in einem Thread, wobei die Möglichkeit besteht, sogenannte Webworker zu starten, welche Code aus einem Skript in einem eigenen Thread ausführen. \todo{sehr verschachtelt}
-Diese haben von Grund auf aber einen zu Mainthread abgetrennten Speicherbereich, so dass Daten ursprünglich über Nachrichten zwischen dem Mainthread und dem Webworker ausgetauscht werden mussten. Hier setzt der SharedArrayBuffer an, welcher einen geteilten Speicherbereich zwischen Mainthread und Webworker definiert.
+Die Ausführung von Javascript passiert in einem Thread, wobei die Möglichkeit besteht, sogenannte Webworker zu starten, welche Code aus einem Skript in einem eigenen Thread ausführen.
+Der Speicherbereich eines Webworkers und des Mainthreads sind strikt getrennt, so dass Daten ursprünglich über Nachrichten ausgetauscht werden mussten. Hier setzt der SharedArrayBuffer an, welcher einen geteilten Speicherbereich zwischen Mainthread und Webworker definiert.
 
 Gemäß Code-Listing \ref{alg_list:sharedArrayBufferWorkerMain} wird im Mainthread zuerst ein SharedArrayBuffer von 4 Bytes angelegt. Anschließend wird der als Zeitgeber fungierende Webworker gestartet und ihm eine Referenz auf den eben angelegten SharedArrayBuffer übersandt. 
 Die Zählvariable soll hier eine Größe von 32 Bit haben, weshalb abschließend ein Uint32 Array definiert wird, welches auf den SharedArrayBuffer referenziert (???). 
@@ -65,7 +68,49 @@ Zum Schluss geht der Webworker in die Endlosschleife über, in welcher die Zähl
 Das Iterieren einer Variable benötigt nur wenige Taktzyklen, weshalb der aktuelle Wert der Zählvariable als Zeitstempel interpretiert werden kann. 
 Die Auflösung dieser Methode hängt also von der Geschwindigkeit der Iteration sowie der Speichersynchronisation des SharedArrayBuffers zwischen Mainthread und Webworker ab.
 
-In Versuchen mit verschiedenen Webbrowsern und Hardwarekonfigurationen zeigte sich, dass die Auflösung mindestens im einstelligen Nanosekundenbreich liegt und somit ausreichend genau ist, um den Unterschied zwischen einem Cache-Miss und Hit festzustellen. \todo{wie viel configs un brwoeser? lohnt es sich, das in einer tabelle darzustellen?}
+In Versuchen mit verschiedenen Webbrowsern und Hardwarekonfigurationen zeigte sich, dass die Auflösung mindestens im einstelligen Nanosekundenbreich liegt und somit ausreichend genau ist, um den Unterschied zwischen einem Cache-Miss und Hit festzustellen \ref{tbl:times_res}.
+
+Um die Auflösung zu bestimmen wird die performance.now()-Funktion zur Hilfe genommen \ref{alg_list:getResolutionNS}. Die Funktion wait_edge() ruft zuerst performance.now() für den Startwert auf und wartet anschließend in einer Endlosschleife bis performance.now() einen höheren Wert als den Startwert zurückgibt. 
+Dieser höhere Wert wird ebenso wie der aktuelle Stand der Zählvariable gespeichert. 
+Dann folgt ein erneuter Aufruf von wait_edge(), wobei bei zurückkehren wieder der letzte performance.now()-Wert sowie der Wert der Zählvariable gespeichert wird.
+Für die performance.now()-Funktion ist die Auflösung bekannt, weshalb aus den Differenzen der performance.now()-Werte und der Werte der Zählvariable eine Auflösung für den Timer errechnet werden kann.
+Wie oben beschrieben addiert Chrome auf den performance.now()-Wert einen Timerjitter, weswegen diese Prozedur 20000 mal durchgeführt wurde um valide Mittelwerte zu erhalten.
+
+Die Zählvariable besitzt den Datentyp Uint32 und in Javascript ergibt eine Iteration des Wertes $2^{32}-1$ wieder 0. 
+Daher ist es naheliegend den gesamten Wertebereich von 0 bis $2^{32}-1$ auszuschöpfen und bei Messwerten über $2^{31}$ anzunehmen, dass in diesem Zeitraum ein Overflow stattfand.
+Beim Testen mit Firefox zeigte sich jedoch, dass die Iteration der Zählvariable ab dem Wert $2^{31}$ signifikant langsamer wird, wobei dieses Phänomen mit Chrome nicht zu beobachten war.
+Als Workaround wurde eine Abfrage hinzugefügt, die bei einem überschreiten von $2^{31}$ die Zählvariable auf 0 zurücksetzt.
+Die Ergebnisse zeigen, dass dieser Workaround die Auflösung in Chrome nur minimal verschlechtert, dafür aber in Firefox signifikant verbessert.
+Ohne diese Änderungen sorgt der Timer in Firefox für Probleme in der Zeitmessung, da ein Zeitintervall beim überschreiten des Wertes $2^{31}$ wegen der verringerten Iterationsgeschwindigkeit als deutlich verkürzt wahrgenommen wird.
+
+\label{tbl:times_res}
+\begin{table}[h]
+\caption{Zeitauflösung des SharedArrayBuffer-Zählers mit verschiedenen Browsern auf Ubuntu 16.04.5 LTS (GNU/Linux 4.4.0-131-generic x86_64) mit einem i7-4770. Wertebereich der Uint32 Zählvariable wird in der linken Spalte ausgeschöpft, in der rechten hingegen wird nur bis $2^{31}$ gezählt.}
+\begin{tabular}{lllll}
+                           & Zählen bis $2^{32}$ & Zählen bis $2^{31}-1$ &  &  \\
+Chromium 68.0.3440.106     & $\sim$2,7ns                      & $\sim$3ns                        &  &  \\
+Google Chrome 69.0.3497.81 & $\sim$2,7ns                      & $\sim$3ns                        &  &  \\
+Firefox 63.0b4             & $\sim$5,1ns                      & $\sim$2,2ns                      &  & 
+\end{tabular}
+\end{table}
+
+
+\begin{figure}[h]
+\label{alg_list:getResolutionNS}
+\begin{lstlisting}[caption=main.js: Code welcher die Timerauflösung bestimmt]
+var start = wait_edge();
+var start_count = Atomics.load(Module['sharedArrayCounter'], 0);
+var end = wait_edge();
+var end_count = Atomics.load(Module['sharedArrayCounter'], 0);
+nsPerTick += (end - start) * 10^6 / (end_count - start_count);
+
+function wait_edge() {
+  var next, last = performance.now();
+  while ((next = performance.now()) == last) {}
+  return next;
+}
+\end{lstlisting}
+\end{figure}
 
 Diese Methode geht allerdings mit dem Nachteil einher, dass der Webworker-Thread in der Messphase einen CPU-Kern komplett auslastet. Das heißt, dass im Angriffsszenario das Opferprogramm, der Javascript-Mainthread und der Webworker gleichzeitig rechnen, so dass mindestens 3 CPU Kerne benötigt werden. 
 Sofern sich der Webworker einen physischen Kern mit einen anderen aktiven Prozess teilt, können die gemessen Zeiten einer stärkeren Volatilität durch die erhöhte Iterationsdauer unterliegen.
@@ -78,7 +123,8 @@ Als logische Konsequenz wurde angekündigt, in Zukunft wieder hochauflösende Ti
 Aus diesen Gründen wird im Folgenden davon ausgegangen, dass das Opfer SharedArrayBuffer in seinem Webbrowser aktiviert hat.
 
 \todo{Hier steht ein h in eckigen Klammern. Listings funktionieren nicht so, das sind keine float-umgebungen. Darum bricht auch mitten im Listing die Seite um. Um es "hübsch" in den text einzufügen musst du das listing in eine figure packen. Ansonsten taucht es einfach immer genau da auf, wo du es hinsetzt.}
-\label{alg_list:sharedArrayBufferWorkerMain}[h]
+\begin{figure}[h]
+\label{alg_list:sharedArrayBufferWorkerMain}
 \begin{lstlisting}[caption=main.js: Code welcher den counterWorker für Zeitmessungen verwendet]
 var sharedArrayBuffer = new SharedArrayBuffer(4);
 var counterWorker = new Webworker('counterWebworker.js');
@@ -92,8 +138,10 @@ function measureTime(func){
     return t2 - t1;
 }
 \end{lstlisting}
+\end{figure}
 
-\label{alg_list:sharedArrayBufferWorker}[h]
+\begin{figure}[h]
+\label{alg_list:sharedArrayBufferWorker}
 \begin{lstlisting}[caption=counterWebworker.js: Webworker welcher die Zählvariable in einer Endlosschleife iteriert]
 self.addEventListener('message', (m) => {
   // Create an Int32Array on top of the shared memory array 
@@ -103,6 +151,7 @@ self.addEventListener('message', (m) => {
   }
 });
 \end{lstlisting}
+\end{figure}
 
 %moved from section grundlagen
 \section{Eviction-Set Algorithmus in der Javascript-Umgebung}
@@ -133,7 +182,7 @@ Um die Anzahl der Blöcke beziehungsweise die Arraygröße in Webassembly sinnvo
 Die unbekannte Cache-Mapping Funktion nimmt nun die zufälligen Bits 12 bis 63 und die auf 0 gesetzten Bits 0 bis 11 entgegen und gibt eines von 128 möglichen Cache-Sets zurück.
 Ziel ist es, mit einer Poolgröße $x$ und einer hohen Wahrscheinlichkeit für jedes Cache-Sets 16 Zuordnungen beziehungsweise ein Eviction Set zu finden.
 Gesucht sei die Wahrscheinlichkeit, bei einer Poolgröße $x$ mindestens 16 Zuordnungen zu einem fixen Cache-Set $cs$ bei 128 Möglichkeiten zu finden.
-Hierfür eignet sich das Urnenmodell für Ziehungen mit Zurücklegen ohne Beachtung der Reihenfolge, wobei die $x$ Adressen im Pool die Ziehungen und die Cache-Sets die Kugeln repräsentieren. \todo{das klingt nicht logisch. Müssten nicht x alle kugeln und die cache-sets die farben der kugeln entsprechen?} Sei $P(count(cs)>=16)$ die Wahrscheinlichkeit dafür, dass in der gezogenen Folge mindestens 16 mal das Cache-Set $cs$ auftaucht, unter der Bedingung, dass die Poolgröße $\#add = x$.
+Hierfür eignet sich das Urnenmodell für Ziehungen mit Zurücklegen ohne Beachtung der Reihenfolge, wobei die $x$ Adressen im Pool die Kugeln und die Cache-Sets die Farben der Kugeln repräsentieren. Sei $P(count(cs)>=16)$ die Wahrscheinlichkeit dafür, dass in der gezogenen Folge mindestens 16 mal das Cache-Set $cs$ auftaucht, unter der Bedingung, dass die Poolgröße $\#add = x$.
 Leichter ist es hier, die Gegenwahrscheinlichkeit zu berechnen, die mit
 \begin{align*}
 P(count(cs)<16|\#add = x) &=
@@ -195,8 +244,7 @@ TODO verschiedene reale bechmarks einfügen \todo{ja, das finde ich auch. dringe
 
 Im Folgenden soll der Algorithmus beschrieben werden, welcher die Adressen im Pool verschiedenen Eviction-Sets zuordnet.
 Der Algorithmus ist in der Lage, Adressen Cache-Sets zuzuordnen, ohne Näheres über die CPU (L3-Cache Größe usw.) und die Adressbits 12 bis 63 zu wissen.
-\todo{schöner: Der Algorithmus basiert auf den von \cite und \cite beschriebenen Algorithmen zum finden von ES. Zusätzlich wurden einige Optimierungen und Modifikationen getestet.}
-Die Idee des Algorithmus ist nicht neu, sondern wurde etwa schon in \cite{DriveByPaper} oder \cite{PrimeAndAbort} in teilweise abgewandelter Form beschrieben.
+Der Algorithmus basiert auf den von \cite{DriveByPaper} und \cite{PrimeAndAbort} beschriebenen Algorithmen zum finden von Eviction-Sets, wobei einige Optimierungen und Modifikationen implementiert und getestet wurden.
 
 Der Eviction-Set-Konstruktionsalgorithmus besteht aus 3 Hauptphasen, der Expand-, Contract- und Collect-Phase. 
 Zu Anfang wird zufällig eine Zeugenadresse aus dem Adresspool ausgewählt, für welche im Folgenden ein Eviction-Set gefunden werden soll.
@@ -206,7 +254,7 @@ Danach wird auf alle Adressen aus dem Candidate-Set zugegriffen und abschließen
 Sofern das Candidate-Set ein Eviction-Set für die Zeugenadresse ist, werden die Daten der Zeugenadresse aus dem Cache verdrängt, welches bei einer erneuten Messung der Zeugenadresse mit einer erhöhten Zugriffszeit einhergeht.
 Dieser Vorgang wird mehrmals wiederholt, um den Einfluss des Timer- und System-Rauschens zu vermindern.
 
-In der Expand-Phase wird dem Addresspool iterativ eine zufällige Adresse entnommen und dem anfangs leeren Candidate-Set hinzugefügt (siehe auch Pseudocode \ref{alg:evictionSetExpand}). \todo{wird der Zeuge dem CS zugefügt oder beleibt der Zeuge gleich? Stochastisch ein riesen unterschied!}
+In der Expand-Phase wird dem Addresspool iterativ eine zufällige Adresse entnommen und dem anfangs leeren Candidate-Set hinzugefügt (siehe auch Pseudocode \ref{alg:evictionSetExpand}), wobei die Zeugenadresse niemals Teil des Candidate-Set wirds.
 Nach jeder Iteration wird das Candidate-Set auf die eben beschriebene Weise getestet.
 Falls das Candidate-Set ein Eviction-Set für die Zeugenadresse ist, wird zur nächsten Phase übergegangen, andernfalls die Iteration fortgesetzt.
 
@@ -227,11 +275,14 @@ Falls das Candidate-Set ein Eviction-Set für die Zeugenadresse ist, wird zur n�
 }
 \end{algorithm}
 
-Im Allgemeinen beinhaltet das Candidate-Set nach der Expand-Phase mehrere hundert Einträge, von denen eine Teilmenge der Größe 16 ebenfalls ein Eviction-Set für die Zeugenadresse bilden würde. \todo{es enthält auch EInträge, die gar nicht zu dem set der witness-adresse gehören!}
+Im Allgemeinen beinhaltet das Candidate-Set nach der Expand-Phase mehrere hundert Einträge, von denen eine Teilmenge der Größe 16 bereits ein Eviction-Set für die Zeugenadresse bilden würde. 
+Der überwiegende Teil der Einträge gehört nicht zum gleichen Cache-Set wie die Zeugenadresse.
 Diese überflüssigen Einträge würden den Prime and Probe Vorgang erheblich verlangsamen, weswegen in der Contract-Phase versucht wird, das Candidate-Set auf die Größe 16 einzudampfen (siehe auch Pseudocode \ref{alg:evictionSetContract}).
 Hierzu wird ein Element aus dem Candidate-Set entfernt und erneut getestet, ob dieses reduzierte Candidate-Set noch ein Eviction-Set für die Zeugenadresse ist.
 Falls ja, wird dieses Element wieder dem Adresspool hinzugefügt, andernfalls verbleibt es im Candidate-Set, da es  notwendiger Bestandteil des Eviction-Sets ist.
-Dieser Vorgang wird für jedes Element im Candidate-Set einmal durchgeführt, so dass im fehlerfreien Fall schlussendlich 16 Elemente im Candidate-Set verbleiben. \todo{oben wiederholst du mehrfach, um noise zu reduzieren. Hier machst du das nicht? Warum nicht?}
+Dieser Vorgang wird für jedes Element im Candidate-Set einmal durchgeführt, so dass im fehlerfreien Fall schlussendlich 16 Elemente im Candidate-Set verbleiben.
+Durch Messrauschen kann auch hier wieder ein Element fälschlicherweise als relevant für das Eviction-Set eingestuft werden, weshalb die Contract-Phase dreimal wiederholt wird.
+Die zweite und dritte Wiederholung sind weit weniger kostenintensiv, da das Candidate-Set nach einer Contract-Phase bereits um hunderte Einträge bereinigt wurde.
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
@@ -247,10 +298,11 @@ Dieser Vorgang wird für jedes Element im Candidate-Set einmal durchgeführt, so
 }
 \end{algorithm}
 
-Wenn im Anschluss sofort wieder eine neue Zeugenadresse aus dem Pool gewählt würde, dann könnte eine Adresse gewählt werden, welche auf das selbe Cache-Set wie die vorherige Zeugenadresse abgebildet werden würde. \todo{zu viele konjunktive. umformulieren bitte}
+Wenn im Anschluss sofort wieder eine neue Zeugenadresse aus dem Pool gewählt wird, dann könnte eine Adresse gewählt werden, welche auf das selbe Cache-Set wie die vorherige Zeugenadresse abgebildet wird.
 Deshalb folgt im Anschluss an eine erfolgreiche Contract-Phase die Collect-Phase.
 In dieser werden alle Adressen aus dem Pool entfernt, welche ebenfalls von dem in der Contract-Phase gefundenen Eviction-Set aus dem Cache verdrängt werden (siehe auch Pseudocode \ref{alg:evictionSetCollect}).
-Durch diesen Schritt wird also vermieden, dass die spätere Menge von Eviction-Set dahingehend überprüft werden müsste, ob Eviction-Sets paarweise das selbe zugrundeliegende Cache-Set besitzen. \todo{Und es macht die expand-phase bei späteren evicition sets relevant schneller, weil weniger adressen zufällig wählbar sind => x wird immer kleiner}
+Durch diesen Schritt wird also vermieden, dass die spätere Menge von Eviction-Set dahingehend überprüft werden müsste, ob Eviction-Sets paarweise das selbe zugrundeliegende Cache-Set besitzen. 
+Des Weiteren beschleunigt die Collect-Phase die nächsten Iterationen, da weniger Adressen im Pool zur Verfügung stehen.
 Hierzu wird eine Adresse aus dem Pool durch einen Zugriff in den Cache geladen und anschließend auf alle Einträge im Eviction-Set zugegriffen.
 Danach wird die Zugriffszeit auf die Adresse gemessen und bei einer erhöhten Zeit aus dem Pool entfernt, da dann die Adresse auf das selbe Cache-Set wie die Einträge des Eviction-Set bzw. die letzte Zeugenadresse abgebildet wird.
 
@@ -299,7 +351,7 @@ Das gefundene Eviction-Set wird gespeichert und der Vorgang solange wiederholt, 
 Ein Eviction-Set muss mindestens die Größe der Assoziativität besitzen, weshalb es naheliegend ist in der Expand-Phase nicht mit einem leeren sondern mit einem Candidate-Set der Größe der Assoziativität zu starten und so in jeder Expand-Phase Assoziativität - 1 viele Überprüfungen einzusparen.
 Außerdem ist es nicht optimal in jeder Iteration dem Candidate-Set nur eine Adresse hinzuzufügen, da insbesondere bei einem kleinen Candidate-Set eine geringe Wahrscheinlichkeit besteht, dass eine zusätzliche Adresse dieses zu einem Eviction-Set werden lässt.
 Die Idee ist, daher bei einem noch kleinen Candidate-Set in jeder Iteration viele Adressen aus dem Pool hinzuzufügen und mit zunehmender Größe des Candidate-Set die Anzahl der in jeder Iteration hinzukommenden Adressen zu verringern.
-
+\todo{hattest du nicht auch getestet, in der contract-phase aussortierte Adressen direkt wieder dem CS zuzufügen?}
 
 \subsection{Details der realen Implementierung}
 
@@ -314,7 +366,7 @@ Demgegenüber steht der Vorteil, nicht fälschlicherweise in die Contract-Phase 
 Wenn nun das Candidate-Set kein Eviction-Set für die Zeugenadresse ist, würde in der naiven Implementierung der Contract-Phase über alle Einträge des Candidate-Set iteriert werden, aber kein Eintrag je gelöscht.
 Denn die Zugriffszeit auf die Zeugenadresse wird immer niedrig bleiben, was den Algorithmus zur fälschlichen Annahme verleitet, alle Einträge seien für das Eviction-Set notwendig.
 Wir wissen jedoch, dass die Größe des Eviction-Set der Assoziativität des L3-Caches entsprechen muss und können die Contract-Phase abbrechen, sobald mehr als der Assoziativität entsprechenden Anzahl von Einträgen des Candidate-Set als notwendig eingestuft wurden, da dann ein Fehler vorliegt.
-\todo{hattest du nicht auch getestet, in der contract-phase aussortierte Adressen direkt wieder dem CS zuzufügen?}
+
 
 \section{Verbesserte Eviction-Set Suche mittels Store-to-load-forwarding}
 
@@ -388,88 +440,7 @@ Um die einzelnen Bits auseinanderzuhalten, wird zwischen jedem gesendeten Bit ei
 \newtext
 
 
-\subsection{Angriffe auf RSA Key Generierung}
 
-Details zu Implementierung in Mozilla NSS
-
-Mozilla Network Security Services(NSS) ist ein Menge von Bibliotheken, welche eine plattformübergreifende Entwicklung von sicheren Client- und Server-Anwendungen anstrebt. Dabei wird unter anderem TLS oder S/MIME implementiert. Mozilla NSS wird etwa im Firefox-Browser und der Mail-Anwendung Thunderbird eingesetzt.
-Der Quellcode ist unter der Mozilla Public License verfügbar und kann online etwa im Firefox-Repository \cite{MozillaDXR} eingesehen werden.
-
-Im folgenden soll die Schlüsselerzeugung für das RSA-Verfahren in Mozilla NSS beschrieben werden.
-
-Der Code zur Schlüsselerzeugung liegt im Unterordner lib/freebl. Sobald die Schlüsselparameter $p,q,n,d,e$ bestimmt wurden, werden diese in der Funktion RSA_PrivateKeyCheck auf Gültigkeit überprüft (siehe Pseudo-Code \ref{alg:RSA_PrivateKeyCheck}).
-
-\begin{algorithm}[h]
-\DontPrintSemicolon
-\caption{Pseudo-Code für RSA_PrivateKeyCheck aus rsa.c}
-\label{alg:RSA_PrivateKeyCheck}
-
-\Fn{$RSA_PrivateKeyCheck(key)$}{
-    assert(p $\neq$ q)\;
-    assert(n == p * q)\;
-    assert(gcd(e, p-1) == 1)\;
-    assert(gcd(e, q-1) == 1)\;
-    assert(d*e == 1 mod p-1)\;
-    assert(d*e == 1 mod q-1)\;
-    assert(d_p == d mod p-1)\;
-    assert(d_q == d mod q-1)\;
-    assert(q * q^-1 == 1 mod p)\;
-}
-\end{algorithm}
-
-%Ausgehend von der Funktion RSA_NewKey in rsa.c
-
-%\begin{algorithm}[h]
-%\DontPrintSemicolon
-%\caption{Pseudo-Code für RSA_NewKey aus rsa.c}
-%\label{alg:mp_gcd}
-%
-%\Fn{$RSA_NewKey(keySizeInBits, e)$}{
-%    p $rightarrow$ generate_prime(keySizeInBits)\;
-%    q $rightarrow$ generate_prime(keySizeInBits)\;
-%    d $rightarrow$ rsa_build_from_primes(p,q,e)\;
-%}
-%\end{algorithm}
-
-Relvant für diese Arbeit sind im Wesentlichen die Zeilen 4 und 5, in denen die Teilerfremdheit von $e$ zu $p-1$ und $q-1$, d.h. $gcd(e,p-1) = 1$ und $gcd(e,q-1) = 1$ geprüft wird.
-Aus Performancegründen wird der Exponent $e$, anders als ursprünglich im RSA-Algorithmus beschrieben, auf den Wert 65537 fixiert.
-Interessant ist die Funktion $mp_gcd$ (Pseudocode siehe \ref{alg:mp_gcd}), welche den größten gemeinsamen Teiler nach dem binären Verfahren von Josef Strein \cite{} berechnet. Dieser Algorithmus verwendet zum Berechnen des ggT ausschließlich Rechts-Shift-Operationen (Teilen durch 2) und Subtraktionen, wodurch dieser besonders für die in diesem Kontext verwendeten großen Zahlen interessant ist.
-Die Zeilen 1 bis 6 der Funktion $mp_gcd$ können in diesem Fall ignoriert werden, da der Exponent $e$ wie oben beschrieben immer 65537 und damit ungerade ist. Bedeutender hingegen ist die $while$-Schleife in den Zeilen 11 bis 17, welche abhängig von den Eingaben Fallunterscheidungen durchführt. Das Ziel ist hier, die Rechts-Shift-Operation (Zeile 13) von der Subtraktionsfunktion (Zeile 17) zu unterscheiden, um die Zustände während der Berechnung zu rekonstruieren. \todo{hier fehlt der verweis auf das paper}
-
-\begin{algorithm}[h]
-\DontPrintSemicolon
-\caption{Pseudo-Code für mp_gcd nach Josef Stein}
-\label{alg:mp_gcd}
-
-\Fn{$mp_gcd(u,v)$}{
-    k $\leftarrow$ 0\;
-    \While{iseven(u) \& iseven(v)}{
-        u $\leftarrow$ u/2\;
-        v $\leftarrow$ v/2\;
-        k++\;
-    }
-
-    \If{isodd(u)}{
-        t $\leftarrow$ -v\;
-    } \Else {
-        t $\leftarrow$ v\;
-    }
-
-    \While{t $\neq$ 0}{
-        \While{iseven(t)}{
-            t $\leftarrow$ t/2\;
-        }
-        \If{t > 0} {
-            u $\leftarrow$ t\;
-        } else {
-            v $\leftarrow$ -t\;
-        }
-        t $\leftarrow$ u - v\;
-    }
-
-    \Return u*2^k
-}
-\end{algorithm}
 
 \newtextend
 

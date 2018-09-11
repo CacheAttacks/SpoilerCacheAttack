@@ -546,6 +546,7 @@ static int collect(vlist_t es, vlist_t candidates /*, vlist_t set*/) {
     void *p = vl_del(candidates, i);
     if (checkevict_safe(es, p, vl_len(es), 0, COLLECT_ITERATIONS)) {
       // vl_push(set, p);
+      //printf_ex("%i ", ((int)p)-2048);
       deleted++;
     } else {
       vl_push(candidates, p);
@@ -754,8 +755,10 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
     before = rdtscp();
     while (vl_len(es)){
       //printf_ex("%#08x\n", vl_get(es, 0));
+      //printf_ex("%i ", ((int)vl_get(es, 0))-2048);
       vl_push(set, vl_del(es, 0));
     }
+    printf_ex("\n");
       
 #ifdef DEBUG
     printf_ex("set %3d: lines: %4d expanded: %4d contracted: %2d collected: %d\n",

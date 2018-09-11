@@ -200,7 +200,7 @@ int try_to_create_es(uint32_t *address_arr, uint32_t number_of_storefor_add){
   
   vlist_t lines = vl_new();
   for(int i=0; i<number_of_storefor_add; i++){
-    //printf_ex("%p ", address_arr[i]);
+    //printf_ex("%i ", address_arr[i]);
     vl_push(lines, (void*)(address_arr[i]+2048));
   }
   //printf_ex("\n");
@@ -211,7 +211,7 @@ int try_to_create_es(uint32_t *address_arr, uint32_t number_of_storefor_add){
   //groups = map(l3, lines);
   //groups = map(l3, lines);
   //groups = map(l3, lines);
-  if(vl_len(groups) > 0){
+  if(vl_len(groups) == 4){
     vlist_t es = vl_get(groups, 0);
     for(int i=0; i<vl_len(es); i++){
       //printf_ex("%p ",vl_get(es,i));
