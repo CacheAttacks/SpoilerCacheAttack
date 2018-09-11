@@ -9,22 +9,95 @@ Ein andereren Einstiegspunkt für die Schlüsselextraktion bieteten die Routiene
 \subsection{Primzahlgenerierung}
 
 Um einen neuen Schlüssel zu erzeugen werden zuerst zwei Primzahlen erzeugt. Im Folgenden soll die Primzahlgenerierung von Mozilla NSS näher beleuchtet werden.
+Der Einstiegspunkt für die Primezahlgenerierung ist die Funktion generate_prime in der Datei rsa.c \ref{alg:genPrimeGenerationNSS}.
+Dort wird zuerst eine ungerade Zufallszahl $randomNum$ entsprechend der Bitlänge der gewünschten Primzahl erzeugt, deren zwei höherwertigsten Bits auf 1 gesetzt sind.
+Anschließend wird versucht auf Basis von $randomNum$ eine Primzahl zu erzeugen und diese im Erfolgsfall zurückgegeben.
+Falls dies fehlschlägt wird der gesamte Vorgang bis zu 10 mal wiederholt bis die Primzahlgenerierung endgültig abgebrochen wird.
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
-\caption{Pseudo-Code für die Primzahlgenerierung in Mozilla NSS}
-\label{alg:primeGenerationNSS}
+\caption{Pseudo-Code für generate_prime in Mozilla NSS}
+\label{alg:genPrimeGenerationNSS}
 
-\Fn{$AccessTimeEvictionSet(pointerToAddress)$}{
-    pointerToAddressFirst $\leftarrow$ pointerToAddress\;
-    timestampBefore $\leftarrow$ getTimeStamp()\;
-    \While{pointerToAddressFirst != pointerToAddress}{
-        pointerToAddress $\leftarrow$ readValue(pointerToAddress)\;
+\Fn{$generate_prime(primeLen)$}{
+    \For{1 to 10}{
+        randomNum <- RNG_GenerateGlobalRandomBytes(primeLen)\;
+        randomNum[0] |= 0xC0            /* set two high-order bits */\;
+        randomNum[primeLen - 1] |= 0x01 /* set low-order bit       */\;
+        successful <- mpp_make_prime(randomNum, &prime)\;
+        \If{successful}{
+            \Return prime\;
+        }
     }
-    \Return getTimeStamp() - timestampBefore
+    \Return no prime found
 }
-
 \end{algorithm}
+
+Die Zahl $randomNum$ wird an die Funktion mpp_make_prime in der Datei mpprime.c übergeben \ref{alg:makePrimeGenerationNSS}.
+Gobal definiert ist das Array $primes_tab$, das alle Primezahlen von 3 bis 2^16 beinhaltet. Dieses Array wird nicht dynamisch beim Start erzeugt, sondern steht fix mit alle nötigen Zahlen im Quellcode. 
+Das Array $primes_tab$ wird im folgenden Siebvorgang benötigt, um mit wenig Rechenleistung eine Reihe von Primzahlkandidaten auszuschließen.
+Dieser Siebvorgang wird in der Funktion mpp_sieve, ebenfalls in mpprime.c zu finden, definiert \ref{alg:sievePrimeGenerationNSS}.
+Zahlen der Form $randomNum + 2*i$, mit $i \in \{1,...,SIEVE\_SIZE\}$ sind mögliche Primzahlkandidaten.
+Die später verwendeten Fermat- und Miller-Rabin-Tests sind relativ aufwendig, weswegen ein Siebvorgang analog zum Sieb des Eratosthenes vorangestellt wird.
+Im Siebvorgang wird über alle Primzahlen im $primes_tab$-Array iteriert und jeweils der Wert $randomNum mod smallPrime$ errechnet. 
+
+Durch den Aufruf von $mp_mod_d$ im Pseudocode in Zeile 4 wird angedeutet, dass diese Modulo-Operation nicht in einen einzigen Maschienbefehl übersetzt werden kann, da die Zahl randomNum nicht in ein Register passt. Anders hingegen ist dies bei der Modulo-Operation in Zeile 10, da sowohl $i$ als auch 2 in ein Register passen.
+
+
+
+\begin{algorithm}[h]
+\DontPrintSemicolon
+\caption{Pseudo-Code für mpp_sieve in Mozilla NSS}
+\label{alg:sievePrimeGenerationNSS}
+\Fn{$mpp\_sieve(randomNum, smallPrimesArr, size)$}{
+    
+    \For{ix = 0; ix < nPrimes; ix++} {
+        smallPrime <- smallPrimesArr[ix]\;
+        rem <- mp_mod_d(randomNum, smallPrime)\;
+
+        \If{rem == 0}{
+            offset = 0\;
+        } 
+        \Else {
+            offset = smallPrime - rem\;
+        }
+
+        \For{i = offset; i < nSieve * 2; i += prime}{
+            \If{i mod 2 == 0}{
+                sieve[i / 2] = 1\;
+            }
+        }
+    }
+}
+\end{algorithm}
+
+\begin{algorithm}[h]
+\DontPrintSemicolon
+\caption{Pseudo-Code für mpp_make_prime in Mozilla NSS}
+\label{alg:makePrimeGenerationNSS}
+primes_tab <- genPrimeList(3,2^16) /* 6541 primes from 3 to 2^16 */\;
+SIEVE_SIZE <- 32 * 1024\;
+
+\Fn{$mpp\_make\_prime(randomNum)$}{
+    num_miller_rabin_tests <- get_num_tests(bitlen(randomNum)) // augmented by FIPS-186 requirements, Table C.2 and C.3
+
+    sieve <- mpp_sieve(randomNum, prime_tab, SIEVE_SIZE)\;
+    \ForEach{i in SIEVE_SIZE}{
+        \If{sieve[i]}{ /*number is composite*/\;
+            continue\;
+        }
+        probablePrime <- randomNum + 2*i\;
+        \If{!mpp_fermat(probablePrime, 2)}{ //Fermat test with 2
+            continue\;
+        }
+        \If{!mpp_pprime(probablePrime, num_tests)}{ //Miller Rabin test
+            continue;
+        }
+        \Return probablePrime
+    }
+}
+\end{algorithm}
+
 
 
 \section{Angriffe auf RSA Key Generierung}

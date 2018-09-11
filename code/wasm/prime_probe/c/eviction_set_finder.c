@@ -182,6 +182,8 @@ void print_res(l3pp_t l3, RES_TYPE *res, int nmonitored)
 
 int main(int ac, char **av)
 {
+  char* test = malloc(1024);
+  int t = *((int*)(test+1));
   // save app state for switches between javascript and wasm
   struct app_state *this_app_state =
       (struct app_state *)calloc(sizeof(struct app_state), 1);

@@ -2109,24 +2109,30 @@
   (local $$14 i32)
   (local $$15 i32)
   (local $$16 i32)
-  (local $$17 f32)
-  (local $$18 f32)
+  (local $$17 i32)
+  (local $$18 i32)
   (local $$19 i32)
   (local $$2 i32)
   (local $$20 i32)
   (local $$21 i32)
   (local $$22 i32)
-  (local $$23 i32)
-  (local $$24 i32)
+  (local $$23 f32)
+  (local $$24 f32)
   (local $$25 i32)
   (local $$26 i32)
   (local $$27 i32)
   (local $$28 i32)
+  (local $$29 i32)
   (local $$3 i32)
+  (local $$30 i32)
+  (local $$31 i32)
+  (local $$32 i32)
+  (local $$33 i32)
+  (local $$34 i32)
   (local $$4 i32)
-  (local $$5 f32)
+  (local $$5 i32)
   (local $$6 i32)
-  (local $$7 i32)
+  (local $$7 f32)
   (local $$8 i32)
   (local $$9 i32)
   (local $$vararg_buffer i32)
@@ -2166,110 +2172,137 @@
   (set_local $$3
    (get_local $$1)
   )
-  ;;@ c/eviction_set_finder.c:187:0
-  (set_local $$8
-   (call $_calloc
-    (i32.const 56)
-    (i32.const 1)
+  ;;@ c/eviction_set_finder.c:185:0
+  (set_local $$10
+   (call $_malloc
+    (i32.const 1024)
    )
   )
-  ;;@ c/eviction_set_finder.c:186:0
   (set_local $$4
-   (get_local $$8)
-  )
-  ;;@ c/eviction_set_finder.c:188:0
-  (set_local $$9
-   (get_local $$4)
-  )
-  (set_local $$10
-   (get_local $$9)
-  )
-  (call $_set_app_state_ptr
    (get_local $$10)
   )
-  ;;@ c/eviction_set_finder.c:189:0
+  ;;@ c/eviction_set_finder.c:186:0
   (set_local $$11
    (get_local $$4)
   )
   (set_local $$12
    (i32.add
     (get_local $$11)
+    (i32.const 1)
+   )
+  )
+  (set_local $$13
+   (i32.load
+    (get_local $$12)
+   )
+  )
+  (set_local $$5
+   (get_local $$13)
+  )
+  ;;@ c/eviction_set_finder.c:189:0
+  (set_local $$14
+   (call $_calloc
+    (i32.const 56)
+    (i32.const 1)
+   )
+  )
+  ;;@ c/eviction_set_finder.c:188:0
+  (set_local $$6
+   (get_local $$14)
+  )
+  ;;@ c/eviction_set_finder.c:190:0
+  (set_local $$15
+   (get_local $$6)
+  )
+  (set_local $$16
+   (get_local $$15)
+  )
+  (call $_set_app_state_ptr
+   (get_local $$16)
+  )
+  ;;@ c/eviction_set_finder.c:191:0
+  (set_local $$17
+   (get_local $$6)
+  )
+  (set_local $$18
+   (i32.add
+    (get_local $$17)
     (i32.const 32)
    )
   )
   (i32.store
-   (get_local $$12)
+   (get_local $$18)
    (i32.const 0)
   )
-  ;;@ c/eviction_set_finder.c:190:0
-  (set_local $$13
-   (get_local $$4)
+  ;;@ c/eviction_set_finder.c:192:0
+  (set_local $$19
+   (get_local $$6)
   )
-  (set_local $$14
+  (set_local $$20
    (i32.add
-    (get_local $$13)
+    (get_local $$19)
     (i32.const 36)
    )
   )
   (i32.store
-   (get_local $$14)
+   (get_local $$20)
    (i32.const 0)
   )
-  ;;@ c/eviction_set_finder.c:191:0
-  (set_local $$15
-   (get_local $$4)
+  ;;@ c/eviction_set_finder.c:193:0
+  (set_local $$21
+   (get_local $$6)
   )
-  (set_local $$16
+  (set_local $$22
    (i32.add
-    (get_local $$15)
+    (get_local $$21)
     (i32.const 20)
    )
   )
   (i32.store
-   (get_local $$16)
+   (get_local $$22)
    (i32.const 0)
   )
-  ;;@ c/eviction_set_finder.c:195:0
-  (set_local $$17
+  ;;@ c/eviction_set_finder.c:197:0
+  (set_local $$23
    (call $_get_timer_resolution)
   )
-  (set_local $$5
-   (get_local $$17)
-  )
-  ;;@ c/eviction_set_finder.c:197:0
-  (set_local $$18
-   (get_local $$5)
-  )
-  (set_local $$19
-   (i32.trunc_s/f32
-    (get_local $$18)
-   )
-  )
-  (set_local $$6
-   (get_local $$19)
+  (set_local $$7
+   (get_local $$23)
   )
   ;;@ c/eviction_set_finder.c:199:0
-  (set_local $$20
-   (get_local $$6)
+  (set_local $$24
+   (get_local $$7)
   )
-  (set_local $$21
-   (get_local $$20)
-  )
-  (set_local $$22
-   (call $_gcc_test_opt
-    (get_local $$21)
+  (set_local $$25
+   (i32.trunc_s/f32
+    (get_local $$24)
    )
   )
-  (set_local $$7
-   (get_local $$22)
+  (set_local $$8
+   (get_local $$25)
   )
   ;;@ c/eviction_set_finder.c:201:0
-  (set_local $$23
-   (get_local $$7)
+  (set_local $$26
+   (get_local $$8)
+  )
+  (set_local $$27
+   (get_local $$26)
+  )
+  (set_local $$28
+   (call $_gcc_test_opt
+    (get_local $$27)
+   )
+  )
+  (set_local $$9
+   (get_local $$28)
+  )
+  ;;@ c/eviction_set_finder.c:203:0
+  (set_local $$29
+   (get_local $$9)
   )
   (i32.store
    (get_local $$vararg_buffer)
-   (get_local $$23)
+   (get_local $$29)
   )
   (drop
    (call $_printf_ex
@@ -2277,41 +2310,41 @@
     (get_local $$vararg_buffer)
    )
   )
-  ;;@ c/eviction_set_finder.c:209:0
-  (set_local $$24
+  ;;@ c/eviction_set_finder.c:211:0
+  (set_local $$30
    (call $_mem_access_testing
     (i32.const 100000)
     (i32.const 0)
    )
   )
-  (set_local $$25
-   (get_local $$4)
+  (set_local $$31
+   (get_local $$6)
   )
-  (set_local $$26
+  (set_local $$32
    (i32.add
-    (get_local $$25)
+    (get_local $$31)
     (i32.const 8)
    )
   )
   (i32.store
-   (get_local $$26)
-   (get_local $$24)
+   (get_local $$32)
+   (get_local $$30)
   )
-  ;;@ c/eviction_set_finder.c:211:0
-  (set_local $$27
-   (get_local $$4)
+  ;;@ c/eviction_set_finder.c:213:0
+  (set_local $$33
+   (get_local $$6)
   )
-  (set_local $$28
+  (set_local $$34
    (i32.add
-    (get_local $$27)
+    (get_local $$33)
     (i32.const 8)
    )
   )
   (i32.store
-   (get_local $$28)
+   (get_local $$34)
    (i32.const 31)
   )
-  ;;@ c/eviction_set_finder.c:215:0
+  ;;@ c/eviction_set_finder.c:217:0
   (drop
    (call $_printf_ex
     (i32.const 4281)
@@ -2321,7 +2354,7 @@
   (set_global $STACKTOP
    (get_local $sp)
   )
-  ;;@ c/eviction_set_finder.c:233:0
+  ;;@ c/eviction_set_finder.c:235:0
   (return
    (i32.const 0)
   )
