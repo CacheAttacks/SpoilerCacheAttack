@@ -3,15 +3,15 @@
 
 \section{RSA Key Generierung}
 
-Frühere Arbeiten zu Cache-Angriffen hatten es vor allem auf die Verschlüsselung- und Enschlüsselungsroutionen der RSA-Implementierungen abgesehen \cite{}, weshalb diese Routinen besonders gehärtet und geprüft sind.
+Frühere Arbeiten zu Cache-Angriffen hatten es vor allem auf die Verschlüsselung- und Enschlüsselungsroutionen der RSA-Implementierungen abgesehen \TODO \cite{}, weshalb diese Routinen besonders gehärtet und geprüft sind.
 Ein andereren Einstiegspunkt für die Schlüsselextraktion bieteten die Routienen zur Schlüsselserzeugung, welche erst in den letzten Monat in Arbeiten näher untersucht wurden.
 
-\subsection{Primzahlgenerierung}
+\subsection{Primzahlgenerierung in Mozilla NSS}
 
 Um einen neuen Schlüssel zu erzeugen werden zuerst zwei Primzahlen erzeugt. Im Folgenden soll die Primzahlgenerierung von Mozilla NSS näher beleuchtet werden.
 Der Einstiegspunkt für die Primezahlgenerierung ist die Funktion generate_prime in der Datei rsa.c \ref{alg:genPrimeGenerationNSS}.
-Dort wird zuerst eine ungerade Zufallszahl $randomNum$ entsprechend der Bitlänge der gewünschten Primzahl erzeugt, deren zwei höherwertigsten Bits auf 1 gesetzt sind.
-Anschließend wird versucht auf Basis von $randomNum$ eine Primzahl zu erzeugen und diese im Erfolgsfall zurückgegeben.
+Dort wird zuerst eine ungerade Zufallszahl $random_num$ entsprechend der Bitlänge der gewünschten Primzahl erzeugt, deren zwei höherwertigsten Bits auf 1 gesetzt sind.
+Anschließend wird versucht auf Basis von $random_num$ eine Primzahl zu erzeugen und diese im Erfolgsfall zurückgegeben.
 Falls dies fehlschlägt wird der gesamte Vorgang bis zu 10 mal wiederholt bis die Primzahlgenerierung endgültig abgebrochen wird.
 
 \begin{algorithm}[h]
@@ -21,10 +21,10 @@ Falls dies fehlschlägt wird der gesamte Vorgang bis zu 10 mal wiederholt bis di
 
 \Fn{$generate_prime(primeLen)$}{
     \For{1 to 10}{
-        randomNum <- RNG_GenerateGlobalRandomBytes(primeLen)\;
-        randomNum[0] |= 0xC0            /* set two high-order bits */\;
-        randomNum[primeLen - 1] |= 0x01 /* set low-order bit       */\;
-        successful <- mpp_make_prime(randomNum, &prime)\;
+        random_num <- RNG_GenerateGlobalRandomBytes(primeLen)\;
+        random_num[0] |= 0xC0            /* set two high-order bits */\;
+        random_num[primeLen - 1] |= 0x01 /* set low-order bit       */\;
+        successful <- mpp_make_prime(random_num, \&prime)\;
         \If{successful}{
             \Return prime\;
         }
@@ -33,15 +33,32 @@ Falls dies fehlschlägt wird der gesamte Vorgang bis zu 10 mal wiederholt bis di
 }
 \end{algorithm}
 
-Die Zahl $randomNum$ wird an die Funktion mpp_make_prime in der Datei mpprime.c übergeben \ref{alg:makePrimeGenerationNSS}.
-Gobal definiert ist das Array $primes_tab$, das alle Primezahlen von 3 bis 2^16 beinhaltet. Dieses Array wird nicht dynamisch beim Start erzeugt, sondern steht fix mit alle nötigen Zahlen im Quellcode. 
+Die Zahl $random_num$ wird an die Funktion mpp_make_prime in der Datei mpprime.c übergeben \ref{alg:makePrimeGenerationNSS}.
+Global definiert ist das Array $primes_tab$, das alle Primzahlen von 3 bis 2^16 beinhaltet. Dieses Array wird nicht dynamisch beim Start erzeugt, stattdessen stehen alle benötigten Primzahlen fix im Quellcode. 
 Das Array $primes_tab$ wird im folgenden Siebvorgang benötigt, um mit wenig Rechenleistung eine Reihe von Primzahlkandidaten auszuschließen.
 Dieser Siebvorgang wird in der Funktion mpp_sieve, ebenfalls in mpprime.c zu finden, definiert \ref{alg:sievePrimeGenerationNSS}.
-Zahlen der Form $randomNum + 2*i$, mit $i \in \{1,...,SIEVE\_SIZE\}$ sind mögliche Primzahlkandidaten.
+Zahlen der Form $random_num + 2 \cdot i$, mit $i \in \{1,...,SIEVE\_SIZE\}$ sind mögliche Primzahlkandidaten.
 Die später verwendeten Fermat- und Miller-Rabin-Tests sind relativ aufwendig, weswegen ein Siebvorgang analog zum Sieb des Eratosthenes vorangestellt wird.
-Im Siebvorgang wird über alle Primzahlen im $primes_tab$-Array iteriert und jeweils der Wert $randomNum mod smallPrime$ errechnet. 
+Im Siebvorgang wird über alle Primzahlen im $primes_tab$-Array iteriert und jeweils der Rest $rem$ von $random_num$$\mod$$small_prime$ errechnet.
 
-Durch den Aufruf von $mp_mod_d$ im Pseudocode in Zeile 4 wird angedeutet, dass diese Modulo-Operation nicht in einen einzigen Maschienbefehl übersetzt werden kann, da die Zahl randomNum nicht in ein Register passt. Anders hingegen ist dies bei der Modulo-Operation in Zeile 10, da sowohl $i$ als auch 2 in ein Register passen.
+Durch den Aufruf von $mp_mod_d$ im Pseudocode in Zeile 4 wird angedeutet, dass diese Modulo-Operation nicht in einen einzigen Maschinenbefehl übersetzt werden kann, da die Zahl random_num nicht in ein Register passt. Anders hingegen ist dies bei der Modulo-Operation in Zeile 10, da dort sowohl $i$ als auch 2 in ein Register passen.
+
+Nun müssen zwei Fälle unterschieden werden:
+Im ersten Fall sei $random_num$ durch $small_prime$ teilbar, das heißt $random_num$$\mod$$small_prime = 0$.
+Dann ist $random_num$ zusammengesetzt, sowie auch alle $random_num + k \cdot small_prime$ mit $k \in \mathbb{N}$.
+Das $sieve$-Array dient später um die Primzahlkandidaten der Form $random_num + 2 \cdot i$ mit $i \in \{1,...,SIEVE\_SIZE\}$ zu erzeugen, wobei Kandidat $i$ nicht weiter betrachtet wird, wenn $sieve[i]$ auf $1$ gesetzt ist.
+
+Im ersten Fall muss also $sieve[0] = 1$ gesetzt werden, da $random_num$$\mod$$small_prime = 0$.
+Dies wird in der ersten Iteration der For-Schleife in Zeile 9 umgesetzt.
+Außerdem muss $sieve[j] = 1$ gesetzt werden, falls $j = k \cdot small_prime / 2$ gilt, da wie oben festgestellt $random_num + k \cdot small_prime$ bzw. $random_num + 2 \cdot j$ zusammengesetzt ist.
+Jenes wird in den restlichen Iterationen der For-Schleife umgesetzt, wobei Einträge im $sieve$-Array nur gesetzt werden, wenn $k \cdot small_prime$ gerade ist.
+Ungearde $k \cdot small_prime$ sind uninteressant, da $random_num$ ebenfalls ungerade ist und somit $random_num + k \cdot small_prime$ immer mindestens durch $2$ teilbar ist.
+
+Im zweiten Fall sei $random_num$ nicht durch $small_prime$ teilbar, das heißt $rem \neq 0$.
+Dann ist die Zahl $random_num + (small_prime - rem)$ durch $small_prime$ teilbar, da $random_num + (small_prime - rem) \mod small_prime = (random_num \mod small_prime + (small_prime - rem)) \mod small_prime = (rem + (small_prime - rem)) = 0$.
+
+Deshalb wird in der ersten Iteration der For-Schleife in Zeile 9 $sieve[(small_prime - rem)/2] = 1$ gesetzt, unter der Bedingung das $(small_prime - rem)/2$ gerade ist.
+Zudem sind alle $random_num + (small_prime - rem) + k \cdot small_prime$ durch $small_prime$ teilbar, womit analog zu Fall 1 alle $sieve[j] = 1$ gesetzt werden, falls $j = ((small_prime - rem) + k \cdot small_prime) / 2$ ist.
 
 
 
@@ -49,17 +66,17 @@ Durch den Aufruf von $mp_mod_d$ im Pseudocode in Zeile 4 wird angedeutet, dass d
 \DontPrintSemicolon
 \caption{Pseudo-Code für mpp_sieve in Mozilla NSS}
 \label{alg:sievePrimeGenerationNSS}
-\Fn{$mpp\_sieve(randomNum, smallPrimesArr, size)$}{
+\Fn{$mpp\_sieve(random_num, primes_tab, size)$}{
     
     \For{ix = 0; ix < nPrimes; ix++} {
-        smallPrime <- smallPrimesArr[ix]\;
-        rem <- mp_mod_d(randomNum, smallPrime)\;
+        small_prime <- primes_tab[ix]\;
+        rem <- mp_mod_d(random_num, small_prime)\;
 
         \If{rem == 0}{
             offset = 0\;
         } 
         \Else {
-            offset = smallPrime - rem\;
+            offset = small_prime - rem\;
         }
 
         \For{i = offset; i < nSieve * 2; i += prime}{
@@ -71,22 +88,27 @@ Durch den Aufruf von $mp_mod_d$ im Pseudocode in Zeile 4 wird angedeutet, dass d
 }
 \end{algorithm}
 
+Nachdem der Siebvorgang abgeschlossen ist, wird das $sieve$-Array in der Foreach-Schleife in Zeile 6 der Funktion mpp_make_prime verwendet.
+Wie eben beschrieben können Kandidaten der Form $random_num + 2 \cdot i$ ausgeschlossen werden, wenn $sieve[i] = 1$ gesetzt ist.
+Die restlichen Kandidaten werden mittels des Fermat- und Miller-Rabin-Tests auf Primzahleigenschaft hin überprüft.
+Werden auch diese Tests bestanden, wird die Zahl als Primzahl eingestuft und zurückgegeben.
+
 \begin{algorithm}[h]
 \DontPrintSemicolon
 \caption{Pseudo-Code für mpp_make_prime in Mozilla NSS}
 \label{alg:makePrimeGenerationNSS}
-primes_tab <- genPrimeList(3,2^16) /* 6541 primes from 3 to 2^16 */\;
+primes_tab <- [2, 3, 5, 7, ..., 65521] // 6541 primes from 3 to 2^16\;
 SIEVE_SIZE <- 32 * 1024\;
 
-\Fn{$mpp\_make\_prime(randomNum)$}{
-    num_miller_rabin_tests <- get_num_tests(bitlen(randomNum)) // augmented by FIPS-186 requirements, Table C.2 and C.3
+\Fn{$mpp\_make\_prime(random_num)$}{
+    num_miller_rabin_tests <- get_num_tests(bitlen(random_num)) // augmented by FIPS-186 requirements, Table C.2 and C.3
 
-    sieve <- mpp_sieve(randomNum, prime_tab, SIEVE_SIZE)\;
+    sieve <- mpp_sieve(random_num, prime_tab, SIEVE_SIZE)\;
     \ForEach{i in SIEVE_SIZE}{
         \If{sieve[i]}{ /*number is composite*/\;
             continue\;
         }
-        probablePrime <- randomNum + 2*i\;
+        probablePrime <- random_num + 2*i\;
         \If{!mpp_fermat(probablePrime, 2)}{ //Fermat test with 2
             continue\;
         }
@@ -98,9 +120,95 @@ SIEVE_SIZE <- 32 * 1024\;
 }
 \end{algorithm}
 
+\subsection{Primzahlgenerierung in OpenPGPjs}
 
+Die Primzahlgenerierung von OpenPGPjs ist in der Datei prime.js beschrieben und startet mit der Funktion randomProbablePrime.
+Zuerst wird eine Zufallszahl entsprechend der gewünschten Bitlänge generiert.
+In OpenPGPjs wird kein Siebverfahren wie in Mozilla NSS angewandt, sondern es wird sichergestellt das ausschließlich nicht durch 2,3 und 5 teilbare Zahlen als Primzahlkandidaten weitergehend geprüft werden.
+Dazu wird eine Zahl $n \mod 30$ berechnet und der Rest betrachtet.
+Ist dieser weder durch 2,3 oder 5 teilbar so ist auch $n$ nicht durch 2,3 oder 5 teilbar.
+Andernfalls wird die kleinstmögliche Zahl $k \in \mathbb{N}$ auf $n$ addiert, sodass $n + k \mod 30$ nicht durch 2,3 oder 5 teilbar ist.
+Diese kleinstmögliche Zahl ist $adds[n \mod 30]$, das heißt beispielsweise ist $125$ zu $adds[125 \mod 30] = 2$ addiert gleich 127, die kleinstmögliche Zahl größer 125, welche nicht durch 2,3 und 5 teilbar ist.
+
+Mit dieser Methode wird in der Zeile ein Kandidat erzeugt, der nicht durch 2,3 oder 5 teilbar ist und in der Funktion isProbablePrime tiefergehend geprüft wird.
+Zuerst wird die Teilerfremdheit von $random_num -1$ zu dem Exponenten $e$ überprüft (näheres dazu in \ref{RSAGenGCDAttack}).
+Danach wird ein einfacher Divisiontest mit alle Primzahlen zwischen 7 und 5000 durchgeführt, wohingegen dieser in Mozilla NSS bereits durch den Siebvorgang abgedeckt ist.
+Abschließend wird wie in Mozilla NSS ein Fermat- und Miller-Rabin-Test durchgeführt.
+
+\begin{algorithm}[h]
+\DontPrintSemicolon
+\caption{Pseudo-Code für Primzahlgenerierung in OpenPGPjs}
+\label{alg:randomProbablePrimeOpenPGPjs}
+num_miller_rabin_tests <- get_num_tests(bitlen(random_num))\;
+small_primes <- [7, 11, 13, 17, ..., 4999] \; //665 primes from 7 to 5000\;
+
+\Fn{$randomProbablePrime(bits, e)$}{
+    adds <- [1, 6, 5, 4, 3, 2, 1, 4, 3, 2, 1, 2, 1, 4, 3, 2, 1, 2, 1, 4, 3, 2, 1, 6, 5, 4, 3, 2, 1, 2]\;
+    random_num <- random.getRandomBN\;
+    i <- random_num mod 30\;
+    
+    \Repeat{!isProbablePrime(random_num,e,num_miller_rabin_tests)}{
+        random_num <- random_num + adds[i]\;
+        i <- (i + adds[i]) mod 30\;
+        // If reached the maximum, go back to the minimum.\;
+        \If{bitlen(random_num) > bits}{
+            random_num <- (random_num mod $2^{bits}$) + $2^{bits-1}$\;
+            i <- random_num mod 30\;
+        }
+    }
+}
+
+\Fn{$isProbablePrime(random\_num, e, num\_miller\_rabin\_tests)$}{
+    \If{gcd(random_num-1, e) \neq 1}{
+        \Return false\;
+    }
+    \ForEach{small_prime in small_primes}{
+        \If{random_num mod small_prime = 0}{
+            \Return false\;
+        }
+    }
+    \If{!fermat(random_num, 2)}{
+        \Return false\;
+    }
+    \If{!millerRabin(random_num, k)}{
+        \Return false\;
+    }
+    \Return true
+}
+\end{algorithm}
+
+\subsection{Mögliche Leakage in Mozilla NSS}
+
+Das Ziel ist es die Zahl $random_num$ oder Teile davon zu rekonstruieren.
+Der Siebvorgang sticht hier besonders hervor, da dort unabhängig von $random_num$ genau 6541 (Anzahl der Primzahlen von 3 bis $2^{16}$) Modulo-Operationen mit vorher bekannten Primzahlen auf $random_num$ ausgeführt werden.
+
+Typische RSA-Schlüssel besitzen heute eine Länge von 2048 Bit, sodass $random_num$ etwa ein Länge von 1024 Bit besitzt.
+Deswegen dauert die Berechnung von $random_num \mod small_prime$ im Schnitt TODO Taktzyklen.
+Somit ist bekannt, dass auf das $primes_tab$-Array nur jede TODO Taktzyklen einmal zugegriffen wird.
+
+Das $primes_tab$-Array ist vom Datentyp mp_digit, der bei einer Linux x64-Kompilierung gleichbedeutend mit ein 8 Byte Integer ist.
+Somit hat das $primes_tab$-Array ein Gesamtgröße von $8 \cdot 6541 = 52328 Bytes$ und liegt in $\lceil 52328 / 64 \rceil = 818$ verschiedenen Cache-Lines bzw. $\lceil 52328 / 4096 \rceil = 13$ Pages.
+
+Angenommen die zu primes_tab[0-7] gehörige Cache-Line wird mittels Prime-and-Probe überwacht, dann können nach Start des Siebvorgangs 8 Zugriffe mit jeweils etwa TODO Taktzyklen Abstand gemessen werden.
+Nachdem 8. Zugriff muss die überwachte Cache-Line auf $primes_tab[8-15]$ für weitere 8 Zugriffe gewechselt werden usw.
+
+Um die notwendigen Cache-Sets zu Finden muss nur jeweils ein Cache-Set pro 4-KiB Page identifiziert werden, da wie bereits erwähnt die Adressen innerhalb einer Page identisch sind.
+Das Zugriffsmuster auf jede Cache-Lines des $primes_tab$-Array entspricht immer 8 Zugriffen mit jeweils TODO Taktzyklen Pause. Außerdem liegt das $primes_tab$-Array immer an der selben Adresse im Speicher.
+Die Angreiferin kann selber Schlüsselerzeugungen anstoßen, sodass es ihr möglich ist die passenden Eviction-Sets für das $primes_tab$-Array zu finden.
+
+Die Manipulation des $sieve$-Array in der For-Schleife (siehe \ref{alg:sievePrimeGenerationNSS} Zeile 9-11) ist mit etwa 100 Taktzyklen Laufzeit deutlich zu schnell um einzelne Zugriffe unterscheiden zu können.
+Das $sieve$-Array ist ein Byte Array der Größe 32768 Bytes und liegt somit in 512 Cache-Lines.
+Bei den ersten Iterationen mit kleinen Primzahlen wie der 3 wird noch auf alle 512 zugegriffen.
+Sobald die Primzahlen aber den Wert 64 überschreiten werden Cache-Sets ausgelassen.
+
+Angenommen $randomNum \mod 67 = 0$ und die For-Schleife der Zeile 9-11 ist in der 42. Iteration, das heißt $i=2814$ ist gerade.
+Dann wird gemöß Zeile 11 $sieve[1407] = 1$ gesetzt, hiermit auf die Cache-Line für $sieve[1344-1407]$ zugegriffen und abschließend $i=2881$ gesetzt.
+In der nächsten Iteration wird auf keine Cache-Line von $sieve$ zugegriffen, da $i=2881$ ungerade ist.
+Die übernächste Iteration arbeitet mit $i=2948$ und setzt somit den Wert $sieve[1474] = 1$.
+Die zugehörige Cache-Line ist aber $sieve[1472-1535]$, womit keinerlei Zugriff auf die Cache-Line $sieve[1408-1471]$ erfolgt.
 
 \section{Angriffe auf RSA Key Generierung}
+\label{RSAGenGCDAttack}
 
 Details zu Implementierung in Mozilla NSS
 

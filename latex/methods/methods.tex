@@ -285,6 +285,7 @@ Durch Messrauschen kann auch hier wieder ein Element fälschlicherweise als rele
 Die zweite und dritte Wiederholung sind weit weniger kostenintensiv, da das Candidate-Set nach einer Contract-Phase bereits um hunderte Einträge bereinigt wurde.
 
 \begin{algorithm}[h]
+%\algsetup{linenosize=\small}
 \DontPrintSemicolon
 \caption{Pseudo-Code für Contract-Phase des Eviction-Set Algorithmus}
 \label{alg:evictionSetContract}
@@ -376,7 +377,7 @@ Außerdem erlauben die Techniken der CPU zu einem vorherigen Zustand zurückzuke
 Die Möglichkeit Load- und Store-Befehle Out-of-Order auszuführen, sorgt für eine erhöhte Parallelität auf Instruktionsebene und eine damit verbesserte Single-Thread-Performance.
 
 \begin{figure}[h]
-\label{fig:CacheAsso}
+\label{fig:MemoryDisambiguation}
 \centering
 \includegraphics[width=0.6\textwidth]{methods/memory_disambiguation.pdf}
 \caption{Beispiel für eine Speicher-Disambiguierung. Die Nummern in den Kreisen geben die chronologische Ausführungsreihenfolge an und der weiße Pfeil am linken Rand die Reihenfolge im Quellcode. Load 2 kann nicht früher ausgeführt werden, da er von Store 1 abhängig ist. Load 4 hingegen ist von den anderen Operationen unabhängig und kann daher vor Store 1 und Store 3 ausgeführt werden. Durch diese vorgezogene Ausführung können Instruktionen die den Wert von X benötigen im Folgenden von einer geringen Zugriffslatenz proftieren. \cite{CacheAssoWiki}.}
