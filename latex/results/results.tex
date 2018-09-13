@@ -1,9 +1,9 @@
-\chapter{Angriffe}
+\chapter{Identifikation von Angriffszielen}
 \label{chapter:results}
 
 \section{RSA Key Generierung}
 
-Frühere Arbeiten zu Cache-Angriffen hatten es vor allem auf die Verschlüsselung- und Enschlüsselungsroutionen der RSA-Implementierungen abgesehen \TODO \cite{}, weshalb diese Routinen besonders gehärtet und geprüft sind.
+Frühere Arbeiten zu Cache-Angriffen hatten es vor allem auf die Verschlüsselung- und Enschlüsselungsroutionen der RSA-Implementierungen abgesehen \cite{FlushReload, CacheBleedOpenSSLRSA}, weshalb diese Routinen besonders gehärtet und geprüft sind.
 Ein andereren Einstiegspunkt für die Schlüsselextraktion bieteten die Routienen zur Schlüsselserzeugung, welche erst in den letzten Monat in Arbeiten näher untersucht wurden.
 
 \subsection{Primzahlgenerierung in Mozilla NSS}
@@ -140,7 +140,7 @@ Abschließend wird wie in Mozilla NSS ein Fermat- und Miller-Rabin-Test durchgef
 \caption{Pseudo-Code für Primzahlgenerierung in OpenPGPjs}
 \label{alg:randomProbablePrimeOpenPGPjs}
 num_miller_rabin_tests <- get_num_tests(bitlen(random_num))\;
-small_primes <- [7, 11, 13, 17, ..., 4999] \; //665 primes from 7 to 5000\;
+small_primes <- [7, 11, 13, 17, ..., 4999] //665 primes from 7 to 5000\;
 
 \Fn{$randomProbablePrime(bits, e)$}{
     adds <- [1, 6, 5, 4, 3, 2, 1, 4, 3, 2, 1, 2, 1, 4, 3, 2, 1, 2, 1, 4, 3, 2, 1, 6, 5, 4, 3, 2, 1, 2]\;
@@ -159,7 +159,7 @@ small_primes <- [7, 11, 13, 17, ..., 4999] \; //665 primes from 7 to 5000\;
 }
 
 \Fn{$isProbablePrime(random\_num, e, num\_miller\_rabin\_tests)$}{
-    \If{gcd(random_num-1, e) \neq 1}{
+    \If{gcd(random_num-1, e) $\neq$ 1}{
         \Return false\;
     }
     \ForEach{small_prime in small_primes}{

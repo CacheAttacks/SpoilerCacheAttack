@@ -49,7 +49,7 @@ Sofern die Auswahl des Cache-Eintrags für die Daten einer bestimmten Hauptspeic
 Das andere Extrem wäre ein einfach-assoziativer Cache beziehungsweise eine direkte Abbildung, wobei die Adresse des Hauptspeichers, von der die Daten stammen, den zu wählenden Cache-Eintrag eindeutig festlegt.
 Der Mittelweg ist die n-Wege-Assoziativität, bei der die Daten nur an n Cache-Einträgen liegen können (siehe auch Abb.\ref{fig:CacheAsso}).
 
-\todo{Tabellen haben Überschriften, Abbildungen haben Unterschriften. Bitte für alle Abbildungen unter das Bild schieben.}
+%\todo{Tabellen haben Überschriften, Abbildungen haben Unterschriften. Bitte für alle Abbildungen unter das Bild schieben.}
 \begin{figure}[h]
 \label{fig:CacheAsso}
 \centering
@@ -65,8 +65,8 @@ Der i7-4770 besitzt 8192 dieser Cache-Sets, womit sich eine Assoziativität von 
 %Die Zuordnung der physischen Hauptspeicheradressen zu den Cache-Sets ist nicht öffentlich dokumentiert.
 Des Weiteren wird der Cache in \textit{Slices} unterteilt, wobei jede Slice einem Kern zugeordnet wird. Die Slices sind mittels eines Ringbuses verbunden, so dass jeder Kern auf Daten jeder Slice zugreifen kann. Die Zugriffslatenz erhöht sich mit der Anzahl der benötigten Hops, jedoch ist diese Erhöhung im Bereich von etwa 10 ns pro Hop. Diese Latenzunterschiede sind daher zu gering, um die Erkennung zwischen Cache-Hit und Cache-Miss zu gefährden, welche bei ca. 60 ns liegen \cite{TheSpyInTheSandbox}. Bei i7-4770 sind jedem der 4 Slices 2048 Cache-Sets zugeordnet. Die Zuordnung der Cache-Sets innerhalb der Slices sind fest an die untersten 18 Bit der pysischen Adresse gekoppelt. Zu welchem Slice ein Adresse gemappt wird, wird durch eine nicht dokumentierte Hashfunktion bestimmt.
 
-Im Rahmen dieser Arbeit sind Slices daher vernachlässigbar, so dass etwa bei Cache-Spezifikationen Slices nicht gesondert erwähnt werden.
-\todo[size=\footnotesize]{Eventuell Slices doch nicht so vernachlässigbar, da store forward eviction set Suche Slices einbezieht)}
+%Im Rahmen dieser Arbeit sind Slices daher vernachlässigbar, so dass etwa bei Cache-Spezifikationen Slices nicht gesondert erwähnt werden.
+%\todo[size=\footnotesize]{Eventuell Slices doch nicht so vernachlässigbar, da store forward eviction set Suche Slices einbezieht)}
 
 
 
@@ -107,7 +107,7 @@ Ein typisches Beispiel hierfür sind geteilte Bibliotheken, zum Beispiel .so Dat
 %\todo[size=\footnotesize]{Du hast ja schon geschrieben todo. Hier vielleicht auch eine kleine abbildung, aber defintiv irgendwas über flush WAIT reload und zeitmessungen}
 
 
-\todo{Ok, ich sehe du benutzt keine listing-Umgebung, sondern das alogrithm(2) Paket. Dann habe ich keine Ahnung, wie du die Schriftgröße anpassen kannst. Musst du dann selber rausfinden.}
+%\todo{Ok, ich sehe du benutzt keine listing-Umgebung, sondern das alogrithm(2) Paket. Dann habe ich keine Ahnung, wie du die Schriftgröße anpassen kannst. Musst du dann selber rausfinden.}
 \SetKwProg{Fn}{Function}{}{}
 
 \begin{algorithm}[h]
@@ -189,9 +189,9 @@ Beide eben beschrieben Angriffsmethoden setzen voraus, dass die Angreiferin Lauf
 RSA (Rivest–Shamir–Adleman) ist ein 1978 veröffentlichtes und weitverbreitetes Public-Key-Kryptosystem.
 Das grundlegende Prinzip hinter RSA ist es,  große positive natürliche Zahlen $e,d,n$ zu finden, so dass $(m^d)^e \equiv m \mod n$ gilt, aber schwer ein $d$ zu finden ist, wenn nur $e$ und $n$ gegeben sind.
 
-Der RSA-Algorihtmus besteht aus vier Schritten: Der Schlüsselerzeugung, der Schlüsselverteilung, der Verschlüsselung und Entschlüsselung.
+Der RSA-Algorihtmus besteht aus vier Schritten: Der Schlüsselgenerierung, der Schlüsselverteilung, der Verschlüsselung und Entschlüsselung.
 
-Für die Schlüsselerzeugung werden zwei Primzahlen $p$ und $q$ benötigt, und anschließend wird $n = pq$ berechnet. Die Länge $n$ wird auch als Schlüssellänge bezeichnet.
+Für die Schlüsselgenerierung werden zwei Primzahlen $p$ und $q$ benötigt, und anschließend wird $n = pq$ berechnet. Die Länge $n$ wird auch als Schlüssellänge bezeichnet.
 
 Eine heute gängige Schlüssellänge ist 2048 Bit, so dass die Bitlänge jeder Primzahl in etwa 1024 Bit beträgt. 
 Um derart große Primzahlen in akzeptabler Zeit zu finden, werden probabilistische Primzahltests eingesetzt, welche mit einer hohen Wahrscheinlichkeit garantieren, dass die gefundenen Zahlen prim sind.
@@ -201,15 +201,17 @@ Diese liefert zu jeder natürlichen Zahl $n$ die kleinste Zahl $\lambda(n)$, sod
 
 Sei $e$ eine natürliche Zahl mit $1<e<\lambda(n)$ und teilerfremd zu $\lambda(n)$, d.h. es gilt $ggT(e,\lambda(n)) = 1$. Weiter sei $d \equiv e^{-1} \mod \lambda(n)$.
 
-\todo{verschlüsseln und entschlüsseln ist irrelevant für diese Arbeit. Statt es zu beschreiben einfach "im rahmen dieser Arbeit wurde versucht, während der Schlüsselgenerierung Informationen über die generierten Primzahlen p und q abzugreifen" oder so. Da wir jetzt ja ein "Idenifikation von Angriffszielen" kapitel haben, passt RSA vielleicht da besser statt in die Grundlagen}
+Im Rahmen dieser Arbeit liegt der Fokus darauf, während der Schlüsselgenerierung Informationen über die generierten Primzahlen p und q abzugreifen.
 
-Der öffentliche Schlüssel besteht nun aus $n$ und dem Exponenten $e$ und muss Personen bekannt sein, welche Nachrichten verschlüsseln möchten.
+%\todo{verschlüsseln und entschlüsseln ist irrelevant für diese Arbeit. Statt es zu beschreiben einfach "im rahmen dieser Arbeit wurde versucht, während der Schlüsselgenerierung Informationen über die generierten Primzahlen p und q abzugreifen" oder so. Da wir jetzt ja ein "Idenifikation von Angriffszielen" kapitel haben, passt RSA vielleicht da besser statt in die Grundlagen}
 
-Um eine Nachricht $m$ mit $0 \leq m < n$ zu verschlüsseln, berechnet der Sender $c \equiv m^e \mod n$ mit dem $e$ aus dem öffentlichen Schlüssel des Empfängers und sendet den Chiffretext $c$ an den Empfänger.
+%Der öffentliche Schlüssel besteht nun aus $n$ und dem Exponenten $e$ und muss Personen bekannt sein, welche Nachrichten verschlüsseln möchten.
 
-Der geheime Schlüssel ist der Exponent $d$, wobei die Zahlen $p,q,\lambda(n)$ ebenfalls geheim bleiben müssen, da andernfalls $d$ leicht berechnet werden könnte.
+%Um eine Nachricht $m$ mit $0 \leq m < n$ zu verschlüsseln, berechnet der Sender $c \equiv m^e \mod n$ mit dem $e$ aus dem öffentlichen Schlüssel des Empfängers und sendet den Chiffretext $c$ an den Empfänger.
 
-Der Empfänger wiederum nutzt sein $d$ aus dem privaten Schlüssel, um $c^d \equiv (m^e)^d \equiv m \mod n$, die ursprüngliche Nachricht, zu berechnen.
+%Der geheime Schlüssel ist der Exponent $d$, wobei die Zahlen $p,q,\lambda(n)$ ebenfalls geheim bleiben müssen, da andernfalls $d$ leicht berechnet werden könnte.
+
+%Der Empfänger wiederum nutzt sein $d$ aus dem privaten Schlüssel, um $c^d \equiv (m^e)^d \equiv m \mod n$, die ursprüngliche Nachricht, zu berechnen.
 
 
 
@@ -222,13 +224,32 @@ Der Empfänger wiederum nutzt sein $d$ aus dem privaten Schlüssel, um $c^d \equ
 Javascript ist eine interpretierte Hochsprache, welche zusammen mit HTML und CSS die wichtigsten Komponenten für das World Wide Web bildet. 
 Interaktive Webseiten und Applikationen werden erst mit Hilfe von Javascript möglich, weshalb jeder moderne Browser eine Javascript-Engine mitbringt.
 
-Webanwendungen mit Javascript sollen auf unterschiedlichsten Endgeräten vom Laptop über das Smartphone bis zur Heimkonsole laufen, so dass ein Vorhalten von kompilierten Binärdateien für jedes dieser Geräte schwierig ist. Dennoch soll die Webanwendung beim Anwender ohne lange Ladezeiten auskommen, womit die Kompilierung auf dem Anwendungsgerät als Lösung entfällt.
+Webanwendungen mit Javascript sollen auf unterschiedlichsten Endgeräten vom Laptop über das Smartphone bis zur Heimkonsole laufen, so dass ein Vorhalten von kompilierten Binärdateien für jedes dieser Geräte schwierig ist. 
+Dennoch soll die Webanwendung beim Anwender ohne lange Ladezeiten auskommen, womit die Kompilierung auf dem Anwendungsgerät als Lösung entfällt.
 Unter anderem deshalb ist Javascript eine interpretierte Sprache, welche jedoch ein Geschwindigkeitsnachteil gegenüber vorkompilierten Sprachen wie C oder Java hat.
-Es wurden viele Anstrengungen unternommen, diesen designbedingten Performancenachteil auszugleichen. So erkennt etwa Google Javascript-Engine V8 häufig genutzte langsam laufende Codeteile und optimiert diesen während der Laufzeit (??? Satzbau ???) \cite{GoogleTurboFan}.
+Es wurden viele Anstrengungen unternommen, diesen designbedingten Performancenachteil auszugleichen. 
+So erkennt etwa Googles Javascript-Engine V8 häufig genutzte, langsam laufende Codeteile und optimiert diese während der Laufzeit \cite{GoogleTurboFan}.
 
-WebAssembly ist ein W3C-Webstandard, welcher ein binäres Format für ausführbaren Code in Webseiten definiert. Dieser Standard wurde 2017 ins Leben gerufen, um den Performancenachteil von Javascript gegenüber nativen Code zu reduzieren, und wird von allen gängigen Webbrowsern unterstützt. Des Weiteren ermöglicht WebAssembly die Entwicklungen von Webanwendungen in anderen Sprachen wie etwa C, dessen Code abschließend in das binäre Format kompiliert wird.
+WebAssembly ist ein W3C-Webstandard, welcher ein binäres Format für ausführbaren Code in Webseiten definiert. 
+Dieser Standard wurde 2017 ins Leben gerufen, um den Performancenachteil von Javascript gegenüber nativen Code zu reduzieren, sowie eim kompakte Code-Repräsentation zu bieten, und wird von allen gängigen Webbrowsern unterstützt. 
+Des Weiteren ermöglicht WebAssembly die Entwicklungen von Webanwendungen in anderen Sprachen wie etwa C, dessen Code abschließend in ein binäres Format, Wasm-Modul genannt, kompiliert wird.
+Dieser ist aber weiterhin maschinenunabhängig, sodass nur ein Wasm-Modul vorgehalten werden muss.
+Diese Module können von Javascript als Bibliotheken geladen und verwendet werden.
 
-\todo[size=\footnotesize]{Fehlt: irgendwas in Richtung Drive-by, JIT-Environments, WebAssembly}
+\section{Drive-by Attacks}
 
-\todo{was soll das ständige newtextend denn tun?}
+Die große Schwierigkeit eines Angriffs ist es den Schadcode auf dem Gerät des Opfers zur Ausführung zu bringen. Ein beliebte Methode ist das Social-Engineering, welches darauf abzielt bei Personen bestimmte Reaktionen wie das Öffnen eines E-Mail-Anhang hervorzurufen. Leider muss hier das Opfer selbst aktiv mitwirken, um dem Angriff zum Erfolg zu verhelfen.
+
+Im Gegensatz dazu steht der Drive-by Attack, bei dem das Opfer bereits bei dem Besuch einer Website angegriffen wird. Zum einen ist es möglich durch Lücken im Browser beliebigen Code auf dem Gerät des Opfers auszuführen. Zum anderen wie etwa im Fall dieser Arbeit können die vorhandenen Mittel wie Javascript und Webassembly für einen Angriff genutzt werden.
+Die Erfolgswahrscheinlichkeit eines Angriffs ist hier bedeutend größer, da bereits von der Angreiferin geschaltete Werbeanzeigen auf häufig aufgerufenen Webseiten für einen großen Pool von Opfern ausreichen.
+Des Weiteren werden die meisten Opfer den Angriff nicht zu ihrem Ursprung zurückverfolgen können, da sie die Website mit der bösartigen Werbeanzeige regelmäßig besuchen.
+
+Zusammenfassend ist das Schreiben von Drive-by Angriffen aufwendiger und setzt in der Regel die Kenntnis über unbekannte oder nicht gepatchte Sicherheitslücken voraus, verspricht dafür aber eine deutliche höhere Erfolgswahrscheinlichkeit.
+
+%Mit der zunehmenden Wandlung vieler Applikationen weg von der lokalen Desktopanwendung hin zur endgerätunabhängigen Webanwendung
+
+%\todo[size=\footnotesize]{Fehlt: irgendwas in Richtung Drive-by, JIT-Environments, WebAssembly}
+
+%\todo{was soll das ständige newtextend denn tun?}
+%das markiert für nicht latex- bzw. versionskontrollenaffine Nutzer farblich Textstellen die ich geändert habe
 \newtextend

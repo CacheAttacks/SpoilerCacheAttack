@@ -15,10 +15,10 @@ Des Weiteren steht mit dem Emscripten-Compiler ein Tool bereit, welches die Übe
 
 \section{Timer in JavaScript}
 
-Der hier ausgeführte Cache-Angriff benötigt wie in \ref{} \todo{ref was?} beschrieben präzise Timer, welche eine Auflösung von unter 30 ns bereitstellen sollten. Dennoch könnte die Suche nach \textit{Eviction-Sets} auch mit schlechteren Timerauflösungen bewerkstelligt werden, indem Operationen mehrfach ausgeführt werden und die Differenz der aufsummierten Zeiten zur Bewertung herangezogen wird.
+Der hier ausgeführte Cache-Angriff benötigt wie in beschrieben präzise Timer, welche eine Auflösung von unter 30 ns bereitstellen sollten. Dennoch könnte die Suche nach \textit{Eviction-Sets} auch mit schlechteren Timerauflösungen bewerkstelligt werden, indem Operationen mehrfach ausgeführt werden und die Differenz der aufsummierten Zeiten zur Bewertung herangezogen wird.
 Im \textit{Eviction-Set}-Algorithmus könnte etwa die Funktion $checkevict$ wie in Algorithmus \ref{alg:checkevict_low_resolution} angepasst werden, wobei der Parameter $repeatIterations$ abhängig von der Timerauflösung gewählt wird. 
 Es besteht jedoch das Problem, schwache Aktivitäten im Cache-Set während des eigentlichen Angriffs aufzudecken, da im Worst-Case nur ein Eintrag aus dem beobachteten Cache-Set verdrängt wird und somit lediglich die Zugriffszeit zwischen einem Hit und einem Miss ausschlaggebend ist. 
-In diesem Fall könnte die Dauer mehrerer Prime and Probe-Iterationen gesamtheitlich gemessen werden, und zwar unter der Vermutung, dass auf die für die Verdrängung verantwortliche Adresse über die Zeit mehrfach zugegriffen wird. \todo{Ich verstehe den nächsten Satz nicht. Satz redesignt}
+In diesem Fall könnte die Dauer mehrerer Prime and Probe-Iterationen gesamtheitlich gemessen werden, und zwar unter der Vermutung, dass auf die für die Verdrängung verantwortliche Adresse über die Zeit mehrfach zugegriffen wird. %\todo{Ich verstehe den nächsten Satz nicht. Satz redesignt}
 Die direkten Auswirkungen eines niedrig aufgelösten Timers sind also eine geringere zeitliche Auflösung von Cache-Aktivitäten oder die Nichtregestrierung von schwachen.
 
 \begin{algorithm}[h]
@@ -54,6 +54,24 @@ Die Ausführung von Javascript passiert in einem Thread, wobei die Möglichkeit 
 Der Speicherbereich eines Webworkers und des Mainthreads sind strikt getrennt, so dass Daten ursprünglich über Nachrichten ausgetauscht werden mussten. Hier setzt der SharedArrayBuffer an, welcher einen geteilten Speicherbereich zwischen Mainthread und Webworker definiert.
 
 Gemäß Code-Listing \ref{alg_list:sharedArrayBufferWorkerMain} wird im Mainthread zuerst ein SharedArrayBuffer von 4 Bytes angelegt. Anschließend wird der als Zeitgeber fungierende Webworker gestartet und ihm eine Referenz auf den eben angelegten SharedArrayBuffer übersandt. 
+
+\begin{figure}[h]
+\label{alg_list:sharedArrayBufferWorkerMain}
+\begin{lstlisting}[caption=main.js: Code welcher den counterWorker für Zeitmessungen verwendet]
+var sharedArrayBuffer = new SharedArrayBuffer(4);
+var counterWorker = new Webworker('counterWebworker.js');
+counterWorker.postMessage(sharedArrayBuffer);
+var sharedArrayBufferUin32Array = new Uint32Array(sharedArrayBuffer);
+
+function measureTime(func){
+    var t1 = Atomics.load(sharedArrayBufferUin32Array[0]);
+    func();
+    var t2 = Atomics.load(sharedArrayBufferUin32Array[0]);
+    return t2 - t1;
+}
+\end{lstlisting}
+\end{figure}
+
 Die Zählvariable soll hier eine Größe von 32 Bit haben, weshalb abschließend ein Uint32 Array definiert wird, welches auf den SharedArrayBuffer referenziert (???). 
 Ein Zählvariable kann nun durch Lesen des ersten Eintrags des Arrays erhalten werden. 
 Problematisch ist jedoch, dass auf die Zählvariable sowohl lesend vom Mainthread als auch schreibend vom Webworker zugegriffen wird. 
@@ -64,6 +82,19 @@ Der Webworker iteriert nun in einem eigenen Thread die Zählvariable in einer En
 Zuerst wird dazu dem Webworker via message die Referenz auf einen im Mainthread erstellten SharedArrayBuffer übergeben.
 Anschließend wird im Webworker ein \textit{Uint32Array} angelegt, welches mit dem übergebenen SharedArrayBuffer verknüpft ist. 
 Zum Schluss geht der Webworker in die Endlosschleife über, in welcher die Zählvariable \textit{sharedArray[0]} durchgehend iteriert.
+
+\begin{figure}[h]
+\label{alg_list:sharedArrayBufferWorker}
+\begin{lstlisting}[caption=counterWebworker.js: Webworker welcher die Zählvariable in einer Endlosschleife iteriert]
+self.addEventListener('message', (m) => {
+  // Create an Int32Array on top of the shared memory array 
+  const sharedArray = new Uint32Array(m.data);
+  while{true}{
+    sharedArray[0]++;
+  }
+});
+\end{lstlisting}
+\end{figure}
 
 Das Iterieren einer Variable benötigt nur wenige Taktzyklen, weshalb der aktuelle Wert der Zählvariable als Zeitstempel interpretiert werden kann. 
 Die Auflösung dieser Methode hängt also von der Geschwindigkeit der Iteration sowie der Speichersynchronisation des SharedArrayBuffers zwischen Mainthread und Webworker ab.
@@ -122,36 +153,7 @@ Als logische Konsequenz wurde angekündigt, in Zukunft wieder hochauflösende Ti
 
 Aus diesen Gründen wird im Folgenden davon ausgegangen, dass das Opfer SharedArrayBuffer in seinem Webbrowser aktiviert hat.
 
-\todo{Hier steht ein h in eckigen Klammern. Listings funktionieren nicht so, das sind keine float-umgebungen. Darum bricht auch mitten im Listing die Seite um. Um es "hübsch" in den text einzufügen musst du das listing in eine figure packen. Ansonsten taucht es einfach immer genau da auf, wo du es hinsetzt.}
-\begin{figure}[h]
-\label{alg_list:sharedArrayBufferWorkerMain}
-\begin{lstlisting}[caption=main.js: Code welcher den counterWorker für Zeitmessungen verwendet]
-var sharedArrayBuffer = new SharedArrayBuffer(4);
-var counterWorker = new Webworker('counterWebworker.js');
-counterWorker.postMessage(sharedArrayBuffer);
-var sharedArrayBufferUin32Array = new Uint32Array(sharedArrayBuffer);
-
-function measureTime(func){
-    var t1 = Atomics.load(sharedArrayBufferUin32Array[0]);
-    func();
-    var t2 = Atomics.load(sharedArrayBufferUin32Array[0]);
-    return t2 - t1;
-}
-\end{lstlisting}
-\end{figure}
-
-\begin{figure}[h]
-\label{alg_list:sharedArrayBufferWorker}
-\begin{lstlisting}[caption=counterWebworker.js: Webworker welcher die Zählvariable in einer Endlosschleife iteriert]
-self.addEventListener('message', (m) => {
-  // Create an Int32Array on top of the shared memory array 
-  const sharedArray = new Uint32Array(m.data);
-  while{true}{
-    sharedArray[0]++;
-  }
-});
-\end{lstlisting}
-\end{figure}
+%\todo{Hier steht ein h in eckigen Klammern. Listings funktionieren nicht so, das sind keine float-umgebungen. Darum bricht auch mitten im Listing die Seite um. Um es "hübsch" in den text einzufügen musst du das listing in eine figure packen. Ansonsten taucht es einfach immer genau da auf, wo du es hinsetzt.}
 
 %moved from section grundlagen
 \section{Eviction-Set Algorithmus in der Javascript-Umgebung}
@@ -368,6 +370,7 @@ Wenn nun das Candidate-Set kein Eviction-Set für die Zeugenadresse ist, würde 
 Denn die Zugriffszeit auf die Zeugenadresse wird immer niedrig bleiben, was den Algorithmus zur fälschlichen Annahme verleitet, alle Einträge seien für das Eviction-Set notwendig.
 Wir wissen jedoch, dass die Größe des Eviction-Set der Assoziativität des L3-Caches entsprechen muss und können die Contract-Phase abbrechen, sobald mehr als der Assoziativität entsprechenden Anzahl von Einträgen des Candidate-Set als notwendig eingestuft wurden, da dann ein Fehler vorliegt.
 
+\todo{pointer chasing erklären}
 
 \section{Verbesserte Eviction-Set Suche mittels Store-to-load-forwarding}
 
@@ -388,7 +391,8 @@ Die Möglichkeit Load- und Store-Befehle Out-of-Order auszuführen, sorgt für e
 \newtextend
 
 TODO Algorithmus in Einzelheiten beschreiben
-\todo[size=\footnotesize]{Beschreibe den Algorithmus bitte in einzelteilen, und gib auch den code dafür einzeln an. Der komplette Code gehört in den Anhang.}\todo[size=\footnotesize]{Nutze eine kleinere Schriftart für listings}
+\todo[size=\footnotesize]{Beschreibe den Algorithmus bitte in einzelteilen, und gib auch den code dafür einzeln an. Der komplette Code gehört in den Anhang.}
+%\todo[size=\footnotesize]{Nutze eine kleinere Schriftart für listings}
 
 
 \section{Verdeckter Kanal}
@@ -417,10 +421,13 @@ Sende- und Empfangsseite können durchaus abweichende Parameter verwenden, wenn 
 
 \end{algorithm}
 
-Auf dem Testrechner benötigt ein in C geschriebenes Sendeprogramm für eine Million Prime-Vorgänge mit 16 Adressen und der Single-Pointer-Chasing-Methode \todo{du erklärst nicht, wozu du pointer chasing einsetzt} (siehe Algorithmus \ref{alg:pointerChasing}) etwa 323 Millionen Taktzyklen.
-Im Optimalfall kann im Timeslot $x$ ein erfolgter Prime-Vorgang als 1 und ein nicht erfolgter Prime-Vorgang \todo{was ist ein erfolgreicher/nicht erfolgreicher prime-vorgang?} als 0 interpretiert werden.
+Auf dem Testrechner benötigt ein in C geschriebenes Sendeprogramm für eine Million Prime-Vorgänge mit 16 Adressen und der Single-Pointer-Chasing-Methode (siehe Algorithmus \ref{alg:pointerChasing}) etwa 323 Millionen Taktzyklen.
+Im Optimalfall kann im Timeslot $x$ ein durch den Sender erfolgter Prime-Vorgang als 1 und ein nicht erfolgter Prime-Vorgang  als 0 interpretiert werden.
+%\todo{was ist ein erfolgreicher/nicht erfolgreicher prime-vorgang?}
+%satz durch ergänzung vermutlich besser zu verstehen
 Bei einem typischen All-Core-Turbo-Takt von 3,4 Ghz des i7-4770 ergibt sich so eine maximale Senderate von TODO ~10,5 Mbit/s.
-Diese Rate wird jedoch vom Empfänger beschränkt, welcher zusätzlich noch eine Zeitmessung durchführen muss. Der Worst-Case ist hier eine in Webassembly geschriebene Empfangsroutine, da dort eine Zeitmessung kostenintensiver ist. In Chromium 66 können eine Million Messungen eines Cache-Sets in etwa 200 ms durchgeführt werden. Im Mittel dauert eine Messung also 0,2 \textmu s, womit eine Empfangsrate von maximal ~5 MBit/s realisiert werden kann.
+Diese Rate wird jedoch vom Empfänger beschränkt, welcher zusätzlich noch eine Zeitmessung durchführen muss. Der Worst-Case ist hier eine in Webassembly geschriebene Empfangsroutine, da dort eine Zeitmessung kostenintensiver ist. In Chromium 66 können eine Million Messungen eines Cache-Sets in etwa 200 ms durchgeführt werden.
+Im Mittel dauert eine Messung also 0,2 \textmu s, womit eine Empfangsrate von maximal ~5 MBit/s realisiert werden kann.
 
 %Um die Performance zu erhöhen kann wie erwähnt die Anzahl der zugegriffen Speicheradressen reduziert werden. 
 Im Folgenden soll die maximal mögliche Senderate unter optimalen Bedingungen ermittelt werden. 

@@ -210,12 +210,11 @@ title = {Cache-Timing Attacks on RSA Key Generation}
   pages = {293--298}
 }
 
-@article{speedGapCPUandRAM,
-author = {Carvalho, Carlos},
-year = {2002},
-month = {01},
-pages = {},
-title = {The gap between processor and memory speeds}
+@misc{speedGapCPUandRAM,
+  title={The Gap between Processor and Memory Speeds},
+  howpublished = {https://pdfs.semanticscholar.org/6ebe/c8701893a6770eb0e19a0d4a732852c86256.pdf},
+  author={Carlos Carvalho},
+  year={2002}
 }
 
 @inproceedings {FlushReload,
@@ -241,3 +240,22 @@ pages = {51--67},
 url = {https://www.usenix.org/conference/usenixsecurity17/technical-sessions/presentation/disselkoen},
 publisher = {{USENIX} Association},
 }
+
+@Article{CacheBleedOpenSSLRSA,
+author="Yarom, Yuval
+and Genkin, Daniel
+and Heninger, Nadia",
+title="CacheBleed: a timing attack on OpenSSL constant-time RSA",
+journal="Journal of Cryptographic Engineering",
+year="2017",
+month="Jun",
+day="01",
+volume="7",
+number="2",
+pages="99--112",
+abstract="The scatter--gather technique is a commonly implemented approach to prevent cache-based timing attacks. In this paper, we show that scatter--gather is not constant time. We implement a cache timing attack against the scatter--gather implementation used in the modular exponentiation routine in OpenSSL version 1.0.2f. Our attack exploits cache-bank conflicts on the Sandy Bridge microarchitecture. We have tested the attack on an Intel Xeon E5-2430 processor. For 4096-bit RSA, our attack can fully recover the private key after observing 16,000 decryptions.",
+issn="2190-8516",
+doi="10.1007/s13389-017-0152-y",
+url="https://doi.org/10.1007/s13389-017-0152-y"
+}
+
