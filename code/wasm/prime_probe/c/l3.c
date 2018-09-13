@@ -210,9 +210,10 @@ static void fillL3Info(l3pp_t l3) {
   l3->cpuidInfo.cacheInfo.sets = 8192;
   l3->l3info.slices = 4;
   l3->l3info.setsperslice = l3->cpuidInfo.cacheInfo.sets / l3->l3info.slices;
-  l3->l3info.bufsize = l3->l3info.associativity * l3->l3info.slices *
-                       l3->l3info.setsperslice * L3_CACHELINE *
-                       CACHE_SIZE_MULTI;
+  //l3->l3info.bufsize = l3->l3info.associativity * l3->l3info.slices *
+  //                     l3->l3info.setsperslice * L3_CACHELINE *
+  //                     CACHE_SIZE_MULTI;
+  l3->l3info.bufsize = 3584*4096;
 
   // bufsize = cachesize * factor
 

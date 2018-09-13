@@ -1315,6 +1315,32 @@ plot <- ggplot2::ggplot(data_prob_specific_relevant, ggplot2::aes(x,avg)) +
 ggplot2TikzPlot('plot_prob_specific_es.tex', plot)
 
 
+
+data_all_128_relevant <- data_all_128[data_all_128[,2]<0.999,]
+data_all_128_relevant[,2] <- data_all_128_relevant[,2]*100
+
+data_prob_specific_relevant <- data_prob_specific[data_prob_specific[,2]<1,]
+data_prob_specific_relevant[,2] <- data_prob_specific_relevant[,2]*100
+
+data_avg_set_relevant <- data_avg_set[data_avg_set[,2]<127.9,]
+
+merged <- merge(merge(data_all_128_relevant,data_avg_set_relevant,by="x",all=T),data_prob_specific_relevant,by="x",all=T)
+colnames(merged) <- c("x", "avg_all_128", "avg_avg_set", "avg_prob_specific")
+merged[,"avg_avg_set"] <- merged[,"avg_avg_set"]/128*100
+merged <- merged[,-4]
+merged_melt <- reshape::melt(merged, id=c("x"))
+
+ggplot2::ggplot(merged_melt, ggplot2::aes(x, value, color=variable)) + 
+  ggplot2::geom_line() +
+  ggplot2::scale_y_continuous(name="Wahrscheinlichkeit alle Eviction Sets zu finden (\\%)", 
+                              limits=c(80, 100),
+                              breaks=seq(80,100,2)) +
+  ggplot2::scale_x_continuous(name="Anzahl an Adressen im Pool (x)", 
+                              limits=c(2000, 5000), 
+                              breaks=seq(2000,5000,500))+
+  ggplot2::scale_color_manual(labels = c("Finde alle Eviction Sets", ""), values = c("red", "blue"))
+
+
 #> n<-100000
 #> l <- 1:n
 #> for(i in 1:n){
