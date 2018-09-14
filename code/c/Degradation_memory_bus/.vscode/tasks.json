@@ -8,7 +8,7 @@
              "type": "shell",
              "command": "g++",
              "args": [
-                 "-g", "degradation_attack.c", "-std=c++11", "-o", "degradation_attack", "-Wall"
+                "-pthread","-lpthread", "-D_REENTRANT", "-g", "degradation_attack.c", "-std=c++11", "-o", "degradation_attack", "-Wall"
              ],
              "group": {
                  "kind": "build",

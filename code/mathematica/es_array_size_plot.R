@@ -1259,9 +1259,9 @@ tikzPlot <- function(name, data){
   dev.off()
 }
 
-ggplot2TikzPlot <- function(name, ggplot){
+ggplot2TikzPlot <- function(name, ggplot, width = 6, height = 4){
   require( tikzDevice )
-  tikz( name )
+  tikz( name,  width = width, height = height)
   print(ggplot)
   dev.off()
 }
@@ -1330,15 +1330,31 @@ merged[,"avg_avg_set"] <- merged[,"avg_avg_set"]/128*100
 merged <- merged[,-4]
 merged_melt <- reshape::melt(merged, id=c("x"))
 
-ggplot2::ggplot(merged_melt, ggplot2::aes(x, value, color=variable)) + 
-  ggplot2::geom_line() +
-  ggplot2::scale_y_continuous(name="Wahrscheinlichkeit alle Eviction Sets zu finden (\\%)", 
+a <- "\U2063"
+my_labels <- c("WS alle Eviction-Sets zu finden", 
+                     paste0("WS ein fixes Eviction-Set zu finden            "))
+
+plot <- 
+  ggplot2::ggplot(merged_melt, ggplot2::aes(x, value, color=variable)) + 
+  ggplot2::geom_line(ggplot2::aes(linetype=variable)) +
+  ggplot2::scale_y_continuous(name="Wahrscheinlichkeit (\\%)", 
                               limits=c(80, 100),
                               breaks=seq(80,100,2)) +
   ggplot2::scale_x_continuous(name="Anzahl an Adressen im Pool (x)", 
-                              limits=c(2000, 5000), 
-                              breaks=seq(2000,5000,500))+
-  ggplot2::scale_color_manual(labels = c("Finde alle Eviction Sets", ""), values = c("red", "blue"))
+                              limits=c(2400, 5000), 
+                              breaks=c(seq(2500,5000,500)))+
+  ggplot2::theme(legend.position = c(0.788, 0.1), legend.title=ggplot2::element_blank())+
+  ggplot2::scale_linetype(labels = my_labels) +
+  #ggplot2::theme(legend.position="none")
+  ggplot2::scale_color_manual(labels = my_labels, values = c("black", "black")) +
+  ggplot2::guides(fill=ggplot2::guide_legend(
+    keywidth=0.1,
+    keyheight=1.1,
+    default.unit="inch")
+  )
+
+ggplot2TikzPlot('plot_combined_es_prob.tex', plot, 5.98, 4)
+
 
 
 #> n<-100000

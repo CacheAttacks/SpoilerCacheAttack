@@ -213,7 +213,7 @@ static void fillL3Info(l3pp_t l3) {
   //l3->l3info.bufsize = l3->l3info.associativity * l3->l3info.slices *
   //                     l3->l3info.setsperslice * L3_CACHELINE *
   //                     CACHE_SIZE_MULTI;
-  l3->l3info.bufsize = 3584*4096;
+  l3->l3info.bufsize = (3584+256)*4096;
 
   // bufsize = cachesize * factor
 

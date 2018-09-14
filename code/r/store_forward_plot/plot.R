@@ -22,13 +22,17 @@ non_valid <- all[!(all %in% merged)]
 #64,66
 start <- all[6]-10
 end <- all[8]+20
+
+require( tikzDevice )
+tikz( 'StoreForward_all_valid.tex' )
 plot(start:end, real_times[start:end], pch=20,
      xlab="4KiB block index", ylab="SAB timer value")
 colliding_add_pos <- which(times[start:end] < 0) + start - 1
 colliding_add_pos_valid <- colliding_add_pos[colliding_add_pos %in% merged]
 colliding_add_pos_non_valid <- colliding_add_pos[!(colliding_add_pos %in% merged)]
-points(colliding_add_pos_valid, real_times[colliding_add_pos_valid], col = "blue")
-points(colliding_add_pos_non_valid, real_times[colliding_add_pos_non_valid], col = "red")
+points(colliding_add_pos, real_times[colliding_add_pos], col = "blue")
+#points(colliding_add_pos_non_valid, real_times[colliding_add_pos_non_valid], col = "red")
+dev.off()
 
 plot(c(-1, 26), 0:1, type = "n", axes = FALSE)
 text(0:25, 0.6, 0:25, cex = 0.5)
