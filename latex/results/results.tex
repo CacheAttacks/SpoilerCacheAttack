@@ -531,25 +531,79 @@ In Mozilla NSS wird die Shift-Operation durch die Funktion $s\_mp\_div\_2$ umges
 Diese ist wiederum nur ein Wrapper und ruft intern die $s\_mp\_div\_2d$-Funktion mit dem Parameter 1 auf, welches dem Teilen durch 2^1 entspricht.
 Die $s\_mp\_div\_2d$-Funktion setzt die Division mittels der $s\_mp\_rshd$-Funktion (Rechtsshift) um. 
 Am Ende der $s\_mp\_div\_2d$-Funktion erfolgt ein Funktionsaufruf an $s\_mp\_clamp$ um die entstandenen führende Nullen zu entfernen.
+Welche Adressen die Funktionen im Assemblercode haben, ist in Tabelle \ref{tbl:assOffsetShift} ersichtlich. 
 
-TODO assembler offsets der funktionsadressen\\
-TODO aufrufe naheligender Funktionen tracken um zu bewerten welche Adresse günstiger für eine Überwachung ist
+\begin{table}[h]
+\label{tbl:assOffsetShift}
+\caption{Größe, Start- und Endadresse der für die Shiftoperation relevanten Funktionen (fett hervorgehoben) sowie deren direkten Nachbarn im Assemblercode.}
+\begin{tabular}{llll}
+Funktion       & Startadresse & Endadresse & Differenz (Größe der Funktion) \\
+s\_mp\_alloc   & b4d4         & b4f8       & 25    \\
+s\_mp\_free    & b4f9         & b519       & 21    \\
+\textbf{s\_mp\_clamp}   & b51a         & b562       & 49    \\
+s\_mp\_exch    & b563         & b5d2       & 70    \\
+$\vdots$               &  $\vdots$             &    $\vdots$         &     $\vdots$   \\
+s\_mp\_mul\_2d & b6c5         & b87a       & 16    \\
+\textbf{s\_mp\_rshd}    & b87b         & b963       & e9    \\
+\textbf{s\_mp\_div\_2}  & b964         & b982       & 1f    \\
+s\_mp\_mul\_2  & b983         & ba5c       & da    \\
+s\_mp\_mod\_2d & ba5d         & bb1a       & be    \\
+\textbf{s\_mp\_div\_2d} & bb1b         & bc21       & 107   \\
+s\_mp\_norm    & bc22         & bce2       & c1   
+\end{tabular}
+\end{table}
 
-Es bestehen somit mehrere Möglichkeiten die Ausführung der Shfit-Operation zu erkennen, wobei sich manche im Callstack befindliche Funktionen weniger eigenen, da sie auch an anderer Stelle aufgerufen werden.
-So wird etwa die Funktion $s\_mp\_clamp$ auch in der zuständigen Subtraktionroutine verwendet, sodass eine Überwachung dieser für die Shift-Operation falsche Ergebnisse liefern würde.
+Eine Änderung innerhalb der Funktionen, welche die Größe beeinflusst ist bei diesen grundlegenden Funktionen unwahrscheinlich.
+Bei Änderungen im Code außerhalb dieser Funktionen, werden sich alle Adressen um einen bestimmten Offset ändern.
+Deshalb sind in der Tabelle die Größe der Funktionen im Assemblercode und deren direkten Nachbarn angegeben, um abzuschätzen welche weiteren Funktionen überwacht werden.
+Die im weiteren Verlauf vorgenommene Bewertung der Funktionen hängt also auch von der Lage ebendieser im Assemblercode ab und kann bei Änderungen der Adressen variieren.
 
-Am besten geeignet scheint die $s\_mp\_idv\_2d$-Funktion zu sein, da sich dessen Code TODO Bytes groß ist und sich so über mehr als eine Cache-Line spannt.
-Die Funktion $s\_mp\_div\_2$ liegt ungünstiger im Code, da unmittelbar davor die $s\_mp\_rshd$-Funktion und danach die $s\_mp\_mul\_2$-Funktion liegt, welche beide in einem anderen Kontext innerhalb der Schlüsselgenerierung verwendet werden.
+Es bestehen mehrere Möglichkeiten die Ausführung der Shfit-Operation zu erkennen, wobei sich manche im Callstack befindliche Funktionen weniger eigenen, da sie auch an anderer Stelle aufgerufen werden.
+So wird etwa die Funktion $s\_mp\_clamp$ auch im Callstack der Subtraktionsoperation verwendet, sodass eine Überwachung dieser für die Shift-Operation falsche Ergebnisse liefern würde.
+
+Die Funktion $s\_mp\_div\_2$ ist ein guter Kandidat für die Überwachung der Shiftoperation, da die benachbarten Funktionen keine Schnittmenge mit den aufgerufenen Funktion in der Subtraktionoperation haben.
+Die Funktion liegt sowohl innerhalb der Cache-Line von 940 bis 97f als auch innerhalb der Cache-Line 980 bis 9af.
+
+Angenommen es wird die Cache-Line von 980 bis 9af gewählt, dann wird auch Aktivität gemessen, sofern ausschließlich die Funktion $s\_mp\_mul\_2$ aufgerufen wird.
+
+Die Überwachung der Cache-Line von 940 bis 97f dagegen schlägt auch dann an, wenn die Funktion $s\_mp\_rshd$ aufgerufen wird.
+Dies passiert etwa im Zuge der Shift-Operation in weniger als 100 Taktzyklen nach dem Aufruf von $s\_mp\_div\_2$.
+Sollte die Prime-and-Probe Dauer weniger als 100 Taktzyklen, würde die Gefahr bestehen fälschlicherweise zwei statt einer Shift-Operation zu messen.
+Nach den in dieser Arbeit durchgeführten Tests scheint eine solche Dauer aber unrealistisch niedrig.
+Daher eignet sich die Cache-Line von 940 bis 97f besser, da lediglich Funktionen überwacht werden, die Teil der Shiftoperation sind.
+
+%TODO aufrufe naheligender Funktionen tracken um zu bewerten welche Adresse günstiger für eine Überwachung ist (zu vernachlässigen da nach pattern gesucht werden kann)
+%Am besten geeignet scheint die $s\_mp\_idv\_2d$-Funktion zu sein, da sich dessen Code TODO Bytes groß ist und sich so über mehr als eine Cache-Line spannt.
+%Die Funktion $s\_mp\_div\_2$ liegt ungünstiger im Code, da unmittelbar davor die $s\_mp\_rshd$-Funktion und danach die $s\_mp\_mul\_2$-Funktion liegt, welche beide in einem anderen Kontext innerhalb der Schlüsselgenerierung verwendet werden.
 
 Die Subtraktionsoperation wird durch die Funktion $mp\_sub$ umgesetzt, welche prüft welche Vorzeichen die Operanden besitzen und Abhängigkeit dessen weitere Funktion aufruft.
 Es ist bekannt das bei der Subtraktion in Zeile 16 sowohl $u=e$ als auch $v=-t$ positiv sind, womit die Operanden die gleich Vorzeichen besitzen und die Funktion $s\_mp\_sub\_3arg$ aufgerufen wird.
 Diese verwendet am Ende wieder die Funktion $s\_mp\_clamp$ um bei der Subtraktion entstandene führende Nullen zu entfernen.
+Welche Adressen die Funktionen im Assemblercode haben, ist in Tabelle \ref{tbl:assOffsetSub} ersichtlich. 
 
-Am besten geeignet für eine Überwachung scheint hier der Code für die Funktion $mp\_sub$.
-/TODO check nahliegende Funks
+
+\begin{table}[h]
+\caption{Größe, Start- und Endadresse der für die Subtraktionsoperation relevanten Funktionen (fett hervorgehoben) sowie deren direkten Nachbarn im Assemblercode.}
+\label{tbl:assOffsetSub}
+\begin{tabular}{llll}
+Funktion         & Startadresse & Endadresse & Differenz (Größe der Funktion) \\
+s\_mp\_add\_3arg & c43c         & c617       & 1dc   \\
+\textbf{s\_mp\_sub}       & c618         & c76e       & 157   \\
+\textbf{s\_mp\_sub\_3arg} & c76f         & c905       & 197   \\
+s\_mp\_mul       & c906         & c92e       & 29   
+\end{tabular}
+\end{table}
+
+Geeignet für eine Überwachung der Subtraktionsfunktion ist die Funktion $mp\_sub$, wobei hierfür etwa die Cache-Line von 780 bis 7bf in Frage kommt.
+
+Am Beginn des Angriffs steht die Angreiferin vor der Aufgabe, passende Eviction-Sets zu den für die Überwachung ausgewählten Cache-Lines zu suchen.
+Hierzu wird sie die Schlüsselgenerierung manuell anstoßen und nach bestimmten Aktivitätsmustern in den überwachten Cache-Sets suchen.
+
+Sobald eine beliebige Cache-Line einer 4-KiB Page einem Eviction-Set zugeordnet werden kann, sind auch alle anderen Zuordnungen dieser 4-KiB Page bekannt.
+Daher genügt es die Cache-Line von b500 bis b53f einem Eviction-Set zuzuordnen, um ein Eviction-Set für die Cache-Line von b940 bis b97f zu finden, welche für die Überwachung der Shift-Operation genutzt werden kann.
 
 Um die Werte $Z_i$ zu bestimmen muss die Prime-and-Probe mindestens die gleiche Geschwindigkeit wie die Shift bzw. Subtraktionfunktion erreichen.
-In der Tabelle \ref{ShiftSubCycles} ist die durchschnittlichen der Zyklen für beide Funktion bei verschiedenen Schlüssellängen angegeben. Zum Vergleich wurde die Dauer der gesamten GCD-Funktion hinzugefügt.
+In der Tabelle \ref{ShiftSubCycles} ist die durchschnittlichen der Zyklen für beide Funktion bei verschiedenen Schlüssellängen angegeben. Zum Vergleich wurde die Dauer der gesamten $mp_gcd$-Funktion hinzugefügt.
 Die Dauer der Shift- sowie Subtraktionoperation hängt linear von der Schlüssellänge ab, wobei dies für die Dauer der gesamten $mp_gcd$-Funktion nicht der Fall ist.
 
 \begin{table}[h]
@@ -567,7 +621,24 @@ Theoretisch wäre es möglich alleine durch die Zeitdifferenz zwischen zwei Subt
 Wenn jedoch eine Auflösung von unter 330 Taktzyklen bereit steht, spricht nichts dagegen ausschließlich die Shiftoperation zu überwachen und bei Lücken in der Aktivität eine Subtraktionoperation anzunehmen.
 Andersherum wird die Abschätzung sehr ungenau wenn nur eine Auflösung im Bereich der Subtraktionsoperationsdauer bereitsteht, da etwa der Unterschied zwischen einer und zwei zwischenzeitlichen Shiftoperationen fehleranfällig wird.
 
-TODO Zuordnen von adressen im code zu eviction set mittels page offsets\\
+Die Prime-and-Probe Implementation in Javascript/Webassembly erwies sich als zu langsam um aufeinanderfolgende Shift-Operationen zu unterscheiden.
+Wie in den Benchmarks in Kapitel 2 beschrieben dauert eine Prime-and-Probe Operation bei keiner Aktivität auf dem Cache-Set etwa 200ns was ca. 700 Taktzyklen entspricht.
+Im Falle eines aktiven Cache-Set steigt die Dauer jedoch auf ca. 500ns (~1700 Taktzyklen) an.
+Selbst für eine Schlüssellänge von 8192 Bit ist dieser Wert noch ungenügend hoch.
+
+Auch in anderen Fällen ist die Geschwindigkeit der überwachten Funktion zu schnell um mittels der Prime-and-Probe Funktion überwacht zu werden.
+Hierfür gibt es mehrere Vorschläge die Funktion künstlich auszubremsen, welche unter dem Begriff "performance degradation attacks" veröffentlicht wurden.
+Eine trivialer Angriff ist etwa die Überwachung selber, da diese mit der Prime-Phase ein Cache-Set komplett füllt, sodass ein das Daten des angegriffenes Programms verdrängt werden und so aus dem langsamen Hauptspeicher geladen werden.
+Der Effekt ist auch in umgekehrter Richtung also dem angegriffenen Programm auf das Angriffsprogramm vorhanden.
+Die Differenz der Prime-and-Probe Dauer bei keiner gegenüber viel Aktivität auf dem Cache-Set veranschaulicht dies.
+
+In anderen Kontexten wird häufig der $clflush$-Befehl verwendet um schnell und zuverlässig Daten aus dem Cache zu verdrängen. 
+Ein Äquivalent existiert jedoch weder in Javascript noch in Webassembly.
+
+Des Weiteren kann die Ausführung von Code im Browser nicht auf bestimmte CPU-Kerne fixiert werden. Hiermit sind Angriffe die einen Thread mit hoher Rechenlast auf den gleichen physischen Kern wie das Opferprogramm laufen lassen nicht ohne weiteres möglich.
+
+
+
 TODO slowdown Techniken und benchmarks auf verschiedene codeteile beschreiben\\
 TODO wie schnell ist javascript, eventuell in Kapitel 2 näher beschreiben
 
