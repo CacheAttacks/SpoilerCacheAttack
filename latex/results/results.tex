@@ -3,12 +3,17 @@
 
 \section{RSA Key Generierung}
 
-Frühere Arbeiten zu Cache-Angriffen hatten es vor allem auf die Verschlüsselung- und Enschlüsselungsroutionen der RSA-Implementierungen abgesehen \cite{FlushReload, CacheBleedOpenSSLRSA}, weshalb diese Routinen besonders gehärtet und geprüft sind.
-Ein andereren Einstiegspunkt für die Schlüsselextraktion bieteten die Routienen zur Schlüsselserzeugung, welche erst in den letzten Monat in Arbeiten näher untersucht wurden.
+Frühere Arbeiten zu Cache-Angriffen hatten es vor allem auf die Verschlüsselung- und Entschlüsselungsroutinen der RSA-Implementierungen abgesehen \cite{FlushReload, CacheBleedOpenSSLRSA}, weshalb bei der Implantation ebendieser die Möglichkeit von Seitenkanalangriffen besonders im Hinterkopf behalten wird.
+Ein anderen weniger untersuchten Einstiegspunkt für die Schlüsselextraktion bieten die Routinen zur Schlüsselgenerierung, welche in den letzten Monaten etwa in \cite{RSAKeyGeneration2} näher untersucht wurden.
 
 \subsection{Primzahlgenerierung in Mozilla NSS}
 
-Um einen neuen Schlüssel zu erzeugen werden zuerst zwei Primzahlen erzeugt. Im Folgenden soll die Primzahlgenerierung von Mozilla NSS näher beleuchtet werden.
+Mozilla Network Security Services(NSS) ist ein Menge von Bibliotheken, welche eine plattformübergreifende Entwicklung von sicheren Client- und Server-Anwendungen anstrebt. Dabei wird unter anderem TLS oder S/MIME implementiert. Mozilla NSS wird etwa im Firefox-Browser und der Mail-Anwendung Thunderbird eingesetzt.
+Der Quellcode ist unter der Mozilla Public License verfügbar und kann online etwa im Firefox-Repository \cite{MozillaDXR} eingesehen werden.
+
+Um einen neuen Schlüssel zu erzeugen werden zuerst zwei Primzahlen generiert. 
+Im Folgenden soll die Primzahlgenerierung von Mozilla NSS näher beleuchtet werden.
+Der Code hierfür befindet sich im Unterordner lib/freebl.
 Der Einstiegspunkt für die Primezahlgenerierung ist die Funktion generate_prime in der Datei rsa.c \ref{alg:genPrimeGenerationNSS}.
 Dort wird zuerst eine ungerade Zufallszahl $random\_num$ entsprechend der Bitlänge der gewünschten Primzahl erzeugt, deren zwei höherwertigsten Bits auf 1 gesetzt sind.
 Anschließend wird versucht auf Basis von $random\_num$ eine Primzahl zu erzeugen und diese im Erfolgsfall zurückgegeben.
@@ -37,7 +42,7 @@ Die Zahl $random\_num$ wird an die Funktion mpp_make_prime in der Datei mpprime.
 Global definiert ist das Array $primes_tab$, das alle Primzahlen von 3 bis 2^16 beinhaltet. Dieses Array wird nicht dynamisch beim Start erzeugt, stattdessen stehen alle benötigten Primzahlen fix im Quellcode. 
 Das Array $primes_tab$ wird im folgenden Siebvorgang benötigt, um mit wenig Rechenleistung eine Reihe von Primzahlkandidaten auszuschließen.
 Dieser Siebvorgang wird in der Funktion mpp_sieve, ebenfalls in mpprime.c zu finden, definiert \ref{alg:sievePrimeGenerationNSS}.
-Zahlen der Form $random\_num + 2 \cdot i$, mit $i \in \{1,...,SIEVE\_SIZE\}$ sind mögliche Primzahlkandidaten.
+Zahlen der Form $random\_num + 2 \cdot i$, mit $i \in [1\twodots SIEVE\_SIZE]$ sind mögliche Primzahlkandidaten.
 Die später verwendeten Fermat- und Miller-Rabin-Tests sind relativ aufwendig, weswegen ein Siebvorgang analog zum Sieb des Eratosthenes vorangestellt wird.
 Im Siebvorgang wird über alle Primzahlen im $primes_tab$-Array iteriert und jeweils der Rest $rem$ von $random\_num$$\mod$$small\_prime$ errechnet.
 
@@ -46,7 +51,7 @@ Durch den Aufruf von $mp_mod_d$ im Pseudocode in Zeile 4 wird angedeutet, dass d
 Nun müssen zwei Fälle unterschieden werden:
 Im ersten Fall sei $random\_num$ durch $small\_prime$ teilbar, das heißt $random\_num$$\mod$$small\_prime = 0$.
 Dann ist $random\_num$ zusammengesetzt, sowie auch alle $random\_num + k \cdot small\_prime$ mit $k \in \mathbb{N}$.
-Das $sieve$-Array dient später um die Primzahlkandidaten der Form $random\_num + 2 \cdot i$ mit $i \in \{1,...,SIEVE\_SIZE\}$ zu erzeugen, wobei Kandidat $i$ nicht weiter betrachtet wird, wenn $sieve[i]$ auf $1$ gesetzt ist.
+Das $sieve$-Array dient später um die Primzahlkandidaten der Form $random\_num + 2 \cdot i$ mit $i \in [1\twodots SIEVE\_SIZE]$ zu erzeugen, wobei Kandidat $i$ nicht weiter betrachtet wird, wenn $sieve[i]$ auf $1$ gesetzt ist.
 
 Im ersten Fall muss also $sieve[0] = 1$ gesetzt werden, da $random\_num \mod small\_prime = 0$.
 Dies wird in der ersten Iteration der For-Schleife in Zeile 9 umgesetzt.
@@ -120,11 +125,14 @@ SIEVE_SIZE <- 32 * 1024\;
 }
 \end{algorithm}
 
-\subsection{Primzahlgenerierung in OpenPGPjs}
+\subsection{Primzahlgenerierung in OpenPGP.js}
 
-Die Primzahlgenerierung von OpenPGPjs ist in der Datei prime.js beschrieben und startet mit der Funktion randomProbablePrime.
+OpenPGP ist ein Standard für das Signieren, Ver- und Entschlüsseln von Daten, welcher im RFC 4880 \cite{rfc4880} definiert wird.
+OpenPGP.js \cite{OpenPGPjs} ist eine Opensource-Implementierung des OpenPGP-Protokolls in Javascript, welche sich zum Ziel gesetzt hat OpenPGP auf einer breiten Platte von Endgeräten zu ermöglichen.
+
+Die Primzahlgenerierung von OpenPGP.js ist in der Datei prime.js beschrieben und startet mit der Funktion randomProbablePrime.
 Zuerst wird eine Zufallszahl entsprechend der gewünschten Bitlänge generiert.
-In OpenPGPjs wird kein Siebverfahren wie in Mozilla NSS angewandt, sondern es wird sichergestellt das ausschließlich nicht durch 2,3 und 5 teilbare Zahlen als Primzahlkandidaten weitergehend geprüft werden.
+In OpenPGP.js wird kein Siebverfahren wie in Mozilla NSS angewandt, sondern es wird sichergestellt das ausschließlich nicht durch 2,3 und 5 teilbare Zahlen als Primzahlkandidaten weitergehend geprüft werden.
 Dazu wird eine Zahl $n \mod 30$ berechnet und der Rest betrachtet.
 Ist dieser weder durch 2,3 oder 5 teilbar so ist auch $n$ nicht durch 2,3 oder 5 teilbar.
 Andernfalls wird die kleinstmögliche Zahl $k \in \mathbb{N}$ auf $n$ addiert, sodass $n + k \mod 30$ nicht durch 2,3 oder 5 teilbar ist.
@@ -137,7 +145,7 @@ Abschließend wird wie in Mozilla NSS ein Fermat- und Miller-Rabin-Test durchgef
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
-\caption{Pseudo-Code für Primzahlgenerierung in OpenPGPjs}
+\caption{Pseudo-Code für Primzahlgenerierung in OpenPGP.js}
 \label{alg:randomProbablePrimeOpenPGPjs}
 num_miller_rabin_tests <- get_num_tests(bitlen(random\_num))\;
 small\_primes <- [7, 11, 13, 17, ..., 4999] //665 primes from 7 to 5000\;
@@ -178,6 +186,7 @@ small\_primes <- [7, 11, 13, 17, ..., 4999] //665 primes from 7 to 5000\;
 \end{algorithm}
 
 \subsection{Mögliche Leakage in Mozilla NSS}
+\label{leakageMozillaNSS}
 
 Das Ziel ist es die Zahl $random\_num$ oder Teile davon zu rekonstruieren.
 Der Siebvorgang sticht hier besonders hervor, da dort unabhängig von $random\_num$ genau 6541 (Anzahl der Primzahlen von 3 bis $2^{16}$) Modulo-Operationen mit vorher bekannten Primzahlen auf $random\_num$ ausgeführt werden.
@@ -194,7 +203,7 @@ Nachdem 8. Zugriff muss die überwachte Cache-Line auf $primes\_tab[8-15]$ für 
 
 Um die notwendigen Cache-Sets zu Finden muss nur jeweils ein Cache-Set pro 4-KiB Page identifiziert werden, da wie bereits erwähnt die Adressen innerhalb einer Page identisch sind.
 Das Zugriffsmuster auf jede Cache-Lines des $primes\_tab$-Array entspricht immer 8 Zugriffen mit jeweils TODO Taktzyklen Pause. Außerdem liegt das $primes\_tab$-Array immer an der selben Adresse im Speicher.
-Die Angreiferin kann selber Schlüsselerzeugungen anstoßen, sodass es ihr möglich ist die passenden Eviction-Sets für das $primes\_tab$-Array zu finden.
+Die Angreiferin kann selber Schlüsselgenerierungen anstoßen, sodass es ihr möglich ist die passenden Eviction-Sets für das $primes\_tab$-Array zu finden.
 
 Die Schreibzugriff auf das $sieve$-Array in der For-Schleife (siehe \ref{alg:sievePrimeGenerationNSS} Zeile 9-11) sind mit einer Laufzeit von etwa 100 Taktzyklen zu schnell um einzelne Zugriffe unterscheiden zu können.
 Das $sieve$-Array ist ein Byte Array der Größe 32768 Bytes und liegt somit in 512 Cache-Lines.
@@ -211,7 +220,20 @@ In der 43. Iteration wird auf keine Cache-Line von $sieve$ zugegriffen, da $i=28
 Die 44. Iteration arbeitet mit $i=2948$ und setzt somit den Wert $sieve[1474] = 1$.
 Die zugehörige Cache-Line ist nun $sieve[1472-1535]$, womit keinerlei Zugriff auf die Cache-Line $sieve[1408-1471]$ erfolgt.
 
-Cache-Lines auf die nicht zugegriffen wird können Informationen preisgeben, da das $i$ der For-Schleife in Abhängigkeit der Berechnung $random\_num \mod small\_prime$ definiert wird.
+Im Gegensatz zum $primes\_tab$-Array wird das $sieve$-Array dynamisch in der Funktion erzeugt, also kann die Angreiferin dies nicht durch vorherige Schlüsselgenerierungen lokalisieren.
+Ihr ist aber bekannt, dass solange $small\_prime$ < 64 (17 Primzahlen) ist auf alle Cache-Lines des $sieve$-Arrays zugegriffen wird.
+
+Durch eine gleiche Änderung der letzten 12 Bits der Adressen eines bestehenden Eviction-Set entsteht ein neues gültiges Eviction-Set, welches im Folgenden als benachbartes Eviction-Set bezeichnet wird.
+
+Das $sieve$-Array in 512 Cache-Lines aufgeteilt ist, zwischen den Zugriffen auf das $sieve$-Array ist eine Pause von TODO Taktzyklen, aber die eigentliche Aktivität auf dem $sieve$-Array ist mit unter 100 Taktzyklen pro Iteration vergleichsweise kurz.
+Daher muss die Angreiferin nach dem Zugriff auf das $primes\_tab$-Array eine Reihe von Eviction-Sets primen, warten bis auf das $primes\_tab$-Array erneut zugegriffen wird und dann proben.
+
+Sofern ein Eviction-Set in dieser Phase Aktivität gezeigt hat, werden in der nächsten Iteration seine benachbarten Sets überwacht.
+Denn wenn das Eviction-Set eine Cache-Line des $sieve$-Array verdrängt hat, so müssen auch die benachbarten Eviction-Sets in der nächsten Runde Aktivität auf ihrer zugehörigen Cache-Line zeigen.
+So können die relevanten Eviction-Set schnell eingegrenzt werden, da initial maximal 128 Eviction-Set in Frage kommen.
+Die restlichen 8064 Eviction-Sets sind zu diesen 128 benachbart, müssen also nicht initial überwacht werden.
+
+Cache-Lines im $sieve$-Array auf die nicht zugegriffen wird können Informationen preisgeben, da das $i$ der For-Schleife in Abhängigkeit der Berechnung $random\_num \mod small\_prime$ definiert wird.
 
 Dies soll an folgendem Beispiel verdeutlicht werden:
 
@@ -219,22 +241,52 @@ Angenommen es wurde ein Zugriff auf die Cache-Line $sieve[64-127]$, aber nicht a
 Weiter kann nicht $random\_num \mod small\_prime = 0$ gelten, da ansonsten ein Zugriff auf die Cache-Line $sieve[0-63]$ messbar wäre. 
 Es wird nun zwischen verschiedenen Werten für die Variable offset (siehe Zeile 6 und 8 in mpp_sieve) unterschieden.
 
-1. Fall: Sei $offset \in \{128,...,254\}$ und gerade, also $offset \mod 2 = 0$. 
+1. Fall: Sei $offset \in [128\twodots254]$ und gerade, also $offset \mod 2 = 0$. 
 
-Dann ist $rem = small\_prime - offset$ und durch die Kenntnis von $small\_prime$ und $offset \in \{128,...,254\}$ gerade kann $rem$ auf 64 mögliche Werte eingegrenzt werden.
+Dann ist $rem = small\_prime - offset$ und durch die Kenntnis von $small\_prime$ und $offset \in [128\twodots254]$ gerade kann $rem$ auf 64 mögliche Werte eingegrenzt werden.
 
-2. Fall: Sei $offset$ ungerade, also $offset \mod 2 = 1$ und $offset_ex = offset + small_prime \in \{128,...,254\}$ und $offset_ex \mod 2 = 0$. Da $i=offset$ und $offset$ ungerade erfolgt in der ersten Iteration der For-Schleife kein Zugriff auf das $sieve$-Array. Wenn der Zugriff also in der zweiten Iteration erfolgt ist $i = offset + small_prime = offset_ex$.
+2. Fall: Sei $offset$ ungerade, also $offset \mod 2 = 1$ und $offset_ex = offset + small\_prime \in [128\twodots254]$ und $offset_ex \mod 2 = 0$. Da $i=offset$ und $offset$ ungerade erfolgt in der ersten Iteration der For-Schleife kein Zugriff auf das $sieve$-Array. Wenn der Zugriff also in der zweiten Iteration erfolgt ist $i = offset + small\_prime = offset\_ex$.
 
-Da $offset = offset_ex - small_prime$ ist $rem = small_prime - (offset_ex - small_prime) = 2 \cdot small_prime - offset_ex$ und durch die Kenntnis von $small\_prime$ und $offset_ex \in \{128,...,254\}$ gerade kann $rem$ auf 64 mögliche Werte eingegrenzt werden.
+Da $offset = offset\_ex - small\_prime$ ist $rem = small\_prime - (offset\_ex - small\_prime) = 2 \cdot small\_prime - offset\_ex$ und durch die Kenntnis von $small\_prime$ und $offset\_ex \in [128\twodots254]$ gerade kann $rem$ auf 64 mögliche Werte eingegrenzt werden.
 
 Es ist unbekannt ob $rem$ gerade oder ungerade ist, weshalb $rem$ nicht weiter als auf 128 mögliche Werte eingegrenzt werden kann.
 
 Mit dieser Leakage ergeben sich "unscharfe" Kongurrenzen bezüglich des Wertes $random\_num$ der folgenden Form:
 \begin{align}
-    random\_num \mod small_prime \equiv a, mit a \in A_i
+    random\_num \mod small\_prime \equiv a &\text{ mit } a \in A
 \end{align}
 a kann durch diese Leakage nicht exakt bestimmt werden, deshalb ist $A_i$ die Menge mit den möglichen Werten die a annehmen kann.
-Im oberen Beispiel gilt etwa $|A_i| = 128$ und $\{128,130,132,...,254\} \subsetneq A_i$.
+Im oberen Beispiel gilt etwa $|A_i| = 128$ und $\{128,130,132,...,254\} \subsetneq A_i$, wobei die andere 64 Einträge von $A_i$ durch $small\_prime$ definiert werden.
+
+Mit dieser Beobachtung kann für $random\_num$ folgendes Gleichungssystem definiert werden:
+\begin{align*}
+    random\_num \mod small\_prime_i &\equiv a_i &\text{ mit } a_i \in A_i\\
+    random\_num \mod \prod_i small\_prime_i &< 2^{bits+1} \\
+    random\_num \mod \prod_i small\_prime_i &> 2^{bits}
+\end{align*}
+$A_i$ ist hier analog zu oben die Menge der möglichen Werte für $random\_num \mod small\_prime_i$ die durch die Leakage bekannt werden.
+Um den Lösungsraum dieses Gleichungssystems einzuschränken, wird die Tatsache genutzt, dass $2^{bits} < random\_num < 2^{bits+1}$.
+
+Angenommen jedes $a_i$ wäre eindeutig, das heißt $|A_i|=1$, dann existiert gemäß dem Chinesischen Restsatz \ref{chinese_remainder} genau eine Lösung im Bereich von $0$ bis $\prod_i small\_prime_i$.
+Weiter sei $bitlen(small\_prime_i) > 10 \: \forall i$, dann würden $bitlen(random\_num)/10$ Gleichungen ausreichen, um $random\_num$ eindeutig zu bestimmen.
+Jede Gleichung bringt also in etwa 10 Bit an Information über $random\_num$.
+
+Im Fall der oben beschrieben Leakage, bringt eine Gleichung aber 7 Bit oder 128 mögliche Werte als Unsicherheit mit.
+Angenommen es existieren 1000 Gleichungen mit $bitlen(small\_prime_i) > 10 \: \forall i$, sodass es $2^{7000}$ mögliche Lösungen gibt und diese im Bereich 0 und $2^{10000}$ liegen.
+Da $2^{bits} < random\_num < 2^{bits+1}$ gilt und die möglichen Lösungen über den gesamten Lösungsraum verstreut sind, ist die Wahrscheinlichkeit hoch eine eindeutige Lösung für $random\_num$ zu finden.
+
+Dem Autor ist allerdings unklar wie schwer eine Lösung für dieses Problems ist.
+Sofern erlaubt ist, dass die Moduli $small\_prime_i$ beliebige Werte annehmen könnten, ist das Problem beweisbar NP-schwer \cite{FuzzyCRTProof}.
+Ein wesentliche Voraussetzung für die Beweisidee ist hier die beliebigen Werte für die Moduli, sodass eine Adaption der Beweisidee an das ursprüngliche Problem nicht möglich scheint.
+
+Auch wenn das Problem NP-schwer sein sollte, schließt dies nicht automatisch eine schnelle Lösung für bestimme Instanzen des Problems aus.
+So lässt sich das Problem etwa als Integer Programming Problem (ILP) formulieren:
+Ein Constraint ist die Einschränkung von $random\_num$ in den Bereich von $2^{bits}$ bis $2^{bits+1}$.
+Und jede Modulo-Gleichung $x \equiv a \mod m$ wird zu $x + f \cdot m = a$ übersetzt.
+
+Typische ILP-Solver wie etwa LP-Solve arbeiten aber nicht mit großen Ganzzahlen, sodass als Lösung wegfallen.
+In Mathematica lässt sich das Problem beschreiben, jedoch wurde der Versuch kleine Probleminstanzen mit $random\_num \approx 2^100$ zu lösen nach mehreren Stunden abgebrochen.
+Durch das Laufzeitverhalten lässt sich vermuten, dass Mathematica den langsamen und trivialen Ansatz verfolgt alle Lösungsmöglichkeiten durchzuprobieren.
 
 Die Fallunterscheidung in der Funktion mpp_sieve in den Zeilen 5 bis 8 würde die Information liefern ob $random\_num \mod small\_prime = 0$ ist.
 Unabhängig von $rem$ wird aber immer der gesamte Assemblercode für die Zeilen 5 bis 8 geladen \ref{fig:assemblyMppSieve}, da die Vergleichsoperation an Adresse 806A4 und der Code für die folgende For-Schleife an der Adresse 806CA immer benötigt wird.
@@ -262,18 +314,89 @@ Somit ist ein Prime-and-Probe Angriff auf den entsprechenden Codeteil nicht mög
 \caption{Assemblercode für die Zeilen 5 bis 8 der Funktion mpp_sieve}
 \end{figure}
 
+\subsection{Mögliche Leakage in OpenPGP.js}
 
-\section{Angriffe auf RSA Key Generierung}
+Auch hier ist der Siebvorgang ein möglicher Teil, um Informationen über $random\_num$ zu gewinnen.
+Ansatzpunkt ist wie im letzten Abschnitt die Überwachung des $small\_primes$-Arrays, wobei Chrome auf dem verwendeten Testsystem 8 Byte für jeden Eintrag verwendet. Javascript legt die Größe des Datentyps für das $small\_primes$-Array nicht fest, weshalb diese Aussage nicht auf andere Systemkonfigurationen zutreffen muss.
+
+Der Wert $random\_num$ wird nach jedem Abbruch der Funktion $isProbablePrime$ um einen bestimmten Wert inkrementiert.
+Sei $random\_num_k$ der Wert $random\_num$ in dem $k.$-Durchlauf der Schleife in den Zeilen 7 bis 14.
+
+Es werden also pro Cache-Line, welche 8 Einträge des $small\_primes$-Array abdeckt, bis zu 8 Zugriffe erwartet im Abstand von der Dauer einer Modulo-Operation, hier im Mittel etwa 1600 Taktzyklen, erwartet.
+In der Cache-Line mit weniger als 8 Zugriffen gilt für einen der $small\_prime_i$-Werte $random\_num_k \mod small\_prime_i = 0$, wobei dies zu einem sofortigen Abbruch (siehe Zeile 20) führt.
+Folglich haben wir die Information $random\_num_k \mod small\_prime_i = 0$, aber auch $random\_num_k \mod small\_prime_j \neq 0 \: \forall j < i$.
+Um sicherzugehen, dass die Foreach-Schleife in Zeile 18 vorzeitig verlassen wurde, kann zusätzlich der Code der Zeilen 7 bis 14 überwacht werden, welcher nach einem Abbruch geladen wird.
+
+Da sich $random\_num$ in jeder Schleifen-Iteration ändert, müssen die aus der $isProbablePrime$-Funktion für $random\_num_k$ gewonnen (Un)gleichungen  angepasst werden.
+
+Die Differenz von $random\_num_k$ und $random\_num_{k+1}$ ist mit dem maximalen Wert im $adds$-Array, also 6 gleichzusetzen.
+Somit könnten aus den Beobachtungen Gleichungen folgender Form aufgestellt werden:
+\begin{align*}
+    (random\_num + b) \mod small\_prime_j \not\equiv 0 &\text{ mit } b \in [k\twodots6k] \text{ und } j < i\\
+    (random\_num + b) \mod small\_prime_i \equiv 0 &\text{ mit } b \in [k\twodots6k]
+\end{align*}
+
+Es steht die Frage im Raum wie viele Gleichungen für die vollständige Rekonstruktion einer Primzahl benötigt werden.
+Für den Informationsgehalt der zweiten Gleichung ist die mittlere Größe von $small\_prime_i$ ausschlaggebend.
+Tabelle \ref{} zeigt die erwartenden Werte für verschiedene Primezahlbitlängen. 
+\todo{prüfen wie sich verhalten mit unterschiedlichen bitlängen verändert}
+
+Angenommen $small\_prime_i$ hat im Mittel eine Bitlänge von $l$, dann liefert die zweite Gleichung $l$ Bit an Information über (random\_num + b).
+Allerdings erhöht sich durch $b$ die Anzahl der möglichen Lösungen mit jeder Gleichung um den Faktor 6.
+Analog zu den Betrachtungen im Abschnitt \ref{leakageMozillaNSS} kann jedoch die Zusatzinformation $2^{bits} < random\_num < 2^{bits+1}$ herangezogen werden, um den Lösungsraum einzuschränken.
+Somit gibt es bei $t$-Gleichungen $6^t$ mögliche Lösungen, welche sich auf das Intervall $[0 \twodots2^{l\cdot t}]$ verteilen, wobei nur Lösungen im Intervall $[2^{bits} \twodots 2^{bits+1}]$ valide sind.
+Wenn $t > \lceil bits/10 \rceil$ gilt, dann ist $6^t/2^{l \cdot t} \cdot 2^{bits}$ eine Abschätzung wie viele der möglichen Lösungen im Mittel im validen Intervall $[2^{bits} \twodots 2^{bits+1}]$ landen.
+
+Es bleibt zu klären wie viele der Gleichungen des 2. Typs erwartet werden können oder anders ausgedrückt wie viele Zahlen müssen im Mittel getestet werden bis eine die Primzahltests besteht. 
+Für eine Abschätzung der zu erwartenden Anzahl sei angenommen, dass die Funktion ausschließlich Primzahlen zurückgibt, sodass der Primzahlsatz herangezogen werden kann, um die Anzahl der Primzahlen abzuschätzen.
+Ist beispielsweise eine 1024 Bit Primzahl gewünscht, so wird aus dem Intervall $[2^{bits}\twodots 2^{bits+1}-1]$ eine der \begin{align}
+\pi(2^{1025}-1) - \pi(2^{1024}) = \frac{(2^{1025}-1)}{\ln(2^{1025}-1)} - \frac{2^{1024}}{ln(2^{1024})} \approx 2^{1014,53}
+\end{align}
+möglichen Primzahlen gewählt.
+Somit ist im Intervall $[2^{1024}\twodots 2^{1024+1}-1]$ etwa eine von $2^{1024}/2^{1014,53} \approx 711$ Zahlen eine Primzahl.
+Da durch 2,3 und 5 teilbare Zahlen nicht getestet werden, entfallen $22/30$ aller natürlicher Zahlen als Testkandidaten.
+Folglich ist bei einer Bitlänge von 1024 jede $711 \cdot 8/30 \approx 190$ getestete Zahl eine Primzahl, sodass ausgehend von einer zufälligen Zahl im Intervall $[2^{1024}\twodots 2^{1024+1}-1]$ im Mittel etwa 95 Iterationen zum Fund einer Primzahl ausreichen.
+
+Die im Mittel benötigte Anzahl skaliert linear mit der Bitlänge, die Übersichtstabelle \ref{tbl:bitLengthNumberOfIterations} gibt den Erwartungswert für verschiedene Bitlängen an.
+\begin{table}[h]
+\label{tbl:bitLengthNumberOfIterations}
+\caption{Veranschaulicht den linearen Zusammenhang zwischen dem Erwartungswert für die Anzahl der Iterationen in Funktion $randomProbablePrime$ (siehe Pseudocode \ref{alg:randomProbablePrimeOpenPGPjs}) bei verschiedenen Primzahlbitlängen.}
+\begin{tabular}{lllll}
+Bitlänge Primzahl     & 1024 & 1536 & 2048 & 4096 \\
+E(Anzahl Iterationen) & 95   & 142  & 189  & 379 
+\end{tabular}
+\end{table}
+
+Um die Unsicherheit der obigen Gleichungen zu verringern soll im Folgenden das $adds$-Array näher analysiert werden.
+Dieses benötigt im Chrome 8 Byte pro Dateneintrag und ist somit über 4 Cache-Lines mit folgenden Werten verstreut:\\
+Cache-Line 1: 1, 6, 5, 4, 3, 2, 1, 4\\
+Cache-Line 2: 3, 2, 1, 2, 1, 4, 3, 2\\
+Cache-Line 3: 1, 2, 1, 4, 3, 2, 1, 6\\
+Cache-Line 4: 5, 4, 3, 2, 1, 2
+
+Wenn etwa bekannt ist, das der $adds$-Array Zugriff in Zeile 8 der Schleife eine Aktivität in Cache-Line 2 ausgelöst hat, so war $adds[i] \in \{1,2,3,4\}$, sodass die Möglichkeiten 5 und 6 ausgeschlossen werden können.
+Somit kann der Offset-Wert $b$ bei Kenntnis von Eviction-Sets zu den 4 Cache-Lines eingrenzt werden.
+
+Problematisch ist jedoch die Definition des $adds$-Arrays innerhalb der Funktion \textit{randomProbablePrime}, da bei Versuchen mit Chrome das Array mit jedem Funktionsaufruf an einer anderen Stelle im Speicher stand.
+Das $adds$-Array während der Laufzeit der $randomProbablePrime$-Funktion zu finden ist schwierig, da nur ein Zugriff in jeder der über 2000 Taktzyklen dauernden Schleifeniteration erfolgt.
+Alle Eviction-Sets die eine Aktivität in diesem Zeitraum zeigen, müssten ebenso wie ihr direkt benachbartes Eviction-Set über mehrere Iterationen überwacht werden.
+Wenn ein Eviciton-Set das initial gefunden wurde in einer der Folgeiteration keine Aktivität mehr misst, dann muss das direkt benachbarte Eviciton-Set Aktivität messen.
+
+Erschwerend ist außerdem, dass die Schleife in den Zeilen 7 bis 14 im Mittel nur TODO mal ausgeführt wird und somit die Zugriffe auf das $adds$-Array nach oben begrenzt sind.
+
+Wie bereits erwähnt optimieren moderne Browser häufig verwendete Codeteile während der Laufzeit.
+Wenn die Angreiferin also häufig hintereinander eine Schlüsselgenerierung mit kleinstmöglicher Bitlänge anstößt, könnte dies den Browser dazu veranlassen die Funktion $randomProbablePrime$ zu optimieren. 
+In diesem Zuge könnte das $adds$-Array dauerhaft außerhalb der Funktion vorgehalten werden, anstatt es bei jedem Funktionsaufruf dynamisch zu erzeugen.
+Dann könnte die Angreiferin die zu den 4 Cache-Lines gehörigen Eviction-Sets bereits im Voraus suchen.
+Mit der verwendeten Systemkonfiguration konnte ein solches Verhalten in Chrome nicht erzeugt werden.
+
+Zusammenfassend lassen sich Gleichungen wie im Abschnitt \ref{leakageMozillaNSS} aufstellen, wobei dem Autor unklar ist wie schnell sich diese lösen lassen.
+
+\section{Zusätzliche Schlüsselprüfungen in Mozilla NSS}
 \label{RSAGenGCDAttack}
 
-Details zu Implementierung in Mozilla NSS
-
-Mozilla Network Security Services(NSS) ist ein Menge von Bibliotheken, welche eine plattformübergreifende Entwicklung von sicheren Client- und Server-Anwendungen anstrebt. Dabei wird unter anderem TLS oder S/MIME implementiert. Mozilla NSS wird etwa im Firefox-Browser und der Mail-Anwendung Thunderbird eingesetzt.
-Der Quellcode ist unter der Mozilla Public License verfügbar und kann online etwa im Firefox-Repository \cite{MozillaDXR} eingesehen werden.
-
-Im folgenden soll die Schlüsselerzeugung für das RSA-Verfahren in Mozilla NSS beschrieben werden.
-
-Der Code zur Schlüsselerzeugung liegt im Unterordner lib/freebl. Sobald die Schlüsselparameter $p,q,n,d,e$ bestimmt wurden, werden diese in der Funktion RSA_PrivateKeyCheck auf Gültigkeit überprüft (siehe Pseudo-Code \ref{alg:RSA_PrivateKeyCheck}).
+Ein wichtige Eigenschaft ist, dass beide Primzahlen des Schlüssels teilerfremd zum Exponenten $e$ sind.
+In Mozilla NSS werden zuerst die Schlüsselparameter $p,q,n,d,e$ bestimmt und anschließend in der Funktion RSA_PrivateKeyCheck auf Gültigkeit überprüft (siehe Pseudo-Code \ref{alg:RSA_PrivateKeyCheck}).
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
@@ -309,8 +432,13 @@ Der Code zur Schlüsselerzeugung liegt im Unterordner lib/freebl. Sobald die Sch
 
 Relvant für diese Arbeit sind im Wesentlichen die Zeilen 4 und 5, in denen die Teilerfremdheit von $e$ zu $p-1$ und $q-1$, d.h. $gcd(e,p-1) = 1$ und $gcd(e,q-1) = 1$ geprüft wird.
 Aus Performancegründen wird der Exponent $e$, anders als ursprünglich im RSA-Algorithmus beschrieben, auf den Wert 65537 fixiert.
-Interessant ist die Funktion $mp_gcd$ (Pseudocode siehe \ref{alg:mp_gcd}), welche den größten gemeinsamen Teiler nach dem binären Verfahren von Josef Strein \cite{} berechnet. Dieser Algorithmus verwendet zum Berechnen des ggT ausschließlich Rechts-Shift-Operationen (Teilen durch 2) und Subtraktionen, wodurch dieser besonders für die in diesem Kontext verwendeten großen Zahlen interessant ist.
-Die Zeilen 1 bis 6 der Funktion $mp_gcd$ können in diesem Fall ignoriert werden, da der Exponent $e$ wie oben beschrieben immer 65537 und damit ungerade ist. Bedeutender hingegen ist die $while$-Schleife in den Zeilen 11 bis 17, welche abhängig von den Eingaben Fallunterscheidungen durchführt. Das Ziel ist hier, die Rechts-Shift-Operation (Zeile 13) von der Subtraktionsfunktion (Zeile 17) zu unterscheiden, um die Zustände während der Berechnung zu rekonstruieren. \todo{hier fehlt der verweis auf das paper}
+
+\subsection{Theoretische Leakage-Analyse}
+
+Interessant ist die Funktion $mp_gcd$, welche den größten gemeinsamen Teiler nach dem binären Verfahren von Josef Strein \cite{SteinBinaryGCD} berechnet. 
+Dieser Algorithmus (siehe Pseudocode \ref{alg:mp_gcd}) verwendet zum Berechnen des ggT ausschließlich Rechts-Shift-Operationen (Teilen durch 2) und Subtraktionen, wodurch dieser besonders für die in diesem Kontext verwendeten großen Zahlen interessant ist.
+Die Zeilen 1 bis 6 der Funktion $mp\_gcd$ können in diesem Fall ignoriert werden, da der Exponent $e$ wie oben beschrieben immer 65537 und damit ungerade ist. 
+Bedeutender hingegen ist die $while$-Schleife in den Zeilen 11 bis 17, welche abhängig von den Eingaben Fallunterscheidungen durchführt. 
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
@@ -347,9 +475,106 @@ Die Zeilen 1 bis 6 der Funktion $mp_gcd$ können in diesem Fall ignoriert werden
 }
 \end{algorithm}
 
-TODO beschreiben warum der angriff so nicht in wasm/js möglich ist, warum er in c möglich ist, clflush vs prime spam usw.
+Die im Folgenden beschriebene Leakage geht auf die Veröffentlichung \cite{RSAKeyGeneration2} zurück in welcher die Autoren die binäre GCD-Implementation in OpenSSL untersucht haben.
 
-rsa und storeforward näher zu kapiteln bringen anstatt in grundlagen?
-speicher deduplizierung?
-grundlagen ganz vorner hier gehört die erklärung des themas hin, sowie relvanz für die forschuing
-titel anpassen
+Der Kontrollfluß der Funktion ist stark abhängig von den Eingaben und sorgt dafür, dass zwischen zwei Aufrufen der Subtraktionsfunktion (Zeile 17) unterschiedliche viele Rechts-Shift-Operation (Zeile 13) stattfinden.
+Gemäß der der hierzu vorhandenen Literatur wird der Kontrollfluß des Algrotihmus mit 2 Symbolen beschrieben.
+Dabei "L" steht für eine Rechts-Shift-Operation und "S" für eine Subtraktion.
+Ein kompaktere Repräsentation verwendet die Variable $Z_i$ für die Anzahl der Rechts-Shift-Operationen in Iteration $i$.
+Variable $X_i$ repräsentiert den binären Wert des Konditionals in Zeile 14 mit $X_i=t$ für $t>0$ und $X_i = f$ für $t \leq 0$.
+
+Bei der folgenden Analyse wird ausgenutzt, dass der Wert $e=65535$ fix und bekannt, sowie deutlich kleiner als $p$ bzw. $q$ bei heute gängigen 1024 Bit Primzahlen ist.
+Die Analyse soll sich im Folgenden exemplarisch auf $p$ beschränken.
+Diese große Differenz zwischen $e$ und $p$ sorgt dafür, dass die Bedingung in Zeile 14 für fast alle Iterationen mit $X_i = f$ vorhergesagt werden kann.
+Denn beim Aufruf der Funktion $mp_gcd$ gilt $u=e, v=p-1$ und da $u=e=65535$ ungerade ist gilt $t=-p+1$.
+Beispielhaft wird nun die erste Iteration der Schleife in Zeile 11 bis 17 betrachtet.
+Durch die Shift-Operation der Schleife in Zeile 12 und 13 wird $t=(-p+1)/2^{Z_1}$ gesetzt.
+Es gilt $t<0$, daher wird $v=-t=(p-1)/2^{Z_1}$ gesetzt. 
+Zum Abschluss der Iteration wird in der Subtraktion in Zeile 17 $t=u-v=e-(p-1)/2^{Z_1}$ gesetzt.
+
+Somit gilt $t>0$ solange bis t ungefähr auf die Bitlänge 17 von $u=e$ geschrumpft ist.
+Wenn die Subtraktionen von $e$ außeracht gelassen werden wird t etwa $\operatorname{ld}(p) - \operatorname{ld}(e)$ mal geteilt bevor der obige Fall eintritt.
+
+Gemäß der Definition der $Z_i$ verliert $t$ in jeder Iteration $Z_i$ Bits. 
+Die Anzahl der Iterationen $k$ der Schleife in den Zeilen 11 bis 17 bis $t$ die selbe Bitlänge wie $u$ erreicht, ist das kleinste $k$ welches folgende Gleichung erfüllt: 
+\begin{align}
+\label{equationN}
+n = \sum\limits_i^k = Z_i >= \operatorname{ld}(p) - \operatorname{ld}(e)
+\end{align}
+Es stellt sich also die Frage, wie viele Bits in diesem Szenario rekonstruiert werden können.
+Angenommen die Angreiferin erhält alle $Z_i$ bis zur Iteration $k$ in der das erste Mal $t<u=e$, das heißt $X_i=f \: \forall i < k$ gilt.
+Sei $t_i$ der Wert von $t$ am Beginn der Iteration (Zeile 11) $i<t$, wobei $u_i=u_1=e$ für alle Iteartionen $i<t$ bleibt.
+Es gilt 
+\begin{align}
+t_1=-p+1 \text{, } \: t_{i+1} = \frac{t_i - e}{2^{Z_{i+1}}}
+\end{align}
+Die Gleichung $u-v \equiv 0 \mod 2$ gilt für alle Iterationen, da $u$ und $v=-t$ am Ende der Iteration jeweils ungerade sind.
+Aufgelöst gilt für $e-t_k$:
+\begin{align}
+e-t_k = e- \cfrac{-p+1}{e - \cfrac{2^{Z_1}}{e- \cfrac{2^{Z_2}}{
+          \cfrac{2^Z_3}{e - \cfrac{\ddots}{2^{Z_k}}}}}} \equiv 0 \mod 2
+\end{align}
+Um Bits von $p$ zu erhalten, wird der obige Kettenbruch nach $p$ aufgelöst
+\begin{align}
+p = -e(2^Z_1+2^{Z_1+Z_2}+...+2^n)+1 \mod 2^{n+1}
+\end{align}
+, wobei $n$ die Anzahl der rekonstruierten Bits nach Gleichung \ref{equationN} angibt.
+Zusammenfassend könnten etwa $bitlen(p)-bitlen(e)=bitlen(p)-17$ Bits rekonstruiert werden.
+Mittels des Coppersmith-Angriffs \cite{CoppersmithBound} benötigt die Angreiferin jedoch nur die Hälfte der Bits der Primzahlen $p$ oder $q$ um den gesamten Schlüssel zu rekonstruieren.
+
+\subsection{Praktische Leakage-Analyse}
+
+Wie im vorherigen Abschnitt beschrieben muss die Angreiferin die Werte $Z_i$ bestimmen.
+Hierzu bietet es sich an die Codefragmente zu überwachen, welche die Shift- bzw. Subtraktionfunktion ausführen.
+
+In Mozilla NSS wird die Shift-Operation durch die Funktion $s\_mp\_div\_2$ umgesetzt.
+Diese ist wiederum nur ein Wrapper und ruft intern die $s\_mp\_div\_2d$-Funktion mit dem Parameter 1 auf, welches dem Teilen durch 2^1 entspricht.
+Die $s\_mp\_div\_2d$-Funktion setzt die Division mittels der $s\_mp\_rshd$-Funktion (Rechtsshift) um. 
+Am Ende der $s\_mp\_div\_2d$-Funktion erfolgt ein Funktionsaufruf an $s\_mp\_clamp$ um die entstandenen führende Nullen zu entfernen.
+
+TODO assembler offsets der funktionsadressen\\
+TODO aufrufe naheligender Funktionen tracken um zu bewerten welche Adresse günstiger für eine Überwachung ist
+
+Es bestehen somit mehrere Möglichkeiten die Ausführung der Shfit-Operation zu erkennen, wobei sich manche im Callstack befindliche Funktionen weniger eigenen, da sie auch an anderer Stelle aufgerufen werden.
+So wird etwa die Funktion $s\_mp\_clamp$ auch in der zuständigen Subtraktionroutine verwendet, sodass eine Überwachung dieser für die Shift-Operation falsche Ergebnisse liefern würde.
+
+Am besten geeignet scheint die $s\_mp\_idv\_2d$-Funktion zu sein, da sich dessen Code TODO Bytes groß ist und sich so über mehr als eine Cache-Line spannt.
+Die Funktion $s\_mp\_div\_2$ liegt ungünstiger im Code, da unmittelbar davor die $s\_mp\_rshd$-Funktion und danach die $s\_mp\_mul\_2$-Funktion liegt, welche beide in einem anderen Kontext innerhalb der Schlüsselgenerierung verwendet werden.
+
+Die Subtraktionsoperation wird durch die Funktion $mp\_sub$ umgesetzt, welche prüft welche Vorzeichen die Operanden besitzen und Abhängigkeit dessen weitere Funktion aufruft.
+Es ist bekannt das bei der Subtraktion in Zeile 16 sowohl $u=e$ als auch $v=-t$ positiv sind, womit die Operanden die gleich Vorzeichen besitzen und die Funktion $s\_mp\_sub\_3arg$ aufgerufen wird.
+Diese verwendet am Ende wieder die Funktion $s\_mp\_clamp$ um bei der Subtraktion entstandene führende Nullen zu entfernen.
+
+Am besten geeignet für eine Überwachung scheint hier der Code für die Funktion $mp\_sub$.
+/TODO check nahliegende Funks
+
+Um die Werte $Z_i$ zu bestimmen muss die Prime-and-Probe mindestens die gleiche Geschwindigkeit wie die Shift bzw. Subtraktionfunktion erreichen.
+In der Tabelle \ref{ShiftSubCycles} ist die durchschnittlichen der Zyklen für beide Funktion bei verschiedenen Schlüssellängen angegeben. Zum Vergleich wurde die Dauer der gesamten GCD-Funktion hinzugefügt.
+Die Dauer der Shift- sowie Subtraktionoperation hängt linear von der Schlüssellänge ab, wobei dies für die Dauer der gesamten $mp_gcd$-Funktion nicht der Fall ist.
+
+\begin{table}[h]
+\label{ShiftSubCycles}
+\caption{Darstellung des linearen Zusammenhangs der Taktzyklendauer einer Shift- und Subtraktionsfunktion zu der Bitlänge. Als Vergleich die Dauer der gesamten GCD-Funktion ohne linearen Zusammenhang zu der Bitlänge. }
+\begin{tabular}{llll}
+Bitlänge    & 2048 & 4096 & 8192 \\
+Shift       & 330  & 530  & 1000 \\
+Subtraktion & 470  & 730  & 1200 \\
+$mp_gcd$         & 430K & 1,2M & 3,7M
+\end{tabular}
+\end{table}
+
+Theoretisch wäre es möglich alleine durch die Zeitdifferenz zwischen zwei Subtraktionsfunktionen die Anzahl der Shiftoperationen zu bestimmen.
+Wenn jedoch eine Auflösung von unter 330 Taktzyklen bereit steht, spricht nichts dagegen ausschließlich die Shiftoperation zu überwachen und bei Lücken in der Aktivität eine Subtraktionoperation anzunehmen.
+Andersherum wird die Abschätzung sehr ungenau wenn nur eine Auflösung im Bereich der Subtraktionsoperationsdauer bereitsteht, da etwa der Unterschied zwischen einer und zwei zwischenzeitlichen Shiftoperationen fehleranfällig wird.
+
+TODO Zuordnen von adressen im code zu eviction set mittels page offsets\\
+TODO slowdown Techniken und benchmarks auf verschiedene codeteile beschreiben\\
+TODO wie schnell ist javascript, eventuell in Kapitel 2 näher beschreiben
+
+
+%TODO beschreiben warum der angriff so nicht in wasm/js möglich ist, warum er in c möglich ist, clflush vs prime spam usw.
+
+%rsa und storeforward näher zu kapiteln bringen anstatt in grundlagen?
+%speicher deduplizierung?
+%grundlagen ganz vorner hier gehört die erklärung des themas hin, sowie %relvanz für die forschuing
+%titel anpassen

@@ -94,7 +94,9 @@ Eine Angreiferin könnte ein Programm entwickeln, welches Informationen über de
 
 \subsection{Flush and Reload}
 
-Ausgang dieses Angriffs ist ein architekturspezifische Flush-Befehl wie etwa der x86-Assemblerbefehl \textit{clflush}, welcher eine Adresse entgegennimmt und die dazugehörige Cache-Line invalidiert. 
+Diese Angriffstechnik wurde 2014 von Yuval Yarom
+und Katrina Falkner veröffentlicht \cite{FlushReload}.
+Ausgang dieses Angriffs ist ein architekturspezifischer Flush-Befehl wie etwa der x86-Assemblerbefehl \textit{clflush}, welcher eine Adresse entgegennimmt und die dazugehörige Cache-Line invalidiert. 
 Dadurch müssen die Daten beim nächsten Zugriff aus dem Hauptspeicher geladen werden. Dies ist die erste Phase des Angriffs und wird als Flush bezeichnet. 
 
 Nach dem Flush folgt die Wait-Phase, in welcher die Angreiferin eine bestimmte Zeitperiode wartet und anschließend die Zugriffszeit auf die geflushte Adressse misst. 
@@ -182,11 +184,26 @@ Beide eben beschrieben Angriffsmethoden setzen voraus, dass die Angreiferin Lauf
 \caption{Wahrscheinlichkeitsverteilung der Zugriffszeiten für eine aus dem Cache verdrängte und dort vorliegende Variable \cite{TheSpyInTheSandbox}}
 \end{figure}
 
+\section{Chinesischer Restsatz}
+\label{chinese_remainder}
 
+Beschrieben sei ein System linearer Kongruenzen:
+\begin{align*}
+x \equiv a_1 &(\mod m_1)\\
+x \equiv a_2 &(\mod m_2)\\
+\vdots\\
+x \equiv a_3 &(\mod m_3)
+\end{align*}
+Für dieses System sollen alle $x$ bestimmt werden, welche alle Gleichungen erfüllen.
+Wenn alle $m_1,m_2,...,m_n$ paarweise teilerfremde natürliche Zahlen sein, so existiert für jedes ganzahlige Tupel $a_1, ..., a_n$ genau eine Lösung $x \in \{0,1,...,kgV(m_1,m_2,...,m_n)\}$ \cite{CRTwiki}.
+
+Sofern alle Moduli $m_i$ Primzahlen sind vereinfacht sich $kgV(m_1,m_2,...,m_n)$ zu $\prod_i m_i$.
+
+Eine konkrete Lösung für $x$ ist etwa mit Hilfe des erweiterten euklidischen Algorithmus berechenbar.
 
 \section{RSA}
 
-RSA (Rivest–Shamir–Adleman) ist ein 1978 veröffentlichtes und weitverbreitetes Public-Key-Kryptosystem.
+RSA (Rivest–Shamir–Adleman) ist ein 1978 veröffentlichtes und weitverbreitetes Public-Key-Kryptosystem \cite{RSAPaper}.
 Das grundlegende Prinzip hinter RSA ist es,  große positive natürliche Zahlen $e,d,n$ zu finden, so dass $(m^d)^e \equiv m \mod n$ gilt, aber schwer ein $d$ zu finden ist, wenn nur $e$ und $n$ gegeben sind.
 
 Der RSA-Algorihtmus besteht aus vier Schritten: Der Schlüsselgenerierung, der Schlüsselverteilung, der Verschlüsselung und Entschlüsselung.

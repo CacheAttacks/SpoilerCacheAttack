@@ -196,59 +196,37 @@ beschrieben ist.
 Die Wahrscheinlichkeit des $P(count(cs)>=16)$ ist etwa bedeutend im ersten Szenario:
 Angenommen, die Angreiferin hat es auf eine bestimmte Adresse abgesehen und möchte ein korrelierendes Eviction-Set finden. 
 Wie wahrscheinlich ist ein erfolgreicher Angriff beziehungsweise wie hoch ist die Wahrscheinlichkeit, ein korrelierendes Eviction-Set zu finden? 
-Das Diagramm \ref{fig:prob_specific_es} gibt die Erfolgswahrscheinlichkeiten für verschiedene $x$-Werte an. \todo{Die Linie muss dünner. Die Bildunterschrift muss die cache-sets und die assoziativität beeinhalten. Das Bild soll mit der Unterschrift verständlich sein, ohne den restlichen text lesen zu müssen. Schriftgröße für Bildunterschriften und beschriftungen gern kleiner.}
+Das Diagramm \ref{fig:combined_es_prob} gibt die Erfolgswahrscheinlichkeiten für verschiedene $x$-Werte an. 
 
-%\begin{figure}[h]
-%\label{fig:prob_specific_es}
-%\centering
-%\begin{scaletikzpicturetowidth}{\textwidth}
-%\input{methods/plot_prob_specific_es.tex}
-%\end{scaletikzpicturetowidth}
-%\caption{Beschreibt den Zusammenhang zwischen der Poolgröße und der Wahrscheinlichkeit ein Eviction Set zu einer vorher festgelegten Adresse zu finden}
-%\end{figure}
-
+%\todo{Die Linie muss dünner. Die Bildunterschrift muss die cache-sets und die assoziativität beeinhalten. Das Bild soll mit der Unterschrift verständlich sein, ohne den restlichen text lesen zu müssen. Schriftgröße für Bildunterschriften und beschriftungen gern kleiner.}
 
 Im zweiten Szenario möchte die Angreiferin in einem komplexen Angriff eine Vielzahl von Adressen in unterschiedlichen Cache-Sets überwachen. 
 Sie interessiert sich nun dafür, wie wahrscheinlich es ist, alle 8192 Cache-Sets zu finden und somit auch die für sie relevanten. 
 
-Die Wahrscheinlichkeit, für alle 128 möglichen Cache-Sets jeweils 16 Zuordnungen und damit gleichbedeutend alle 8192 möglichen Eviction Sets konstruieren zu können, ist mit TODO Berechnung prüfen!!!!
+Die Wahrscheinlichkeit, für alle 128 möglichen Cache-Sets jeweils 16 Zuordnungen und damit gleichbedeutend alle 8192 möglichen Eviction Sets konstruieren zu können, ist approximativ mit
 \begin{align*}
 P(count(cs)>=16|\#add = x)^{128} = (1-P(count(cs)<16|\#add = x))^{128}
 \end{align*}
-gegeben.  
+beschrieben.
+Die Ereignisse sind nicht unabhängig, weswegen diese Vereinfachung zu Ungenauigkeiten führt.
+Diese sind aber im zur Veranschaulichung gezeigten Bereich unter 0,3 Prozentpunkten und damit visuell nicht identifizierbar.
 
-%Das Diagramm \ref{fig:prob_all_es} gibt die Erfolgswahrscheinlichkeiten für verschiedene $x$-Werte im zweiten Szenario an. \todo{siehe oben. Du hast drei mal den gleichen graphen! vielleicht kann man die in ein Diagramm zeichnen? Wie viel Mehrwert bieten sie?}
+Die durchgezogene Linie im Diagramm \ref{fig:combined_es_prob} gibt die Erfolgswahrscheinlichkeiten für verschiedene $x$-Werte im zweiten Szenario an. 
 
-%\label{fig:prob_all_es}
-%\begin{figure}[h]
-%\centering
-%\begin{scaletikzpicturetowidth}{\textwidth}
-%\input{methods/plot_prob_all_es.tex}
-%\end{scaletikzpicturetowidth}
-%\caption{TODO Berechnung prüfen!!!! Beschreibt den Zusammenhang zwischen der Poolgröße und der Wahrscheinlichkeit alle Eviction Sets zu finden}
-%\end{figure}
+%\todo{siehe oben. Du hast drei mal den gleichen graphen! vielleicht kann man die in ein Diagramm zeichnen? Wie viel Mehrwert bieten sie?}
 
+\label{fig:combined_es_prob}
+\begin{figure}[h]
+\centering
+\begin{scaletikzpicturetowidth}{\textwidth}
+\input{methods/plot_combined_es_prob.tex}
+\end{scaletikzpicturetowidth}
+\caption{Die gestrichelte Kurve veranschaulicht die Wahrscheinlichkeit (Y-Achse) ein fixes Eviction-Set mit einer bestimmten Anzahl an Pooladressen (X-Achse) bei einer Assoziativität von 16 zu finden. Die durchgezogenen Linie stellt die Wahrscheinlichkeit dar alle 8192 Eviction-Sets zu finden.}
+\end{figure}
 
 Häufig wird in Benchmarks angegeben wie viele Eviction-Sets überhaupt gefunden wurden.
 Dieser Fragestellung ist identisch mit dem ersten Szenario.
 Denn wenn ein fixes Eviction-Set mit einer Wahrscheinlichkeit von $x$ Prozent gefunden wird und die Zuordnung wie hier zufällig ist, dann werden insgesamt im Mittel $x/100 \cdot 128$ viele Eviction-Sets gefunden.
-
-%Die Wahrscheinlichkeit 
-%\begin{align*}
-%\sum\limits_{i=1}^{128} i {x \choose i} P(count(cs)>=16|\#add = x)^i \cdot P(count(cs)<16|\#add = x)^{128-i} 
-%\end{align*}
-%gibt den Erwartungswert der gefundenen Eviction-Sets an.
-
-%Das Diagramm \ref{fig:avg_es} gibt die Erfolgswahrscheinlichkeiten für verschiedene $x$-Werte im zweiten Szenario an.
-
-%\label{fig:avg_es}
-%\begin{figure}[h]
-%\centering
-%\begin{scaletikzpicturetowidth}{\textwidth}
-%\input{methods/plot_avg_es.tex}
-%\end{scaletikzpicturetowidth}
-%\caption{Beschreibt das Verhältnis der Poolgröße zu der Größe des Erwartungswertes der gefundenen Eviction Sets}
-%\end{figure}
 
 TODO verschiedene reale bechmarks einfügen \todo{ja, das finde ich auch. dringend.}
 
