@@ -538,18 +538,19 @@ Welche Adressen die Funktionen im Assemblercode haben, ist in Tabelle \ref{tbl:a
 \caption{Größe, Start- und Endadresse der für die Shiftoperation relevanten Funktionen (fett hervorgehoben) sowie deren direkten Nachbarn im Assemblercode.}
 \begin{tabular}{llll}
 Funktion       & Startadresse & Endadresse & Differenz (Größe der Funktion) \\
-s\_mp\_alloc   & b4d4         & b4f8       & 25    \\
-s\_mp\_free    & b4f9         & b519       & 21    \\
-\textbf{s\_mp\_clamp}   & b51a         & b562       & 49    \\
-s\_mp\_exch    & b563         & b5d2       & 70    \\
+s\_mp\_alloc   & b7d0$_{16}$        & b7f4$_{16}$      & 25$_{16}$   \\
+s\_mp\_free    & b7f5$_{16}$        & b815$_{16}$      & 21$_{16}$   \\
+\textbf{s\_mp\_clamp}   & b816$_{16}$        & b85e$_{16}$      & 49$_{16}$   \\
+s\_mp\_exch    & b85f$_{16}$        & b8ce$_{16}$      & 70$_{16}$   \\
 $\vdots$               &  $\vdots$             &    $\vdots$         &     $\vdots$   \\
-s\_mp\_mul\_2d & b6c5         & b87a       & 16    \\
-\textbf{s\_mp\_rshd}    & b87b         & b963       & e9    \\
-\textbf{s\_mp\_div\_2}  & b964         & b982       & 1f    \\
-s\_mp\_mul\_2  & b983         & ba5c       & da    \\
-s\_mp\_mod\_2d & ba5d         & bb1a       & be    \\
-\textbf{s\_mp\_div\_2d} & bb1b         & bc21       & 107   \\
-s\_mp\_norm    & bc22         & bce2       & c1   
+s\_mp\_mul\_2d & b9c1$_{16}$        & bb76$_{16}$      & 1b6$_{16}$   \\
+\textbf{s\_mp\_rshd}    & bb77$_{16}$        & bc5f$_{16}$      & e9$_{16}$   \\
+\textbf{s\_mp\_div\_2}  & bc60$_{16}$        & bc7e$_{16}$      & 1f$_{16}$   \\
+s\_mp\_mul\_2  & bc7f$_{16}$        & bd58$_{16}$      & da$_{16}$   \\
+$\vdots$               &  $\vdots$             &    $\vdots$         &     $\vdots$   \\
+s\_mp\_mod\_2d & bd59$_{16}$        & be16$_{16}$      & be$_{16}$   \\
+\textbf{s\_mp\_div\_2d} & be17$_{16}$        & bf1d$_{16}$      & 107$_{16}$  \\
+s\_mp\_norm    & bf1e$_{16}$        & bfde$_{16}$      & c1$_{16}$  
 \end{tabular}
 \end{table}
 
@@ -587,10 +588,14 @@ Welche Adressen die Funktionen im Assemblercode haben, ist in Tabelle \ref{tbl:a
 \label{tbl:assOffsetSub}
 \begin{tabular}{llll}
 Funktion         & Startadresse & Endadresse & Differenz (Größe der Funktion) \\
-s\_mp\_add\_3arg & c43c         & c617       & 1dc   \\
-\textbf{s\_mp\_sub}       & c618         & c76e       & 157   \\
-\textbf{s\_mp\_sub\_3arg} & c76f         & c905       & 197   \\
-s\_mp\_mul       & c906         & c92e       & 29   
+mp\_add & 8377$_{16}$ & 846f$_{16}$ & f8$_{16}$\\
+\textbf{mp\_sub} & 8470$_{16}$ & 85c3$_{16}$ & 153$_{16}$ \\
+mp\_mul & 85c4$_{16}$ & 894b$_{16}$ & 387$_{16}$ \\
+%s\_mp\_add\_3arg & c738$_{16}$         & c913$_{16}$       & 1dc$_{16}$   \\
+$\vdots$               &  $\vdots$             &    $\vdots$         &     $\vdots$   \\
+s\_mp\_sub       & c914$_{16}$         & ca6a$_{16}$       & 157$_{16}$   \\
+\textbf{s\_mp\_sub\_3arg} & ca6b$_{16}$         & cc01$_{16}$       & 197$_{16}$   \\
+s\_mp\_mul       & cc02$_{16}$         & cc2a$_{16}$       & 29$_{16}$   
 \end{tabular}
 \end{table}
 
@@ -611,9 +616,9 @@ Die Dauer der Shift- sowie Subtraktionoperation hängt linear von der Schlüssel
 \caption{Darstellung des linearen Zusammenhangs der Taktzyklendauer einer Shift- und Subtraktionsfunktion zu der Bitlänge. Als Vergleich die Dauer der gesamten GCD-Funktion ohne linearen Zusammenhang zu der Bitlänge. }
 \begin{tabular}{llll}
 Bitlänge    & 2048 & 4096 & 8192 \\
-Shift       & 330  & 530  & 1000 \\
-Subtraktion & 470  & 730  & 1200 \\
-$mp_gcd$         & 430K & 1,2M & 3,7M
+Shift       & 340  & 577  & 9597 \\
+Subtraktion & 477  & 718  & 1223 \\
+$mp\_gcd$    & 424K & 1,2M & 3,73M
 \end{tabular}
 \end{table}
 
@@ -635,7 +640,49 @@ Die Differenz der Prime-and-Probe Dauer bei keiner gegenüber viel Aktivität au
 In anderen Kontexten wird häufig der $clflush$-Befehl verwendet um schnell und zuverlässig Daten aus dem Cache zu verdrängen. 
 Ein Äquivalent existiert jedoch weder in Javascript noch in Webassembly.
 
-Des Weiteren kann die Ausführung von Code im Browser nicht auf bestimmte CPU-Kerne fixiert werden. Hiermit sind Angriffe die einen Thread mit hoher Rechenlast auf den gleichen physischen Kern wie das Opferprogramm laufen lassen nicht ohne weiteres möglich.
+Des Weiteren kann die Ausführung von Code im Browser nicht auf bestimmte CPU-Kerne fixiert werden. Hiermit sind Angriffe die einen Thread mit hoher Rechenlast auf den gleichen physischen Kern wie das Opferprogramm laufen lassen nicht ohne Weiteres möglich.
+
+Der oben beschrieben triviale Angriff kann optimiert werden um Performancereduktion zu erhöhen. Dafür wird die Prime-and-Probe Operation ohne Zeitmessung für eine bestimmte Zeit in einer 
+
+\begin{table}[h]
+\begin{tabular}{lllll}
+Cache-Line  & Funktion(en) innerhalb der Cache-Line                                  & Shift & Subtraktion & mp\_gcd \\
+b800 - b83f & $s\_mp\_free, s\_mp\_clamp$                 & 541   & 608         & 549k    \\
+b840 - b87f & $s\_mp\_clamp, s\_mp\_exch$                 & 538   & 605         & 553k    \\
+bb40 - bb7f & $s\_mp\_mul\_2d, s\_mp\_rshd$               & 450   & 514         & 479k    \\
+bb80 - bbbf & $s\_mp\_rshd$                               & 451   & 542         & 486k    \\
+bbc0 - bbff & $s\_mp\_rshd$                               & 486   & 563         & 581k    \\
+bc00 - bc3f & $s\_mp\_rshd$                               & 520   & 563         & 597k    \\
+bc40 - bc7f & $s\_mp\_rshd, s\_mp\_div\_2, s\_mp\_mul\_2$ & 480   & 503         & 474k    \\
+be00 - be3f & $s\_mp\_mod\_2d, s\_mp\_div\_2d$            & 511   & 560         & 544k    \\
+be40 - be7f & $s\_mp\_div\_2d$                            & 503   & 549         & 536k    \\
+be80 - bebf & $s\_mp\_div\_2d$                            & 539   & 557         & 551k    \\
+bec0 - beff & $s\_mp\_div\_2d$                            & 537   & 547         & 552k    \\
+bf00 - bf3f & $s\_mp\_div\_2d, s\_mp\_norm$               & 470   & 506         & 485k   
+\end{tabular}
+\end{table}
+
+
+\begin{table}[h]
+\begin{tabular}{lllll}
+Cache-Line & Funktion                     & Shift & Subtraktion & mp\_gcd \\
+8440-847f  & $mp\_add, mp\_sub$             & 357   & 643         & 487k    \\
+8480-84bf  & $mp\_sub$                      & 359   & 684         & 538k    \\
+84c0-84ff  & $mp\_sub$                      & 362   & 681         & 531k    \\
+8500-853f  & $mp\_sub$                      & 357   & 700         & 538k    \\
+8540-857f  & $mp\_sub$                      & 362   & 683         & 534k    \\
+8580-85cf  & $mp\_sub$                      & 358   & 732         & 534k    \\
+85c0-85ff  & $mp\_sub, mp\_mul$            & 359   & 766         & 531k    \\
+ca40-ca7f  & $s\_mp\_sub, s\_mp\_sub\_3arg$ & 357   & 643         & 490k    \\
+ca80-cabf  & $s\_mp\_sub\_3arg$             & 359   & 644         & 494k    \\
+cac0-caff  & $s\_mp\_sub\_3arg$             & 357   & 675         & 534k    \\
+cb00-cb3f  & $s\_mp\_sub\_3arg$            & 358   & 669         & 536k    \\
+cb40-cb7f  & $s\_mp\_sub\_3arg$             & 357   & 663         & 533k    \\
+cb80-cbbf  & $s\_mp\_sub\_3arg$             & 359   & 676         & 546k    \\
+cbc0-cbff  & $s\_mp\_sub\_3arg$             & 356   & 663         & 535k    \\
+cc00-cc3f  & $s\_mp\_sub\_3arg, s\_mp\_mul$ & 352   & 571         & 483k   
+\end{tabular}
+\end{table}
 
 
 
