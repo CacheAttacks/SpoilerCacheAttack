@@ -11,7 +11,7 @@ if (typeof Module['noisy_start_cache_set'] !== 'undefined') {
       Module['noisy_start_cache_set'] + COMMUNICATION_CHANNEL_OFFSET_START,
       Module['noisy_start_cache_set'] + COMMUNICATION_CHANNEL_OFFSET_END);
   var before = performance.now();
-  sampleEsWrapper(300, 0, 0);
+  sampleEsWrapper(1500, 0, 0);
 
   var POSTstr = Module['createPOSTStr'](
       Module['wasmMemoryArr'], Module['res'] / Module['byteFactor'],

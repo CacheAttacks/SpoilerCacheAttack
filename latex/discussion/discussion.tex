@@ -1,5 +1,45 @@
-\chapter{Discussion, Evaluation}
+\chapter{Diskussion}
 \label{chapter:discussion}
 
-% Discuss your results here
-\Blindtext
+
+
+\section{Geschwindigkeit von Eviction-Set Suche}
+Wie in Abschnitt \ref{} beschrieben, unterliegen die Laufzeiten der Eviction sind
+
+
+\section{Erweiterung auf mehrere Threads}
+Da präzise Timer zurzeit mittels eines Shared-Array-Buffer erzeugt werden müssen, benötigt die Angreiferin mindestens drei virtuelle Kerne um ein Angriff auszuführen. Einen für die Iteration der Timer-Variable, einen für den Prime-and-Probe Angriffscode und einen auf dem das Opferprogramm läuft.
+
+Theoretisch reichen deshalb bereits Prozessoren mit zwei physischen und vier virtuellen Kernen wie sie noch vielfach von Intel im Umlauf sind. Bei zwei physischen Kernen wird der Timer-Thread jedoch zeitweise exklusiv auf einen physischen Kern rechnen und sich zeitweise einen Kern mit einem der anderen Threads teilen.
+Wenn einer anderer Thread auf dem gleichen Kern rechnet halbiert sich in etwa die Iterationsgeschwindigkeit der Timervariable, sodass die Werte des Timer starken Schwankungen unterliegen.
+Problematisch ist dies etwa in der Expand-Phase, da nicht erkannt wird, dass eine Candiadte-Set bereits ein Eviction-Set für die Zeugenadresse, da die Werte des Timers das Gegenteil suggerieren.
+
+Somit ist es essenziell erkannt werden wann der Timer-Thread ein Kern für sich alleine beansprucht.
+Es könnte zur Laufzeit wiederholt nach einer festen Zeitspanne die Timergenauigkeit überprüft werden.
+Der Wert der Funktion $performance.now()$ als Referenz heranzuziehen, wie im Kaptiel 2 geschehen, ist aufgrund der geringen Auflösung (Chrome etwa 0,1ms) zu langsam.
+TODO auf nuc testen.
+Als Alternative kann etwa die Laufzeit einer Prime-and-Probe Operation auf einem wenig aktiven Cache-Set als Referenzwert genommen werden.
+Hierbei ist zu beachten das Prüfung im Thread des Angriffscodes läuft und dieser sich eventuell auch einen physischen Kern teilen muss.
+
+Ein weiteres Problem ist die Wahl der Zeitspanne, da eine kleine viel Overhead erzeugen würde und eine große zu langsam reagiert, sodass in der Zwischenzeit bereits Timer-Werte falsch interpretiert wurden.
+
+Wie erwähnt steht der Thread des Angriffscodes vor dem gleichen Problem, sodass sich die Dauer eine Prime-and-Probe Iteration im schlimmsten Fall verdoppeln kann.
+Folglich sollte ein Angriff auch mit halbierter Geschwindigkeit der Prime-and-Probe Operation erfolgreich sein, da ansonsten Cache-Aktivitäten in bestimmten Zeitabschnitten verloren gehen.
+
+Andersherum wird es im Laufe des Angriffs passieren, dass sich Opferprogramm und Timer einen physischen Kern teilen.
+Sofern das Problem der halbierten Timerauflösung gelöst wird, wird die Auflösung des Prime-and-Probe-Angriffs effektiv verdoppelt, da auch das Opferprogramm mit halber Geschwindigkeit läuft.
+Da die Zuordnung der Prozesse zu den virtuellen Kernen im Browser nicht beeinflussbar ist und somit aus Sicht der Angreiferin willkürlich erfolgt, werden nur zufällige Zeitabschnitte besser aufgelöst.
+Allerdings sollten hier auch die Kosten gegengerechnet werden, die für die Erkennung der veränderten Timerauflösung entstehen.
+
+Aufgrund der beschrieben Probleme und den Auswirkungen der Abmilderungen ebendieser ist es besser auf mindestens drei physische Kerne zurückgreifen zu können.
+Sobald die Browserhersteller die Auflösung von $performance.now()$ wieder in den Nanosekundenbereich hieven, wären auch zwei physische Kerne ausreichend. 
+
+Wenn das angegriffene Endgerät $n$ virtuelle Kerne besitzt können also $n-3$ für die Verlangsamung des Opferprogramms eingesetzt werden.
+
+Ideen: 
+Ist die Eviction-Set-Search schnell genug für praktische Angriffe?\\
+Probleme mit verwendeten Timer erörtern (sprunghaft, anpassung der erwarteten werte während laufzeit fehlerhaft)\\
+
+
+Vergleiche Bremsverhalten mit clflush in native c code\\
+Schätze ab wann ein Angriff auf mp_gcd möglich wäre (evaluerien mit delay parameter)\\

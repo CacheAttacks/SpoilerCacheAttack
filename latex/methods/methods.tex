@@ -47,7 +47,7 @@ Das Paper "Fantastic Timers and where to find them" \cite{FantasticTimers} besch
 Allerdings ist nur eine geeignete Methode dabei, da die Auflösung aller anderen mindestens im hohen einstelligen \textmu s Bereich liegt und somit der Parameter $repeatIterations$ auf Werte von etwa 1000 gesetzt werden müsste, um zuverlässig \textit{Eviction Sets} zu finden. 
 Hierdurch würde die benötigte Ausführungszeit zum Finden der \textit{Eviction Sets} auf ein Maß ansteigen, welches nicht mehr zum angenommenen Angriffsmodell passen würde.
 
-\newtext
+%\newtext
 
 Als einziges angemessenes Zeitmessungswerkzeug verbleibt der SharedArrayBuffer aus Javascript. 
 Die Ausführung von Javascript passiert in einem Thread, wobei die Möglichkeit besteht, sogenannte Webworker zu starten, welche Code aus einem Skript in einem eigenen Thread ausführen.
@@ -228,6 +228,8 @@ Häufig wird in Benchmarks angegeben wie viele Eviction-Sets überhaupt gefunden
 Dieser Fragestellung ist identisch mit dem ersten Szenario.
 Denn wenn ein fixes Eviction-Set mit einer Wahrscheinlichkeit von $x$ Prozent gefunden wird und die Zuordnung wie hier zufällig ist, dann werden insgesamt im Mittel $x/100 \cdot 128$ viele Eviction-Sets gefunden.
 
+
+
 TODO verschiedene reale bechmarks einfügen \todo{ja, das finde ich auch. dringend.}
 
 \subsection{Eviction-Set Suchalgorithmus}
@@ -374,7 +376,7 @@ Die Möglichkeit Load- und Store-Befehle Out-of-Order auszuführen, sorgt für e
 \caption{Beispiel für eine Speicher-Disambiguierung. Die Nummern in den Kreisen geben die chronologische Ausführungsreihenfolge an und der weiße Pfeil am linken Rand die Reihenfolge im Quellcode. Load 2 kann nicht früher ausgeführt werden, da er von Store 1 abhängig ist. Load 4 hingegen ist von den anderen Operationen unabhängig und kann daher vor Store 1 und Store 3 ausgeführt werden. Durch diese vorgezogene Ausführung können Instruktionen die den Wert von X benötigen im Folgenden von einer geringen Zugriffslatenz proftieren. \cite{CacheAssoWiki}.}
 \end{figure}
 
-\newtextend
+%\newtextend
 
 
 
@@ -432,7 +434,22 @@ Im Folgenden soll die maximal mögliche Senderate unter optimalen Bedingungen er
 Hierfür wird im Voraus ein Cache-Set ausgewählt, auf dem im Idle-Zustand des Systems ein geringes Rauschen herrscht.
 Um die Synchronisation des Senders und Empfängers aufrechtzuerhalten, wird nach 10 gesendeten Bits ein Synchronisationsblock eingefügt, welcher durch $sb$-Prime-Vorgänge auf der Senderseite erzeugt wird. 
 Eine 1 wird durch $s$-Prime-Vorgänge repräsentiert und eine 0 durch das Unterlassen der Prime-Vorgänge. 
-Um die einzelnen Bits auseinanderzuhalten, wird zwischen jedem gesendeten Bit eine Pause von $p$-Taktzyklen eingelegt. \todo{vielleicht mal ein bild, mit dem ein konkreter btistring übertragen wird?}
+Um die einzelnen Bits auseinanderzuhalten, wird zwischen jedem gesendeten Bit eine Pause von $p$-Taktzyklen eingelegt. 
+Grafik \ref{fig:covert_channel} zeigt die Übertragung eines Bitstrings von einem C-Programm zum Javascript/Webassembly-Empfänger.
+Zwischen dem Senden eines Bits wurde eine Pause von $p=1500$ Taktzyklen eingelegt.
+Die Größe des Synchronisationsblocks ist auf $sb=10$ gesetzt.
+Mit den in der Grafik verwendeten Parametern ergibt sich eine ungefähre Netto-Datenrate von 4,6 KB/s.
+
+\captionsetup[figure]{skip=-15pt}
+\begin{figure}[h]
+\label{fig:covert_channel}
+\centering
+\begin{scaletikzpicturetowidth}{\textwidth}
+\input{methods/covert_channel_example.tex}
+\end{scaletikzpicturetowidth}
+\caption{Verdeckter Kanal mit einem Javascript/Webassembly-Empfänger und einem C-Programm als Sender. Dargestellt ist das zweimalige Empfangen des Bitstrings "0010001110" im Bereich von 38 bis 147 und von 165 bis 282. Der obere Plot spiegelt die Zeitmessung mittels Prime-and-Probe wieder, wobei die graue durchgezogene Linie $2 \cdot Median(y)$ ist. Zugriffswerte oberhalb der Linie werden als 1 und unterhalb als 0 interpretiert. Der untere Plot zeigt dies daraus erkannte Muster. Größe Blöcke von Einsen wie etwa im Bereich 21 bis 37 dienen der Synchronisation zwischen Sender und Empfänger. Die Nullen im Bitstring werden über den Abstand zwischen Einsen bzw. dem Synchronisationsblock ermittelt.}
+\end{figure}
+\captionsetup[figure]{skip=10pt}
 
 %Um einen Kanal zu Initialisieren 
 
@@ -442,13 +459,6 @@ Um die einzelnen Bits auseinanderzuhalten, wird zwischen jedem gesendeten Bit ei
 
 
 %Problem: v8 compiliert lazy, d.h. nur häufig verwendete
-
-\newtext
-
-
-
-
-\newtextend
 
 %Was wird angegriffen
 

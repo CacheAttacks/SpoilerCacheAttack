@@ -43,7 +43,7 @@ Bei den Nachfolger- Generationen Haswell und Broadwell stellten die Autoren fest
 
 \subsection{Assoziativität}
 
-\newtext
+%\newtext
 
 Sofern die Auswahl des Cache-Eintrags für die Daten einer bestimmten Hauptspeicheradresse keinerlei Beschränkungen unterliegt, wird von einem voll-assoziativen Cache gesprochen. 
 Das andere Extrem wäre ein einfach-assoziativer Cache beziehungsweise eine direkte Abbildung, wobei die Adresse des Hauptspeichers, von der die Daten stammen, den zu wählenden Cache-Eintrag eindeutig festlegt.
@@ -57,7 +57,7 @@ Der Mittelweg ist die n-Wege-Assoziativität, bei der die Daten nur an n Cache-E
 \caption{Links ist ein direkt abgebildeter Cache zu sehen, bei dem die Hauptspeicheradresse den Cache-Index vollumfänglich festlegt. Rechts ist ein 2-Wege assoziativer Cache zu sehen bei dem etwa die Hauptspeicheradresse 0 sowohl auf \textit{Index 0, Way 0} als auch auf \textit{Index 0, Way 1} im Cache abgebildet werden kann \cite{CacheAssoWiki}.}
 \end{figure}
 
-\newtextend
+%\newtextend
 
 Der L3-Cache eines Intel i7-4770 ist beispielsweise 8 MiB groß und verfügt daher über 131072 ($2^{17}$) Cache-Einträge in der Größe einer Cache-Line. 
 Wäre dieser Cache nun voll-assoziativ, müsste er bei jeder Anfrage komplett durchsucht werden. Aus diesem Grund ist der Cache in Cache-Sets unterteilt, wobei Daten einer spezifischen Hauptspeicheradresse nur in genau ein Cache-Set eingelagert werden können. 
@@ -90,7 +90,7 @@ Wegen des großen Marktanteils von Intel-CPUs kann festgehalten werden, dass der
 Cache-Angriffe beschreiben eine generelle Klasse von Mikroarchitektur-Seitenkanalangriffen, welche den Cache verwenden, um Informationen abzugreifen, wobei der Cache als geteilte Ressource zwischen verschiedenen Prozessen fungiert. Durch diesen Angriff können sichere und unsichere Prozesse über den geteilten Cache trotz höher liegender Schutzmechanismen wie virtualisiertem Speicher oder Hypervisor-Systemen kommunizieren. 
 Eine Angreiferin könnte ein Programm entwickeln, welches Informationen über den inneren Zustand eines anderen Prozesses sammelt, und so AES-Schlüssel \cite{BernsteinAES} sowie RSA-Schlüssel \cite{CacheAttackRSA} abgreifen auch über die Grenzen von virtuellen Maschinen hinweg.
 
-\newtext
+%\newtext
 
 \subsection{Flush and Reload}
 
@@ -127,7 +127,7 @@ Ein typisches Beispiel hierfür sind geteilte Bibliotheken, zum Beispiel .so Dat
 	\Return timestampAfter - timestampBefore > threshold
 }
 
-\newtextend
+%\newtextend
 
 \end{algorithm}
 
@@ -171,7 +171,7 @@ So ist aber in der Regel das Mapping der virtuellen und physischen Adressen bei 
 %Beschreibe Algorithmus
 %Hierfür werden zuerst wiederholt Speicherblöcke angefordert, wobei solche in einer Menge gesammelt werden, welche 
 
-\newtext
+%\newtext
 
 \subsection{Timer}
 
@@ -269,4 +269,6 @@ Zusammenfassend ist das Schreiben von Drive-by Angriffen aufwendiger und setzt i
 
 %\todo{was soll das ständige newtextend denn tun?}
 %das markiert für nicht latex- bzw. versionskontrollenaffine Nutzer farblich Textstellen die ich geändert habe
-\newtextend
+%\newtextend
+
+\section{Forschungsstand/Verwandte Arbeiten}

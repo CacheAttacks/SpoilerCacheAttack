@@ -535,7 +535,7 @@ Welche Adressen die Funktionen im Assemblercode haben, ist in Tabelle \ref{tbl:a
 
 \begin{table}[h]
 \label{tbl:assOffsetShift}
-\caption{Größe, Start- und Endadresse der für die Shiftoperation relevanten Funktionen (fett hervorgehoben) sowie deren direkten Nachbarn im Assemblercode.}
+\caption{Größe, Start- und Endadresse der für die Shift-Operation relevanten Funktionen (fett hervorgehoben) sowie deren direkten Nachbarn im Assemblercode.}
 \begin{tabular}{llll}
 Funktion       & Startadresse & Endadresse & Differenz (Größe der Funktion) \\
 s\_mp\_alloc   & b7d0$_{16}$        & b7f4$_{16}$      & 25$_{16}$   \\
@@ -560,9 +560,9 @@ Deshalb sind in der Tabelle die Größe der Funktionen im Assemblercode und dere
 Die im weiteren Verlauf vorgenommene Bewertung der Funktionen hängt also auch von der Lage ebendieser im Assemblercode ab und kann bei Änderungen der Adressen variieren.
 
 Es bestehen mehrere Möglichkeiten die Ausführung der Shfit-Operation zu erkennen, wobei sich manche im Callstack befindliche Funktionen weniger eigenen, da sie auch an anderer Stelle aufgerufen werden.
-So wird etwa die Funktion $s\_mp\_clamp$ auch im Callstack der Subtraktionsoperation verwendet, sodass eine Überwachung dieser für die Shift-Operation falsche Ergebnisse liefern würde.
+So wird etwa die Funktion $s\_mp\_clamp$ auch im Callstack der Subtraktions-Operation verwendet, sodass eine Überwachung dieser für die Shift-Operation falsche Ergebnisse liefern würde.
 
-Die Funktion $s\_mp\_div\_2$ ist ein guter Kandidat für die Überwachung der Shiftoperation, da die benachbarten Funktionen keine Schnittmenge mit den aufgerufenen Funktion in der Subtraktionoperation haben.
+Die Funktion $s\_mp\_div\_2$ ist ein guter Kandidat für die Überwachung der Shift-Operation, da die benachbarten Funktionen keine Schnittmenge mit den aufgerufenen Funktion in der Subtraktionoperation haben.
 Die Funktion liegt sowohl innerhalb der Cache-Line von 940 bis 97f als auch innerhalb der Cache-Line 980 bis 9af.
 
 Angenommen es wird die Cache-Line von 980 bis 9af gewählt, dann wird auch Aktivität gemessen, sofern ausschließlich die Funktion $s\_mp\_mul\_2$ aufgerufen wird.
@@ -571,20 +571,20 @@ Die Überwachung der Cache-Line von 940 bis 97f dagegen schlägt auch dann an, w
 Dies passiert etwa im Zuge der Shift-Operation in weniger als 100 Taktzyklen nach dem Aufruf von $s\_mp\_div\_2$.
 Sollte die Prime-and-Probe Dauer weniger als 100 Taktzyklen, würde die Gefahr bestehen fälschlicherweise zwei statt einer Shift-Operation zu messen.
 Nach den in dieser Arbeit durchgeführten Tests scheint eine solche Dauer aber unrealistisch niedrig.
-Daher eignet sich die Cache-Line von 940 bis 97f besser, da lediglich Funktionen überwacht werden, die Teil der Shiftoperation sind.
+Daher eignet sich die Cache-Line von 940 bis 97f besser, da lediglich Funktionen überwacht werden, die Teil der Shift-Operation sind.
 
 %TODO aufrufe naheligender Funktionen tracken um zu bewerten welche Adresse günstiger für eine Überwachung ist (zu vernachlässigen da nach pattern gesucht werden kann)
 %Am besten geeignet scheint die $s\_mp\_idv\_2d$-Funktion zu sein, da sich dessen Code TODO Bytes groß ist und sich so über mehr als eine Cache-Line spannt.
 %Die Funktion $s\_mp\_div\_2$ liegt ungünstiger im Code, da unmittelbar davor die $s\_mp\_rshd$-Funktion und danach die $s\_mp\_mul\_2$-Funktion liegt, welche beide in einem anderen Kontext innerhalb der Schlüsselgenerierung verwendet werden.
 
-Die Subtraktionsoperation wird durch die Funktion $mp\_sub$ umgesetzt, welche prüft welche Vorzeichen die Operanden besitzen und Abhängigkeit dessen weitere Funktion aufruft.
+Die Subtraktions-Operation wird durch die Funktion $mp\_sub$ umgesetzt, welche prüft welche Vorzeichen die Operanden besitzen und Abhängigkeit dessen weitere Funktion aufruft.
 Es ist bekannt das bei der Subtraktion in Zeile 16 sowohl $u=e$ als auch $v=-t$ positiv sind, womit die Operanden die gleich Vorzeichen besitzen und die Funktion $s\_mp\_sub\_3arg$ aufgerufen wird.
 Diese verwendet am Ende wieder die Funktion $s\_mp\_clamp$ um bei der Subtraktion entstandene führende Nullen zu entfernen.
 Welche Adressen die Funktionen im Assemblercode haben, ist in Tabelle \ref{tbl:assOffsetSub} ersichtlich. 
 
 
 \begin{table}[h]
-\caption{Größe, Start- und Endadresse der für die Subtraktionsoperation relevanten Funktionen (fett hervorgehoben) sowie deren direkten Nachbarn im Assemblercode.}
+\caption{Größe, Start- und Endadresse der für die Subtraktions-Operation relevanten Funktionen (fett hervorgehoben) sowie deren direkten Nachbarn im Assemblercode.}
 \label{tbl:assOffsetSub}
 \begin{tabular}{llll}
 Funktion         & Startadresse & Endadresse & Differenz (Größe der Funktion) \\
@@ -608,11 +608,11 @@ Sobald eine beliebige Cache-Line einer 4-KiB Page einem Eviction-Set zugeordnet 
 Daher genügt es die Cache-Line von b500 bis b53f einem Eviction-Set zuzuordnen, um ein Eviction-Set für die Cache-Line von b940 bis b97f zu finden, welche für die Überwachung der Shift-Operation genutzt werden kann.
 
 Um die Werte $Z_i$ zu bestimmen muss die Prime-and-Probe mindestens die gleiche Geschwindigkeit wie die Shift bzw. Subtraktionfunktion erreichen.
-In der Tabelle \ref{ShiftSubCycles} ist die durchschnittlichen der Zyklen für beide Funktion bei verschiedenen Schlüssellängen angegeben. Zum Vergleich wurde die Dauer der gesamten $mp_gcd$-Funktion hinzugefügt.
+In der Tabelle \ref{tbl:ShiftSubCycles} ist die durchschnittlichen der Zyklen für beide Funktion bei verschiedenen Schlüssellängen angegeben. Zum Vergleich wurde die Dauer der gesamten $mp_gcd$-Funktion hinzugefügt.
 Die Dauer der Shift- sowie Subtraktionoperation hängt linear von der Schlüssellänge ab, wobei dies für die Dauer der gesamten $mp_gcd$-Funktion nicht der Fall ist.
 
 \begin{table}[h]
-\label{ShiftSubCycles}
+\label{tbl:ShiftSubCycles}
 \caption{Darstellung des linearen Zusammenhangs der Taktzyklendauer einer Shift- und Subtraktionsfunktion zu der Bitlänge. Als Vergleich die Dauer der gesamten GCD-Funktion ohne linearen Zusammenhang zu der Bitlänge. }
 \begin{tabular}{llll}
 Bitlänge    & 2048 & 4096 & 8192 \\
@@ -622,9 +622,9 @@ $mp\_gcd$    & 424K & 1,2M & 3,73M
 \end{tabular}
 \end{table}
 
-Theoretisch wäre es möglich alleine durch die Zeitdifferenz zwischen zwei Subtraktionsfunktionen die Anzahl der Shiftoperationen zu bestimmen.
-Wenn jedoch eine Auflösung von unter 330 Taktzyklen bereit steht, spricht nichts dagegen ausschließlich die Shiftoperation zu überwachen und bei Lücken in der Aktivität eine Subtraktionoperation anzunehmen.
-Andersherum wird die Abschätzung sehr ungenau wenn nur eine Auflösung im Bereich der Subtraktionsoperationsdauer bereitsteht, da etwa der Unterschied zwischen einer und zwei zwischenzeitlichen Shiftoperationen fehleranfällig wird.
+Theoretisch wäre es möglich alleine durch die Zeitdifferenz zwischen zwei Subtraktionsfunktionen die Anzahl der Shift-Operationen zu bestimmen.
+Wenn jedoch eine Auflösung von unter 330 Taktzyklen bereit steht, spricht nichts dagegen ausschließlich die Shift-Operation zu überwachen und bei Lücken in der Aktivität eine Subtraktionoperation anzunehmen.
+Andersherum wird die Abschätzung sehr ungenau wenn nur eine Auflösung im Bereich der Subtraktions-Operationsdauer bereitsteht, da etwa der Unterschied zwischen einer und zwei zwischenzeitlichen Shift-Operationen fehleranfällig wird.
 
 Die Prime-and-Probe Implementation in Javascript/Webassembly erwies sich als zu langsam um aufeinanderfolgende Shift-Operationen zu unterscheiden.
 Wie in den Benchmarks in Kapitel 2 beschrieben dauert eine Prime-and-Probe Operation bei keiner Aktivität auf dem Cache-Set etwa 200ns was ca. 700 Taktzyklen entspricht.
@@ -642,52 +642,84 @@ Ein Äquivalent existiert jedoch weder in Javascript noch in Webassembly.
 
 Des Weiteren kann die Ausführung von Code im Browser nicht auf bestimmte CPU-Kerne fixiert werden. Hiermit sind Angriffe die einen Thread mit hoher Rechenlast auf den gleichen physischen Kern wie das Opferprogramm laufen lassen nicht ohne Weiteres möglich.
 
-Der oben beschrieben triviale Angriff kann optimiert werden um Performancereduktion zu erhöhen. Dafür wird die Prime-and-Probe Operation ohne Zeitmessung für eine bestimmte Zeit in einer 
+Der oben beschrieben triviale Angriff kann optimiert werden um Performancereduktion zu erhöhen. Dafür wird die Prime-and-Probe Operation ohne Zeitmessung für eine bestimmte Zeit in einer Endlosschleife, folgend Prime-Spam genannt, ausgeführt.
+
+Wie oben beschrieben erstreckt sich der relevante Code für die Shift- und Subtraktionoperation über mehrere Funktionen und Cache-Lines.
+Jeder dieser Cache-Line ist ein potenzielles Ziel für die Performancereduktion.
+Da ein Prime-Spam auf eine Cache-Line einen kompletten physischen Kern auslastet, sollte das Ziel sorgfältig gewählt sein.
+
+Um die Auswirkung vom Prime-Spam auf unterschiedliche Cache-Lines zu bewerten, wird die $mp\_gcd$-Funktion mit den Parametern $e=65535$ und $p-1$ ausgeführt.
+$p$ ist eine zufällige aber über den gesamten Benchmarkzeitraum feste Pseudoprimzahl, wobei RSA-2048 als Parameter gewählt wurde.
+Tabelle \ref{tbl:PerformanceDegShift} betrachtet alle Cache-Line, welche Code für die Shift-Operation beinhalten, wobei die Funktion $s\_mp\_clamp$ wie oben erwähnt auch in der Subtraktion-Operation verwendet wird.
+Funktionen sind nicht auf Cache-Line-Grenzen alignt, weshalb die erste und letzte Cache-Lines eines Funktionscodes auch Code für andere Funktionen beinhaltet.
 
 \begin{table}[h]
+\label{tbl:PerformanceDegShift}
+\caption{RSA-2048 Performance-Degradation-Attack mittels Prime-Spam auf Cache-Lines, welche Code der Shift-Operation beinhalten. 1. Spalte: Adressbereich der durch den Angriff verdrängten Cache-Line, 2. Spalte: Funktionen deren Code innerhalb des Adressbereichs der Cache-Line liegt, Spalte "Shift", "Subtraktion" und "$mp\_gcd"$: Mittlere Dauer der Shift-, Subtraktions-, bzw. $mp\_gcd$-Operation in Taktzyklen bei einem aktiven Angriff auf die in Spalte 1 spezifizierte Cache-Line. Die erste Zeile gibt die Referenzzeiten ohne aktiven Angriff an. }
 \begin{tabular}{lllll}
 Cache-Line  & Funktion(en) innerhalb der Cache-Line                                  & Shift & Subtraktion & mp\_gcd \\
-b800 - b83f & $s\_mp\_free, s\_mp\_clamp$                 & 541   & 608         & 549k    \\
-b840 - b87f & $s\_mp\_clamp, s\_mp\_exch$                 & 538   & 605         & 553k    \\
-bb40 - bb7f & $s\_mp\_mul\_2d, s\_mp\_rshd$               & 450   & 514         & 479k    \\
-bb80 - bbbf & $s\_mp\_rshd$                               & 451   & 542         & 486k    \\
-bbc0 - bbff & $s\_mp\_rshd$                               & 486   & 563         & 581k    \\
-bc00 - bc3f & $s\_mp\_rshd$                               & 520   & 563         & 597k    \\
-bc40 - bc7f & $s\_mp\_rshd, s\_mp\_div\_2, s\_mp\_mul\_2$ & 480   & 503         & 474k    \\
-be00 - be3f & $s\_mp\_mod\_2d, s\_mp\_div\_2d$            & 511   & 560         & 544k    \\
-be40 - be7f & $s\_mp\_div\_2d$                            & 503   & 549         & 536k    \\
-be80 - bebf & $s\_mp\_div\_2d$                            & 539   & 557         & 551k    \\
-bec0 - beff & $s\_mp\_div\_2d$                            & 537   & 547         & 552k    \\
-bf00 - bf3f & $s\_mp\_div\_2d, s\_mp\_norm$               & 470   & 506         & 485k   
+&Referenzzeiten ohne Prime-Spam                                         & 340   & 477         & 424k    \\
+b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 541   & 608         & 549k    \\
+b840$_{16}$ - b87f$_{16}$ & $s\_mp\_clamp, s\_mp\_exch$                 & 538   & 605         & 553k    \\
+bb40$_{16}$ - bb7f$_{16}$ & $s\_mp\_mul\_2d, s\_mp\_rshd$               & 450   & 514         & 479k    \\
+bb80$_{16}$ - bbbf$_{16}$ & $s\_mp\_rshd$                               & 451   & 542         & 486k    \\
+bbc0$_{16}$ - bbff$_{16}$ & $s\_mp\_rshd$                               & 486   & 563         & 581k    \\
+bc00$_{16}$ - bc3f$_{16}$ & $s\_mp\_rshd$                               & 520   & 563         & 597k    \\
+bc40$_{16}$ - bc7f$_{16}$ & $s\_mp\_rshd, s\_mp\_div\_2, s\_mp\_mul\_2$ & 480   & 503         & 474k    \\
+be00$_{16}$ - be3f$_{16}$ & $s\_mp\_mod\_2d, s\_mp\_div\_2d$            & 511   & 560         & 544k    \\
+be40$_{16}$ - be7f$_{16}$ & $s\_mp\_div\_2d$                            & 503   & 549         & 536k    \\
+be80$_{16}$ - bebf$_{16}$ & $s\_mp\_div\_2d$                            & 539   & 557         & 551k    \\
+bec0$_{16}$ - beff$_{16}$ & $s\_mp\_div\_2d$                            & 537   & 547         & 552k    \\
+bf00$_{16}$ - bf3f$_{16}$ & $s\_mp\_div\_2d, s\_mp\_norm$               & 470   & 506         & 485k   
 \end{tabular}
 \end{table}
 
+Die Referenzwerte stammen aus der Tabelle \ref{tbl:ShiftSubCycles}, welche unter dem selben Parameter $p-1$ entstanden sind.
+Am besten geeignet sind die beiden Cache-Lines der $s\_mp\_clamp$-Funktion, da sie nicht nur Spitze in der Verlangsamung der Shift-Operation sind, sondern zusätzlich noch die Subtraktions-Operation besser als alle anderen bremsen.
+
+Tabelle \ref{tbl:PerformanceDegSub} betrachtet alle Cache-Line, welche Code für die Subtraktions-Operation beinhalten, wobei Zeile 2 und 3 der Tabelle \ref{tbl:PerformanceDegShift} auch hier relevant sind.
+Anders als bei der Shift-Operation bremsen bei der Subtraktions-Operation die Cache-Lines der $mp\_sub$ signifikant besser als die Cache-Lines der $s\_mp\_clamp$-Funktion.
 
 \begin{table}[h]
+\label{tbl:PerformanceDegSub}
+\caption{RSA-2048 Performance-Degradation-Attack mittels Prime-Spam auf Cache-Lines, welche Code der Subtraktions-Operation beinhalten.
+Spalteninhalte analog zu Tabelle \ref{tbl:PerformanceDegShift}}
 \begin{tabular}{lllll}
 Cache-Line & Funktion                     & Shift & Subtraktion & mp\_gcd \\
-8440-847f  & $mp\_add, mp\_sub$             & 357   & 643         & 487k    \\
-8480-84bf  & $mp\_sub$                      & 359   & 684         & 538k    \\
-84c0-84ff  & $mp\_sub$                      & 362   & 681         & 531k    \\
-8500-853f  & $mp\_sub$                      & 357   & 700         & 538k    \\
-8540-857f  & $mp\_sub$                      & 362   & 683         & 534k    \\
-8580-85cf  & $mp\_sub$                      & 358   & 732         & 534k    \\
-85c0-85ff  & $mp\_sub, mp\_mul$            & 359   & 766         & 531k    \\
-ca40-ca7f  & $s\_mp\_sub, s\_mp\_sub\_3arg$ & 357   & 643         & 490k    \\
-ca80-cabf  & $s\_mp\_sub\_3arg$             & 359   & 644         & 494k    \\
-cac0-caff  & $s\_mp\_sub\_3arg$             & 357   & 675         & 534k    \\
-cb00-cb3f  & $s\_mp\_sub\_3arg$            & 358   & 669         & 536k    \\
-cb40-cb7f  & $s\_mp\_sub\_3arg$             & 357   & 663         & 533k    \\
-cb80-cbbf  & $s\_mp\_sub\_3arg$             & 359   & 676         & 546k    \\
-cbc0-cbff  & $s\_mp\_sub\_3arg$             & 356   & 663         & 535k    \\
-cc00-cc3f  & $s\_mp\_sub\_3arg, s\_mp\_mul$ & 352   & 571         & 483k   
+&Referenzzeiten ohne Prime-Spam                         & 340   & 477         & 424k    \\
+8440$_{16}$-847f$_{16}$  & $mp\_add, mp\_sub$             & 357   & 643         & 487k    \\
+8480$_{16}$-84bf$_{16}$  & $mp\_sub$                      & 359   & 684         & 538k    \\
+84c0$_{16}$-84ff$_{16}$  & $mp\_sub$                      & 362   & 681         & 531k    \\
+8500$_{16}$-853f$_{16}$  & $mp\_sub$                      & 357   & 700         & 538k    \\
+8540$_{16}$-857f$_{16}$  & $mp\_sub$                      & 362   & 683         & 534k    \\
+8580$_{16}$-85cf$_{16}$  & $mp\_sub$                      & 358   & 732         & 534k    \\
+85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 359   & 766         & 531k    \\
+ca40$_{16}$-ca7f$_{16}$  & $s\_mp\_sub, s\_mp\_sub\_3arg$ & 357   & 643         & 490k    \\
+ca80$_{16}$-cabf$_{16}$  & $s\_mp\_sub\_3arg$             & 359   & 644         & 494k    \\
+cac0$_{16}$-caff$_{16}$  & $s\_mp\_sub\_3arg$             & 357   & 675         & 534k    \\
+cb00$_{16}$-cb3f$_{16}$  & $s\_mp\_sub\_3arg$            & 358   & 669         & 536k    \\
+cb40$_{16}$-cb7f$_{16}$  & $s\_mp\_sub\_3arg$             & 357   & 663         & 533k    \\
+cb80$_{16}$-cbbf$_{16}$  & $s\_mp\_sub\_3arg$             & 359   & 676         & 546k    \\
+cbc0$_{16}$-cbff$_{16}$  & $s\_mp\_sub\_3arg$             & 356   & 663         & 535k    \\
+cc00$_{16}$-cc3f$_{16}$  & $s\_mp\_sub\_3arg, s\_mp\_mul$ & 352   & 571         & 483k   
 \end{tabular}
 \end{table}
 
 
+Zusammenfassend kann die Shift-Operation bzw. Subtraktions-Operation durch einen Angriff maximal von 340 auf 541 Taktzyklen bzw. von 477 auf 766 gebremst werden, welches einer Verlangsamung von \~59\% respektive \~61\% entspricht.
+Tests haben ergeben, dass sich bei RSA-4096 und RSA-8192 die gleichen prozentualen Differenzen erzielen lassen.
 
-TODO slowdown Techniken und benchmarks auf verschiedene codeteile beschreiben\\
-TODO wie schnell ist javascript, eventuell in Kapitel 2 näher beschreiben
+Die beiden Cache-Lines der $s\_mp\_clamp$-Funktion sind dabei zu bevorzugen, da sie beide Operationen gleichzeitig gut bis sehr gut bremsen.
+Des Weiteren sollte der Foksu auf das Bremsen der Shift-Operation gelegt werden, da diese zum einen schneller ist und die Unterscheidung einzelner Shift-Operation für Rekonstruktion der Primzahl wesentlich ist.
+Zum anderen Bremsen viele der Cache-Lines mit Shift-Operationscode auch die Subtraktion-Funktion messbar, wobei dieses Phänomen andersherum nicht beobachtet werden kann.
+TODO warum??
+
+TODO mini bench einfügen
+
+TODO multithread bench
+
+%TODO slowdown Techniken und benchmarks auf verschiedene codeteile beschreiben\\
+%TODO wie schnell ist javascript, eventuell in Kapitel 2 näher beschreiben
 
 
 %TODO beschreiben warum der angriff so nicht in wasm/js möglich ist, warum er in c möglich ist, clflush vs prime spam usw.

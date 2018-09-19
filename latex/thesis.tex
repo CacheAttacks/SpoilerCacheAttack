@@ -80,6 +80,14 @@
 \usepackage{environ}
 \usepackage{minted}
 
+\usepackage[skip=10pt]{caption}
+
+%white on black
+\usepackage{xcolor}
+\usepackage{pagecolor}
+\pagecolor{black}
+\color{brown}
+
 %set size of algorithm env
 \SetAlFnt{\small}
 
@@ -205,7 +213,7 @@
   % The pages in the front are numbered with roman numerals.
   \frontmatter
   \include{front/titlepage}
-  %\include{front/abstract}
+  \include{front/abstract}
   %\include{front/declaration}
   %\include{front/acknowledgements}
   \tableofcontents
@@ -216,7 +224,7 @@
   \include{basics/basics}
   \include{methods/methods}
   \include{results/results}
-  %\include{discussion/discussion}
+  \include{discussion/discussion}
   %\include{conclusions/conclusions}
   
   % The appendix chapters are labeled using the latin alphabet.
