@@ -7,7 +7,7 @@
 Wie in Abschnitt \ref{} beschrieben, unterliegen die Laufzeiten der Eviction sind
 
 
-\section{Erweiterung auf mehrere Threads}
+\section{Warum viele Kerne sinnvoll sind}
 Da präzise Timer zurzeit mittels eines Shared-Array-Buffer erzeugt werden müssen, benötigt die Angreiferin mindestens drei virtuelle Kerne um ein Angriff auszuführen. Einen für die Iteration der Timer-Variable, einen für den Prime-and-Probe Angriffscode und einen auf dem das Opferprogramm läuft.
 
 Theoretisch reichen deshalb bereits Prozessoren mit zwei physischen und vier virtuellen Kernen wie sie noch vielfach von Intel im Umlauf sind. Bei zwei physischen Kernen wird der Timer-Thread jedoch zeitweise exklusiv auf einen physischen Kern rechnen und sich zeitweise einen Kern mit einem der anderen Threads teilen.
@@ -36,10 +36,28 @@ Sobald die Browserhersteller die Auflösung von $performance.now()$ wieder in de
 
 Wenn das angegriffene Endgerät $n$ virtuelle Kerne besitzt können also $n-3$ für die Verlangsamung des Opferprogramms eingesetzt werden.
 
-Ideen: 
-Ist die Eviction-Set-Search schnell genug für praktische Angriffe?\\
-Probleme mit verwendeten Timer erörtern (sprunghaft, anpassung der erwarteten werte während laufzeit fehlerhaft)\\
+\section{Viel hilft viel?}
 
+\section{Warum OpenPGP.js nicht anfällig ist}
 
-Vergleiche Bremsverhalten mit clflush in native c code\\
-Schätze ab wann ein Angriff auf mp_gcd möglich wäre (evaluerien mit delay parameter)\\
+\section{Wie viel schneller muss er sein?}
+
+\section{Speicherallokation: Wie hilfsbereit ist das Betriebssystem?}
+
+Wenn der Speicher wenig fragmentiert ist, etwa nach dem Booten und große zusammenhängende physischer Speicherbereiche frei ist, scheint Ubuntu 16.04.5 LTS dahin zu tendieren das $evictionBuffer$-Array in diese Bereiche zu mappen.
+Angenommen der komplette evictionBuffer wird in einen zusammenhängeden physischen Speicherbereich gemappt. Dann ist zu erwarten, dass nach jeweils $2^8$ Speicherblöcken eine neue colliding address gefunden wird, da $2^8$ Speicherblöcke genau $2^20$ Bytes belegen und bei einer colliding address die letzten 20 Bit identisch sind.
+
+Die ersten Versuche fanden statt nachdem der Testrechner schon über 30 Minuten in Betrieb war und viele Tests und Programme ausgeführt wurden.
+Wenn sich unter diesen Bedingungen der Abstand der ersten 10 Speicherblöcke zueinander angeschaut wird, welche eine colliding address zum Speicherblock 0 bilden, zeigen sich Abstandsfolgen wie 654, 938, 1438, 224, 372, 543, 464, 84, 38, 134 oder 170, 236, 573, 66, 452, 124, 206, 228, 1026, 62.
+Diese scheinen auch nach näherer Betrachtung rein willkürlich um den Erwartungswert 256 zu schwanken.
+
+Interessant werden die Folgen wenn der Testrechner neu gestartet wird und der physische Adressbereich somit wenig fragmentiert ist.
+Dann können Abstandsfolgen wie 256, 256, 256, 353, 256, 256, 258, 254, 256, 188 oder 256, 256, 256, 256, 256, 256, 271, 256, 256, 256 beobachtet werden.
+Wie bei den gegebenen Beispielen ersichtlich ist, sind vereinzelt von 256 abweichende Abstände zu beobachten, die scheinbar nicht aus einem Fehler bei der colliding address Erkennung resultieren.
+
+Denn angenommen die Abweichungen stammen aus vereinzelten Fehlern bei der Erkennung, dann sollten Abstandsfolgen wie 256, 353, 159, 256 entstehen mit $353+159=2*256$.
+Die beobachteten Folgen jedoch weisen nach der vereinzelten Abweichung häufig wieder den Abstand 256 auf, sodass die Abweichung kein Fehler in der Erkennung zu sein scheint.
+Ein weiteres Indiz dafür liefert die erfolgreiche Verifikation, dass der Speicherblock mit dem abweichenden Abstand später Teil eines Eviction-Sets wird.
+
+Die längste ununterbrochene Folge mit dem optimalen Abstand 256 war bei allen Tests immer auf den Wert 10 beschränkt, wobei etwa 60-80\% aller Abstände den optimalen Wert 256 aufweisen.
+Somit scheint die Größe zusammenhängender physischer Speicherbereiche aus dem Autor nicht bekannten Gründen begrenzt zu sein.

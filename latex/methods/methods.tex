@@ -101,7 +101,7 @@ Die Auflösung dieser Methode hängt also von der Geschwindigkeit der Iteration 
 
 In Versuchen mit verschiedenen Webbrowsern und Hardwarekonfigurationen zeigte sich, dass die Auflösung mindestens im einstelligen Nanosekundenbreich liegt und somit ausreichend genau ist, um den Unterschied zwischen einem Cache-Miss und Hit festzustellen \ref{tbl:times_res}.
 
-Um die Auflösung zu bestimmen wird die performance.now()-Funktion zur Hilfe genommen \ref{alg_list:getResolutionNS}. Die Funktion wait_edge() ruft zuerst performance.now() für den Startwert auf und wartet anschließend in einer Endlosschleife bis performance.now() einen höheren Wert als den Startwert zurückgibt. 
+Um die Auflösung zu bestimmen wird die Javascriptfunktion $performance.now()$ zur Hilfe genommen \ref{alg_list:getResolutionNS}. Die Funktion wait_edge() ruft zuerst performance.now() für den Startwert auf und wartet anschließend in einer Endlosschleife bis performance.now() einen höheren Wert als den Startwert zurückgibt. 
 Dieser höhere Wert wird ebenso wie der aktuelle Stand der Zählvariable gespeichert. 
 Dann folgt ein erneuter Aufruf von wait_edge(), wobei bei zurückkehren wieder der letzte performance.now()-Wert sowie der Wert der Zählvariable gespeichert wird.
 Für die performance.now()-Funktion ist die Auflösung bekannt, weshalb aus den Differenzen der performance.now()-Werte und der Werte der Zählvariable eine Auflösung für den Timer errechnet werden kann.
@@ -118,7 +118,7 @@ Ohne diese Änderungen sorgt der Timer in Firefox für Probleme in der Zeitmessu
 \begin{table}[h]
 \caption{Zeitauflösung des SharedArrayBuffer-Zählers mit verschiedenen Browsern auf Ubuntu 16.04.5 LTS (GNU/Linux 4.4.0-131-generic x86_64) mit einem i7-4770. Wertebereich der Uint32 Zählvariable wird in der linken Spalte ausgeschöpft, in der rechten hingegen wird nur bis $2^{31}$ gezählt.}
 \begin{tabular}{lllll}
-                           & Zählen bis $2^{32}$ & Zählen bis $2^{31}-1$ &  &  \\
+                           & Zählen bis $2^{32}$ & Zählen bis $2^{31}-1$ &  &  \\[10pt]
 Chromium 68.0.3440.106     & $\sim$2,7ns                      & $\sim$3ns                        &  &  \\
 Google Chrome 69.0.3497.81 & $\sim$2,7ns                      & $\sim$3ns                        &  &  \\
 Firefox 63.0b4             & $\sim$5,1ns                      & $\sim$2,2ns                      &  & 
@@ -233,6 +233,7 @@ Denn wenn ein fixes Eviction-Set mit einer Wahrscheinlichkeit von $x$ Prozent ge
 TODO verschiedene reale bechmarks einfügen \todo{ja, das finde ich auch. dringend.}
 
 \subsection{Eviction-Set Suchalgorithmus}
+\label{evictionSetSearchAlgo}
 
 Im Folgenden soll der Algorithmus beschrieben werden, welcher die Adressen im Pool verschiedenen Eviction-Sets zuordnet.
 Der Algorithmus ist in der Lage, Adressen Cache-Sets zuzuordnen, ohne Näheres über die CPU (L3-Cache Größe usw.) und die Adressbits 12 bis 63 zu wissen.
@@ -368,13 +369,70 @@ Heutige Prozessoren wie etwa die Intel Core Reihe führen auch Store- und Load-B
 Die Techniken für eine Speicher-Disambiguierung erkennen echte Abhängigkeiten zwischen Speicheroperationen während Ausführung. 
 Außerdem erlauben die Techniken der CPU zu einem vorherigen Zustand zurückzukehren sobald eine Abhängigkeit verletzt wurde.
 Die Möglichkeit Load- und Store-Befehle Out-of-Order auszuführen, sorgt für eine erhöhte Parallelität auf Instruktionsebene und eine damit verbesserte Single-Thread-Performance.
+Grafik \ref{fig:MemoryDisambiguation} zeigt ein Beispiel für die Speicher-Disambiguierung. 
 
-\begin{figure}[h]
 \label{fig:MemoryDisambiguation}
+\begin{figure}[h]
 \centering
 \includegraphics[width=0.6\textwidth]{methods/memory_disambiguation.pdf}
-\caption{Beispiel für eine Speicher-Disambiguierung. Die Nummern in den Kreisen geben die chronologische Ausführungsreihenfolge an und der weiße Pfeil am linken Rand die Reihenfolge im Quellcode. Load 2 kann nicht früher ausgeführt werden, da er von Store 1 abhängig ist. Load 4 hingegen ist von den anderen Operationen unabhängig und kann daher vor Store 1 und Store 3 ausgeführt werden. Durch diese vorgezogene Ausführung können Instruktionen die den Wert von X benötigen im Folgenden von einer geringen Zugriffslatenz proftieren. \cite{CacheAssoWiki}.}
+\caption{Beispiel für eine Speicher-Disambiguierung. Die Nummern in den Kreisen geben die chronologische Ausführungsreihenfolge an und der weiße Pfeil am linken Rand die Reihenfolge im Quellcode. Load 2 kann nicht früher ausgeführt werden, da er von Store 1 abhängig ist. Load 4 hingegen ist von den anderen Operationen unabhängig und kann daher vor Store 1 und Store 3 ausgeführt werden. Durch diese vorgezogene Ausführung können Instruktionen die den Wert von X benötigen im Folgenden von einer geringen Zugriffslatenz profitieren. \cite{CacheAssoWiki}.}
 \end{figure}
+
+Die Forscher TODO sind auf ein Verhalten bei Intel-Prozessoren gestoßen, welches es ermöglicht Adressen zu finden deren 20 letzten physischen Bits gleich sind, ohne auf Techniken wie Huge-Pages zugreifen zu müssen.
+Solche Adressen seinen folgend \textit{colliding addresses} genannt.
+Die Idee ist den Store-Buffer in einer Schleife mit einer Vielzahl von Schreibbefehlen zu fluten und direkt danach eine Zeitmessung für das Lesen einer Adresse $x$ auszuführen.
+
+Wenn einer der zuletzt hinzugefügten Schreibbefehle auf eine Adresse schreibt deren letzten 20 physischen Adressbits identisch mit denen der Read-Adresse $x$ sind, dann lässt sich ein Ausschlag bei der Leseoperation für $x$ feststellen.
+
+Pseudocode \ref{alg:storeForward} beschreibt das Suchverfahren um colliding addresses zu finden.
+Zuerst wird ein großer Speicherbereich alloziert, welcher ein vielfaches der Page-Größe von 4 KiB ist.
+Wie im Abschnitt \ref{evictionSetSearchAlgo} wird hier mittels 4KiB-Speicherblöcken gesucht, da so die letzten 12 Bits der Adresse mit Sicherheit identisch sind.
+Dies beschleunigt die Suche um den Faktor 4096, da dann im Mittel etwa eine von $2^8$ statt eine von $2^{20}$ Adressen eine colliding address ist.
+Im Pseudocode werden colliding addresses zu $evictionBuffer[0]$ gesucht.
+Hierzu werden iterativ (Zeile 3) Speicherblöcke aus dem Pool auf diese Eigenschaft hin untersucht.
+Wie oben beschrieben muss der Store-Buffer mit Schreibbefehlen geflutet werden, wobei $WINDOW$ die Anzahl ebendieser angibt.
+Zeile 6 und 7 sorgen für die Schreibbefehle auf die Speicherblöcke $p + WINDOW - 1$ bis $p$ des Pools, sodass der Schreibzugriff auf den aktuell zu testenden Block $p$ als letztes erfolgt.
+Die Zeilen 8 bis 10 messen die Zeit für einen Lesezugriff auf die Adresse $evictionBuffer[0]$ bzw. Speicherblock 0.
+
+Der Testvorgang für einen Speicherblock $p$ wird mehrfach wiederholt (Zeile 5) und die Zugriffszeit auf $evictionBuffer[0]$ gemittelt (Zeile 11) um anders begründete Ausreißer bei der Zugriffszeit  auszuschließen. 
+
+Grafik \ref{fig:colliding_addresses_js_measurement} zeigt das typische Verhalten der Zugriffszeiten auf $evictionBuffer[0]$, stellt also $measurementBuffer$ visuell dar.
+
+
+
+
+
+
+\begin{algorithm}[h]
+\DontPrintSemicolon
+\caption{Pseudo-C-Code für das Finden von colliding addresses}
+\label{alg:storeForward}
+
+\Fn{$FindCollidingAddresses()$}{
+    evictionBuffer = calloc(1, PAGE_SIZE * PAGE_COUNT)\;
+    
+    \For{p from WINDOW to PAGE_COUNT-1}{
+        total = 0\;
+        \ForEach{r in $[0 \twodots Rounds]$}{
+            \For{i from WINDOW-1 to 0}{
+                evictionBuffer[(p-i) * PAGE_SIZE] = 0\;
+            }
+            timeStamp = rdtscp()\;
+            read evictionBuffer[0]\;
+            total += rdtscp() - timeStamp\;
+        }
+        measurementBuffer[p] = total / ROUNDS\;
+    }
+}
+\end{algorithm}
+
+Tests haben ergeben, dass mit $WINDOW=64$ colliding addresses zuverlässig durch Peaks bei der Zeitmessung der Leseopertion für $x$ hervorstechen.
+Ein höher Wert für $WINDOW$ bringt keine Vorteile bei der Identifizierung der colliding addressses, erhöht aber die Laufzeit der Suche.
+Andersherum verringern kleinere Werte für $WINDOW$ die Suchlaufzeit, aber sorgen auch für kleinere Peaks der colliding addresses bei der Zeitmessung, sodass eine Identifikation schwieriger wird.
+Da Identifizierung unter Javascript bereits gegenüber C erschwert ist, existiert kein Spielraum um den Wert von $WINDOW$ zu abzusenken. TODO bench that 
+
+
+
 
 %\newtextend
 
@@ -386,7 +444,7 @@ Die Möglichkeit Load- und Store-Befehle Out-of-Order auszuführen, sorgt für e
 \begin{scaletikzpicturetowidth}{\textwidth}
 \input{methods/storeForward_all_valid.tex}
 \end{scaletikzpicturetowidth}
-\caption{Erkennung von colliding addresses unter Javascript. Punkte geben die Latenz für eine Leseoperation auf eine fixe Adresse an, nachdem Schreiboperationen auf jeden der 64 Blöcke im aktuellen Fenster durchgeführt wurden.}
+\caption{Erkennung von colliding addresses unter Javascript. Punkte geben die Latenz für eine Leseoperation auf eine fixe Adresse an, nachdem Schreiboperationen auf jeden der 64 Blöcke im aktuellen Fenster durchgeführt wurden. Die drei dickeren Punkte stellen vom Algorithmus identifizierte colliding addresses dar. Es wurde verifiziert, dass diese drei Adressen Teil eines späteren Eviction-Set geworden sind und somit die Identifikation seitens des Algorithmus korrekt war.}
 \end{figure}
 
 

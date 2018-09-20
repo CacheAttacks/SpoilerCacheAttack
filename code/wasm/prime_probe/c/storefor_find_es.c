@@ -199,10 +199,24 @@ void storefor_write(){
 int try_to_create_es(uint32_t *address_arr, uint32_t number_of_storefor_add){
   
   vlist_t lines = vl_new();
+  int opt_counter = 0, max_opt=0, opt_sum =0;
   for(int i=0; i<number_of_storefor_add; i++){
-    //printf_ex("%i ", address_arr[i]);
+    if(i>1){
+      printf_ex("%i ", (address_arr[i]-address_arr[i-1])/4096);
+      if((address_arr[i]-address_arr[i-1])/4096 == 256){
+        opt_counter++;
+        opt_sum++;
+      }
+      else { 
+        if(opt_counter > max_opt){
+          max_opt = opt_counter;
+        }
+        opt_counter = 0;
+      }
+    }
     vl_push(lines, (void*)(address_arr[i]+2048));
   }
+  printf_ex("max_opt:%i, opt_sum:%i", max_opt, opt_sum);
   //printf_ex("\n");
   //vl_free(lines);
 

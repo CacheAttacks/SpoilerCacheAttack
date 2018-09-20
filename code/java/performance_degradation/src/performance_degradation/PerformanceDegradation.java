@@ -6,6 +6,12 @@ import java.util.concurrent.atomic.AtomicIntegerArray;
 
 public class PerformanceDegradation {
 	public static void main(String[] args) {
+		//ownTest();
+		MyService myService = new MyService();
+		myService.lock();
+	}
+	
+	public static void ownTest() {
 		int arr_length = 1024*100;
 		AtomicIntegerArray arr = new AtomicIntegerArray(arr_length);
 		Map<Integer, Long> m1 = new HashMap<Integer, Long>();

@@ -537,7 +537,7 @@ Welche Adressen die Funktionen im Assemblercode haben, ist in Tabelle \ref{tbl:a
 \label{tbl:assOffsetShift}
 \caption{Größe, Start- und Endadresse der für die Shift-Operation relevanten Funktionen (fett hervorgehoben) sowie deren direkten Nachbarn im Assemblercode.}
 \begin{tabular}{llll}
-Funktion       & Startadresse & Endadresse & Differenz (Größe der Funktion) \\
+Funktion       & Startadresse & Endadresse & Differenz (Größe der Funktion) \\[10pt]
 s\_mp\_alloc   & b7d0$_{16}$        & b7f4$_{16}$      & 25$_{16}$   \\
 s\_mp\_free    & b7f5$_{16}$        & b815$_{16}$      & 21$_{16}$   \\
 \textbf{s\_mp\_clamp}   & b816$_{16}$        & b85e$_{16}$      & 49$_{16}$   \\
@@ -587,7 +587,7 @@ Welche Adressen die Funktionen im Assemblercode haben, ist in Tabelle \ref{tbl:a
 \caption{Größe, Start- und Endadresse der für die Subtraktions-Operation relevanten Funktionen (fett hervorgehoben) sowie deren direkten Nachbarn im Assemblercode.}
 \label{tbl:assOffsetSub}
 \begin{tabular}{llll}
-Funktion         & Startadresse & Endadresse & Differenz (Größe der Funktion) \\
+Funktion         & Startadresse & Endadresse & Differenz (Größe der Funktion) \\[10pt]
 mp\_add & 8377$_{16}$ & 846f$_{16}$ & f8$_{16}$\\
 \textbf{mp\_sub} & 8470$_{16}$ & 85c3$_{16}$ & 153$_{16}$ \\
 mp\_mul & 85c4$_{16}$ & 894b$_{16}$ & 387$_{16}$ \\
@@ -657,7 +657,7 @@ Funktionen sind nicht auf Cache-Line-Grenzen alignt, weshalb die erste und letzt
 \label{tbl:PerformanceDegShift}
 \caption{RSA-2048 Performance-Degradation-Attack mittels Prime-Spam auf Cache-Lines, welche Code der Shift-Operation beinhalten. 1. Spalte: Adressbereich der durch den Angriff verdrängten Cache-Line, 2. Spalte: Funktionen deren Code innerhalb des Adressbereichs der Cache-Line liegt, Spalte "Shift", "Subtraktion" und "$mp\_gcd"$: Mittlere Dauer der Shift-, Subtraktions-, bzw. $mp\_gcd$-Operation in Taktzyklen bei einem aktiven Angriff auf die in Spalte 1 spezifizierte Cache-Line. Die erste Zeile gibt die Referenzzeiten ohne aktiven Angriff an. }
 \begin{tabular}{lllll}
-Cache-Line  & Funktion(en) innerhalb der Cache-Line                                  & Shift & Subtraktion & mp\_gcd \\
+Cache-Line  & Funktion(en) innerhalb der Cache-Line                                  & Shift & Subtraktion & mp\_gcd \\[10pt]
 &Referenzzeiten ohne Prime-Spam                                         & 340   & 477         & 424k    \\
 b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 541   & 608         & 549k    \\
 b840$_{16}$ - b87f$_{16}$ & $s\_mp\_clamp, s\_mp\_exch$                 & 538   & 605         & 553k    \\
@@ -685,7 +685,7 @@ Anders als bei der Shift-Operation bremsen bei der Subtraktions-Operation die Ca
 \caption{RSA-2048 Performance-Degradation-Attack mittels Prime-Spam auf Cache-Lines, welche Code der Subtraktions-Operation beinhalten.
 Spalteninhalte analog zu Tabelle \ref{tbl:PerformanceDegShift}}
 \begin{tabular}{lllll}
-Cache-Line & Funktion                     & Shift & Subtraktion & mp\_gcd \\
+Cache-Line & Funktion                     & Shift & Subtraktion & mp\_gcd \\[10pt]
 &Referenzzeiten ohne Prime-Spam                         & 340   & 477         & 424k    \\
 8440$_{16}$-847f$_{16}$  & $mp\_add, mp\_sub$             & 357   & 643         & 487k    \\
 8480$_{16}$-84bf$_{16}$  & $mp\_sub$                      & 359   & 684         & 538k    \\
