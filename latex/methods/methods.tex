@@ -365,19 +365,6 @@ Wir wissen jedoch, dass die Größe des Eviction-Set der Assoziativität des L3-
 
 \section{Verbesserte Eviction-Set Suche mittels Store-to-load-forwarding}
 
-Heutige Prozessoren wie etwa die Intel Core Reihe führen auch Store- und Load-Befehle Out-of-Order aus und stehen damit vor der Aufgabe, auf Datenabhängigkeiten zu reagieren.
-Die Techniken für eine Speicher-Disambiguierung erkennen echte Abhängigkeiten zwischen Speicheroperationen während Ausführung. 
-Außerdem erlauben die Techniken der CPU zu einem vorherigen Zustand zurückzukehren sobald eine Abhängigkeit verletzt wurde.
-Die Möglichkeit Load- und Store-Befehle Out-of-Order auszuführen, sorgt für eine erhöhte Parallelität auf Instruktionsebene und eine damit verbesserte Single-Thread-Performance.
-Grafik \ref{fig:MemoryDisambiguation} zeigt ein Beispiel für die Speicher-Disambiguierung. 
-
-\label{fig:MemoryDisambiguation}
-\begin{figure}[h]
-\centering
-\includegraphics[width=0.6\textwidth]{methods/memory_disambiguation.pdf}
-\caption{Beispiel für eine Speicher-Disambiguierung. Die Nummern in den Kreisen geben die chronologische Ausführungsreihenfolge an und der weiße Pfeil am linken Rand die Reihenfolge im Quellcode. Load 2 kann nicht früher ausgeführt werden, da er von Store 1 abhängig ist. Load 4 hingegen ist von den anderen Operationen unabhängig und kann daher vor Store 1 und Store 3 ausgeführt werden. Durch diese vorgezogene Ausführung können Instruktionen die den Wert von X benötigen im Folgenden von einer geringen Zugriffslatenz profitieren. \cite{CacheAssoWiki}.}
-\end{figure}
-
 Die Forscher TODO sind auf ein Verhalten bei Intel-Prozessoren gestoßen, welches es ermöglicht Adressen zu finden deren 20 letzten physischen Bits gleich sind, ohne auf Techniken wie Huge-Pages zugreifen zu müssen.
 Solche Adressen seinen folgend \textit{colliding addresses} genannt.
 Die Idee ist den Store-Buffer in einer Schleife mit einer Vielzahl von Schreibbefehlen zu fluten und direkt danach eine Zeitmessung für das Lesen einer Adresse $x$ auszuführen.

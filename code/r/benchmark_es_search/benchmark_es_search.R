@@ -38,7 +38,7 @@ for(file in files){
   data_df <- rbind(data_df, filter_data_from_file(file))
 }
 
-cut_data_df <- data_df[data_df[,3]<200,]
+cut_data_df <- data_df[data_df[,3]<20000,]
 cut_data_df <- data_df
 mean_data_df <- aggregate(cut_data_df[, 2:3], list(cut_data_df$memBlocks), mean)
 colnames(mean_data_df) <- c("blocks","mean_es","mean_time")

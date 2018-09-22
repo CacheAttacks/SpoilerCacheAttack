@@ -1,19 +1,24 @@
 \chapter{Grundlagen}
 \label{chapter:basics}
 
-Im Folgenden sollen Verfahren und Techniken erläutert werden, welche für das Verständnis der späteren Kapitel essenziell sind. \todo[size=\footnotesize]{Hier sollte mehr stehen als ein Satz, ergibt sich vielleicht später. Hier gehört die Erklärung des Themas hin sowie eine Bestimmung der Rewlevanz des Themas für die Forschung.} 
+Im Folgenden sollen Verfahren und Techniken erläutert werden, welche für das Verständnis der späteren Kapitel essenziell sind.
 
+\todo[size=\footnotesize]{Hier sollte mehr stehen als ein Satz, ergibt sich vielleicht später. Hier gehört die Erklärung des Themas hin sowie eine Bestimmung der Rewlevanz des Themas für die Forschung.} 
 %\todo[size=\footnotesize]{Generell: Du tendierst zu verschachtelten und langen Sätzen. Versuche, Simplere Sätze mit höchstens einem Komma und ohne Zwischeneinschübe zu verwenden. }
+\section{Virtuelle Speicherverwaltung}
 
-\section{Virtuelle Speicherverwaltung\todo[size=\footnotesize]{Ein Quelle in Absatz einfügen?}}
+%Quelle von Tannenbaum eingefügt
+%\todo[size=\footnotesize]{Ein Quelle in Absatz einfügen?}
 
-Virtuelle Speicherverwaltung stellt eine Abstraktion (???) für die vorhandenen physischen Speichermedien wie etwa den Hauptspeicher oder die Festplatte bereit \cite{tanenbaumVirtualMemory}.
+Virtuelle Speicherverwaltung stellt eine Abstraktion für die vorhandenen physischen Speichermedien wie etwa den Hauptspeicher oder die Festplatte bereit \cite{tanenbaumVirtualMemory}.
 Das Betriebssystem übersetzt virtuelle Adressen, welche von Prozessen genutzt werden, mit Hilfe der Hardware in physische Adressen. 
 Jedem Prozess steht der gleiche virtuelle Adressraum zur Verfügung, wobei das Betriebssystem dafür Sorge trägt, dass für jeden Prozess die richtige Zuordnung von virtueller zu physischer Adresse sichergestellt wird.
 Ein Vorteil der virtuellen Speicherverwaltung ist eine erhöhte Sicherheit durch die Speicherisolierung aller Prozesse, da ein Prozess keinen Zugriff auf das Adressmapping eines anderen hat.
 So kann eine fehlerhafte Schreiboperation eines Prozesses keinen Fehler in anderen Prozessen verursachen, da gleiche virtuelle Adressen vom Betriebssystem auf unterschiedliche physische Adressen abgebildet werden.
 %Des Weiteren kann ein Prozess mehr Hauptspeicher nutzen als physisch vorhanden ist, indem Daten vom Betriebssystem auf andere Speichermedien wie die Festplatte ausgelagert werden. Hiermit werden beispielsweise Anwendungsentwickler entlastet, da sie ihre Software nicht für Systeme mit weniger Hauptspeicher gesondert anpassen müssen. 
-\todo[size=\footnotesize]{ggf. Speicher-Deduplizierung, wo du dann plötzlich doch das gleiche Mapping hast.}
+
+%Speicher-Deduplizierung wird in der Arbeit nicht weiter erwähnt, deswegen würde ich es hier auch nicht beschreiben.
+%\todo[size=\footnotesize]{ggf. Speicher-Deduplizierung, wo du dann plötzlich doch das gleiche Mapping hast. }
 
 \section{Caches}
 
@@ -47,11 +52,11 @@ Bei den Nachfolger- Generationen Haswell und Broadwell stellten die Autoren fest
 
 Sofern die Auswahl des Cache-Eintrags für die Daten einer bestimmten Hauptspeicheradresse keinerlei Beschränkungen unterliegt, wird von einem voll-assoziativen Cache gesprochen. 
 Das andere Extrem wäre ein einfach-assoziativer Cache beziehungsweise eine direkte Abbildung, wobei die Adresse des Hauptspeichers, von der die Daten stammen, den zu wählenden Cache-Eintrag eindeutig festlegt.
-Der Mittelweg ist die n-Wege-Assoziativität, bei der die Daten nur an n Cache-Einträgen liegen können (siehe auch Abb.\ref{fig:CacheAsso}).
+Der Mittelweg ist die n-Wege-Assoziativität, bei der die Daten nur an n Cache-Einträgen liegen können (siehe auch Abb. \ref{fig:CacheAsso}).
 
 %\todo{Tabellen haben Überschriften, Abbildungen haben Unterschriften. Bitte für alle Abbildungen unter das Bild schieben.}
-\begin{figure}[h]
 \label{fig:CacheAsso}
+\begin{figure}[h]
 \centering
 \includegraphics[width=0.8\textwidth]{basics/Cache_Asso.png}
 \caption{Links ist ein direkt abgebildeter Cache zu sehen, bei dem die Hauptspeicheradresse den Cache-Index vollumfänglich festlegt. Rechts ist ein 2-Wege assoziativer Cache zu sehen bei dem etwa die Hauptspeicheradresse 0 sowohl auf \textit{Index 0, Way 0} als auch auf \textit{Index 0, Way 1} im Cache abgebildet werden kann \cite{CacheAssoWiki}.}
@@ -133,6 +138,9 @@ Ein typisches Beispiel hierfür sind geteilte Bibliotheken, zum Beispiel .so Dat
 
 \subsection{Prime and Probe}
 
+Ein erfolgreicher Prime and Probe Angriff auf den L3-Cache wurde 2015 von Liu et al. veröffentlicht \cite{LiuPrimeAndProbe}.
+Er unterscheidet sich von Prime and Probe Angriffen auf niedrigere Cache-Level durch die aufwendigere Eviction-Set Suche.
+
 Ein \textit{Eviction-Set} sei eine Menge Adressen, welche einen Cache-Eintrag aus einem Cache verdrängen kann. D.h. ein Eviction-Set, welches einen Eintrag aus dem L3-Cache löscht, würde den gleichen Zweck wie der \textit {clflush}-Assemblerbefehl im Flush-and-Reload-Angriff erfüllen. 
 Um einen Eintrag aus dem Cache zu verdrängen, müssen mehrere Adressen der Daten aus dem Eviction-Set von der CPU auf das gleiche Cache-Set wie der zu verdrängende Eintrag abgebildet werden, so dass die Größe eines Eviction-Sets mindestens die Assoziativität des Caches erreichen muss.
 
@@ -177,8 +185,8 @@ So ist aber in der Regel das Mapping der virtuellen und physischen Adressen bei 
 
 Beide eben beschrieben Angriffsmethoden setzen voraus, dass die Angreiferin Laufzeitunterschiede zwischen dem Ladevorgang aus dem Cache und dem Hauptspeicher zuverlässig unterscheiden kann. Beim AIDA64-Benchmark mit einem aktuellen Intel i7-8700K ist die L3-Cache-Latenz im Mittel bei 12 ns, wobei gepaart mit DDR4-3200 CL16 RAM die Hauptspeicherlatenz im Mittel 49 ns beträgt \cite{i78700kLatency}. Somit ist eine Timer-Auflösung von unter 30 ns Voraussetzung für ein erfolgreichen Angriff. Anschaulich ist dies auch im Diagramm \ref{fig:RAMCacheLatency} zu sehen. Die Autoren verwendeten ein i7-4960HQ und haben Zugriffszeitdifferenzen für Cache-Miss und Hit von etwa 70 ns festgestellt. 
 
-\begin{figure}[h]
 \label{fig:RAMCacheLatency}
+\begin{figure}[h]
 \centering
 \includegraphics[width=0.55\textwidth]{basics/i7-4790HQ_latency_plot.pdf}
 \caption{Wahrscheinlichkeitsverteilung der Zugriffszeiten für eine aus dem Cache verdrängte und dort vorliegende Variable \cite{TheSpyInTheSandbox}}
@@ -187,7 +195,7 @@ Beide eben beschrieben Angriffsmethoden setzen voraus, dass die Angreiferin Lauf
 \section{Chinesischer Restsatz}
 \label{chinese_remainder}
 
-Beschrieben sei ein System linearer Kongruenzen:
+Beschrieben sei ein System linearer Kongruenzen \cite{CRTref}:
 \begin{align*}
 x \equiv a_1 &(\mod m_1)\\
 x \equiv a_2 &(\mod m_2)\\
@@ -243,12 +251,14 @@ Interaktive Webseiten und Applikationen werden erst mit Hilfe von Javascript mö
 
 Webanwendungen mit Javascript sollen auf unterschiedlichsten Endgeräten vom Laptop über das Smartphone bis zur Heimkonsole laufen, so dass ein Vorhalten von kompilierten Binärdateien für jedes dieser Geräte schwierig ist. 
 Dennoch soll die Webanwendung beim Anwender ohne lange Ladezeiten auskommen, womit die Kompilierung auf dem Anwendungsgerät als Lösung entfällt.
+
 Unter anderem deshalb ist Javascript eine interpretierte Sprache, welche jedoch ein Geschwindigkeitsnachteil gegenüber vorkompilierten Sprachen wie C oder Java hat.
 Es wurden viele Anstrengungen unternommen, diesen designbedingten Performancenachteil auszugleichen. 
 So erkennt etwa Googles Javascript-Engine V8 häufig genutzte, langsam laufende Codeteile und optimiert diese während der Laufzeit \cite{GoogleTurboFan}.
 
 WebAssembly ist ein W3C-Webstandard, welcher ein binäres Format für ausführbaren Code in Webseiten definiert. 
-Dieser Standard wurde 2017 ins Leben gerufen, um den Performancenachteil von Javascript gegenüber nativen Code zu reduzieren, sowie eim kompakte Code-Repräsentation zu bieten, und wird von allen gängigen Webbrowsern unterstützt. 
+Dieser Standard wurde 2017 ins Leben gerufen, um den Performancenachteil von Javascript gegenüber nativen Code zu reduzieren, sowie eim kompakte Code-Repräsentation zu bieten, und wird von allen gängigen Webbrowsern unterstützt.
+
 Des Weiteren ermöglicht WebAssembly die Entwicklungen von Webanwendungen in anderen Sprachen wie etwa C, dessen Code abschließend in ein binäres Format, Wasm-Modul genannt, kompiliert wird.
 Dieser ist aber weiterhin maschinenunabhängig, sodass nur ein Wasm-Modul vorgehalten werden muss.
 Diese Module können von Javascript als Bibliotheken geladen und verwendet werden.
@@ -257,7 +267,7 @@ Diese Module können von Javascript als Bibliotheken geladen und verwendet werde
 
 Die große Schwierigkeit eines Angriffs ist es den Schadcode auf dem Gerät des Opfers zur Ausführung zu bringen. Ein beliebte Methode ist das Social-Engineering, welches darauf abzielt bei Personen bestimmte Reaktionen wie das Öffnen eines E-Mail-Anhang hervorzurufen. Leider muss hier das Opfer selbst aktiv mitwirken, um dem Angriff zum Erfolg zu verhelfen.
 
-Im Gegensatz dazu steht der Drive-by Attack, bei dem das Opfer bereits bei dem Besuch einer Website angegriffen wird. Zum einen ist es möglich durch Lücken im Browser beliebigen Code auf dem Gerät des Opfers auszuführen. Zum anderen wie etwa im Fall dieser Arbeit können die vorhandenen Mittel wie Javascript und Webassembly für einen Angriff genutzt werden.
+Im Gegensatz dazu steht der Drive-by Attack \cite{DriveByAttacksGeneric}, bei dem das Opfer bereits bei dem Besuch einer Website angegriffen wird. Zum einen ist es möglich durch Lücken im Browser beliebigen Code auf dem Gerät des Opfers auszuführen. Zum anderen wie etwa im Fall dieser Arbeit können die vorhandenen Mittel wie Javascript und Webassembly für einen Angriff genutzt werden.
 Die Erfolgswahrscheinlichkeit eines Angriffs ist hier bedeutend größer, da bereits von der Angreiferin geschaltete Werbeanzeigen auf häufig aufgerufenen Webseiten für einen großen Pool von Opfern ausreichen.
 Des Weiteren werden die meisten Opfer den Angriff nicht zu ihrem Ursprung zurückverfolgen können, da sie die Website mit der bösartigen Werbeanzeige regelmäßig besuchen.
 
@@ -270,5 +280,40 @@ Zusammenfassend ist das Schreiben von Drive-by Angriffen aufwendiger und setzt i
 %\todo{was soll das ständige newtextend denn tun?}
 %das markiert für nicht latex- bzw. versionskontrollenaffine Nutzer farblich Textstellen die ich geändert habe
 %\newtextend
+
+\section{Speicher-Disambiguierung}
+
+Heutige Prozessoren wie etwa die Intel Core Reihe führen auch Store- und Load-Befehle Out-of-Order aus und stehen damit vor der Aufgabe, auf Datenabhängigkeiten zu reagieren \cite{memoryDisambiguationBlog}.
+Die Techniken für eine Speicher-Disambiguierung erkennen echte Abhängigkeiten zwischen Speicheroperationen während Ausführung. 
+Außerdem erlauben die Techniken der CPU zu einem vorherigen Zustand zurückzukehren sobald eine Abhängigkeit verletzt wurde.
+
+Die Möglichkeit Load- und Store-Befehle Out-of-Order auszuführen, sorgt für eine erhöhte Parallelität auf Instruktionsebene und eine damit verbesserte Single-Thread-Performance.
+Grafik \ref{fig:MemoryDisambiguation} zeigt ein Beispiel für die Speicher-Disambiguierung. 
+
+\label{fig:MemoryDisambiguation}
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.6\textwidth]{methods/memory_disambiguation.pdf}
+\caption{Beispiel für eine Speicher-Disambiguierung. Die Nummern in den Kreisen geben die chronologische und der weiße Pfeil am linken Rand die logische Ausführungsreihenfolge an. Load 2 kann nicht früher ausgeführt werden, da er von Store 1 abhängig ist. Load 4 hingegen ist von den anderen Operationen unabhängig und kann daher vor Store 1 und Store 3 ausgeführt werden. Durch diese vorgezogene Ausführung können Instruktionen die den Wert von X benötigen im Folgenden von einer geringen Zugriffslatenz profitieren. \cite{CacheAssoWiki}.}
+\end{figure}
+
+Um dies umzusetzen werden Store-Instruktionen bei der Ausführung nicht direkt an das Speichersystem, in diesem Fall den CPU-Cache, committed.
+Stattdessen werden die Store-Instrukionen inklusive der Speicheradressen und Daten in einer Store-Queue gepuffert.
+Die Werte werden erst an das Speichersystem übergeben, wenn alle vorherigen Befehle im Code komplett abgeschlossen wurden.
+Dies vermeidet Write-after-Read(WAR) Konflikte bei denen ansonsten ein früheres LOAD einen inkorrekten Wert vom Speichersystem lesen würde, weil die Ausführung eines späteren STORE vorgezogen wurde.
+Auch Write-after-Write(WAW) Konflikte werden gelöst, da keine früheren STORES ihre Werte nach späteren STORES in das Speichersystem committen, wie es ohne STORE-Quee bei der Out-Of-Order Ausführung der Fall wäre. 
+
+Des Weiteren ermöglicht die Store-Queue die spekulative Ausführung von bedingten Verzweigungen, deren Richtung zum Ausführungszeitpunkt noch nicht bekannt ist.
+Wenn der Pfad falsch geraten wurde, muss die berechnete Pfad verworfen werden und alle STORES rückabgewickelt werden.
+Ohne die Store-Queue wäre dies nicht möglich, da in der Zwischenzeit die geschriebenen Werte von anderen Cores gelesen sein könnten und somit de Systemzustand korrumpiert wäre.
+
+Diese Überlegung führt zu einem neuen Problem, welches durch die Store-Queue entsteht.
+Angenommen ein STORE wird ausgeführt und seine Adresse und Daten in der Store-Queue gepuffert. Kurz danach liest ein LOAD von der selben Adresse auf die der STORE geschrieben hat.
+Würde der LOAD den Wert vom Speichersystem lesen, wäre der Wert veraltet, da der im Code vorher stehende STORE noch nicht committed wurde.
+
+Um diesem Problem zu begegnen, nutzten Prozessoren in der Store-Queue die store-to-load forwarding Technik.
+Hierfür erfüllt die Store-Queue neben dem puffern der STORES den Zweck Werte von in der Queue abgeschlossenen STORES, die noch nicht committed wurden, zu späteren LOADS weiterzuleiten.
+Bei der Ausführung eines LOADS wird die als assoziativer Speicher umgesetzte Store-Queue nach STORES auf der selben Adresse durchsucht, welche in der logischen Ausführungsreihenfolge vorher auftauchen.
+Sofern es einen Treffer gibt, wird dieser Wert statt des veralteten Wertes aus Speichersystem verwendet.
 
 \section{Forschungsstand/Verwandte Arbeiten}
