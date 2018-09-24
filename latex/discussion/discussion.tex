@@ -11,15 +11,15 @@ Wie in Abschnitt \ref{} beschrieben, unterliegen die Laufzeiten der Eviction sin
 Da präzise Timer zurzeit mittels eines Shared-Array-Buffer erzeugt werden müssen, benötigt die Angreiferin mindestens drei virtuelle Kerne um ein Angriff auszuführen. Einen für die Iteration der Timer-Variable, einen für den Prime-and-Probe Angriffscode und einen auf dem das Opferprogramm läuft.
 
 Theoretisch reichen deshalb bereits Prozessoren mit zwei physischen und vier virtuellen Kernen wie sie noch vielfach von Intel im Umlauf sind. Bei zwei physischen Kernen wird der Timer-Thread jedoch zeitweise exklusiv auf einen physischen Kern rechnen und sich zeitweise einen Kern mit einem der anderen Threads teilen.
-Wenn einer anderer Thread auf dem gleichen Kern rechnet halbiert sich in etwa die Iterationsgeschwindigkeit der Timervariable, sodass die Werte des Timer starken Schwankungen unterliegen.
-Problematisch ist dies etwa in der Expand-Phase, da nicht erkannt wird, dass eine Candiadte-Set bereits ein Eviction-Set für die Zeugenadresse, da die Werte des Timers das Gegenteil suggerieren.
+Wenn ein anderer Thread auf dem gleichen Kern rechnet halbiert sich in etwa die Iterationsgeschwindigkeit der Timervariable, sodass die Werte des Timers starken Schwankungen unterliegen.
+Problematisch ist dies beispielsweise in der Expand-Phase, da nicht erkannt wird, dass ein Candidate-Set bereits ein Eviction-Set für die Zeugenadresse ist, da die Werte des Timers das Gegenteil suggerieren.
 
-Somit ist es essenziell erkannt werden wann der Timer-Thread ein Kern für sich alleine beansprucht.
+Somit ist es essenziell zu erkennen wann der Timer-Thread ein Kern für sich alleine beansprucht.
 Es könnte zur Laufzeit wiederholt nach einer festen Zeitspanne die Timergenauigkeit überprüft werden.
-Der Wert der Funktion $performance.now()$ als Referenz heranzuziehen, wie im Kaptiel 2 geschehen, ist aufgrund der geringen Auflösung (Chrome etwa 0,1ms) zu langsam.
+Der Wert der Funktion $performance.now()$ als Referenz heranzuziehen, wie im Kapitel 2 geschehen, ist aufgrund der geringen Auflösung (Chrome etwa 0,1ms) zu langsam.
 TODO auf nuc testen.
 Als Alternative kann etwa die Laufzeit einer Prime-and-Probe Operation auf einem wenig aktiven Cache-Set als Referenzwert genommen werden.
-Hierbei ist zu beachten das Prüfung im Thread des Angriffscodes läuft und dieser sich eventuell auch einen physischen Kern teilen muss.
+Hierbei ist zu beachten, dass die Prüfung im Thread des Angriffscodes läuft und dieser sich eventuell auch einen physischen Kern teilen muss.
 
 Ein weiteres Problem ist die Wahl der Zeitspanne, da eine kleine viel Overhead erzeugen würde und eine große zu langsam reagiert, sodass in der Zwischenzeit bereits Timer-Werte falsch interpretiert wurden.
 
@@ -38,16 +38,43 @@ Wenn das angegriffene Endgerät $n$ virtuelle Kerne besitzt können also $n-3$ f
 
 \section{Viel hilft viel?}
 
+$n-1-k$ Kerne für Bremsung nutzbar mit $K$ Kerne für eigentliche Überwachung 
+
+TODO multithread bench
+
 \section{Warum OpenPGP.js nicht anfällig ist}
 
+Montgomery Implementation von gcd beschreiben
+
+OpenPGPjs gcd(p-1,e) im Gegensatz zu Mozilla NSS schon bei Primzahlgenerierung
+
+https://github.com/openpgpjs/openpgpjs/blob/master/src/crypto/public_key/rsa.js
+
+pow (Zeile 3332) scheinbar fixed window implementation:\\
+https://github.com/indutny/bn.js/blob/e69c617b3297b99aca429f30842e27979ef9beb5/lib/bn.js
+
+\section{Memory-locking: Mit Kanonen auf Spatzen schießen}
+
+TODO benchmarks einfügen
+
+Risenpart:
+http://pages.cs.wisc.edu/~venkatv/pvstudy-usenixsecurity15.pdf
+\cite{MemoryLockingRisenpart}
+
+Wu:
+https://www.usenix.org/system/files/conference/usenixsecurity12/sec12-final97.pdf
+\cite{MemoryLockingWu}
+
 \section{Wie viel schneller muss er sein?}
+
+Beschreiben bei wie vielen Taktzyklen Pausen mp_gcd ausgelesen werden kann.
 
 \section{Speicherallokation: Wie hilfsbereit ist das Betriebssystem?}
 
 Wenn der Speicher wenig fragmentiert ist, etwa nach dem Booten und große zusammenhängende physischer Speicherbereiche frei ist, scheint Ubuntu 16.04.5 LTS dahin zu tendieren das $evictionBuffer$-Array in diese Bereiche zu mappen.
 Angenommen der komplette evictionBuffer wird in einen zusammenhängeden physischen Speicherbereich gemappt. Dann ist zu erwarten, dass nach jeweils $2^8$ Speicherblöcken eine neue colliding address gefunden wird, da $2^8$ Speicherblöcke genau $2^20$ Bytes belegen und bei einer colliding address die letzten 20 Bit identisch sind.
 
-Die ersten Versuche fanden statt nachdem der Testrechner schon über 30 Minuten in Betrieb war und viele Tests und Programme ausgeführt wurden.
+Die ersten Versuche fanden statt, nachdem der Testrechner schon über 30 Minuten in Betrieb war und viele Tests und Programme ausgeführt wurden.
 Wenn sich unter diesen Bedingungen der Abstand der ersten 10 Speicherblöcke zueinander angeschaut wird, welche eine colliding address zum Speicherblock 0 bilden, zeigen sich Abstandsfolgen wie 
 \begin{align*} 
 654, 938, 1438, 224, 372, 543, 464, 84, 38, 134\\
@@ -73,3 +100,44 @@ Die längste ununterbrochene Folge mit dem optimalen Abstand 256 war bei allen T
 Somit scheint die Größe zusammenhängender physischer Speicherbereiche aus dem Autor nicht bekannten Gründen begrenzt zu sein.
 
 Mit dieser Beobachtung lässt sich 
+
+Bermerkungen Mem-Alloc von Firefox/Chrome: https://www.cs.vu.nl/~giuffrida/papers/anc-ndss-2017.pdf
+\cite{ASLROnTheLine}
+
+\section{Wie wohl fühlen sich Meltdown und Spectre im Browser?}
+
+Sofern Meltdown über Prozessgrenzen hinweg Speicher auslesen soll, muss der geschützte Speicher in den Adressebereich des Angriffsprozess gemappt werden.
+Dies ist im Browser nicht ohne weiteres möglich, da Webassembly eine eigene Speicheradressierung mitbringt.
+Auch Spectre
+
+\section{Warum ist Google so mutig?}
+
+Wie erwähnt hat Google bereits Anfang August 2018 mit der Chrome Version 68 \cite{ChromeSharedArrayBufferAgain} die SharedArrayBuffer standardmäßig wieder aktiviert.
+Mozilla hingegen hat auch in der aktuellen Firefox Developer  Edition 63.0b8 (Stand Ende September 2018) die SharedArrayBuffer in der Standardeinstellung deaktiviert.
+
+Firefox standardmäßig vier Content-Prozesse. D.h. Meltdown problematischer Angriff, da Inhalte anderer Webseiten im gleich Addressbereich liegen.
+
+Google jeder Tab in einem Prozess. \cite{ChromeSiteIsolation}
+
+
+
+\section{Gegenmaßnahmen als Verteidiger}
+
+-Wechseln zu AMD
+
+TLBleed
+Whereas the cache can be partitioned to protect against cache attacks (such as in Cloak using TSX, or using CAT, or using page coloring),
+https://www.usenix.org/system/files/conference/usenixsecurity17/sec17-gruss.pdf
+https://software.intel.com/en-us/articles/introduction-to-cache-allocation-technology
+https://www.cs.bu.edu/~richwest/slides/coloris.pdf
+
+-Abschalten von SharedArrayBuffer
+In Zukunft schwerer wenn performance.now() wieder hoch präzise
+
+-Verwenden von speziell gehärteten Browsern Fuzzyfox
+
+-Erkennung von ungewöhnlicher hoher Last einer Website bzw. Werbeanzeige
+
+\section{Triviale Divsionen: Ist das sinnvoll oder kann das Weg?}
+
+-Benchmarks von Mozilla NSS und OpenPGPjs ohne Divisionstests

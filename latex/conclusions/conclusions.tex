@@ -1,5 +1,108 @@
-\chapter{Conclusions}
+\chapter{Schlussbetrachtung}
 \label{chapter:conclusions}
 
-% Put your conclusions here
-\Blindtext
+In diesem Kapitel werden die Ergebnisse dieser Arbeit zusammengefasst und die gewonnenen Erkenntnisse bewertet.
+Abschließend wird ein Ausblick in die Zukunft der Cache-Angriffe im Allgemeinen sowie Browserangriffe im Speziellen gewährt.
+
+\section{Zusammenfassung}
+
+Diese Arbeit hat aktuelle Fragestellungen bezüglich Cache-Angriffen untersucht, wobei sich auf praxisnahe Angriffe aus dem Browser heraus fokussiert wurde.
+Im Hinblick auf die Praxisrelevanz wurde eine neuartige Eviction-Set-Suche evaluiert, welche die Initialisierungsphase eines Angriffs beschleunigt.
+Des Weiteren wurden Leakages in der RSA-Schlüsselgenerierung von Mozilla NSS und OpenPGP.js untersucht sowie Probleme bei der Portierung nativer Angriffen erörtert.
+
+\par \medskip                         
+
+Nach der Einleitung wurde der aktuelle Forschungsstand zum Thema in Abschnitt \ref{related_work} dargelegt, um eine Einordnung der Arbeit in die Forschung zu ermöglichen.
+
+\par \medskip                     
+
+In Kapitel \ref{chapter:basics} wurden die nötigen technische Grundlagen zum Verständnis der Arbeit vermittelt.
+So wurde die in der Arbeit verwendete Angriffstechnik Prime and Probe vorgestellt und erklärt warum der Angriff in aktuellen Prozessoren funktioniert.
+Des Weiteren wurden die notwendigen Voraussetzungen erläutert, wie beispielsweise die Verfügbarkeit hochpräziser Timer.
+Außerdem wurden die vorteilhaften Merkmale eines Cache-Angriffs aus dem Browser beschrieben.
+Abschließend wurde die Speicher-Disambiguierung erklärt, dessen Verständnis für die beschleunigte Eviction-Set-Suche elementar ist.
+
+\par \medskip                     
+
+Mit der realen Implementierung des Angriffs in Javascript beziehungsweise Webassembly beschäftigte sich Kapitel \ref{chapter:preparation}.
+Es wurde beschrieben wie die Voraussetzungen für einen Angriff im Webkontext trotz begrenzter Möglichkeiten geschaffen werden können.
+Der Umsetzung des Eviction-Set-Suchalgorithmus im Webkontext wurde beschrieben und dessen Leistung theoretisch analysiert.
+Zudem wurde die Performance des Eviction-Set-Suchalgorithmus sowie diverse Optimierungen desselben in der Praxis evaluiert.
+Ein spezifisches Verhalten von Intel-Prozessoren im Bezug auf die Speicher-Disambiguierung wurde erklärt.
+Erstmals wurde beschrieben wie damit ein verbesserter Eviction-Set-Suchalgorthmius im Webkontext umsetzbar ist und wie dieser im Vergleich zur Standardversion performt.
+Als Beispiel wurde ein verdeckter Kanal vom Browser zu einem nativ laufenden Programm aufgebaut.
+
+\par \medskip                      
+
+Im \ref{chapter:results}. Kapitel wurden verschiedene Leakages in der RSA-Schlüsselgenerierung von Mozilla NSS und OpenPGP.js analysiert.
+Dabei wurde erörtert wie die Ergebnisse einer automatisierten Leakage-Erkennung miteinbezogen werden können.
+Bei der Leakage in der RSA-Primzahlgenerierung von Mozilla NSS und OpenPGP.js ist offen geblieben, ob sich diese eignet Teile der Primzahlen effizient zu rekonstruieren.
+Darüber hinaus wurde die Portierung eines nativen Angriffs auf OpenSSL, hin zu einem Angriff im Browser auf Mozilla NSS analysiert.
+Dabei auftretende Fallstricke, wie beispielsweise der fehlende clflush-Befehl im Webkontext, wurden herausgearbeitet und mögliche Lösungen diskutiert.
+
+\par \medskip                       
+
+Die Ergebnisse der Arbeit wurden im \ref{chapter:discussion}. Kapitel besprochen.
+So wurde beschrieben welche zusätzlichen Auswirkungen die Hardware und Software des Opfers auf die Erfolgswahrscheinlichkeit eines Angriffs hat.
+Gegenmaßnahmen wurden erläutert und die in diesem Kontext wichtige Rolle der Browserhersteller genannt.
+Des Weiteren wurden Vorteile der RSA-Schlüsselgenerierung in OpenPGP.js gegenüber Mozilla NSS dargestellt.
+Am Schluss des Kapitels wurde die Umsetzung der populären Meltdown und Spectre Angriffe im Webkontext diskutiert.
+
+\section{Bewertung}
+
+Die Ergebnisse zeigen, dass L3-Cache-Angriffe im Browser möglich sind.
+Dabei ist jedoch zum einen die Ausführung des Angriffs langsamer und zum anderen sind die Möglichkeiten zum Ausbremsen des Opferprozesses beschränkt.
+
+Um dem zu begegnen, können mehrere Angriffsinstanzen gestartet werden.
+Zum einen kann die Überwachung aufgeteilt werden, wobei die Synchronisation mit den Zeitstempeln möglich ist.
+Zum anderen sind mehrere Bremsinstanzen für eine bessere Performancereduktion denkbar.
+Jedoch steigt die Systemauslastung an und damit die Gefahr, dass der Angriff vom Opfer entdeckt wird. 
+
+Weiterhin erhöht sich die Initialisierungsdauer linear mit der Anzahl der Angriffsinstanzen.
+Diesem wurde mit der Einführung einer neuen schnelleren Variante des Eviction-Set-Suchalgorithmus entgegengewirkt.
+
+Der Angriff nutzt spezifische Eigenschaften der Intel-Architektur aus und ist beispielsweise nicht auf Prozessoren des Konkurrenten AMD lauffähig.
+Im Hinblick auf die Ersetzung des Desktop-Computers oder Notebooks durch Smartphone und Tablet, ist eine nähere Untersuchung der Mikroarchitekturen dieser Geräte interessant.
+
+Ein großer Vorteil des Angriffs ist, dass er wenig Spuren nach der Ausführung hinterlässt.
+Trotz der Möglichkeit des Angriffs aus dem Browser heraus, ist dieser in der Praxis 
+aufwendig.
+Denn er ist speziell auf den Code einer Softwareversion abgestimmt und diese muss zum Zeitpunkt des Angriffs laufen und die gewünschten Berechnungen ausführen.
+
+In diese Kategorie fällt auch die Leakage mit den Unklarheiten im Bezug auf die praktische Anwendung bei der RSA-Primzahlgenerierung, wobei praktische Szenarien denkbar sind.
+
+So werden an der Universität zu Lübeck zum Beginn des Wintersemsters in einem Einführungskurs die E-Mail-Zertifikate von den neuen Studenten lokal erzeugt.
+Ein Mitarbeiter könnte versuchen die Unterseite des ITSC, welche die Zertifikatsgenerierung beschreibt, zu manipulieren.
+Da der Zeitraum indem die Zertifikatsgenerierung stattfindet, bekannt sowie eingrenzt ist und es viele potenzielle Opfer gibt, kann der Angriff sich hier auszahlen.
+
+
+%wichtigste ergebnisse:
+%schnellere eviction-set suche und standard suche evaluiert
+%potenzielle leakage bei rsa-primzahlgenerierung gefunden in nss und openpgpjs
+%angriffsportierung von c nach browser nicht immer möglich probleme bremsen bzw angriff an sich langsamer
+
+\section{Ausblick}
+
+Die Veröffentlichung von Meltdown und Spectre Anfang 2018 hat ein neues Bewusstsein für Relevanz von Cache-Angriffen geschaffen.
+Im Zuge dessen haben die Browserhersteller alle öffentlich bekannten Optionen für hochauflösende Timer unterbunden.
+Google ist der erste Hersteller, welcher seit Chrome Version 68 in der Standardeinstellung wieder hochauflösende Timer erlaubt.
+Dieser Schritt wird von Google mit der Einführung von Page-Isolation-Technik \cite{ChromeSiteIsolation} begründet, die eine Aufspaltung von verschiedenen Webseiten in unterschiedliche Prozesse sicherstellt und somit hinreichend vor den Gefahren von Meltdown und Spectre schützen soll.
+Gegen Angriffe auf den geteilten L3-Cache, welche in dieser Arbeit diskutiert wurden, hilft diese Technik nicht.
+Somit werden L3-Cache-Angriffe wieder ermöglicht und es liegt in der Hand der Softwareentwicklern ihre Implementierungen gegen diese Angriffe zu härten.
+
+Der geteilte und inklusive L3-Cache mit LRU oder einer vergleichbaren Eviciton-Policy wird in Intel-Prozessoren als das eigentliche Problem noch Jahre Bestand haben.
+Zurzeit nutzen im Desktopbereich nur die High-End-Prozessoren in Form Von Skylake-X einen nicht inklusiven L3-Cache \cite{SkylakeXL3Cache}.
+Im Mainstream werden nicht exklusive L3-Caches eventuell mit der neuen Architektur Ice Lake eingeführt, welche frühestens Ende 2019 erscheinen wird \cite{IceLakeReleaseDate}.
+Dies legt zumindest die angekündigte Verdoppelung des L2-Caches pro Kern bei gleichbleibender L3-Cache Größe nahe.
+Die Prozessoren des Konkurrenten AMD sind aufgrund der exklusiven Caches \cite{CacheRyzen} vor diesen Angriffen nicht betroffen.
+
+Daher muss in Zukunft die Gefahr von Cache-Angriffen im Browser stärker berücksichtigt und mit Gegenmaßnahmen begegnet werden, da Websprachen der Angreiferin die komplette Kontrolle über den Code überlassen.
+
+
+
+
+
+
+
+
+%Denn bei einem inclusive ausgeführten Design würde die effektive L3-Cache Größe durch den verdoppelten L2-Cache Weiter sinken.

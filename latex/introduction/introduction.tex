@@ -1,4 +1,163 @@
 \chapter{Einführung}
 \label{chapter:introduction}
 
-\todo{bal}
+%\todo{Sollen in die Einleitung Quellen?}
+
+Seitenkanalangriffe sind ein mächtiges Werkzeug für die Kryptanalyse, da sie es erlauben es geheime Informationen wie den Schlüssel aus einem Gerät zu extrahieren.
+Hierfür wird beispielsweise der Stromverbrauch oder die Berechnungsdauer verschiedener Ein- und Ausgaben gemessen.
+Bei physikalischen Seitenkanalangriffen ist die Angreiferin gezwungen eine gewisse örtliche Nähe zum System besitzen.
+
+Seitenkanalangriffen auf die Mikroarchitektur eines Prozessors sind von dieser Einschränkung befreit, da die
+Ausführung von Code auf dem Zielsystem ausreicht.
+Seit der ersten Beschreibung von Seitenkanalangriffen auf die Mikroarchitektur vor über zehn Jahren, sind diese zu einem ernst zu nehmenden Sicherheitsrisiko herangewachsen.
+
+Auf der Mikroarchitekturebene konkurriert der Opferprozess mit dem Angriffsprozess um die Ressourcen des Prozessors, selbst wenn der Angriffsprozess mit keinen außerordentlichen Privilegien ausgestattet ist.
+Aufgrund dieser Konkurrenz kann die Angreiferin Informationen über den Opferprozess gewinnen, indem sie durch Messungen Varianzen bei dem Zugriff auf die Ressourcen feststellt.
+
+Eine Reihe von Ressourcen hat sich als problematisch erwiesen, etwa die Einheiten der Sprungvorhersage oder der Return-Stack-Buffer.
+Das mit Abstand größte Problem stellen die vielfältigen Caches dar, welche eine feine Auflösung der Speicherzugriffe des Opferprozesses erlauben.
+Diese ermöglichen es geheime Informationen wie kryptografische Schlüssel von RSA \cite{CacheBleedOpenSSLRSA} oder AES \cite{BernsteinAES} aus dem Opferprozess zu extrahieren.
+Weitere Anwendungsmöglichkeiten sind Keylogger \cite{Keylogger} und Überwachung der Webseitenaufrufe oder Nutzeraktivität \cite{TheSpyInTheSandbox}.
+
+Mit Ausnahme der wohl bekanntesten Vertreter in Form von Meltdown und Spectre ist wenig darüber bekannt ob Cache-Angriffe praktisch relevant sind oder wie häufig sie eingesetzt werden.
+Mit verantwortlich sind die in der Literatur zum Großteil angenommen Angriffsszenario, welches die Ausführung von nativen Code auf dem Opfersystem voraussetzt.
+Dieses Szenario hat seine Berechtigung unter anderem bei Angriffen auf virtuelle Maschinen die auf derselben Hardware laufen (Cross-VM-Attack).
+
+Auch Mehrbenutzersystemen fallen unter dieses Szenario, sind aber eher in Unternehmen und Organisationen von Relevanz.
+So ist es einem Studierenden der Universität zu Lübeck jederzeit möglich sich per SSH auf einen beliebigen Pool-Rechner einzuloggen, unabhängig davon ob der Rechner lokal in Benutzung ist.
+
+In einem typischen Endbenutzerszenario ist es realitätsfern vorauszusetzen, dass vom Opfer nativer Angriffscode ausgeführt wird.
+Denn den meisten Benutzern ist die einhergehende Gefahr der Ausführung von unbekannten nativen Code bewusst und andernfalls würden mögliche Cache-Angriffe das geringste Problem darstellen.
+
+Daher gibt es Bestrebungen Cache-Angriffe auf Endbenutzergeräten zu ermöglichen \cite{TheSpyInTheSandbox,DriveByPaper,ASLROnTheLine}, in dem der Angriffscode in Websprachen wie Javascript übersetzt und vom Browser des Opfers ausgeführt wird.
+Da der Browser faktisch bei jedem Webseitenbesuch fremden und unbekannten Code ausführt, sind Möglichkeiten für die Angreiferin in Javascript und Co. entsprechend restriktiv.
+Daher sind Angriffe nur eingeschränkt oder aufwendiger auszuführen, wie sich im Verlaufe der Arbeit zeigen wird. 
+
+In dieser Arbeit wird sich auf die folgenden Fragen konzentriert:
+
+\begin{enumerate}
+\item Die Arbeiten \cite{TheSpyInTheSandbox,DriveByPaper,ASLROnTheLine} haben demonstriert, dass Cache-Angriffe im Browser möglich sind. 
+Allerdings sind diese vor den Gegenmaßnahmen der Browserhersteller gegen Meltdown und Spectre veröffentlicht worden.
+Sind also im Oktober 2018 Cache-Angriffe aus dem Browser heraus möglich?
+
+\item Welchen Einschränkungen unterliegen die Cache-Angriffe im Browser gegenüber Cache-Angriffen mit nativem Code?
+
+\item Wie kann die Initialisierung des Angriffs, das heißt die notwendige Eviciton-Set-Suche beschleunigt werden?
+
+\item Gibt es im Bereich der RSA-Schlüsselgenerierung Leakages die Informationen über den Schlüssel verraten und sind diese im Browser ausnutzbar?
+\end{enumerate}
+
+\section{Ergebnisse}
+
+Für die Beantwortung der ersten Frage spielt der Browser eine wichtige Rolle, da für Cache-Angriffe hochauflösende Timer im Nanosekundenbereich benötigt werden.
+In Chrome ist das Erzeugen eines solchen Timers durch einen Counter-Thread standardmäßig möglich, wobei dies in Firefox zurzeit ausschließlich in abgeänderten Einstellungen möglich ist.
+
+Der angesprochene Counter-Thread ist während des gesamten Angriffs voll ausgelastet, belegt also einen ganzen virtuellen Kern.
+Da Entwickler hochauflösende Timer nachfragen, wird Mozilla ebenso wie Google in Zukunft versuchen wieder hochauflösende Timer anbieten, wobei der zurzeit nötige Timer-Thread entfallen wird.
+Dies wird passieren, sobald Maßnahmen gegen Meltdown und Spectre implementiert sind TODO cite.
+
+\par\medskip
+
+Beim Prime and Probe Angriff steht Browserimplementation einer nativen Implementation in nichts nach. Allerdings ist neben den Kosten für den Counter-Thread die zeitliche Auflösung des Angriffs um \todo{c code slot time messen} \% reduziert.
+
+Der Opferprozess wird oft künstlich gebremst, da die Berechnungen auch beim Angriff mit nativen Code häufig zu schnell sind.
+Auch im Browser lassen sich Methoden umsetzen, um den Opferprozess zu bremsen. \todo{bremsvergleich c vs wasm/js}
+Die bevorzugte native Bremsmethode ist im Browser aufgrund der fehlenden clflush-Instruktion nicht umsetzbar.
+Anhand eines Angriffs auf die RSA-Schlüsselgenerierung wird gezeigt, dass die Portierung eines nativ laufenden Angriffs aufgrund dieser Einschränkungen nicht immer möglich ist.
+
+\par\medskip
+
+Um einen realistischen Angriff zu erhalten, ist eine kurze Initialisierungsphase Voraussetzung.
+Der in vielen Papern beschriebene Eviction-Set-Suchalgorithmus \cite{PrimeAndAbort, LiuPrimeAndProbe, DriveByPaper}, wurde in vielerlei Hinsicht optimiert und die Ergebnisse anschließend mit der ursprünglichen Variante verglichen. 
+Des Weiteren wurde eine neue noch unveröffentlichte Technik im Kontext der Eviction-Set-Suche im Browser erprobt.
+Diese nutzt spezifische Eigenschaften der Store-Queue in Intel Prozessoren aus.
+Damit kann die Suche gegenüber dem optimierten Standardalgorithmus um \todo{Benchmarks für StoreFor vorantreiben} \% beschleunigen.
+
+Häufig muss mehr als eine Cache-Line überwacht werden, weshalb es für die zeitliche Auflösung von Vorteil ist mehrere Angriffsinstanzen zu starten.
+Diese müssen jedoch die Eviction-Set-Suche nacheinander durchführen, da sie sich ansonsten gegenseitig beeinflussen würden.
+Somit würde sich der Performancevorteil in diesen Fällen amplifizieren.
+
+\par\medskip
+
+Es wurden sowohl die Schlüsselgenerierung von Mozilla NSS als auch von OpenPGP.js auf Leakages untersucht. 
+Zum Einsatz kam dabei ein Werkzeug, welches automatisch potenzielle Leakages aufdeckt.
+Sowohl in der Primzahlgenerierung von Mozilla NSS als auch OpenPGP.js wurden Leakages entdeckt, welche die verwendeten Primzahlen in einem Gleichungssystem beschreiben.
+Es konnte nicht abschließend geklärt werden, ob diese Gleichungssysteme bei praktischen Instanzen wie RSA-2048 in annehmbarer Zeit gelöst werden können.
+
+\todo{Soll in diesem Absatz klarer stehen, dass der Angriff nicht praktisch funktioniert?}
+Des Weiteren wurde ein bekannter Cache-Angriff auf die RSA-Schlüsselgenerierung in OpenSSL nach Mozilla NSS portiert.
+Der ursprüngliche Angriff setzte die Ausführung nativen Codes voraus, wobei in dieser Arbeit eine Umsetzung im Browser geprüft wurde.
+Dabei konnten mehrere Probleme identifiziert werden, welche Portierungen von nativen Cache-Angriffen hin zu Implementierungen im Browser erschweren.
+
+\section{Gliederung der Arbeit}
+
+Diese Arbeit ist in sechs Hauptkapitel untergliedert. 
+Nach der Einleitung werden im zweiten Kapitel die notwendigen technischen Grundlagen erläutert, die für das Verständnis der nachfolgenden Kapitel bedeutend sind.
+
+Die Implementierung des Angriffs wird im dritten Kapitel erörtert. 
+Im Zuge dessen wird die Initialisierungsphase des Angriffs optimiert und evaluiert, sowie ein verdeckter Kanal als Beispiel vorgebracht.
+
+Das vierte Kapitel befasst sich mit der Analyse möglicher Angriffsziele innerhalb der RSA-Schüsselgenerierung von Mozilla NSS und OpenPGP.js.
+Dabei werden Unterschiede zwischen beiden Implementierungen verglichen und die Übertragbarkeit eines nativen Angriffs aus OpenSSL diskutiert.
+
+Im fünften Kapitel werden die Ursachen und Folgen der Ergebnisse erläutert, sowie mögliche Verbesserungen und Erweiterungen vorgestellt.
+
+Im letzten Kapitel wird ein Fazit gezogen und ein Ausblick auf mögliche Änderungen der Thematik in der Zukunft gewährt.
+
+\section{Forschungsstand/Verwandte Arbeiten}
+
+Hier soll ein Überblick bereits getätigter Forschungsarbeiten im Rahmen der für die Arbeit relevanten Themenbereiche Cache-Angriffe, Drive-by-Attacks und Angriffe auf die RSA Schlüsselgenerierung gegeben werden. Zudem soll eine Abgrenzung gegenüber verwandten, aber für diese Arbeit nicht relevanten Themenbereiche stattfinden.
+
+\subsection{Cache-Angriffe}
+
+Cache-Angriffe sind kein neues Phänomen \cite{BernsteinAES, CacheAttacksCountermeasuresAESShamir}, sondern wurden schon im Jahr 2003 \cite{DESCacheAttack2003} erstmals beschrieben.
+Die ersten Angriffe zielten auf den L1- und L2-Datencache \cite{CacheAttacksCountermeasuresAESShamir} ab, wobei die Angriffe mit der Zeit auf andere Caches, wie den L1-Instruktionscache \cite{NewResultsInstructionCacheAttacks} und den geteilten L3-Cache \cite{CacheAttacksCloud, LiuPrimeAndProbe} ausgeweitet wurden.
+Des Weiteren wurden mit dem Return-Stack-Buffer \cite{Maisuradze2018ret2specSE} und der Sprungvorhersage \cite{BranchPredictionVulnerabilitiesOpenSSL, PredictingSecretKeysViaBranchPrediction, CovertChannelsThroughBranchPredictors} auch andere Cache-Typen angegriffen.
+Einen guten Überblick bietet das Survey-Paper von Qian ge et al. \cite{SurveyTimingAttacksCountermeasures}, wobei dies Ende 2016 veröffentlichte Paper aktuelle Entwicklungen nicht berücksichtigen kann.
+
+\subsection{Cache-Angriffe im Browser}
+
+Alle oben zitierten Arbeiten setzen die Ausführung von nativen Code auf dem Opfersystem voraus. Im Jahr 2015 wurde die erste Arbeit veröffentlicht \cite{TheSpyInTheSandbox}, welche sich mit Cache-Angriffen im Browser beschäftigt.
+Die Autoren konnten den Aufruf von verschiedenen bekannten Webseiten unterschiedlichen Cache-Zugriffsmustern zuordnen, um so das Surfverhalten von Nutzern zu überwachen.
+Gras et al. \cite{ASLROnTheLine} konnten im Browser erfolgreich die Speicherverwürfelung ASLR aushebeln, wobei sich der Angriff aufgrund der niedrigen zeitlichen Auflösung nicht zur Schlüsselextraktion eignet.
+
+Mit Rowhammer-Angriff \cite{Rowhammer} ist es möglich Bits im Speicher ohne Schreibzugriffe zu verändern, um beispielsweise Sicherheitsvorkehrungen zu umgehen. 
+Dieser wurde von Gruss et al. erfolgreich in Javascript implementiert \cite{RowhammerJS}.
+
+Code der im Hinblick darauf designt wurde unabhängig von den Eingaben dieselbe Laufzeit und denselben Codepfad zu besitzen, verhindert viele Leakages.
+Im Paper \cite{DriveByPaper} wurde dargestellt, dass solcher Code durch die Ausführung im Browser angreifbar wird.
+Durch die Freiheiten des Javascript-Compilers ist es möglich, dass je nach Eingabe unterschiedliche Codepfade ausführt werden und somit eine Leakage entsteht.
+
+\subsection{Cache-Angriffe auf RSA}
+
+Viele Paper haben gezeigt \cite{CacheBleedOpenSSLRSA, FlushReload, DriveByPaper}, dass sich der RSA-Schlüssel oder Teile davon mittels Cache-Angriffen extrahieren lassen. Das Angriffsziel waren dabei Komponenten der Ver- und Entschlüsselung beispielsweise die modulare Exponentiationsfunktion \cite{CacheBleedOpenSSLRSA, DriveByPaper, DriveByPaper}.
+
+Weniger Aufmerksamkeit wurde der RSA-Schlüsselgenerierung geschenkt \cite{RSAKeyGeneration2}, da diese im Gegensatz zur Ver- und Entschlüsselung nur einmal ausgeführt wird und damit schwieriger anzugreifen ist.
+
+%\cite{BSIRSAKeyGeneration}  
+
+\subsection{Spekulative Ausführung, Enklaven und Hyperthreading}
+\label{related_work}
+
+Vorherige Angriffe hatten die Extraktion von spezifischen Informationen wie Schlüsseln zum Ziel, allerdings können mit Cache-Angriffen auch beliebige Speicherinhalte, sogar über Sicherheitsgrenzen hinweg, ausgelesen werden.
+Die im Jahr 2018 veröffentlichen Angriffe Meltdown \cite{MeltdownPaper} und Spectre \cite{SpectrePaper} nutzen die spekulative Ausführung der CPU aus, um an Speicherinhalte zu gelangen, für die keine Zugriffsrechte vorliegen.
+Meltdown greift dafür direkt auf die Speicherbereiche zu, wohingegen Spectre die Sprungvorhersage manipuliert, um den Zugriff privilegierter Prozesse auf bestimmte Speicherinhalte zu lenken.
+
+Beide Varianten erzeugen invalide Speicherzugriffe während der spekulativen Ausführung, das heißt der nach außen sichtbare Zustand der CPU bleibt unverändert erhalten, jedoch ändert sich der interne Zustand wie etwa die Cache-Inhalte.
+Um den Informationen über den veränderten internen Zustand der CPU zu erhalten, werden analog zu anderen Angriffen Differenzen in der Zugriffszeit auf verschiedene Cache-Einträge genutzt.
+
+Heutzutage teilen sich eine Reihe von parallel ausgeführten Prozessen die Ressourcen des Systems.
+Sofern eine sichere Abschottung der Prozesse gegeneinander nicht gegeben ist, kann dies Sicherheitsprobleme erzeugen.
+Intel SGX erzeugt eine vertrauenswürdige Ausfürhungsumgebung, welche Speicherbereiche bereitstellt auf die selbst Prozesse mit erhöhten Rechten keinen Zugriff haben.
+Wie \cite{CacheZoom,CacheAttacksIntelSGX} zeigen, sind diese sogenannten Enklaven ebenfalls über Caches angreifbar.
+
+Sofern der Prozess der Angreiferin und des Opfers auf demselben physischen Kern laufen, ergeben sich weitergehende Angriffsmöglichkeiten.
+So kann beispielsweise eine erhöhte räumliche Auflösung ermöglicht werden, welche über die übliche 64 Byte Cache-Line-Auflösung hinaus geht \cite{MemJam}.
+
+Ein im Juli 2018 veröffentlichter Angriff \cite{TLBleed} nutzt konkurrierende Zugriffe auf den Translation lookaside buffer(TLB) aus, welcher zwischen zwei Hyperthreads eines selben physischen Kerns geteilt ist.
+Um Angriffe auf geteilte Caches zu verhindern, kann der Cache partitioniert werden, wobei keine vergleichbare Technik für den TLB bekannt ist.
+Im Zuge der Veröffentlichung wurde im Betriebssystem OpenBSD Hyperthreading auf allen Intel-Prozessoren standardmäßig deaktiviert \cite{OpenBSDHyperthreading}.
+
+Im Browser kann nicht ohne Weiteres ein Kern festgelegt werden, auf dem der Angriffscode ausgeführt wird.
+Als mögliche Lösung könnte die Angreiferin $n-1$ Instanzen ihres Angriffs starten, wobei $n$ der Anzahl der virtuellen Kerne entspricht.
+Somit würde durchgehend eine Instanz auf demselben physischen Kern wie das Opferprogramm laufen.

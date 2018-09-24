@@ -16,6 +16,58 @@ Optimization Reference Manual},
   note = {Accessed: 2018-09-14},
 }
 
+@misc{OpenBSDHyperthreading,
+  title = {Disable Hyper-threading by default},
+  author = {Mark Kettenis}, 
+  howpublished = {https://www.mail-archive.com/source-changes@openbsd.org/msg99141.html},
+  year = {2018},
+  note = {Accessed: 2018-09-23},
+}
+
+@misc{IceLakeReleaseDate,
+  title = {Intel: Die ersten 10-nm-CPUs bringt 2019 der Weihnachtsmann},
+  author = {Michael Günsch}, 
+  howpublished = {https://www.computerbase.de/2018-07/intel-10-nm-cpu-ice-lake-release-2019/},
+  year = {2018},
+  note = {Accessed: 2018-09-24},
+}
+
+@misc{IceLakeDoubleL2Cache,
+  title = {Intel ab Ice Lake künftig auch mit 512 KiB L2-Cache je Kern},
+  author = {Nero24}, 
+  howpublished = {https://www.planet3dnow.de/cms/39545-intel-ab-ice-lake-kuenftig-auch-mit-512-kib-l2-cache-je-kern/},
+  year = {2018},
+  note = {Accessed: 2018-09-24},
+}
+
+
+
+
+
+@misc{ChromeSiteIsolation,
+  title = {Site Isolation},
+  howpublished = {https://www.chromium.org/Home/chromium-security/site-isolation},
+  year = {2018},
+  note = {Accessed: 2018-09-24},
+}
+
+@misc{SkylakeXL3Cache,
+  title = {Announcement Three: Skylake-X's New L3 Cache Architecture},
+  author = {Ian Cutress},
+  howpublished = {https://www.anandtech.com/show/11464/intel-announces-skylakex-bringing-18core-hcc-silicon-to-consumers-for-1999/3},
+  year = {2018},
+  note = {Accessed: 2018-09-24},
+}
+
+@article{TLBleed,
+ author = {Ben Gras, Kaveh Razavi, Herbert Bos, Cristiano Giuffrida},
+ title = {Translation Leak-aside Buffer: Defeating Cache Side-channel Protections
+with TLB Attacks},
+ year = {2018},
+ numpages = {18},
+ url = {https://www.vusec.net/wp-content/uploads/2018/07/tlbleed-author-preprint.pdf},
+}
+
 @misc{memoryDisambiguationBlog,
   title = {OpenPGP Message Format},
   author = {Henry}, 
@@ -109,6 +161,25 @@ Mitigating Spectre with Site Isolation in Chrome},
   howpublished = {https://blog.mozilla.org/security/2018/01/03/mitigations-landing-new-class-timing-attack/},
   year = {2018},
   note = {Accessed: 2018-08-29},
+}
+
+@InProceedings{DESCacheAttack2003,
+author="Tsunoo, Yukiyasu
+and Saito, Teruo
+and Suzaki, Tomoyasu
+and Shigeri, Maki
+and Miyauchi, Hiroshi",
+editor="Walter, Colin D.
+and Ko{\c{c}}, {\c{C}}etin K.
+and Paar, Christof",
+title="Cryptanalysis of DES Implemented on Computers with Cache",
+booktitle="Cryptographic Hardware and Embedded Systems - CHES 2003",
+year="2003",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="62--76",
+abstract="This paper presents the results of applying an attack against the Data Encryption Standard (DES) implemented in some applications, using side-channel information based on CPU delay as proposed in [11]. This cryptanalysis technique uses side-channel information on encryption processing to select and collect effective plaintexts for cryptanalysis, and infers the information on the expanded key from the collected plaintexts. On applying this attack, we found that the cipher can be broken with 223 known plaintexts and 224 calculations at a success rate > 90{\%}, using a personal computer with 600-MHz Pentium III.",
+isbn="978-3-540-45238-6"
 }
 
 
@@ -286,6 +357,15 @@ booktitle = {Journal of Computational Physics - J COMPUT PHYS}
  keywords = {side-channel attack, cross-VM side channel, covert channel, last-level cache, ElGamal},
 } 
 
+@article{CacheAttacksCloud,
+  title={Cache Attacks Enable Bulk Key Recovery on the Cloud},
+  author={Mehmet Sinan Inci and Berk G{\"u}lmezoglu and Gorka Irazoqui Apecechea and Thomas Eisenbarth and Berk Sunar},
+  journal={IACR Cryptology ePrint Archive},
+  year={2016},
+  volume={2016},
+  pages={596}
+}
+
 @article{DriveByAttacksGeneric,
 	abstract = {In recent years, we have witnessed a new kind of security threat that all businesses need to be aware of – the cyber drive-by attack. It is a term that has evolved over time. In the early days of the web, most online access was through a modem and users were charged for the time they spent connected. Opportunists, looking for free online access would literally drive the streets of a town waiting for a wifi signal to become available. If it was insecure – and in those days it frequently was – that ‘drive-by’ or ‘war driving’ approach enabled the perpetrator to get onto the Internet for free.  },
 	affiliation = {Axial Systems},
@@ -383,4 +463,269 @@ issn="2190-8516",
 doi="10.1007/s13389-017-0152-y",
 url="https://doi.org/10.1007/s13389-017-0152-y"
 }
+
+@InProceedings{CacheAttacksCountermeasuresAESShamir,
+author="Osvik, Dag Arne
+and Shamir, Adi
+and Tromer, Eran",
+editor="Pointcheval, David",
+title="Cache Attacks and Countermeasures: The Case of AES",
+booktitle="Topics in Cryptology -- CT-RSA 2006",
+year="2006",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="1--20",
+abstract="We describe several software side-channel attacks based on inter-process leakage through the state of the CPU's memory cache. This leakage reveals memory access patterns, which can be used for cryptanalysis of cryptographic primitives that employ data-dependent table lookups. The attacks allow an unprivileged process to attack other processes running in parallel on the same processor, despite partitioning methods such as memory protection, sandboxing and virtualization. Some of our methods require only the ability to trigger services that perform encryption or MAC using the unknown key, such as encrypted disk partitions or secure network links. Moreover, we demonstrate an extremely strong type of attack, which requires knowledge of neither the specific plaintexts nor ciphertexts, and works by merely monitoring the effect of the cryptographic process on the cache. We discuss in detail several such attacks on AES, and experimentally demonstrate their applicability to real systems, such as OpenSSL and Linux's dm-crypt encrypted partitions (in the latter case, the full key can be recovered after just 800 writes to the partition, taking 65 milliseconds). Finally, we describe several countermeasures for mitigating such attacks.",
+isbn="978-3-540-32648-9"
+}
+
+@article{Maisuradze2018ret2specSE,
+  title={ret2spec: Speculative Execution Using Return Stack Buffers},
+  author={Giorgi Maisuradze and Christian Rossow},
+  journal={CoRR},
+  year={2018},
+  volume={abs/1807.10364}
+}
+
+@InProceedings{BranchPredictionVulnerabilitiesOpenSSL,
+author="Ac{\i}i{\c{c}}mez, Onur
+and Gueron, Shay
+and Seifert, Jean-Pierre",
+editor="Galbraith, Steven D.",
+title="New Branch Prediction Vulnerabilities in OpenSSL and Necessary Software Countermeasures",
+booktitle="Cryptography and Coding",
+year="2007",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="185--203",
+abstract="Software based side-channel attacks allow an unprivileged spy process to extract secret information from a victim (cryptosystem) process by exploiting some indirect leakage of ``side-channel'' information. It has been realized that some components of modern computer microarchitectures leak certain side-channel information and can create unforeseen security risks. An example of such MicroArchitectural Side-Channel Analysis is the Cache Attack --- a group of attacks that exploit information leaks from cache latencies [4,7,13,15,18]. Public awareness of Cache Attack vulnerabilities lead software writers of OpenSSL (version 0.9.8a and subsequent versions) to incorporate countermeasures for preventing these attacks. In this paper, we present a new and yet unforeseen side channel attack that is enabled by the recently published Simple Branch Prediction Analysis (SBPA) which is another type of MicroArchitectural Analysis, cf. [2,3]. We show that modular inversion --- a critical primitive in public key cryptography --- is a natural target of SBPA attacks because it typically uses the Binary Extended Euclidean algorithm whose nature is an input-centric sequence of conditional branches. Our results show that SBPA can be used to extract secret parameters during the execution of the Binary Extended Euclidean algorithm. This poses a new potential risk to crypto-applications such as OpenSSL, which already employs Cache Attack countermeasures. Thus, it is necessary to develop new software mitigation techniques for BPA and incorporate them with cache analysis countermeasures in security applications. To mitigate this new risk in full generality, we apply a security-aware algorithm design methodology and propose some changes to the CRT-RSA algorithm flow. These changes either avoid some of the steps that require modular inversion, or remove the critical information leak from this procedure. In addition, we also show by example that, independently of the required changes in the algorithms, careful software analysis is also required in order to assure that the software implementation does not inadvertently introduce branches that may expose the application to SBPA attacks. These offer several simple ways for modifying OpenSSL in order to mitigate Branch Prediction Attacks.",
+isbn="978-3-540-77272-9"
+}
+
+@InProceedings{PredictingSecretKeysViaBranchPrediction,
+author="Ac{\i}i{\c{c}}mez, Onur
+and Ko{\c{c}}, {\c{C}}etin Kaya
+and Seifert, Jean-Pierre",
+editor="Abe, Masayuki",
+title="Predicting Secret Keys Via Branch Prediction",
+booktitle="Topics in Cryptology -- CT-RSA 2007",
+year="2006",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="225--242",
+abstract="This paper announces a new software side-channel attack --- enabled by the branch prediction capability common to all modern high-performance CPUs. The penalty paid (extra clock cycles) for a mispredicted branch can be used for cryptanalysis of cryptographic primitives that employ a data-dependent program flow. Analogous to the recently described cache-based side-channel attacks our attacks also allow an unprivileged process to attack other processes running in parallel on the same processor, despite sophisticated partitioning methods such as memory protection, sandboxing or even virtualization. In this paper, we will discuss several such attacks for the example of RSA, and experimentally show their applicability to real systems, such as OpenSSL and Linux. Moreover, we will also demonstrate the strength of the branch prediction side-channel attack by rendering the obvious countermeasure in this context (Montgomery Multiplication with dummy-reduction) as useless. Although the deeper consequences of the latter result make the task of writing an efficient and secure modular exponentiation (or scalar multiplication on an elliptic curve) a challenging task, we will eventually suggest some countermeasures to mitigate branch prediction side-channel attacks.",
+isbn="978-3-540-69328-4"
+}
+
+@article{CovertChannelsThroughBranchPredictors,
+ author = {Evtyushkin, Dmitry and Ponomarev, Dmitry and Abu-Ghazaleh, Nael},
+ title = {Understanding and Mitigating Covert Channels Through Branch Predictors},
+ journal = {ACM Trans. Archit. Code Optim.},
+ issue_date = {April 2016},
+ volume = {13},
+ number = {1},
+ month = mar,
+ year = {2016},
+ issn = {1544-3566},
+ pages = {10:1--10:23},
+ articleno = {10},
+ numpages = {23},
+ url = {http://doi.acm.org/10.1145/2870636},
+ doi = {10.1145/2870636},
+ acmid = {2870636},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {Security, branch predictor, covert channel},
+} 
+
+@article{SurveyTimingAttacksCountermeasures,
+author = {ge, Qian and Yarom, Yuval and Cock, David and Heiser, Gernot},
+year = {2016},
+month = {10},
+pages = {1-27},
+title = {A survey of microarchitectural timing attacks and countermeasures on contemporary hardware},
+volume = {8},
+booktitle = {Journal of Cryptographic Engineering}
+}
+
+@article{CacheZoom,
+  author    = {Ahmad Moghimi and
+               Gorka Irazoqui and
+               Thomas Eisenbarth},
+  title     = {CacheZoom: How {SGX} Amplifies The Power of Cache Attacks},
+  journal   = {CoRR},
+  volume    = {abs/1703.06986},
+  year      = {2017},
+  url       = {http://arxiv.org/abs/1703.06986},
+  archivePrefix = {arXiv},
+  eprint    = {1703.06986},
+  timestamp = {Mon, 13 Aug 2018 16:48:01 +0200},
+  biburl    = {https://dblp.org/rec/bib/journals/corr/MoghimiIE17},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{CacheAttacksIntelSGX,
+ author = {G\"{o}tzfried, Johannes and Eckert, Moritz and Schinzel, Sebastian and M\"{u}ller, Tilo},
+ title = {Cache Attacks on Intel SGX},
+ booktitle = {Proceedings of the 10th European Workshop on Systems Security},
+ series = {EuroSec'17},
+ year = {2017},
+ isbn = {978-1-4503-4935-2},
+ location = {Belgrade, Serbia},
+ pages = {2:1--2:6},
+ articleno = {2},
+ numpages = {6},
+ url = {http://doi.acm.org/10.1145/3065913.3065915},
+ doi = {10.1145/3065913.3065915},
+ acmid = {3065915},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {Cache-timing Attacks, Intel SGX, Root-level Attacks},
+}
+
+@inproceedings{ASLROnTheLine,
+  title={ASLR on the Line: Practical Cache Attacks on the MMU},
+  author={Ben Gras and Kaveh Razavi and Erik Bosman and Herbert Bos and Cristiano Giuffrida},
+  booktitle={NDSS},
+  year={2017}
+}
+
+@article{MemJam,
+  author    = {Ahmad Moghimi and
+               Thomas Eisenbarth and
+               Berk Sunar},
+  title     = {MemJam: {A} False Dependency Attack against Constant-Time Crypto Implementations},
+  journal   = {CoRR},
+  volume    = {abs/1711.08002},
+  year      = {2017},
+  url       = {http://arxiv.org/abs/1711.08002},
+  archivePrefix = {arXiv},
+  eprint    = {1711.08002},
+  timestamp = {Mon, 13 Aug 2018 16:46:44 +0200},
+  biburl    = {https://dblp.org/rec/bib/journals/corr/abs-1711-08002},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{MeltdownPaper,
+ author = {Moritz Lipp and Michael Schwarz and Daniel Gruss and Thomas Prescher and Werner Haas and Anders Fogh and Jann Horn and Stefan Mangard and Paul Kocher and Daniel Genkin and Yuval Yarom and Mike Hamburg},
+ title = {Meltdown: Reading Kernel Memory from User Space},
+ booktitle = {27th {USENIX} Security Symposium ({USENIX} Security 18)},
+ year = {2018},
+}
+
+@inproceedings{SpectrePaper,
+ author = {Paul Kocher and Jann Horn and Anders Fogh and and Daniel Genkin and Daniel Gruss and Werner Haas and Mike Hamburg and Moritz Lipp and Stefan Mangard and Thomas Prescher and Michael Schwarz and Yuval Yarom},
+ title = {Spectre Attacks: Exploiting Speculative Execution},
+ booktitle = {40th IEEE Symposium on Security and Privacy (S&P'19)},
+ year = {2019},
+}
+
+@InProceedings{NewResultsInstructionCacheAttacks,
+author="Ac{\i}i{\c{c}}mez, Onur
+and Brumley, Billy Bob
+and Grabher, Philipp",
+editor="Mangard, Stefan
+and Standaert, Fran{\c{c}}ois-Xavier",
+title="New Results on Instruction Cache Attacks",
+booktitle="Cryptographic Hardware and Embedded Systems, CHES 2010",
+year="2010",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="110--124",
+abstract="We improve instruction cache data analysis techniques with a framework based on vector quantization and hidden Markov models. As a result, we are capable of carrying out efficient automated attacks using live I-cache timing data. Using this analysis technique, we run an I-cache attack on OpenSSL's DSA implementation and recover keys using lattice methods. Previous I-cache attacks were proof-of-concept: we present results of an actual attack in a real-world setting, proving these attacks to be realistic. We also present general software countermeasures, along with their performance impact, that are not algorithm specific and can be employed at the kernel and/or compiler level.",
+isbn="978-3-642-15031-9"
+}
+
+@InProceedings{RowhammerJS,
+author="Gruss, Daniel
+and Maurice, Cl{\'e}mentine
+and Mangard, Stefan",
+editor="Caballero, Juan
+and Zurutuza, Urko
+and Rodr{\'i}guez, Ricardo J.",
+title="Rowhammer.js: A Remote Software-Induced Fault Attack in JavaScript",
+booktitle="Detection of Intrusions and Malware, and Vulnerability Assessment",
+year="2016",
+publisher="Springer International Publishing",
+address="Cham",
+pages="300--321",
+abstract="A fundamental assumption in software security is that a memory location can only be modified by processes that may write to this memory location. However, a recent study has shown that parasitic effects in DRAM can change the content of a memory cell without accessing it, but by accessing other memory locations in a high frequency. This so-called Rowhammer bug occurs in most of today's memory modules and has fatal consequences for the security of all affected systems, e.g., privilege escalation attacks.",
+isbn="978-3-319-40667-1"
+}
+
+@article{Rowhammer,
+ author = {Kim, Yoongu and Daly, Ross and Kim, Jeremie and Fallin, Chris and Lee, Ji Hye and Lee, Donghyuk and Wilkerson, Chris and Lai, Konrad and Mutlu, Onur},
+ title = {Flipping Bits in Memory Without Accessing Them: An Experimental Study of DRAM Disturbance Errors},
+ journal = {SIGARCH Comput. Archit. News},
+ issue_date = {June 2014},
+ volume = {42},
+ number = {3},
+ month = jun,
+ year = {2014},
+ issn = {0163-5964},
+ pages = {361--372},
+ numpages = {12},
+ url = {http://doi.acm.org/10.1145/2678373.2665726},
+ doi = {10.1145/2678373.2665726},
+ acmid = {2665726},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+} 
+
+@inproceedings {Keylogger,
+author = {Daniel Gruss and Raphael Spreitzer and Stefan Mangard},
+title = {Cache Template Attacks: Automating Attacks on Inclusive Last-Level Caches},
+booktitle = {24th {USENIX} Security Symposium ({USENIX} Security 15)},
+year = {2015},
+isbn = {978-1-931971-232},
+address = {Washington, D.C.},
+pages = {897--912},
+url = {https://www.usenix.org/conference/usenixsecurity15/technical-sessions/presentation/gruss},
+publisher = {{USENIX} Association},
+}
+
+@InProceedings{KocherFirstSideChannelAttack,
+author="Kocher, Paul C.",
+editor="Koblitz, Neal",
+title="Timing Attacks on Implementations of Diffie-Hellman, RSA, DSS, and Other Systems",
+booktitle="Advances in Cryptology --- CRYPTO '96",
+year="1996",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="104--113",
+abstract="By carefully measuring the amount of time required to perform private key operations, attackers may be able to find fixed Diffie-Hellman exponents, factor RSA keys, and break other cryptosystems. Against a vulnerable system, the attack is computationally inexpensive and often requires only known ciphertext. Actual systems are potentially at risk, including cryptographic tokens, network-based cryptosystems, and other applications where attackers can make reasonably accurate timing measurements. Techniques for preventing the attack for RSA and Diffie-Hellman are presented. Some cryptosystems will need to be revised to protect against the attack, and new protocols and algorithms may need to incorporate measures to prevent timing attacks.",
+isbn="978-3-540-68697-2"
+}
+
+@inproceedings{MemoryLockingWu,
+ author = {Wu, Zhenyu and Xu, Zhang and Wang, Haining},
+ title = {Whispers in the Hyper-space: High-speed Covert Channel Attacks in the Cloud},
+ booktitle = {Proceedings of the 21st USENIX Conference on Security Symposium},
+ series = {Security'12},
+ year = {2012},
+ location = {Bellevue, WA},
+ pages = {9--9},
+ numpages = {1},
+ url = {http://dl.acm.org/citation.cfm?id=2362793.2362802},
+ acmid = {2362802},
+ publisher = {USENIX Association},
+ address = {Berkeley, CA, USA},
+} 
+
+@inproceedings{MemoryLockingRisenpart,
+ author = {Varadarajan, Venkatanathan and Zhang, Yinqian and Ristenpart, Thomas and Swift, Michael},
+ title = {A Placement Vulnerability Study in Multi-tenant Public Clouds},
+ booktitle = {Proceedings of the 24th USENIX Conference on Security Symposium},
+ series = {SEC'15},
+ year = {2015},
+ isbn = {978-1-931971-232},
+ location = {Washington, D.C.},
+ pages = {913--928},
+ numpages = {16},
+ url = {http://dl.acm.org/citation.cfm?id=2831143.2831201},
+ acmid = {2831201},
+ publisher = {USENIX Association},
+ address = {Berkeley, CA, USA},
+ keywords = {cloud security, co-location detection, multi-tenancy},
+} 
 

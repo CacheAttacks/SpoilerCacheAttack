@@ -298,7 +298,7 @@ In dieser werden alle Adressen aus dem Pool entfernt, welche ebenfalls von dem i
 Durch diesen Schritt wird also vermieden, dass die spätere Menge von Eviction-Set dahingehend überprüft werden müsste, ob Eviction-Sets paarweise das selbe zugrundeliegende Cache-Set besitzen. 
 Des Weiteren beschleunigt die Collect-Phase die nächsten Iterationen, da weniger Adressen im Pool zur Verfügung stehen.
 Hierzu wird eine Adresse aus dem Pool durch einen Zugriff in den Cache geladen und anschließend auf alle Einträge im Eviction-Set zugegriffen.
-Danach wird die Zugriffszeit auf die Adresse gemessen und bei einer erhöhten Zeit aus dem Pool entfernt, da dann die Adresse auf das selbe Cache-Set wie die Einträge des Eviction-Set bzw. die letzte Zeugenadresse abgebildet wird.
+Danach wird die Zugriffszeit auf die Adresse gemessen und bei einer erhöhten Zeit aus dem Pool entfernt, da dann die Adresse auf das selbe Cache-Set wie die Einträge des Eviction-Set beziehungsweise die letzte Zeugenadresse abgebildet wird.
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
@@ -379,7 +379,7 @@ Im Pseudocode werden colliding addresses zu $evictionBuffer[0]$ gesucht.
 Hierzu werden iterativ (Zeile 3) Speicherblöcke aus dem Pool auf diese Eigenschaft hin untersucht.
 Wie oben beschrieben muss der Store-Buffer mit Schreibbefehlen geflutet werden, wobei $WINDOW$ die Anzahl ebendieser angibt.
 Zeile 6 und 7 sorgen für die Schreibbefehle auf die Speicherblöcke $p + WINDOW - 1$ bis $p$ des Pools, sodass der Schreibzugriff auf den aktuell zu testenden Block $p$ als letztes erfolgt.
-Die Zeilen 8 bis 10 messen die Zeit für einen Lesezugriff auf die Adresse $evictionBuffer[0]$ bzw. Speicherblock 0.
+Die Zeilen 8 bis 10 messen die Zeit für einen Lesezugriff auf die Adresse $evictionBuffer[0]$ beziehungsweise Speicherblock 0.
 
 Der Testvorgang für einen Speicherblock $p$ wird mehrfach wiederholt (Zeile 5) und die Zugriffszeit auf $evictionBuffer[0]$ gemittelt (Zeile 11) um anders begründete Ausreißer bei der Zugriffszeit  auszuschließen. 
 
@@ -492,7 +492,7 @@ Mit den in der Grafik verwendeten Parametern ergibt sich eine ungefähre Netto-D
 \begin{scaletikzpicturetowidth}{\textwidth}
 \input{methods/covert_channel_example.tex}
 \end{scaletikzpicturetowidth}
-\caption{Verdeckter Kanal mit einem Javascript/Webassembly-Empfänger und einem C-Programm als Sender. Dargestellt ist das zweimalige Empfangen des Bitstrings "0010001110" im Bereich von 38 bis 147 und von 165 bis 282. Der obere Plot spiegelt die Zeitmessung mittels Prime-and-Probe wieder, wobei die graue durchgezogene Linie $2 \cdot Median(y)$ ist. Zugriffswerte oberhalb der Linie werden als 1 und unterhalb als 0 interpretiert. Der untere Plot zeigt dies daraus erkannte Muster. Größe Blöcke von Einsen wie etwa im Bereich 21 bis 37 dienen der Synchronisation zwischen Sender und Empfänger. Die Nullen im Bitstring werden über den Abstand zwischen Einsen bzw. dem Synchronisationsblock ermittelt.}
+\caption{Verdeckter Kanal mit einem Javascript/Webassembly-Empfänger und einem C-Programm als Sender. Dargestellt ist das zweimalige Empfangen des Bitstrings "0010001110" im Bereich von 38 bis 147 und von 165 bis 282. Der obere Plot spiegelt die Zeitmessung mittels Prime-and-Probe wieder, wobei die graue durchgezogene Linie $2 \cdot Median(y)$ ist. Zugriffswerte oberhalb der Linie werden als 1 und unterhalb als 0 interpretiert. Der untere Plot zeigt dies daraus erkannte Muster. Größe Blöcke von Einsen wie etwa im Bereich 21 bis 37 dienen der Synchronisation zwischen Sender und Empfänger. Die Nullen im Bitstring werden über den Abstand zwischen Einsen beziehungsweise dem Synchronisationsblock ermittelt.}
 \end{figure}
 \captionsetup[figure]{skip=10pt}
 
