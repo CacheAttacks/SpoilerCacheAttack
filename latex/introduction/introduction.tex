@@ -3,7 +3,7 @@
 
 %\todo{Sollen in die Einleitung Quellen?}
 
-Seitenkanalangriffe sind ein mächtiges Werkzeug für die Kryptanalyse, da sie es erlauben es geheime Informationen wie den Schlüssel aus einem Gerät zu extrahieren.
+Seitenkanalangriffe sind ein mächtiges Werkzeug für die Kryptanalyse, da sie es erlauben \todo{Satzbau!} es geheime Informationen wie den \todo{welchen Schlüssel? Kryptographische?} Schlüssel aus einem Gerät zu extrahieren.
 Hierfür wird beispielsweise der Stromverbrauch oder die Berechnungsdauer verschiedener Ein- und Ausgaben gemessen.
 Bei physikalischen Seitenkanalangriffen ist die Angreiferin gezwungen eine gewisse örtliche Nähe zum System besitzen.
 
@@ -16,12 +16,12 @@ Aufgrund dieser Konkurrenz kann die Angreiferin Informationen über den Opferpro
 
 Eine Reihe von Ressourcen hat sich als problematisch erwiesen, etwa die Einheiten der Sprungvorhersage oder der Return-Stack-Buffer.
 Das mit Abstand größte Problem stellen die vielfältigen Caches dar, welche eine feine Auflösung der Speicherzugriffe des Opferprozesses erlauben.
-Diese ermöglichen es geheime Informationen wie kryptografische Schlüssel von RSA \cite{CacheBleedOpenSSLRSA} oder AES \cite{BernsteinAES} aus dem Opferprozess zu extrahieren.
+Diese ermöglichen es, geheime Informationen wie kryptografische Schlüssel von RSA \cite{CacheBleedOpenSSLRSA} oder AES \cite{BernsteinAES} aus dem Opferprozess zu extrahieren.
 Weitere Anwendungsmöglichkeiten sind Keylogger \cite{Keylogger} und Überwachung der Webseitenaufrufe oder Nutzeraktivität \cite{TheSpyInTheSandbox}.
 
-Mit Ausnahme der wohl bekanntesten Vertreter in Form von Meltdown und Spectre ist wenig darüber bekannt ob Cache-Angriffe praktisch relevant sind oder wie häufig sie eingesetzt werden.
-Mit verantwortlich sind die in der Literatur zum Großteil angenommen Angriffsszenario, welches die Ausführung von nativen Code auf dem Opfersystem voraussetzt.
-Dieses Szenario hat seine Berechtigung unter anderem bei Angriffen auf virtuelle Maschinen die auf derselben Hardware laufen (Cross-VM-Attack).
+Mit Ausnahme der wohl bekanntesten Vertreter in Form von Meltdown und Spectre ist wenig darüber bekannt, ob Cache-Angriffe praktisch relevant sind oder wie häufig sie eingesetzt werden. \todo{Hast du infos darüber, wie häufig spectre und meltdown in der praxis eingesetztz wurden? Würde mich interessieren}
+Mit verantwortlich \todo{wofür?} sind die in der Literatur zum Großteil angenommen Angriffsszenario, welches die Ausführung von nativen Code auf dem Opfersystem voraussetzt.
+Dieses Szenario hat seine Berechtigung unter anderem bei Angriffen auf virtuelle Maschinen\todo{Satzbau!. Vielleicht lieber "..., wo der Code der Angreiferin auf der selben Hardware wie der Opferprozess" oder so?} die auf derselben Hardware laufen (Cross-VM-Attack).
 
 Auch Mehrbenutzersystemen fallen unter dieses Szenario, sind aber eher in Unternehmen und Organisationen von Relevanz.
 So ist es einem Studierenden der Universität zu Lübeck jederzeit möglich sich per SSH auf einen beliebigen Pool-Rechner einzuloggen, unabhängig davon ob der Rechner lokal in Benutzung ist.
@@ -33,7 +33,7 @@ Daher gibt es Bestrebungen Cache-Angriffe auf Endbenutzergeräten zu ermögliche
 Da der Browser faktisch bei jedem Webseitenbesuch fremden und unbekannten Code ausführt, sind Möglichkeiten für die Angreiferin in Javascript und Co. entsprechend restriktiv.
 Daher sind Angriffe nur eingeschränkt oder aufwendiger auszuführen, wie sich im Verlaufe der Arbeit zeigen wird. 
 
-In dieser Arbeit wird sich auf die folgenden Fragen konzentriert:
+In dieser Arbeit \todo{Ich wäre hier für section Aufgabenstellung. Außerdem ein kleines bisschen blbla: In Dieser Arbeit wird der Angrif aus PAPER nachimplementiert. Es handelt sich dabei um einen P and P Angriff, der über TECHNOLOGIE durchgeführt wird. Durch TECHNOLOGIE bekommt man VORTIELE. Im Laufe der Implementierung werden folgende Fragen bearbeitet: } wird sich auf die folgenden Fragen konzentriert:
 
 \begin{enumerate}
 \item Die Arbeiten \cite{TheSpyInTheSandbox,DriveByPaper,ASLROnTheLine} haben demonstriert, dass Cache-Angriffe im Browser möglich sind. 
@@ -49,14 +49,14 @@ Sind also im Oktober 2018 Cache-Angriffe aus dem Browser heraus möglich?
 
 \section{Ergebnisse}
 
-Für die Beantwortung der ersten Frage spielt der Browser eine wichtige Rolle, da für Cache-Angriffe hochauflösende Timer im Nanosekundenbereich benötigt werden.
+\todo{diese Section (unterteilung, nicht Inhalt) kann dafür meinetwegen weg} Für die Beantwortung der ersten Frage spielt der Browser eine wichtige Rolle, da für Cache-Angriffe hochauflösende Timer im Nanosekundenbereich benötigt werden.
 In Chrome ist das Erzeugen eines solchen Timers durch einen Counter-Thread standardmäßig möglich, wobei dies in Firefox zurzeit ausschließlich in abgeänderten Einstellungen möglich ist.
 
 Der angesprochene Counter-Thread ist während des gesamten Angriffs voll ausgelastet, belegt also einen ganzen virtuellen Kern.
 Da Entwickler hochauflösende Timer nachfragen, wird Mozilla ebenso wie Google in Zukunft versuchen wieder hochauflösende Timer anbieten, wobei der zurzeit nötige Timer-Thread entfallen wird.
 Dies wird passieren, sobald Maßnahmen gegen Meltdown und Spectre implementiert sind TODO cite.
 
-\par\medskip
+\par\medskip \todo{das hier finde ich albern. Du kannst dir gern den Absatz umdefinieren, sodass du bei jedem Absatz einen medskip hast. Aber hier plötzlich damit anfangen finde ich komisch.}
 
 Beim Prime and Probe Angriff steht Browserimplementation einer nativen Implementation in nichts nach. Allerdings ist neben den Kosten für den Counter-Thread die zeitliche Auflösung des Angriffs um \todo{c code slot time messen} \% reduziert.
 
@@ -87,15 +87,15 @@ Es konnte nicht abschließend geklärt werden, ob diese Gleichungssysteme bei pr
 \todo{Soll in diesem Absatz klarer stehen, dass der Angriff nicht praktisch funktioniert?}
 Des Weiteren wurde ein bekannter Cache-Angriff auf die RSA-Schlüsselgenerierung in OpenSSL nach Mozilla NSS portiert.
 Der ursprüngliche Angriff setzte die Ausführung nativen Codes voraus, wobei in dieser Arbeit eine Umsetzung im Browser geprüft wurde.
-Dabei konnten mehrere Probleme identifiziert werden, welche Portierungen von nativen Cache-Angriffen hin zu Implementierungen im Browser erschweren.
+Dabei konnten mehrere Probleme identifiziert werden, welche Portierungen von nativen Cache-Angriffen hin zu Implementierungen im Browser erschweren. \todo{Diese werden in Kapitel bla genauer beschrieben und diskutiert.}
 
 \section{Gliederung der Arbeit}
-
+\todo{Schieb bitte diese section ans Ende des Kapitels. Dann endet es auch nicht so aprubt.}
 Diese Arbeit ist in sechs Hauptkapitel untergliedert. 
 Nach der Einleitung werden im zweiten Kapitel die notwendigen technischen Grundlagen erläutert, die für das Verständnis der nachfolgenden Kapitel bedeutend sind.
 
 Die Implementierung des Angriffs wird im dritten Kapitel erörtert. 
-Im Zuge dessen wird die Initialisierungsphase des Angriffs optimiert und evaluiert, sowie ein verdeckter Kanal als Beispiel vorgebracht.
+Im Zuge dessen wird die Initialisierungsphase des Angriffs optimiert und evaluiert, sowie ein verdeckter Kanal als Beispiel vorgebracht. \todo{Die Kapazitätsschranken des verdeckten Kanals werden untersucht}
 
 Das vierte Kapitel befasst sich mit der Analyse möglicher Angriffsziele innerhalb der RSA-Schüsselgenerierung von Mozilla NSS und OpenPGP.js.
 Dabei werden Unterschiede zwischen beiden Implementierungen verglichen und die Übertragbarkeit eines nativen Angriffs aus OpenSSL diskutiert.
@@ -106,7 +106,7 @@ Im letzten Kapitel wird ein Fazit gezogen und ein Ausblick auf mögliche Änderu
 
 \section{Forschungsstand/Verwandte Arbeiten}
 
-Hier soll ein Überblick bereits getätigter Forschungsarbeiten im Rahmen der für die Arbeit relevanten Themenbereiche Cache-Angriffe, Drive-by-Attacks und Angriffe auf die RSA Schlüsselgenerierung gegeben werden. Zudem soll eine Abgrenzung gegenüber verwandten, aber für diese Arbeit nicht relevanten Themenbereiche stattfinden.
+Hier soll ein Überblick bereits getätigter Forschungsarbeiten im Rahmen der für die Arbeit relevanten Themenbereiche Cache-Angriffe \todo{würde ich rausnehmen, cache-Angriffe sind ein zu großes Feld hier}, Drive-by-Attacks und Angriffe auf die RSA Schlüsselgenerierung gegeben werden. Zudem soll eine Abgrenzung gegenüber verwandten, aber für diese Arbeit nicht relevanten Themenbereiche stattfinden.
 
 \subsection{Cache-Angriffe}
 
@@ -130,14 +130,16 @@ Durch die Freiheiten des Javascript-Compilers ist es möglich, dass je nach Eing
 
 \subsection{Cache-Angriffe auf RSA}
 
-Viele Paper haben gezeigt \cite{CacheBleedOpenSSLRSA, FlushReload, DriveByPaper}, dass sich der RSA-Schlüssel oder Teile davon mittels Cache-Angriffen extrahieren lassen. Das Angriffsziel waren dabei Komponenten der Ver- und Entschlüsselung beispielsweise die modulare Exponentiationsfunktion \cite{CacheBleedOpenSSLRSA, DriveByPaper, DriveByPaper}.
+Viele Paper haben gezeigt \cite{CacheBleedOpenSSLRSA, FlushReload, DriveByPaper}, dass sich der RSA-Schlüssel oder Teile davon mittels Cache-Angriffen extrahieren lassen. Das Angriffsziel waren dabei Komponenten der Ver- und Entschlüsselung beispielsweise die modulare Exponentiationsfunktion \cite{CacheBleedOpenSSLRSA, DriveByPaper, DriveByPaper}. \todo{Hier vielleicht noch ein bisschen mehr darüber, wie diese Angriffe ablaufen? Traces von Multiplier-Tabellen sammeln, dann auswerten? Muss auch nicht, wäre nur Masse}
 
-Weniger Aufmerksamkeit wurde der RSA-Schlüsselgenerierung geschenkt \cite{RSAKeyGeneration2}, da diese im Gegensatz zur Ver- und Entschlüsselung nur einmal ausgeführt wird und damit schwieriger anzugreifen ist.
+Weniger Aufmerksamkeit wurde der RSA-Schlüsselgenerierung geschenkt \cite{RSAKeyGeneration2}, da diese im Gegensatz zur Ver- und Entschlüsselung nur einmal ausgeführt wird und damit schwieriger anzugreifen ist. \todo{Trotzdem gibt es hier ein Paper. Dies ist die Stelle, an der du es beschreiben solltest. Dieses Paper bildet jetzt etwa 30 Prozent der Grundlage dieser Arbeit, da sollte mehr zu stehen. }
 
 %\cite{BSIRSAKeyGeneration}  
 
 \subsection{Spekulative Ausführung, Enklaven und Hyperthreading}
 \label{related_work}
+\todo{warum hängt das Label hier?}
+\todo{hier fehlt völlig der BEzug zu deiner Arbeit. Du müsstest hier noch schreiben, dass wir diese Lücken nicht ausnutzen und dir einen Grund ausdenken warum wir das nicht tun. }
 
 Vorherige Angriffe hatten die Extraktion von spezifischen Informationen wie Schlüsseln zum Ziel, allerdings können mit Cache-Angriffen auch beliebige Speicherinhalte, sogar über Sicherheitsgrenzen hinweg, ausgelesen werden.
 Die im Jahr 2018 veröffentlichen Angriffe Meltdown \cite{MeltdownPaper} und Spectre \cite{SpectrePaper} nutzen die spekulative Ausführung der CPU aus, um an Speicherinhalte zu gelangen, für die keine Zugriffsrechte vorliegen.
