@@ -5,7 +5,7 @@ In diesem Kapitel werden die Ergebnisse dieser Arbeit zusammengefasst und die ge
 Abschließend wird ein Ausblick in die Zukunft der Cache-Angriffe im Allgemeinen sowie Browserangriffe im Speziellen gewährt.
 
 \section{Zusammenfassung}
-
+\todo{dieser komplette Absatz (section) hat hier nichts zu suchen. Er ist schön und passt gut zu "Gliederung dier Arbeit" im ersten Kapitel.}
 Diese Arbeit hat aktuelle Fragestellungen bezüglich Cache-Angriffen untersucht, wobei sich auf praxisnahe Angriffe aus dem Browser heraus fokussiert wurde.
 Im Hinblick auf die Praxisrelevanz wurde eine neuartige Eviction-Set-Suche evaluiert, welche die Initialisierungsphase eines Angriffs beschleunigt.
 Des Weiteren wurden Leakages in der RSA-Schlüsselgenerierung von Mozilla NSS und OpenPGP.js untersucht sowie Probleme bei der Portierung nativer Angriffen erörtert.
@@ -50,7 +50,7 @@ Am Schluss des Kapitels wurde die Umsetzung der populären Meltdown und Spectre 
 
 \section{Bewertung}
 
-Die Ergebnisse zeigen, dass L3-Cache-Angriffe im Browser möglich sind.
+Die Ergebnisse zeigen, dass L3-Cache-Angriffe im Browser möglich sind. \todo{das war aber schon durch das Paper vorher klar}
 Dabei ist jedoch zum einen die Ausführung des Angriffs langsamer und zum anderen sind die Möglichkeiten zum Ausbremsen des Opferprozesses beschränkt.
 
 Um dem zu begegnen, können mehrere Angriffsinstanzen gestartet werden.
@@ -61,15 +61,15 @@ Jedoch steigt die Systemauslastung an und damit die Gefahr, dass der Angriff vom
 Weiterhin erhöht sich die Initialisierungsdauer linear mit der Anzahl der Angriffsinstanzen.
 Diesem wurde mit der Einführung einer neuen schnelleren Variante des Eviction-Set-Suchalgorithmus entgegengewirkt.
 
-Der Angriff nutzt spezifische Eigenschaften der Intel-Architektur aus und ist beispielsweise nicht auf Prozessoren des Konkurrenten AMD lauffähig.
-Im Hinblick auf die Ersetzung des Desktop-Computers oder Notebooks durch Smartphone und Tablet, ist eine nähere Untersuchung der Mikroarchitekturen dieser Geräte interessant.
+Der Angriff nutzt spezifische Eigenschaften der Intel-Architektur aus und ist beispielsweise nicht auf Prozessoren des Konkurrenten AMD lauffähig. \todo{Wiederhole hier kurz, welche.}
+Im Hinblick auf die Ersetzung des Desktop-Computers oder Notebooks durch Smartphone und Tablet, ist eine nähere Untersuchung der Mikroarchitekturen dieser Geräte interessant. \todo{das muss in den Ausblick}
 
 Ein großer Vorteil des Angriffs ist, dass er wenig Spuren nach der Ausführung hinterlässt.
 Trotz der Möglichkeit des Angriffs aus dem Browser heraus, ist dieser in der Praxis 
 aufwendig.
-Denn er ist speziell auf den Code einer Softwareversion abgestimmt und diese muss zum Zeitpunkt des Angriffs laufen und die gewünschten Berechnungen ausführen.
+Denn er ist speziell auf den Code einer Softwareversion abgestimmt und diese muss zum Zeitpunkt des Angriffs laufen und die gewünschten Berechnungen ausführen. \todo{Hinzufügen: dies ist auch eine Schwäche im urspünglichen paper ZITAT; wo etwa XY Verschlüsselungen/Entschlüsselungen über einen zeit raum von etwa XY laufen müssen.}
 
-In diese Kategorie fällt auch die Leakage mit den Unklarheiten im Bezug auf die praktische Anwendung bei der RSA-Primzahlgenerierung, wobei praktische Szenarien denkbar sind.
+In diese Kategorie fällt auch die Leakage mit den Unklarheiten im Bezug auf die praktische Anwendung bei der RSA-Primzahlgenerierung, wobei praktische Szenarien denkbar sind. \todo{den Satz}
 
 So werden an der Universität zu Lübeck zum Beginn des Wintersemsters in einem Einführungskurs die E-Mail-Zertifikate von den neuen Studenten lokal erzeugt.
 Ein Mitarbeiter könnte versuchen die Unterseite des ITSC, welche die Zertifikatsgenerierung beschreibt, zu manipulieren.
