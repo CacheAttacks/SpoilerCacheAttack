@@ -3,7 +3,8 @@
 
 \section{RSA Key Generierung}
 
-Frühere Arbeiten zu Cache-Angriffen hatten es vor allem auf die Verschlüsselung- und Entschlüsselungsroutinen der RSA-Implementierungen abgesehen \cite{FlushReload, CacheBleedOpenSSLRSA}, weshalb bei der Implantation\todo{das sollte Implementierung heißen} ebendieser die Möglichkeit von Seitenkanalangriffen besonders im Hinterkopf behalten wird. \todo{und was tun die Leute? Im Hinterkopf behalten ist zu Umgangssprachlich, bitte beschreibe hier, was für Methoden (constant time, constant execution flow, ...) zum Einsatz kommen.}
+Frühere Arbeiten zu Cache-Angriffen hatten es vor allem auf die Verschlüsselung- und Entschlüsselungsroutinen der RSA-Implementierungen abgesehen \cite{FlushReload, CacheBleedOpenSSLRSA}.
+Deshalb wird bei der Implementierung ebendieser die Möglichkeit von Seitenkanalangriffen in Betracht gezogen und verstärkt auf Algorithmen gesetzt dessen Ausführungszeit (constant-time) und Kontrollfluss (constant-execution-flow) unabhängig von den Eingaben ist.
 Einen anderen weniger untersuchten Einstiegspunkt für die Schlüsselextraktion bieten die Routinen zur Schlüsselgenerierung, welche in den letzten Monaten etwa in \cite{RSAKeyGeneration2} näher untersucht wurden.
 
 \subsection{Primzahlgenerierung in Mozilla NSS}
@@ -125,67 +126,8 @@ SIEVE_SIZE <- 32 * 1024\;
 }
 \end{algorithm}
 
-\subsection{Primzahlgenerierung in OpenPGP.js}
-
-OpenPGP ist ein Standard für das Signieren, Ver- und Entschlüsseln von Daten, welcher im RFC 4880 \cite{rfc4880} definiert wird.
-OpenPGP.js \cite{OpenPGPjs} ist eine Opensource-Implementierung des OpenPGP-Protokolls in Javascript, welche sich zum Ziel gesetzt hat OpenPGP auf einer breiten Platte von Endgeräten zu ermöglichen.
-
-Die Primzahlgenerierung von OpenPGP.js ist in der Datei prime.js beschrieben und startet mit der Funktion randomProbablePrime.\todo{funktionsnamen sollten \lstinline sein. bitte im gesamten kapitel überprüfen.}
-Zuerst wird eine Zufallszahl entsprechend der gewünschten Bitlänge generiert.
-In OpenPGP.js wird kein Siebverfahren wie in Mozilla NSS angewandt, sondern es wird sichergestellt, dass ausschließlich nicht durch 2,3 und 5 teilbare Zahlen als Primzahlkandidaten weitergehend geprüft werden.
-Dazu wird eine Zahl $n \mod 30$ berechnet und der Rest betrachtet.
-Ist dieser weder durch 2,3 oder 5 teilbar so ist auch $n$ nicht durch 2,3 oder 5 teilbar.
-Andernfalls wird die kleinstmögliche Zahl $k \in \mathbb{N}$ auf $n$ addiert, sodass $n + k \mod 30$ nicht durch 2,3 oder 5 teilbar ist.
-Diese kleinstmögliche Zahl ist $adds[n \mod 30]$, das heißt beispielsweise ist $125$ zu $adds[125 \mod 30] = 2$ addiert gleich 127, die kleinstmögliche Zahl größer 125, welche nicht durch 2,3 und 5 teilbar ist.
-
-Mit dieser Methode wird in der Zeile ein Kandidat erzeugt, der nicht durch 2,3 oder 5 teilbar ist und in der Funktion isProbablePrime tiefer gehend geprüft wird.
-Zuerst wird die Teilerfremdheit von $random\_num -1$ zu dem Exponenten $e$ überprüft (näheres dazu in \ref{RSAGenGCDAttack}).
-Danach wird ein einfacher Divisionstest mit allen Primzahlen zwischen 7 und 5000 durchgeführt, wohingegen dieser in Mozilla NSS bereits durch den Siebvorgang abgedeckt ist.
-Abschließend wird wie in Mozilla NSS ein Fermat- und Miller-Rabin-Test durchgeführt.
-
-\begin{algorithm}[h]
-\DontPrintSemicolon
-\caption{Pseudo-Code für Primzahlgenerierung in OpenPGP.js}
-\label{alg:randomProbablePrimeOpenPGPjs}
-num_miller_rabin_tests <- get_num_tests(bitlen(random\_num))\;
-small\_primes <- [7, 11, 13, 17, ..., 4999] //665 primes from 7 to 5000\;
-
-\Fn{$randomProbablePrime(bits, e)$}{
-    adds <- [1, 6, 5, 4, 3, 2, 1, 4, 3, 2, 1, 2, 1, 4, 3, 2, 1, 2, 1, 4, 3, 2, 1, 6, 5, 4, 3, 2, 1, 2]\;
-    random\_num <- random.getRandomBN\;
-    i <- random\_num mod 30\;
-    
-    \Repeat{!isProbablePrime(random\_num,e,num_miller_rabin_tests)}{
-        random\_num <- random\_num + adds[i]\;
-        i <- (i + adds[i]) mod 30\;
-        // If reached the maximum, go back to the minimum.\;
-        \If{bitlen(random\_num) > bits}{
-            random\_num <- (random\_num mod $2^{bits}$) + $2^{bits-1}$\;
-            i <- random\_num mod 30\;
-        }
-    }
-}
-
-\Fn{$isProbablePrime(random\_num, e, num\_miller\_rabin\_tests)$}{
-    \If{gcd(random\_num-1, e) $\neq$ 1}{
-        \Return false\;
-    }
-    \ForEach{small\_prime in small\_primes}{
-        \If{random\_num mod small\_prime = 0}{
-            \Return false\;
-        }
-    }
-    \If{!fermat(random\_num, 2)}{
-        \Return false\;
-    }
-    \If{!millerRabin(random\_num, k)}{
-        \Return false\;
-    }
-    \Return true
-}
-\end{algorithm}
-
-\subsection{Mögliche Leakage in Mozilla NSS} \todo{Bitte mach eine Subsection Primzahlgenerierung in MNSS, und dann eine subsubsection* "Diskussion des Algorithmus" und eine "Potentielle Leakage". Für OpenPGP machst du dasselbe. Wenn du das nicht willst schiebe bitte zumindest die Leakage-Diskussion direkt hinter die Beschreibung des ALgorithmus, so kann man sich das nicht merken.}
+\subsection{Mögliche Leakage in Mozilla NSS} 
+%\todo{Bitte mach eine Subsection Primzahlgenerierung in MNSS, und dann eine subsubsection* "Diskussion des Algorithmus" und eine "Potentielle Leakage". Für OpenPGP machst du dasselbe. Wenn du das nicht willst schiebe bitte zumindest die Leakage-Diskussion direkt hinter die Beschreibung des ALgorithmus, so kann man sich das nicht merken.}
 \label{leakageMozillaNSS}
 
 Das Ziel ist es die Zahl $random\_num$ oder Teile davon zu rekonstruieren.
@@ -223,7 +165,7 @@ Die zugehörige Cache-Line ist nun $sieve[1472-1535]$, womit keinerlei Zugriff a
 Im Gegensatz zum $primes\_tab$-Array wird das $sieve$-Array dynamisch in der Funktion erzeugt, also kann die Angreiferin dies nicht durch vorherige Schlüsselgenerierungen lokalisieren.
 Ihr ist aber bekannt, dass solange $small\_prime$ < 64 (17 Primzahlen) ist auf alle Cache-Lines des $sieve$-Arrays zugegriffen wird.
 
-Durch eine gleiche Änderung \todo{was ist denn eine gleiche Änderung?} der letzten 12 Bits der Adressen eines bestehenden Eviction-Set entsteht ein neues gültiges Eviction-Set, welches im Folgenden als benachbartes Eviction-Set bezeichnet wird.
+Durch die Änderung der letzten 12 Bits der Adressen eines bestehenden Eviction-Set in der selbe Weise entsteht ein neues gültiges Eviction-Set, welches im Folgenden als benachbartes Eviction-Set bezeichnet wird.
 
 Das $sieve$-Array in 512 Cache-Lines aufgeteilt ist, zwischen den Zugriffen auf das $sieve$-Array ist eine Pause von TODO Taktzyklen, aber die eigentliche Aktivität auf dem $sieve$-Array ist mit unter 100 Taktzyklen pro Iteration vergleichsweise kurz.
 Daher muss die Angreiferin nach dem Zugriff auf das $primes\_tab$-Array eine Reihe von Eviction-Sets primen, warten bis auf das $primes\_tab$-Array erneut zugegriffen wird und dann proben.
@@ -284,7 +226,7 @@ So lässt sich das Problem etwa als Integer Programming Problem (ILP) formuliere
 Ein Constraint ist die Einschränkung von $random\_num$ in den Bereich von $2^{bits}$ bis $2^{bits+1}$.
 Und jede Modulo-Gleichung $x \equiv a \mod m$ wird zu $x + f \cdot m = a$ übersetzt.
 
-Typische ILP-Solver wie etwa LP-Solve arbeiten aber nicht mit großen Ganzzahlen, sodass \todo{kein Satz} als Lösung wegfallen.
+Typische ILP-Solver wie etwa LP-Solve arbeiten nicht mit großen Ganzzahlen über $2^64$, sodass diese als Lösung wegfallen.
 In Mathematica lässt sich das Problem beschreiben, jedoch wurde der Versuch kleine Probleminstanzen mit $random\_num \approx 2^100$ zu lösen nach mehreren Stunden abgebrochen.
 Durch das Laufzeitverhalten lässt sich vermuten, dass Mathematica den langsamen und trivialen Ansatz verfolgt, alle Lösungsmöglichkeiten durchzuprobieren.
 
@@ -308,22 +250,82 @@ Somit ist ein Prime-and-Probe Angriff auf den entsprechenden Codeteil nicht mög
   806C0:        sub    rcx, rax
   806C3:        mov    rax, rcx
   806C6:        mov    [offset], eax
-  806CA: //Code for line 9
+  806CA: //Code für Zeile 9
 \end{minted}
 \normalsize
-\caption{Assemblercode für die Zeilen 5 bis 8 der Funktion mpp_sieve}
+\caption{Assemblercode für die Zeilen 5 bis 8 der Funktion mpp_sieve, welche Teile des Codes der RSA-Primzahlgenerierung für Mozilla NSS ist. Dieser Codeteil beschreibt die }
 \end{figure}
-\todo{schreib bitte in die Bildunterschrift mit rein, was man hier sieht. Das gilt für alle Abbildungen, wo du das noch nicht tust}
+
+
+\subsection{Primzahlgenerierung in OpenPGP.js}
+
+OpenPGP ist ein Standard für das Signieren, Ver- und Entschlüsseln von Daten, welcher im RFC 4880 \cite{rfc4880} definiert wird.
+OpenPGP.js \cite{OpenPGPjs} ist eine Opensource-Implementierung des OpenPGP-Protokolls in Javascript, welche sich zum Ziel gesetzt hat OpenPGP auf einer breiten Platte von Endgeräten zu ermöglichen.
+
+Die Primzahlgenerierung von OpenPGP.js ist in der Datei prime.js beschrieben und startet mit der Funktion randomProbablePrime.\todo{funktionsnamen sollten \lstinline sein. bitte im gesamten kapitel überprüfen.}
+Zuerst wird eine Zufallszahl entsprechend der gewünschten Bitlänge generiert.
+In OpenPGP.js wird kein Siebverfahren wie in Mozilla NSS angewandt, sondern es wird sichergestellt, dass ausschließlich nicht durch 2,3 und 5 teilbare Zahlen als Primzahlkandidaten weitergehend geprüft werden.
+Dazu wird eine Zahl $n \mod 30$ berechnet und der Rest betrachtet.
+Ist dieser weder durch 2,3 oder 5 teilbar so ist auch $n$ nicht durch 2,3 oder 5 teilbar.
+Andernfalls wird die kleinstmögliche Zahl $k \in \mathbb{N}$ auf $n$ addiert, sodass $n + k \mod 30$ nicht durch 2,3 oder 5 teilbar ist.
+Diese kleinstmögliche Zahl ist $adds[n \mod 30]$, das heißt beispielsweise ist $125$ zu $adds[125 \mod 30] = 2$ addiert gleich 127, die kleinstmögliche Zahl größer 125, welche nicht durch 2,3 und 5 teilbar ist.
+
+Mit dieser Methode wird in der Zeile ein Kandidat erzeugt, der nicht durch 2,3 oder 5 teilbar ist und in der Funktion isProbablePrime tiefer gehend geprüft wird.
+Zuerst wird die Teilerfremdheit von $random\_num -1$ zu dem Exponenten $e$ überprüft (näheres dazu in \ref{RSAGenGCDAttack}).
+Danach wird ein einfacher Divisionstest mit allen Primzahlen zwischen 7 und 5000 durchgeführt, wohingegen dieser in Mozilla NSS bereits durch den Siebvorgang abgedeckt ist.
+Abschließend wird wie in Mozilla NSS ein Fermat- und Miller-Rabin-Test durchgeführt.
+
+\begin{algorithm}[h]
+\DontPrintSemicolon
+\caption{Pseudo-Code für Primzahlgenerierung in OpenPGP.js}
+\label{alg:randomProbablePrimeOpenPGPjs}
+num_miller_rabin_tests <- get_num_tests(bitlen(random\_num))\;
+small\_primes <- [7, 11, 13, 17, ..., 4999] //665 primes from 7 to 5000\;
+
+\Fn{$randomProbablePrime(bits, e)$}{
+    adds <- [1, 6, 5, 4, 3, 2, 1, 4, 3, 2, 1, 2, 1, 4, 3, 2, 1, 2, 1, 4, 3, 2, 1, 6, 5, 4, 3, 2, 1, 2]\;
+    random\_num <- random.getRandomBN\;
+    i <- random\_num mod 30\;
+    
+    \Repeat{!isProbablePrime(random\_num,e,num_miller_rabin_tests)}{
+        random\_num <- random\_num + adds[i]\;
+        i <- (i + adds[i]) mod 30\;
+        // If reached the maximum, go back to the minimum.\;
+        \If{bitlen(random\_num) > bits}{
+            random\_num <- (random\_num mod $2^{bits}$) + $2^{bits-1}$\;
+            i <- random\_num mod 30\;
+        }
+    }
+}
+
+\Fn{$isProbablePrime(random\_num, e, num\_miller\_rabin\_tests)$}{
+    \If{gcd(random\_num-1, e) $\neq$ 1}{
+        \Return false\;
+    }
+    \ForEach{small\_prime in small\_primes}{
+        \If{random\_num mod small\_prime = 0}{
+            \Return false\;
+        }
+    }
+    \If{!fermat(random\_num, 2)}{
+        \Return false\;
+    }
+    \If{!millerRabin(random\_num, k)}{
+        \Return false\;
+    }
+    \Return true
+}
+\end{algorithm}
 
 \subsection{Mögliche Leakage in OpenPGP.js}
 
-Auch hier ist der Siebvorgang ein möglicher Teil\todo{Formulierung komisch, Codeabschnitt?}, um Informationen über $random\_num$ zu gewinnen.
+Auch hier ist der Siebvorgang ein möglicher Codeabschnitt, um Informationen über $random\_num$ zu gewinnen.
 Ansatzpunkt ist wie im letzten Abschnitt die Überwachung des $small\_primes$-Arrays, wobei Chrome auf dem verwendeten Testsystem 8 Byte für jeden Eintrag verwendet. Javascript legt die Größe des Datentyps für das $small\_primes$-Array nicht fest, weshalb diese Aussage nicht auf andere Systemkonfigurationen zutreffen muss.
 
 Der Wert $random\_num$ wird nach jedem Abbruch der Funktion $isProbablePrime$ um einen bestimmten Wert inkrementiert.
 Sei $random\_num_k$ der Wert $random\_num$ in dem $k.$-Durchlauf der Schleife in den Zeilen 7 bis 14.
 
-Es werden also pro Cache-Line, welche 8 Einträge des $small\_primes$-Array abdeckt, bis zu 8 Zugriffe erwartet im Abstand von der Dauer einer Modulo-Operation, hier im Mittel etwa 1600 Taktzyklen, erwartet. \todo{verb ist doppelt}
+Es werden also pro Cache-Line, welche 8 Einträge des $small\_primes$-Array abdeckt, bis zu 8 Zugriffe im Abstand von der Dauer einer Modulo-Operation, hier im Mittel etwa 1600 Taktzyklen, erwartet.
 In der Cache-Line mit weniger als 8 Zugriffen gilt für einen der $small\_prime_i$-Werte $random\_num_k \mod small\_prime_i = 0$, wobei dies zu einem sofortigen Abbruch (siehe Zeile 20) führt.
 Folglich haben wir die Information $random\_num_k \mod small\_prime_i = 0$, aber auch $random\_num_k \mod small\_prime_j \neq 0 \: \forall j < i$.
 Um sicherzugehen, dass die Foreach-Schleife in Zeile 18 vorzeitig verlassen wurde, kann zusätzlich der Code der Zeilen 7 bis 14 überwacht werden, welcher nach einem Abbruch geladen wird.
@@ -355,7 +357,8 @@ Ist beispielsweise eine 1024 Bit Primzahl gewünscht, so wird aus dem Intervall 
 \end{align}
 möglichen Primzahlen gewählt.
 Somit ist im Intervall $[2^{1024}\twodots 2^{1024+1}-1]$ etwa eine von $2^{1024}/2^{1014,53} \approx 711$ Zahlen eine Primzahl.
-Da durch 2,3 und 5 teilbare Zahlen nicht getestet werden, entfallen $22/30$ \todo{das kann man kürzen. Oder sollte offensichtlich sein, wie du auf diese Zahl kommst? Ist es meiner Ansicht nach nicht} aller natürlicher Zahlen als Testkandidaten.
+Da durch 2,3 und 5 teilbare Zahlen nicht getestet werden, entfallen 22 von 30 aller natürlicher Zahlen als Testkandidaten, wie anhand des $adds$-Arrays zu sehen ist.
+%\todo{das kann man kürzen. Oder sollte offensichtlich sein, wie du auf diese Zahl kommst? Ist es meiner Ansicht nach nicht} 
 Folglich ist bei einer Bitlänge von 1024 jede $711 \cdot 8/30 \approx 190$ getestete Zahl eine Primzahl, sodass ausgehend von einer zufälligen Zahl im Intervall $[2^{1024}\twodots 2^{1024+1}-1]$ im Mittel etwa 95 Iterationen zum Fund einer Primzahl ausreichen.
 
 Die im Mittel benötigte Anzahl skaliert linear mit der Bitlänge, die Übersichtstabelle \ref{tbl:bitLengthNumberOfIterations} gibt den Erwartungswert für verschiedene Bitlängen an.
@@ -648,7 +651,7 @@ Im Falle eines aktiven Cache-Set steigt die Dauer jedoch auf ca. 500ns (~1700 Ta
 Selbst für eine Schlüssellänge von 8192 Bit ist dieser Wert noch ungenügend hoch.
 
 Auch in anderen Fällen ist die Geschwindigkeit der überwachten Funktion zu schnell um mittels der Prime-and-Probe Funktion überwacht zu werden.
-Hierfür gibt es mehrere Vorschläge die Funktion künstlich auszubremsen, welche unter dem Begriff "performance degradation attacks" veröffentlicht wurden. \todo{warum ist dann hier keine QUelle? Oder meinst du etwas anderes mit veröffentlichen?}
+Hierfür gibt es mehrere Vorschläge die Funktion künstlich auszubremsen, welche in der Literatur \cite{MemoryLockingWu,MemoryLockingRisenpart,MemoryLockingJavaAndroid} unter dem Begriff "performance degradation attacks" beschrieben werden.
 Ein trivialer Angriff ist etwa die Überwachung selber, da diese mit der Prime-Phase ein Cache-Set komplett füllt, sodass Daten des angegriffenes Programms verdrängt und so aus dem langsamen Hauptspeicher geladen werden müssen.
 Der Effekt ist auch in umgekehrter Richtung also dem angegriffenen Programm auf das Angriffsprogramm vorhanden.
 Die Differenz der Prime-and-Probe Dauer bei keiner gegenüber viel Aktivität auf dem Cache-Set veranschaulicht dies.
@@ -658,7 +661,9 @@ Ein Äquivalent existiert jedoch weder in Javascript noch in Webassembly.
 
 Des Weiteren kann die Ausführung von Code im Browser nicht auf bestimmte CPU-Kerne fixiert werden. Hiermit sind Angriffe die einen Thread mit hoher Rechenlast auf den gleichen physischen Kern wie das Opferprogramm laufen lassen nicht ohne Weiteres möglich.
 
-Der oben beschriebene triviale Angriff kann optimiert werden, um die Performancereduktion zu erhöhen. Dafür wird die Prime-and-Probe Operation ohne Zeitmessung für eine bestimmte Zeit in einer Endlosschleife, folgend Prime-Spam genannt, ausgeführt. \todo{um die Performancereduktion zu erhöhen muss man viel drüber nachdenken. Kann man das noch besser formulieren?}
+Der oben beschriebene triviale Angriff kann optimiert werden, um die Performancereduktion zu erhöhen. Dafür wird die Prime-and-Probe Operation ohne Zeitmessung für eine bestimmte Zeit in einer Endlosschleife, folgend Prime-Spam genannt, ausgeführt. 
+\todo{um die Performancereduktion zu erhöhen muss man viel drüber nachdenken. Kann man das noch besser formulieren?}
+\todo{um die Performancereduktion zu erhöhen muss man viel drüber nachdenken. Hä?}
 
 Wie oben beschrieben erstreckt sich der relevante Code für die Shift- und Subtraktions-Operation über mehrere Funktionen und Cache-Lines.
 Jeder dieser Cache-Line ist ein potenzielles Ziel für die Performancereduktion.
@@ -666,12 +671,12 @@ Da ein Prime-Spam auf eine Cache-Line einen kompletten physischen Kern auslastet
 
 Um die Auswirkung vom Prime-Spam auf unterschiedliche Cache-Lines zu bewerten, wird die $mp\_gcd$-Funktion mit den Parametern $e=65535$ und $p-1$ ausgeführt.
 $p$ ist eine zufällige aber über den gesamten Benchmarkzeitraum feste Pseudoprimzahl, wobei RSA-2048 als Parameter gewählt wurde.
-Tabelle \ref{tbl:PerformanceDegShift} betrachtet alle Cache-Line, welche Code für die Shift-Operation beinhalten, wobei die Funktion $s\_mp\_clamp$ wie oben erwähnt auch in der Subtraktion-Operation verwendet wird.
+Tabelle \ref{tbl:PerformanceDegShift} betrachtet alle Cache-Lines, welche Code für die Shift-Operation beinhalten, wobei die Funktion $s\_mp\_clamp$ wie oben erwähnt auch in der Subtraktion-Operation verwendet wird.
 Funktionen sind nicht auf Cache-Line-Grenzen alignt, weshalb die erste und letzte Cache-Lines eines Funktionscodes auch Code für andere Funktionen beinhaltet.
 
 \begin{table}[h]
-\label{tbl:PerformanceDegShift}
 \caption{RSA-2048 Performance-Degradation-Attack mittels Prime-Spam auf Cache-Lines, welche Code der Shift-Operation beinhalten. 1. Spalte: Adressbereich der durch den Angriff verdrängten Cache-Line, 2. Spalte: Funktionen deren Code innerhalb des Adressbereichs der Cache-Line liegt, Spalte "Shift", "Subtraktion" und "$mp\_gcd"$: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen bei einem aktiven Angriff auf die in Spalte 1 spezifizierte Cache-Line. Die erste Zeile gibt die Referenzzeiten ohne aktiven Angriff an. }
+\label{tbl:PerformanceDegShift}
 \begin{tabular}{lllll}
 Cache-Line  & Funktion(en) innerhalb der Cache-Line                                  & Shift & Subtraktion & mp\_gcd \\[10pt]
 &Referenzzeiten ohne Prime-Spam                                         & 340   & 477         & 424k    \\
@@ -697,9 +702,9 @@ Tabelle \ref{tbl:PerformanceDegSub} betrachtet alle Cache-Line, welche Code für
 Anders als bei der Shift-Operation bremsen bei der Subtraktions-Operation die Cache-Lines der $mp\_sub$ signifikant besser als die Cache-Lines der $s\_mp\_clamp$-Funktion.
 
 \begin{table}[h]
-\label{tbl:PerformanceDegSub}
 \caption{RSA-2048 Performance-Degradation-Attack mittels Prime-Spam auf Cache-Lines, welche Code der Subtraktions-Operation beinhalten.
 Spalteninhalte analog zu Tabelle \ref{tbl:PerformanceDegShift}}
+\label{tbl:PerformanceDegSub}
 \begin{tabular}{lllll}
 Cache-Line & Funktion                     & Shift & Subtraktion & mp\_gcd \\[10pt]
 &Referenzzeiten ohne Prime-Spam                         & 340   & 477         & 424k    \\
@@ -727,10 +732,39 @@ Tests haben ergeben, dass sich bei RSA-4096 und RSA-8192 die gleichen prozentual
 
 Die beiden Cache-Lines der $s\_mp\_clamp$-Funktion sind dabei zu bevorzugen, da sie beide Operationen gleichzeitig gut bis sehr gut bremsen.
 Des Weiteren sollte der Fokus auf das Bremsen der Shift-Operation gelegt werden, da diese zum einen schneller ist und die Unterscheidung einzelner Shift-Operation für Rekonstruktion der Primzahl wesentlich ist.
-Zum anderen Bremsen viele der Cache-Lines mit Shift-Operationscode auch die Subtraktion-Funktion messbar, wobei dieses Phänomen andersherum nicht beobachtet werden kann. \todo{Kannst du bitte einen ABsatz für dumme machen: Mit verlangsamung XY und XZ wird das beste Ergebnis erziehlt. Die zu messende Op dauert jetzt XXX lange. Da ein Prime und Probe Zyklus YYY lange dauert, kann immer noch nicht vernünftig gemessen werden.}
+Zum anderen Bremsen viele der Cache-Lines mit Shift-Operationscode auch die Subtraktion-Funktion messbar, wobei dieses Phänomen andersherum nicht beobachtet werden kann. 
+
+\todo{Kannst du bitte einen ABsatz für dumme machen: Mit verlangsamung XY und XZ wird das beste Ergebnis erziehlt. Die zu messende Op dauert jetzt XXX lange. Da ein Prime und Probe Zyklus YYY lange dauert, kann immer noch nicht vernünftig gemessen werden.}
 TODO warum??
 
-TODO mini bench einfügen
+%TODO mini bench einfügen
+
+\begin{table}[h]
+\label{tbl:PerformanceDegSub}
+\caption{Performance-Degradation-Attack mittels Prime-Spam mit verschiedene RSA-Bitlängen.
+Als Cache-Lines wurden diejenigen verwendet, welche sich am effektivsten in RSA-2048 erweisen haben.
+Spalteninhalte analog zu Tabelle \ref{tbl:PerformanceDegShift}}
+\label{tbl:PerformanceDegRSADifferentBitlength}
+\begin{tabular}{llllll}
+RSA-Bitlänge & Cache-Line & Funktion & Shift & Subtraktion & mp\_gcd \\[10pt]
+2048         & &Referenzzeiten ohne Prime-Spam                                         & 340   & 477         & 424k    \\
+2048         & b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 541   & 608         & 549k    \\
+2048         & 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 359   & 766         & 531k    \\
+4096         & &Referenzzeiten ohne Prime-Spam                                         & 543   & 723         & 1,19M    \\
+4096         & b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 700   & 770         & 1,64M    \\
+4096         & 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 609   & 1057         & 1,51M    \\
+8192         & &Referenzzeiten ohne Prime-Spam                                         & 982   & 1223         & 3,71M    \\
+8192         & b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 1125   & 1553         & 4,83M    \\
+8192         & 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 1046   & 1679         & 4,64M    \\
+\end{tabular}
+\end{table}
+
+Für Multihreading Bremsung wurde für Shift 32: 
+1: 's_mp_clamp_0', //s_mp_clamp>: 541,608,549k
+2:  33: 's_mp_clamp_1', //538,605,553k
+3:  49: 's_mp_div_2_0
+4:    58: 's_mp_div_2d_2', //539,557,551k
+5:  59: 's_mp_div_2d_3', //537,547,552k 536,551,557k
 
 %TODO slowdown Techniken und benchmarks auf verschiedene codeteile beschreiben\\
 %TODO wie schnell ist javascript, eventuell in Kapitel 2 näher beschreiben

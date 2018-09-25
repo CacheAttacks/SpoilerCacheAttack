@@ -2,6 +2,9 @@
 % == Latex-Template for Theses
 % == by René Schönfelder
 % == schoenfr@isp.uni-luebeck.de
+%
+% == modified for ITS by Jan Wichelmann
+% == j.wichelmann@uni-luebeck.de
 % =========================================
 % 
 % This latex project serves as a template for theses in the MINT section of the
@@ -32,6 +35,7 @@
 \usepackage[utf8]{inputenc}
 % You can use english alternatively
 \usepackage[ngerman]{babel}
+\addto{\captionsenglish}{\renewcommand{\bibname}{References}}
 
 % PDF properties
 \usepackage{hyperref}
@@ -64,26 +68,56 @@
 \usepackage{textpos}                % Easy text positioning
 \usepackage{typearea}               % Standard for defining geometry
 \usepackage{tikz}                   % TikZ pictures
+\usepackage{pgfplots}
 \usepackage{amsmath,amssymb,amsthm} % Math
+
+\usepackage{minted}
+
 \usepackage{scrhack}
 \usepackage{listings}               % Listings
+\usepackage{paralist}
 \usepackage[ruled,vlined,linesnumbered]{algorithm2e} % Algorithms
 \usepackage{stmaryrd}               % Lightning arrow \lightning
 \usepackage{url}                    % Formatting URLs
 \usepackage{rotating}               % Rotation of figures
-\usepackage{todonotes}              % Make TODO-notes
+\usepackage[ngerman]{todonotes}              % Make TODO-notes
 % This package is used for the following spacing options
 \usepackage{setspace}
+\usepackage[shortlabels]{enumitem}	% Andere Nummerierungsstile in Aufzählungen
+\usepackage{hhline}					% Tabellenlinien
+
+\usepackage{chngcntr}               % Do not reset the counter for footnotes
+\counterwithout{footnote}{chapter}  % on every new chapter
+
 \usepackage[linguistics]{forest}
 \usepackage{breqn}
 \usepackage{color}
 \usepackage{environ}
-\usepackage{minted}
 
+
+% Avoid Bibtex error
+\usepackage{textcomp}
+
+% Better figures
 \usepackage[skip=10pt,font={small}]{caption}
+\usepackage{subcaption}
+
+% Dashed lines in tables
+\usepackage{arydshln}
+
+% Theorem environments
+%\usepackage[thmmarks, amsmath, thref]{ntheorem}
+
+% Unused references (for debugging)
+%\usepackage{refcheck}
+
+% German bibliography (if needed)
+%_\usepackage{bibgerm}
+
+% TikZ libraries
+\usetikzlibrary{arrows, automata, positioning}
 
 %white on black
-\usepackage{xcolor}
 \usepackage{pagecolor}
 
 %set size of algorithm env
@@ -107,7 +141,12 @@
 
 \usepackage{eurosym}
 \usepackage{newunicodechar}
-\newunicodechar{€}{\euro}
+%\newunicodechar{€}{\euro}
+
+%for url line breaks in bib
+\hypersetup{breaklinks=true}
+\urlstyle{same}
+\usepackage{cite}
 
 \usepackage{textcomp}
 
@@ -123,7 +162,7 @@
   frame=tb, framerule=1pt,
   xleftmargin=0.2cm, linewidth=1\textwidth,
   %backgroundcolor=\color{bg},
-  keywordstyle=\bf\color{oceangreen},
+  keywordstyle=\bfseries\color{oceangreen},
   morecomment=[l][\color{blue}]{\/*, \*/},
   %emph={for,end,while,function,if,else},
   emphstyle={\color{blue}}
@@ -188,8 +227,7 @@
 % Prevent a lot of ``hbox badness'' warnings
 \setlength{\emergencystretch}{1em}
 
-% 1.5 line spacing (the guidelines say at most 1.2, but we decided to allow
-% up to 1.5)
+% 1.2 line spacing
 \setstretch{1.2}
 
 % No indentation in the beginning of a paragraph
@@ -217,10 +255,10 @@
   %\include{front/abstract}
   %\include{front/declaration}
   %\include{front/acknowledgements}
+  \tableofcontents
 
   % In the main matter the pages are numbered with arabic numerals.
   \mainmatter
-  \tableofcontents
   \include{introduction/introduction}
   \include{basics/basics}
   \include{methods/methods}
@@ -245,7 +283,10 @@
   % The guidelines say, you should use 'cell'. Using cell in latex is quite
   % buggy, so you might want to use 'apalike' instead. Cell is based on apalike
   % and very similar. You may also try out amsalpha, alpha and plain.
-  \bibliographystyle{plain}
+  \bibliographystyle{alpha}
+  
+  % Show in table of contents
+  \addcontentsline{toc}{chapter}{References}
   
   % The following includes the bibliography
   \bibliography{ref}

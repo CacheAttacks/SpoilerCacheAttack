@@ -25,23 +25,23 @@ static inline uint64_t rdtscp() {
   return (((uint64_t)high) << 32) | low;
 }
 
-// #define measure(_memory, _time)\
-// do{\
-//    register uint32_t _delta;\
-//    asm volatile(\
-//    "rdtscp;"\
-//    "mov %%eax, %%esi;"\
-//    "mov (%%rbx), %%eax;"\
-//    "rdtscp;"\
-//    "mfence;"\
-//    "sub %%esi, %%eax;"\
-//    "mov %%eax, %%ecx;"\
-//    : "=c" (_delta)\
-//    : "b" (_memory)\
-//    : "esi", "r11"\
-//    );\
-//    *(uint32_t*)(_time) = _delta;\
-// }while(0)
+#define measure_old(_memory, _time)\
+do{\
+   register uint32_t _delta;\
+   asm volatile(\
+   "rdtscp;"\
+   "mov %%eax, %%esi;"\
+   "mov (%%rbx), %%eax;"\
+   "rdtscp;"\
+   "mfence;"\
+   "sub %%esi, %%eax;"\
+   "mov %%eax, %%ecx;"\
+   : "=c" (_delta)\
+   : "b" (_memory)\
+   : "esi", "r11"\
+   );\
+   *(uint32_t*)(_time) = _delta;\
+}while(0)
 
 #define LNEXT(t) (*(void **)(t))
 uint64_t probetime(void *pp) {
@@ -56,57 +56,68 @@ uint64_t probetime(void *pp) {
   return rdtscp()-s;
 }
 
-// void measurement_funct(uint8_t * evictionBuffer, int window_size, uint8_t *target_add){
-// 	uint16_t *measurementBuffer = (uint16_t*) malloc(PAGE_COUNT * sizeof(uint16_t));
-// 	for (int p = window_size; p < PAGE_COUNT; p++)
-// 	{
-// 		uint64_t total = 0;
+//void dummy(){}
+
+int calc(int i){
+  return i*3+5-(i*3+5);
+}
+
+void measurement_funct_old(uint8_t * evictionBuffer, int window_size, uint8_t *target_add){
+	uint16_t *measurementBuffer = (uint16_t*) malloc(PAGE_COUNT * sizeof(uint16_t));
+	for (int p = window_size; p < PAGE_COUNT; p++)
+	{
+		uint64_t total = 0;
 	
-// 		for (int r = 0; r < ROUNDS; r++)		
-// 		{
-// 			// Stores
-// 			for(int i = window_size; i >= 0; i--){
-// 				evictionBuffer[(p-i)*PAGE_SIZE] = 0;
-// 			}
+		for (int r = 0; r < ROUNDS; r++)		
+		{
+			// Stores
+      //dummy();
+			for(int i = window_size+1000; i >= 0; i--){
+				evictionBuffer[PAGE_SIZE*(i*3+5-(i*3+5))] = i;
+			}
 
-// 			// Measuring load
-// 			uint32_t tt;
-// 			measure(evictionBuffer, &tt);
-// 			total += tt;
-// 		}
-// 		measurementBuffer[p] = total / ROUNDS;
+			// Measuring load
+			uint32_t tt;
+			measure_old(evictionBuffer, &tt);
+			total += tt;
+		}
+		measurementBuffer[p] = total / ROUNDS;
 
-// 		if(measurementBuffer[p-1] < 200 && measurementBuffer[p] > 450)
-// 			printf("%i:%p\n", p, evictionBuffer + (p * PAGE_SIZE));
-// 	}
+		//if(measurementBuffer[p-1] < 200 && measurementBuffer[p] > 450)
+		//	printf("%i:%p\n", p, evictionBuffer + (p * PAGE_SIZE));
+	}
 
-// 	for(int p = window_size; p < PAGE_COUNT; p++) {
-// 		if(p < PAGE_COUNT-1 && measurementBuffer[p] > 150 && measurementBuffer[p+1] > 130){
-// 			printf("%s", KRED);
+	for(int p = window_size; p < PAGE_COUNT; p++) {
+		if(p < PAGE_COUNT-1 && measurementBuffer[p] > 150 && measurementBuffer[p+1] > 130){
+			printf("%s", KRED);
 			
-// 		}
+		}
+    if(measurementBuffer[p] > 30){
+			printf("%s", KRED);
 			
-// 		else
-// 			printf("%s", KNRM);
-// 		printf("%u ", measurementBuffer[p]);
-// 	}
-// }
+		}
+			
+		else
+			printf("%s", KNRM);
+		printf("%u ", measurementBuffer[p]);
+	}
+}
 
-// void storefor_write(){
+void storefor_write_old(){
 	
-// 	// 8MB Buffer
-// 	uint8_t * evictionBuffer;
-// 	evictionBuffer = (uint8_t*) malloc(PAGE_COUNT * PAGE_SIZE);
-// 	memset(evictionBuffer, 0, PAGE_COUNT * PAGE_SIZE);	
+	// 8MB Buffer
+	uint8_t * evictionBuffer;
+	evictionBuffer = (uint8_t*) malloc(PAGE_COUNT * PAGE_SIZE);
+	memset(evictionBuffer, 0, PAGE_COUNT * PAGE_SIZE);	
 
-// 	#define WINDOW_SIZE 64
+	#define WINDOW_SIZE 64
 
-// 	printf("target_add:%p\n", evictionBuffer);
-// 	measurement_funct(evictionBuffer, WINDOW_SIZE, evictionBuffer);
+	printf("target_add:%p\n", evictionBuffer);
+	measurement_funct_old(evictionBuffer, WINDOW_SIZE, evictionBuffer);
 
-// 	printf("target_add:%p\n", evictionBuffer+PAGE_SIZE);
-// 	measurement_funct(evictionBuffer, WINDOW_SIZE, evictionBuffer+PAGE_SIZE);
-// }
+	//printf("target_add:%p\n", evictionBuffer+PAGE_SIZE);
+	//measurement_funct_old(evictionBuffer, WINDOW_SIZE, evictionBuffer+PAGE_SIZE);
+}
 
 static inline uint64_t rdtscp64(){
 	return rdtscp();
@@ -114,6 +125,8 @@ static inline uint64_t rdtscp64(){
 
 int main()
 {
+//storefor_write_old();
+
 	storefor_write();
 	//storefor_read();
 	

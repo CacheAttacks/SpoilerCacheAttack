@@ -35,6 +35,8 @@ js_repeatedprobe(uint32_t, uint32_t, int,
 extern void print_plot_data(void);
 
 uint64_t get_time_in_ms();
+int mem_access_testing(int rounds, int print);
+
 double measure_mean_access_time(struct app_state *this_app_state, int samples);
 void change_type(void *app_state_ptr, int type);
 void set_monitored_es_arr(void *app_state_ptr, int *indices_arr,

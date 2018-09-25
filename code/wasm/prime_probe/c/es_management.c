@@ -26,6 +26,100 @@ uint64_t get_time_in_ms()
 #endif
 }
 
+#define BLOCK_SIZE 8
+int test_mem_access(int random, int rounds, int print)
+{
+  int pages = 1024 * 1024 * 20;
+  int bufsize = BLOCK_SIZE * pages;
+  if (bufsize > 1024 * 1024 * 200)
+  {
+    printf_ex("bufsize to big!");
+    exit(1);
+  }
+  char *buffer = mmap(NULL, bufsize, PROT_READ | PROT_WRITE,
+                      MAP_ANON | MAP_PRIVATE, -1, 0);
+  // char *buffer = (char*)calloc(bufsize,1);
+  flush_l3(buffer, pages, BLOCK_SIZE);
+  srand(32); // should only be called once
+  void *randomPtr;
+  int randomIndex;
+  int sum = 0;
+  int flush = 0;
+  uint32_t *counter = malloc(sizeof(uint32_t) * rounds * 4);
+  for (int i = 0; i < rounds; i++)
+  {
+    randomIndex = i;
+    if (random)
+    {
+      randomIndex = rand() % pages * BLOCK_SIZE;
+    }
+    randomPtr = (void *)(&buffer[randomIndex]);
+
+    void *randomPtr_page = (void *)(((int)randomPtr >> 12) << 12);
+    memaccess(randomPtr_page);
+
+    counter[i * 4] = memaccesstime(randomPtr, info);
+    memaccesstime((void *)((int)randomPtr + 1), info);
+    counter[i * 4 + 1] = memaccesstime(randomPtr, info);
+
+    if (flush)
+      flush_l3(buffer, pages, BLOCK_SIZE);
+
+    memaccess(randomPtr_page);
+
+    counter[i * 4 + 2] = memaccesstime(randomPtr, info);
+    counter[i * 4 + 3] = memaccesstime(randomPtr, info);
+
+    // memaccesstime_test(randomPtr);
+    // memaccesstime_test(randomPtr);
+    // memaccesstime_test(randomPtr);
+    sum += counter[i * 4];
+  }
+
+  if (print)
+  {
+    for (int i = 0; i < rounds; i++)
+    {
+      printf_ex("index: %p ,", randomPtr);
+      printf_ex("%" PRIu32 ", %" PRIu32 ", ", counter[i * 4], counter[i * 4 + 1]);
+
+      if (flush)
+        printf_ex("flush L3, ");
+
+      printf_ex("%" PRIu32 ", %" PRIu32 "\n", counter[i * 4 + 2],
+             counter[i * 4 + 3]);
+    }
+  }
+
+  free(buffer);
+  return sum / rounds;
+}
+
+int mem_access_testing(int rounds, int print)
+{
+  printf_ex("random access %i rounds\n", rounds);
+  int mean_random = test_mem_access(1, rounds, print);
+  printf_ex("mean:%i\n", mean_random);
+  printf_ex("linear access\n");
+  int mean_linear = test_mem_access(0, rounds, print);
+  printf_ex("mean:%i\n", mean_linear);
+  // SAB_terminate_counter_sub_worker();
+  // exit(1);
+  if (mean_random < mean_linear - 10)
+  {
+    printf_ex("cannot differ random/linear accesses!\n");
+  }
+  if (mean_random - mean_linear <= 10)
+  {
+    printf_ex("mean_random - mean_linear < 10\n");
+    // exit(1);
+  }
+
+  int threshold = mean_linear + (((mean_random - mean_linear) / 2));
+  printf_ex("random/linear threshold: %i\n", threshold);
+  return threshold;
+}
+
 // use set_monitored_es beforehand to set the observed es
 double measure_mean_access_time(struct app_state *this_app_state, int samples)
 {

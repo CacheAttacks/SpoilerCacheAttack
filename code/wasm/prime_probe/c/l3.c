@@ -213,7 +213,7 @@ static void fillL3Info(l3pp_t l3) {
   //l3->l3info.bufsize = l3->l3info.associativity * l3->l3info.slices *
   //                     l3->l3info.setsperslice * L3_CACHELINE *
   //                     CACHE_SIZE_MULTI;
-  l3->l3info.bufsize = (3840)*4096;
+  l3->l3info.bufsize = (4096)*4096;
 
   // bufsize = cachesize * factor
 
@@ -556,6 +556,18 @@ static int collect(vlist_t es, vlist_t candidates /*, vlist_t set*/) {
   return deleted;
 }
 
+void doStuff(){
+  warmuprounds(10000);
+  warmuptimer();
+}
+
+void readjustTimerThreshold(){
+  int newTimerThreshold = mem_access_testing(1000000, 0);
+  L3_THRESHOLD = (newTimerThreshold < 30) ? 30 : newTimerThreshold;
+  L3_THRESHOLD = newTimerThreshold;
+  printf("readjust timer threshold to %i", newTimerThreshold);
+}
+
 #define DEBUG
 
 // get l3 struct and list of addresses with page size gaps
@@ -622,6 +634,7 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
              d_l2);
 #endif // DEBUG
       fail += 50;
+      //readjustTimerThreshold();
       if(storefor_mode){
         fail = FAIL_MAX+1;
       }
@@ -640,7 +653,8 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
       vl_push(l3->size_es, (void *)vl_len(es));
 #endif
       before = rdtscp();
-      contract_advanced(es, lines, c, l3->l3info.associativity);
+      //contract_advanced(es, lines, c, l3->l3info.associativity);
+      contract(es, lines, c);
       uint64_t time_last_contract = (uint64_t)get_diff(before, rdtscp());
 #ifdef BENCHMARKCONTRACT
       vl_push(l3->contract_time, (void *)((uint32_t)time_last_contract));
@@ -739,6 +753,10 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
         printf_ex("contract failed\n");
 #endif // DEBUG
       fail++;
+      if(fail % 3 == 0){
+        doStuff();
+        //readjustTimerThreshold();
+      }      
       continue;
     }
     time_datahandling += (uint64_t)get_diff(before, rdtscp());
@@ -759,7 +777,7 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
       //printf_ex("%i ", ((int)vl_get(es, 0))-2048);
       vl_push(set, vl_del(es, 0));
     }
-    printf_ex("\n");
+    //printf_ex("\n");
       
 #ifdef DEBUG
     printf_ex("set %3d: lines: %4d expanded: %4d contracted: %2d collected: %d\n",
