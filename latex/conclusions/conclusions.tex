@@ -69,9 +69,9 @@ Trotz der Möglichkeit des Angriffs aus dem Browser heraus, ist dieser in der Pr
 aufwendig.
 Denn er ist speziell auf den Code einer Softwareversion abgestimmt und diese muss zum Zeitpunkt des Angriffs laufen und die gewünschten Berechnungen ausführen. \todo{Hinzufügen: dies ist auch eine Schwäche im urspünglichen paper ZITAT; wo etwa XY Verschlüsselungen/Entschlüsselungen über einen zeit raum von etwa XY laufen müssen.}
 
-In diese Kategorie fällt auch die Leakage mit den Unklarheiten im Bezug auf die praktische Anwendung bei der RSA-Primzahlgenerierung, wobei praktische Szenarien denkbar sind. \todo{den Satz}
+In diese Kategorie fällt auch die Leakage mit den Unklarheiten im Bezug auf die praktische Anwendung bei der RSA-Primzahlgenerierung, wobei praktische Szenarien denkbar sind. \todo{den Satz verstehe ich nicht. Welche Kategorie? Vielleicht hilft hier auch ein zweiter Satz}
 
-So werden an der Universität zu Lübeck zum Beginn des Wintersemsters in einem Einführungskurs die E-Mail-Zertifikate von den neuen Studenten lokal erzeugt.
+So werden an der Universität zu Lübeck zum Beginn des Wintersemsters in einem Einführungskurs die E-Mail-Zertifikate von den neuen Studenten lokal erzeugt. \todo{So wie was? Kein mensch weiß, was die Unterseite des ITSC ist. Vielleicht lieber DIe webseite, auf der die Zertifikatsgenerierung beschrieben wird. Bitte hier kein Mitabreiter, lass es mal beim Angreifer.}
 Ein Mitarbeiter könnte versuchen die Unterseite des ITSC, welche die Zertifikatsgenerierung beschreibt, zu manipulieren.
 Da der Zeitraum indem die Zertifikatsgenerierung stattfindet, bekannt sowie eingrenzt ist und es viele potenzielle Opfer gibt, kann der Angriff sich hier auszahlen.
 
@@ -82,8 +82,9 @@ Da der Zeitraum indem die Zertifikatsgenerierung stattfindet, bekannt sowie eing
 %angriffsportierung von c nach browser nicht immer möglich probleme bremsen bzw angriff an sich langsamer
 
 \section{Ausblick}
+\todo{Hier kann mehr stehen. Trenne in zwei Kategorien: 1. Wie kann man den Angriff verbessern/welche technischen Fortschritte oder neue Erkenntnisse könnten den Angriff verbessern (z.B. bessere Timer (helfen dir nicht), mehr bremsen etc.) und dafür sorgen, dass die gefundene Leakage doch noch genutzt werden kann? Kann man den Angriff auf andere Hardware umschreiben und ist das sinnvoll? Und 2. Wie kann man Angriffe dieser Art verhindern und welche Forschung ist dafür nötig?}
 
-Als mögliche Lösung könnte die Angreiferin $n-1$ Instanzen ihres Angriffs starten, wobei $n$ der Anzahl der virtuellen Kerne entspricht.
+Als mögliche Lösung könnte die Angreiferin $n-1$ Instanzen ihres Angriffs starten, wobei $n$ der Anzahl der virtuellen Kerne entspricht. \todo{Als mögliche Lösung für welches Problem?}
 Somit würde durchgehend eine Instanz auf demselben physischen Kern wie das Opferprogramm laufen.
 
 Die Veröffentlichung von Meltdown und Spectre Anfang 2018 hat ein neues Bewusstsein für Relevanz von Cache-Angriffen geschaffen.
@@ -98,6 +99,8 @@ Zurzeit nutzen im Desktopbereich nur die High-End-Prozessoren in Form Von Skylak
 Im Mainstream werden nicht exklusive L3-Caches eventuell mit der neuen Architektur Ice Lake eingeführt, welche frühestens Ende 2019 erscheinen wird \cite{IceLakeReleaseDate}.
 Dies legt zumindest die angekündigte Verdoppelung des L2-Caches pro Kern bei gleichbleibender L3-Cache Größe nahe.
 Die Prozessoren des Konkurrenten AMD sind aufgrund der exklusiven Caches \cite{CacheRyzen} vor diesen Angriffen nicht betroffen.
+
+\todo{Hier rein, dass die gefundene Leakage genutzt werden kann, sofern man bessere Methoden zum bremsen findet.}
 
 Daher muss in Zukunft die Gefahr von Cache-Angriffen im Browser stärker berücksichtigt und mit Gegenmaßnahmen begegnet werden, da Websprachen der Angreiferin die komplette Kontrolle über den Code überlassen.
 
