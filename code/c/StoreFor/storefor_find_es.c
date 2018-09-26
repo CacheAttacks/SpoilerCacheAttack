@@ -130,6 +130,7 @@ void measurement_funct(uint8_t * evictionBuffer, int window_size, uint8_t *targe
 				//need to be a multiple of at least 1024
 				//wenn mit (p-i) dann auch mit permutation65[i]
 
+				//evictionBuffer[p*PAGE_SIZE] = 0; //geht nicht
 				//pseudoBuffer[(p-i)*1024] = 0; //geht 0b10000000000
 				//pseudoBuffer[(p-i)*1023] = 0; //geht 0b1111111111
 				//pseudoBuffer[(p-i)*512] = 0; //geht nicht 0b1000000000

@@ -43,7 +43,8 @@ Auch in den Browsern Edge und Chrome wurden im Zuge der Veröffentlichung von Me
 Darüber hinaus wird bei beiden Browsern auf den zurückgegebenen Timestamp ein Timerjitter addiert.
 
 So bieten Edge und Chrome zurzeit (Stand Juni 2018) eine Auflösung von 20 \textmu s + 20 \textmu s Jitter respektive 100 \textmu s + 100 \textmu s Jitter.
-Das Paper "Fantastic Timers and where to find them" \cite{FantasticTimers} beschreibt diverse andere Methoden, um mit Hilfe von JavaScript Timer zu generieren (??? Was?). 
+Das Paper "Fantastic Timers and where to find them" \cite{FantasticTimers} beschreibt diverse andere Methoden, um mit Hilfe von JavaScript Timer zu generieren. 
+Es Werden etwa CSS-Animationen und Nachrichtenkanäle als mögliche Zeitgeber untersucht.
 Allerdings ist nur eine geeignete Methode dabei, da die Auflösung aller anderen mindestens im hohen einstelligen \textmu s Bereich liegt und somit der Parameter $repeatIterations$ auf Werte von etwa 1000 gesetzt werden müsste, um zuverlässig \textit{Eviction Sets} zu finden. 
 Hierdurch würde die benötigte Ausführungszeit zum Finden der \textit{Eviction Sets} auf ein Maß ansteigen, welches nicht mehr zum angenommenen Angriffsmodell passen würde.
 
@@ -56,8 +57,7 @@ Der Speicherbereich eines Webworkers und des Mainthreads sind strikt getrennt, s
 Gemäß Code-Listing \ref{alg_list:sharedArrayBufferWorkerMain} wird im Mainthread zuerst ein SharedArrayBuffer von 4 Bytes angelegt. Anschließend wird der als Zeitgeber fungierende Webworker gestartet und ihm eine Referenz auf den eben angelegten SharedArrayBuffer übersandt. 
 
 \begin{figure}[h]
-\label{alg_list:sharedArrayBufferWorkerMain}
-\begin{lstlisting}[caption=main.js: Code welcher den counterWorker für Zeitmessungen verwendet]
+\begin{lstlisting}[caption=main.js: Code welcher den counterWorker für Zeitmessungen verwendet,label=alg_list:sharedArrayBufferWorkerMain]
 var sharedArrayBuffer = new SharedArrayBuffer(4);
 var counterWorker = new Webworker('counterWebworker.js');
 counterWorker.postMessage(sharedArrayBuffer);
@@ -72,7 +72,7 @@ function measureTime(func){
 \end{lstlisting}
 \end{figure}
 
-Die Zählvariable soll hier eine Größe von 32 Bit haben, weshalb abschließend ein Uint32 Array definiert wird, welches auf den SharedArrayBuffer referenziert (???). 
+Die Zählvariable soll hier eine Größe von 32 Bit haben, weshalb abschließend ein Uint32 Array definiert wird, dessen Inhalt auf den SharedArrayBuffer referenziert. 
 Ein Zählvariable kann nun durch Lesen des ersten Eintrags des Arrays erhalten werden. 
 Problematisch ist jedoch, dass auf die Zählvariable sowohl lesend vom Mainthread als auch schreibend vom Webworker zugegriffen wird. 
 Dadurch können die im Mainthread gelesenen Werte veraltet sein, da der SharedArrayBuffer noch nicht zwischen beiden Threads synchronisiert wurde. 
@@ -84,8 +84,7 @@ Anschließend wird im Webworker ein \textit{Uint32Array} angelegt, welches mit d
 Zum Schluss geht der Webworker in die Endlosschleife über, in welcher die Zählvariable \textit{sharedArray[0]} durchgehend iteriert.
 
 \begin{figure}[h]
-\label{alg_list:sharedArrayBufferWorker}
-\begin{lstlisting}[caption=counterWebworker.js: Webworker welcher die Zählvariable in einer Endlosschleife iteriert]
+\begin{lstlisting}[caption=counterWebworker.js: Webworker welcher die Zählvariable in einer Endlosschleife iteriert,label=alg_list:sharedArrayBufferWorker]
 self.addEventListener('message', (m) => {
   // Create an Int32Array on top of the shared memory array 
   const sharedArray = new Uint32Array(m.data);
@@ -127,8 +126,7 @@ Firefox 63.0b4             & $\sim$5,1ns                      & $\sim$2,2ns     
 
 
 \begin{figure}[h]
-\label{alg_list:getResolutionNS}
-\begin{lstlisting}[caption=main.js: Code welcher die Timerauflösung bestimmt]
+\begin{lstlisting}[caption=main.js: Code welcher die Timerauflösung bestimmt,label=alg_list:getResolutionNS]
 var start = wait_edge();
 var start_count = Atomics.load(Module['sharedArrayCounter'], 0);
 var end = wait_edge();
@@ -162,8 +160,7 @@ Der wichtigste Teil für einen Prime and Probe Angriff ist die Fähigkeit, zuver
 Webassembly-Code verwendet nur Adressen der emulierten Umgebung und hat keinerlei Zugriff auf das Mapping zu den virtuellen Adressen. 
 
 Somit sind die physischen Adressen in Webassembly durch gleich 2 Abstraktionsschichten geschützt. 
-Jedoch lässt sich die Eigenschaft ausnutzen, dass im Betriebssystem 4-KiB alignte (???) Pages existieren. 
-Das heißt, die letzten 12 Bit der virtuellen und physischen Adresse sind identisch. 
+Jedoch lässt sich die Eigenschaft ausnutzen, dass im Betriebssystem 4-KiB Pages existieren, sodass die letzten 12 Bit der virtuellen und physischen Adresse identisch sind. 
 Des Weiteren alloziert (???) Webassembly 4KiB-Größe Blöcke, so dass die 12 letzten Bits der Webassembly-Adresse mit der virtuellen und physischen übereinstimmen.
 
 Um aus dieser Eigenschaft Kapital zu schlagen, wird ein Array mindestens entsprechend der Größe des L3-Caches in Webassembly angelegt. Im Folgenden soll wieder der Intel i7-4770 mit 8 MiB großem L3-Cache als Basis dienen. In diesem Array sind nun $x$ Blöcke der Größe jeweils 4 KiB, deren letzten 12 Adressbits mit der physischen Adresse übereinstimmen. Im sogenannten Adresspool seien nun die Adressen des Arrays, bei denen die letzten 12 Bit gleich sind, also insgesamt $x$ Stück.
@@ -486,8 +483,8 @@ Die Größe des Synchronisationsblocks ist auf $sb=10$ gesetzt.
 Mit den in der Grafik verwendeten Parametern ergibt sich eine ungefähre Netto-Datenrate von 4,6 KB/s.
 
 \captionsetup[figure]{skip=-15pt}
-\begin{figure}[h]
 \label{fig:covert_channel}
+\begin{figure}[h]
 \centering
 \begin{scaletikzpicturetowidth}{\textwidth}
 \input{methods/covert_channel_example.tex}

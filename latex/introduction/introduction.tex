@@ -146,6 +146,7 @@ Hierfür wird die Funktion des größten gemeinsamen Teilers angegriffen, welche
 %\cite{BSIRSAKeyGeneration}  
 
 \subsection{Spekulative Ausführung, Enklaven und Hyperthreading}
+\label{relatedWorkHyperthreading}
 
 %\todo{hier fehlt völlig der BEzug zu deiner Arbeit. Du müsstest hier noch schreiben, dass wir diese Lücken nicht ausnutzen und dir einen Grund ausdenken warum wir das nicht tun. }
 %Verweis auf Diskussion von Meltdown und Spectre im Browser 
@@ -174,15 +175,65 @@ Im Zuge der Veröffentlichung wurde im Betriebssystem OpenBSD Hyperthreading auf
 Im Browser kann nicht ohne Weiteres ein Kern festgelegt werden, auf dem der Angriffscode ausgeführt wird, weshalb eine Ausnutzung dieser Lücken nicht ohne Weiteres möglich ist.
 
 \section{Gliederung der Arbeit}
-Diese Arbeit ist in sechs Hauptkapitel untergliedert. 
-Nach der Einleitung werden im zweiten Kapitel die notwendigen technischen Grundlagen erläutert, die für das Verständnis der nachfolgenden Kapitel bedeutend sind.
 
-Die Implementierung des Angriffs wird im dritten Kapitel erörtert. 
-Im Zuge dessen wird die Initialisierungsphase des Angriffs optimiert und evaluiert, sowie ein verdeckter Kanal als Beispiel vorgebracht und dessen maximale Kapazität untersucht.
+Diese Arbeit untersucht aktuelle Fragestellungen bezüglich Cache-Angriffen, wobei sich auf praxisnahe Angriffe aus dem Browser heraus fokussiert wird.
+Im Hinblick auf die Praxisrelevanz wird eine neuartige Eviction-Set-Suche evaluiert, welche die Initialisierungsphase eines Angriffs beschleunigt.
+Des Weiteren werden Leakages in der RSA-Schlüsselgenerierung von Mozilla NSS und OpenPGP.js untersucht sowie Probleme bei der Portierung nativer Angriffen erörtert.
 
-Das vierte Kapitel befasst sich mit der Analyse möglicher Angriffsziele innerhalb der RSA-Schüsselgenerierung von Mozilla NSS und OpenPGP.js.
-Dabei werden Unterschiede zwischen beiden Implementierungen verglichen und die Übertragbarkeit eines nativen Angriffs aus OpenSSL diskutiert.
+\par \medskip                         
 
-Im fünften Kapitel werden die Ursachen und Folgen der Ergebnisse erläutert, sowie mögliche Verbesserungen und Erweiterungen vorgestellt.
+Nach der Einleitung wird der aktuelle Forschungsstand zum Thema in Abschnitt \ref{related_work} dargelegt, um eine Einordnung der Arbeit in die Forschung zu ermöglichen.
 
-Im letzten Kapitel wird ein Fazit gezogen und ein Ausblick auf mögliche Änderungen der Thematik in der Zukunft gewährt.
+\par \medskip                     
+
+In Kapitel \ref{chapter:basics} werden die nötigen technische Grundlagen zum Verständnis der Arbeit vermittelt.
+So wird die in der Arbeit verwendete Angriffstechnik Prime and Probe vorgestellt und erläutert warum der Angriff in aktuellen Prozessoren funktioniert.
+Des Weiteren werden die notwendigen Voraussetzungen erläutert, wie beispielsweise die Verfügbarkeit hochpräziser Timer.
+Außerdem werden die vorteilhaften Merkmale eines Cache-Angriffs aus dem Browser beschrieben.
+Abschließend wird die Speicher-Disambiguierung erklärt, dessen Verständnis für die beschleunigte Eviction-Set-Suche elementar ist.
+
+\par \medskip                     
+
+Mit der realen Implementierung des Angriffs in Javascript beziehungsweise Webassembly beschäftigt sich Kapitel \ref{chapter:preparation}.
+Es wird beschrieben wie die Voraussetzungen für einen Angriff im Webkontext trotz begrenzter Möglichkeiten geschaffen werden können.
+Außerdem wird die Umsetzung des Eviction-Set-Suchalgorithmus im Webkontext beschrieben und dessen Leistung theoretisch analysiert.
+Zudem wird die Performance des Eviction-Set-Suchalgorithmus sowie diverse Optimierungen desselben in der Praxis evaluiert.
+Ein spezifisches Verhalten von Intel-Prozessoren im Bezug auf die Speicher-Disambiguierung, welches neue Möglichkeiten in der Eviction-Set-Suche eröffnet, wird erläutert.
+Erstmals wird beschrieben wie damit ein verbesserter Eviction-Set-Suchalgorthmius im Webkontext umsetzbar ist und wie dieser im Vergleich zur Standardversion performt.
+Als Beispiel wird ein verdeckter Kanal vom Browser zu einem nativ laufenden Programm aufgebaut.
+
+\par \medskip                      
+
+Im \ref{chapter:results}. Kapitel werden verschiedene Leakages in der RSA-Schlüsselgenerierung von Mozilla NSS und OpenPGP.js analysiert.
+Dabei wird erörtert wie die Ergebnisse einer automatisierten Leakage-Erkennung miteinbezogen werden können.
+Bei der Leakage in der RSA-Primzahlgenerierung von Mozilla NSS und OpenPGP.js ist offen, ob sich diese eignet Teile der Primzahlen effizient zu rekonstruieren.
+Darüber hinaus wird die Portierung eines nativen Angriffs auf OpenSSL, hin zu einem Angriff im Browser auf Mozilla NSS analysiert.
+Dabei auftretende Fallstricke, wie beispielsweise der fehlende clflush-Befehl im Webkontext, werden herausgearbeitet und mögliche Lösungen diskutiert.
+
+\par \medskip                       
+
+Die Ergebnisse der Arbeit werden im \ref{chapter:discussion}. Kapitel besprochen.
+So wird beschrieben welche zusätzlichen Auswirkungen die Hardware und Software des Opfers auf die Erfolgswahrscheinlichkeit eines Angriffs hat.
+Gegenmaßnahmen werden erläutert und die in diesem Kontext wichtige Rolle der Browserhersteller genannt.
+Des Weiteren werden Vorteile der RSA-Schlüsselgenerierung in OpenPGP.js gegenüber Mozilla NSS dargestellt.
+Am Schluss des Kapitels wird die Umsetzung der populären Meltdown und Spectre Angriffe im Webkontext diskutiert.
+
+\par \medskip  
+
+Das letzte und \ref{chapter:conclusions}. Kapitel wird die vorherigen Ergenisse abschließend bewerten und einordnen.
+Zusätzlich wird ein Ausblick gewährt welche technischen Fortschritte und Erkenntnisse die Angriffsmöglichkeiten im Browser verbessern würden.
+Zudem wird ein Blick auf andere Endgeräte und deren Angreifbarkeit geworfen.
+Zuletzt werden die Seiten gewechselt und beschrieben wie Angriffe verhindert werden können und welche Forschung in diesen Bereich notwendig ist.
+
+%Diese Arbeit ist in sechs Hauptkapitel untergliedert. 
+%Nach der Einleitung werden im zweiten Kapitel die notwendigen technischen Grundlagen erläutert, die für das Verständnis der nachfolgenden Kapitel bedeutend sind.
+
+%Die Implementierung des Angriffs wird im dritten Kapitel erörtert. 
+%Im Zuge dessen wird die Initialisierungsphase des Angriffs optimiert und evaluiert, sowie ein verdeckter Kanal als Beispiel vorgebracht und dessen maximale Kapazität untersucht.
+
+%Das vierte Kapitel befasst sich mit der Analyse möglicher Angriffsziele innerhalb der RSA-Schüsselgenerierung von Mozilla NSS und OpenPGP.js.
+%Dabei werden Unterschiede zwischen beiden Implementierungen verglichen und die Übertragbarkeit eines nativen Angriffs aus OpenSSL diskutiert.
+
+%Im fünften Kapitel werden die Ursachen und Folgen der Ergebnisse erläutert, sowie mögliche Verbesserungen und Erweiterungen vorgestellt.
+
+%Im letzten Kapitel wird ein Fazit gezogen und ein Ausblick auf mögliche Änderungen der Thematik in der Zukunft gewährt.

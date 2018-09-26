@@ -9,11 +9,8 @@ Einen anderen weniger untersuchten Einstiegspunkt für die Schlüsselextraktion 
 
 \subsection{Primzahlgenerierung in Mozilla NSS}
 
-Mozilla Network Security Services(NSS) ist eine Menge von Bibliotheken, welche eine plattformübergreifende Entwicklung von sicheren Client- und Server-Anwendungen anstrebt. Dabei wird unter anderem TLS oder S/MIME implementiert. Mozilla NSS wird etwa im Firefox-Browser und der Mail-Anwendung Thunderbird eingesetzt.
-Der Quellcode ist unter der Mozilla Public License verfügbar und kann online etwa im Firefox-Repository \cite{MozillaDXR} eingesehen werden.
-
-Um einen neuen Schlüssel zu erzeugen, werden zuerst zwei Primzahlen generiert. 
 Im Folgenden soll die Primzahlgenerierung von Mozilla NSS näher beleuchtet werden.
+Um einen neuen Schlüssel zu erzeugen, werden zuerst zwei Primzahlen generiert. 
 Der Code hierfür befindet sich im Unterordner lib/freebl.
 Der Einstiegspunkt für die Primezahlgenerierung ist die Funktion generate_prime in der Datei rsa.c \ref{alg:genPrimeGenerationNSS}.
 Dort wird zuerst eine ungerade Zufallszahl $random\_num$ entsprechend der Bitlänge der gewünschten Primzahl erzeugt, deren zwei höherwertigsten Bits auf 1 gesetzt sind.
@@ -231,36 +228,26 @@ In Mathematica lässt sich das Problem beschreiben, jedoch wurde der Versuch kle
 Durch das Laufzeitverhalten lässt sich vermuten, dass Mathematica den langsamen und trivialen Ansatz verfolgt, alle Lösungsmöglichkeiten durchzuprobieren.
 
 Die Fallunterscheidung in der Funktion mpp_sieve in den Zeilen 5 bis 8 würde die Information liefern ob $random\_num \mod small\_prime = 0$ ist.
-Unabhängig von $rem$ wird aber immer der gesamte Assemblercode für die Zeilen 5 bis 8 geladen \ref{fig:assemblyMppSieve}, da die Vergleichsoperation an Adresse 806A4 und der Code für die folgende For-Schleife an der Adresse 806CA immer benötigt wird.
+Unabhängig von $rem$ wird aber immer der gesamte Assemblercode für die Zeilen 5 bis 8 geladen (siehe \ref{fig:assemblyMppSieve}), da die Vergleichsoperation an Adresse 806A4 und der Code für die folgende For-Schleife an der Adresse 806CA immer benötigt wird.
 Der Abstand zwischen den Adressen 806A4 und 806CA ist kleiner als die Größe einer 64 Byte Cache-Line, das heißt die vorherige Aussage ist losgelöst von den Adressen des Codes in der Binary.
 Somit ist ein Prime-and-Probe Angriff auf den entsprechenden Codeteil nicht möglich, da sofern der Assemblercode für die Zeile 5 bis 8 in zwei Cache-Lines fällt immer bei beiden eine erhöhte Zugriffszeit gemessen wird.
 
 \begin{figure}[h]
-\label{fig:assemblyMppSieve}
-\renewcommand\fcolorbox[4][]{\textcolor{black}{\strut#4}}
-\small
-%00000000000806A4 <For-Schleife Zeile 5 bis 8>:
-\begin{minted}{gas}
+\begin{lstlisting}[caption={Assemblercode für die Zeilen 5 bis 8 der Funktion mpp_sieve, welche Teile des Codes der RSA-Primzahlgenerierung für Mozilla NSS ist.},label=fig:assemblyMppSieve]
   806A4:        cmp    [rem], 0
   806AA:        jnz    else
   806AC:        mov    [offset], 0  
   806B4:        jmp    next_code
   806B6: else:  mov    rax, [rem]
-  806BB:        mov    rcx, [small\_prime]
+  806BB:        mov    rcx, [small_prime]
   806C0:        sub    rcx, rax
   806C3:        mov    rax, rcx
   806C6:        mov    [offset], eax
   806CA: //Code für Zeile 9
-\end{minted}
-\normalsize
-\caption{Assemblercode für die Zeilen 5 bis 8 der Funktion mpp_sieve, welche Teile des Codes der RSA-Primzahlgenerierung für Mozilla NSS ist. Dieser Codeteil beschreibt die }
+\end{lstlisting}
 \end{figure}
 
-
 \subsection{Primzahlgenerierung in OpenPGP.js}
-
-OpenPGP ist ein Standard für das Signieren, Ver- und Entschlüsseln von Daten, welcher im RFC 4880 \cite{rfc4880} definiert wird.
-OpenPGP.js \cite{OpenPGPjs} ist eine Opensource-Implementierung des OpenPGP-Protokolls in Javascript, welche sich zum Ziel gesetzt hat OpenPGP auf einer breiten Platte von Endgeräten zu ermöglichen.
 
 Die Primzahlgenerierung von OpenPGP.js ist in der Datei prime.js beschrieben und startet mit der Funktion randomProbablePrime.\todo{funktionsnamen sollten \lstinline sein. bitte im gesamten kapitel überprüfen.}
 Zuerst wird eine Zufallszahl entsprechend der gewünschten Bitlänge generiert.
@@ -341,7 +328,8 @@ Somit könnten aus den Beobachtungen Gleichungen folgender Form aufgestellt werd
 
 Es steht die Frage im Raum, wie viele Gleichungen für die vollständige Rekonstruktion einer Primzahl benötigt werden.
 Für den Informationsgehalt der zweiten Gleichung ist die mittlere Größe von $small\_prime_i$ ausschlaggebend.
-Tabelle \ref{} zeigt die erwartenden Werte für verschiedene Primezahlbitlängen. 
+Tabelle %\ref{} TODO
+zeigt die erwartenden Werte für verschiedene Primezahlbitlängen. 
 \todo{prüfen wie sich verhalten mit unterschiedlichen bitlängen verändert}
 
 Angenommen $small\_prime_i$ hat im Mittel eine Bitlänge von $l$, dann liefert die zweite Gleichung $l$ Bit an Information über (random\_num + b).
@@ -362,9 +350,10 @@ Da durch 2,3 und 5 teilbare Zahlen nicht getestet werden, entfallen 22 von 30 al
 Folglich ist bei einer Bitlänge von 1024 jede $711 \cdot 8/30 \approx 190$ getestete Zahl eine Primzahl, sodass ausgehend von einer zufälligen Zahl im Intervall $[2^{1024}\twodots 2^{1024+1}-1]$ im Mittel etwa 95 Iterationen zum Fund einer Primzahl ausreichen.
 
 Die im Mittel benötigte Anzahl skaliert linear mit der Bitlänge, die Übersichtstabelle \ref{tbl:bitLengthNumberOfIterations} gibt den Erwartungswert für verschiedene Bitlängen an.
+
 \begin{table}[h]
-\label{tbl:bitLengthNumberOfIterations}
 \caption{Veranschaulicht den linearen Zusammenhang zwischen dem Erwartungswert für die Anzahl der Iterationen in Funktion $randomProbablePrime$ (siehe Pseudocode \ref{alg:randomProbablePrimeOpenPGPjs}) bei verschiedenen Primzahlbitlängen.}
+\label{tbl:bitLengthNumberOfIterations}
 \begin{tabular}{lllll}
 Bitlänge Primzahl     & 1024 & 1536 & 2048 & 4096 \\
 E(Anzahl Iterationen) & 95   & 142  & 189  & 379 
@@ -552,9 +541,10 @@ Die $s\_mp\_div\_2d$-Funktion setzt die Division mittels der $s\_mp\_rshd$-Funkt
 Am Ende der $s\_mp\_div\_2d$-Funktion erfolgt ein Funktionsaufruf an $s\_mp\_clamp$ um die entstandenen führende Nullen zu entfernen.
 Welche Adressen die Funktionen im Assemblercode haben, ist in Tabelle \ref{tbl:assOffsetShift} ersichtlich. 
 
+
 \begin{table}[h]
-\label{tbl:assOffsetShift}
 \caption{Größe, Start- und Endadresse der für die Shift-Operation relevanten Funktionen (fett hervorgehoben) sowie deren direkten Nachbarn im Assemblercode.}
+\label{tbl:assOffsetShift}
 \begin{tabular}{llll}
 Funktion       & Startadresse & Endadresse & Differenz (Größe der Funktion) \\[10pt]
 s\_mp\_alloc   & b7d0$_{16}$        & b7f4$_{16}$      & 25$_{16}$   \\
@@ -631,8 +621,8 @@ In der Tabelle \ref{tbl:ShiftSubCycles} ist die durchschnittlichen der Zyklen f�
 Die Dauer der Shift- sowie Subtraktionoperation hängt linear von der Schlüssellänge ab, wobei dies für die Dauer der gesamten $mp_gcd$-Funktion nicht der Fall ist.
 
 \begin{table}[h]
+\caption{Darstellung des linearen Zusammenhangs der Taktzyklendauer einer Shift- und Subtraktionsfunktion zu der Bitlänge. Als Vergleich die Dauer der gesamten GCD-Funktion ohne linearen Zusammenhang zu der Bitlänge.}
 \label{tbl:ShiftSubCycles}
-\caption{Darstellung des linearen Zusammenhangs der Taktzyklendauer einer Shift- und Subtraktionsfunktion zu der Bitlänge. Als Vergleich die Dauer der gesamten GCD-Funktion ohne linearen Zusammenhang zu der Bitlänge. }
 \begin{tabular}{llll}
 Bitlänge    & 2048 & 4096 & 8192 \\
 Shift       & 340  & 577  & 9597 \\
@@ -740,20 +730,19 @@ TODO warum??
 %TODO mini bench einfügen
 
 \begin{table}[h]
-\label{tbl:PerformanceDegSub}
 \caption{Performance-Degradation-Attack mittels Prime-Spam mit verschiedene RSA-Bitlängen.
 Als Cache-Lines wurden diejenigen verwendet, welche sich am effektivsten in RSA-2048 erweisen haben.
 Spalteninhalte analog zu Tabelle \ref{tbl:PerformanceDegShift}}
 \label{tbl:PerformanceDegRSADifferentBitlength}
 \begin{tabular}{llllll}
 RSA-Bitlänge & Cache-Line & Funktion & Shift & Subtraktion & mp\_gcd \\[10pt]
-2048         & &Referenzzeiten ohne Prime-Spam                                         & 340   & 477         & 424k    \\
+2048         & Referenzzeiten ohne Prime-Spam&                                         & 340   & 477         & 424k    \\
 2048         & b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 541   & 608         & 549k    \\
 2048         & 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 359   & 766         & 531k    \\
-4096         & &Referenzzeiten ohne Prime-Spam                                         & 543   & 723         & 1,19M    \\
+4096         & Referenzzeiten ohne Prime-Spam&                                         & 543   & 723         & 1,19M    \\
 4096         & b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 700   & 770         & 1,64M    \\
 4096         & 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 609   & 1057         & 1,51M    \\
-8192         & &Referenzzeiten ohne Prime-Spam                                         & 982   & 1223         & 3,71M    \\
+8192         & Referenzzeiten ohne Prime-Spam&                                         & 982   & 1223         & 3,71M    \\
 8192         & b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 1125   & 1553         & 4,83M    \\
 8192         & 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 1046   & 1679         & 4,64M    \\
 \end{tabular}

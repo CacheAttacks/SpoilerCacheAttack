@@ -48,9 +48,11 @@ function getNewSABCounter(){
     return SABcounterWorker;
 }
 
-function findCollidingAdd(pageCount, SABCounterArray, rounds = 100, windowSize = 64){
+//5 round is prob enough
+function findCollidingAdd(pageCount, SABCounterArray, rounds = 50, windowSize = 60){
     var pageSize = 4096;
     var uint32Buffer = new Uint32Array(pageCount * (pageSize/4));
+    var uint32Buffer2 = new Uint32Array(pageCount * (pageSize/4));
     var uint16MeasurementArr = new Uint16Array(pageCount);
     var detectionWindowSize = 10;
     var candidateIndex = 2*1024; //multiple of 1024!
@@ -61,8 +63,12 @@ function findCollidingAdd(pageCount, SABCounterArray, rounds = 100, windowSize =
         for (var r = 0; r < rounds; r++) {
         // Stores
         for (var i = windowSize; i >= 0; i--) {
-            uint32Buffer[(p - i) * 1024] = 0;
+            //uint32Buffer[(p - i) * 1024] = 0;
+            uint32Buffer[i * 1024] = 0;
+
+            //uint32Buffer2[(p - i) * 1024] = 0;
         }
+        uint32Buffer[p * 1024] = 0;
         // Measuring load
         var before = Atomics.load(SABCounterArray, 0);
 
@@ -95,7 +101,11 @@ function findCollidingAdd(pageCount, SABCounterArray, rounds = 100, windowSize =
             lock--;
             diff++;
         }
+
         output += " " + uint16MeasurementArr[p];
+        if(uint16MeasurementArr[p] > 30){
+            output += "##";
+        }
     }
     console.log(output);
 }

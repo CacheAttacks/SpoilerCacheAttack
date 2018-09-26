@@ -1,80 +1,36 @@
 \chapter{Schlussbetrachtung}
 \label{chapter:conclusions}
 
-In diesem Kapitel werden die Ergebnisse dieser Arbeit zusammengefasst und die gewonnenen Erkenntnisse bewertet.
+In diesem Kapitel werden die wesentlichen Ergebnisse dieser Arbeit zusammengefasst und die gewonnenen Erkenntnisse bewertet.
 Abschließend wird ein Ausblick in die Zukunft der Cache-Angriffe im Allgemeinen sowie Browserangriffe im Speziellen gewährt.
-
-\section{Zusammenfassung}
-\todo{dieser komplette Absatz (section) hat hier nichts zu suchen. Er ist schön und passt gut zu "Gliederung dier Arbeit" im ersten Kapitel.}
-Diese Arbeit hat aktuelle Fragestellungen bezüglich Cache-Angriffen untersucht, wobei sich auf praxisnahe Angriffe aus dem Browser heraus fokussiert wurde.
-Im Hinblick auf die Praxisrelevanz wurde eine neuartige Eviction-Set-Suche evaluiert, welche die Initialisierungsphase eines Angriffs beschleunigt.
-Des Weiteren wurden Leakages in der RSA-Schlüsselgenerierung von Mozilla NSS und OpenPGP.js untersucht sowie Probleme bei der Portierung nativer Angriffen erörtert.
-
-\par \medskip                         
-
-Nach der Einleitung wurde der aktuelle Forschungsstand zum Thema in Abschnitt \ref{related_work} dargelegt, um eine Einordnung der Arbeit in die Forschung zu ermöglichen.
-
-\par \medskip                     
-
-In Kapitel \ref{chapter:basics} wurden die nötigen technische Grundlagen zum Verständnis der Arbeit vermittelt.
-So wurde die in der Arbeit verwendete Angriffstechnik Prime and Probe vorgestellt und erklärt warum der Angriff in aktuellen Prozessoren funktioniert.
-Des Weiteren wurden die notwendigen Voraussetzungen erläutert, wie beispielsweise die Verfügbarkeit hochpräziser Timer.
-Außerdem wurden die vorteilhaften Merkmale eines Cache-Angriffs aus dem Browser beschrieben.
-Abschließend wurde die Speicher-Disambiguierung erklärt, dessen Verständnis für die beschleunigte Eviction-Set-Suche elementar ist.
-
-\par \medskip                     
-
-Mit der realen Implementierung des Angriffs in Javascript beziehungsweise Webassembly beschäftigte sich Kapitel \ref{chapter:preparation}.
-Es wurde beschrieben wie die Voraussetzungen für einen Angriff im Webkontext trotz begrenzter Möglichkeiten geschaffen werden können.
-Der Umsetzung des Eviction-Set-Suchalgorithmus im Webkontext wurde beschrieben und dessen Leistung theoretisch analysiert.
-Zudem wurde die Performance des Eviction-Set-Suchalgorithmus sowie diverse Optimierungen desselben in der Praxis evaluiert.
-Ein spezifisches Verhalten von Intel-Prozessoren im Bezug auf die Speicher-Disambiguierung wurde erklärt.
-Erstmals wurde beschrieben wie damit ein verbesserter Eviction-Set-Suchalgorthmius im Webkontext umsetzbar ist und wie dieser im Vergleich zur Standardversion performt.
-Als Beispiel wurde ein verdeckter Kanal vom Browser zu einem nativ laufenden Programm aufgebaut.
-
-\par \medskip                      
-
-Im \ref{chapter:results}. Kapitel wurden verschiedene Leakages in der RSA-Schlüsselgenerierung von Mozilla NSS und OpenPGP.js analysiert.
-Dabei wurde erörtert wie die Ergebnisse einer automatisierten Leakage-Erkennung miteinbezogen werden können.
-Bei der Leakage in der RSA-Primzahlgenerierung von Mozilla NSS und OpenPGP.js ist offen geblieben, ob sich diese eignet Teile der Primzahlen effizient zu rekonstruieren.
-Darüber hinaus wurde die Portierung eines nativen Angriffs auf OpenSSL, hin zu einem Angriff im Browser auf Mozilla NSS analysiert.
-Dabei auftretende Fallstricke, wie beispielsweise der fehlende clflush-Befehl im Webkontext, wurden herausgearbeitet und mögliche Lösungen diskutiert.
-
-\par \medskip                       
-
-Die Ergebnisse der Arbeit wurden im \ref{chapter:discussion}. Kapitel besprochen.
-So wurde beschrieben welche zusätzlichen Auswirkungen die Hardware und Software des Opfers auf die Erfolgswahrscheinlichkeit eines Angriffs hat.
-Gegenmaßnahmen wurden erläutert und die in diesem Kontext wichtige Rolle der Browserhersteller genannt.
-Des Weiteren wurden Vorteile der RSA-Schlüsselgenerierung in OpenPGP.js gegenüber Mozilla NSS dargestellt.
-Am Schluss des Kapitels wurde die Umsetzung der populären Meltdown und Spectre Angriffe im Webkontext diskutiert.
 
 \section{Bewertung}
 
-Die Ergebnisse zeigen, dass L3-Cache-Angriffe im Browser möglich sind. \todo{das war aber schon durch das Paper vorher klar}
+Die Ergebnisse zeigen, dass L3-Cache-Angriffe im Browser trotz des verstärkten Problembewusstseins im Zuge von Meltdown und Spectre wieder möglich sind.
 Dabei ist jedoch zum einen die Ausführung des Angriffs langsamer und zum anderen sind die Möglichkeiten zum Ausbremsen des Opferprozesses beschränkt.
 
 Um dem zu begegnen, können mehrere Angriffsinstanzen gestartet werden.
 Zum einen kann die Überwachung aufgeteilt werden, wobei die Synchronisation mit den Zeitstempeln möglich ist.
-Zum anderen sind mehrere Bremsinstanzen für eine bessere Performancereduktion denkbar.
+Zum anderen sind mehrere Bremsinstanzen für eine bessere Performancereduktion nutzbar.
 Jedoch steigt die Systemauslastung an und damit die Gefahr, dass der Angriff vom Opfer entdeckt wird. 
 
-Weiterhin erhöht sich die Initialisierungsdauer linear mit der Anzahl der Angriffsinstanzen.
-Diesem wurde mit der Einführung einer neuen schnelleren Variante des Eviction-Set-Suchalgorithmus entgegengewirkt.
+%Weiterhin erhöht sich die Initialisierungsdauer linear mit der Anzahl der Angriffsinstanzen.
+%Diesem wurde mit der Einführung einer neuen schnelleren Variante des Eviction-Set-Suchalgorithmus entgegengewirkt.
 
-Der Angriff nutzt spezifische Eigenschaften der Intel-Architektur aus und ist beispielsweise nicht auf Prozessoren des Konkurrenten AMD lauffähig. \todo{Wiederhole hier kurz, welche.}
-Im Hinblick auf die Ersetzung des Desktop-Computers oder Notebooks durch Smartphone und Tablet, ist eine nähere Untersuchung der Mikroarchitekturen dieser Geräte interessant. \todo{das muss in den Ausblick}
+Der Angriff nutzt die spezifische Eigenschaft der Intel-Architektur aus, dass der L3-Cache zwischen den Kernen geteilt und inklusiv ist sowie LRU oder eine vergleichbare Eviciton-Policy verwendet. 
+So ist der Angriff beispielsweise nicht auf Prozessoren des Konkurrenten AMD lauffähig.
 
 Ein großer Vorteil des Angriffs ist, dass er wenig Spuren nach der Ausführung hinterlässt.
 Trotz der Möglichkeit des Angriffs aus dem Browser heraus, ist dieser in der Praxis 
 aufwendig.
-Denn er ist speziell auf den Code einer Softwareversion abgestimmt und diese muss zum Zeitpunkt des Angriffs laufen und die gewünschten Berechnungen ausführen. \todo{Hinzufügen: dies ist auch eine Schwäche im urspünglichen paper ZITAT; wo etwa XY Verschlüsselungen/Entschlüsselungen über einen zeit raum von etwa XY laufen müssen.}
+Denn er ist speziell auf den Code einer Softwareversion abgestimmt und diese muss zum Zeitpunkt des Angriffs laufen und die gewünschten Berechnungen ausführen. 
+Zudem ist nicht jeder Angriff ein Erfolg, so hat beispielsweise der native Angriff auf die RSA-Keygenerierung \cite{RSAKeyGeneration2} hat nur eine Erfolgsquote von etwa 28\%.
 
-In diese Kategorie fällt auch die Leakage mit den Unklarheiten im Bezug auf die praktische Anwendung bei der RSA-Primzahlgenerierung, wobei praktische Szenarien denkbar sind. \todo{den Satz verstehe ich nicht. Welche Kategorie? Vielleicht hilft hier auch ein zweiter Satz}
+Diesen Einschränkungen unterliegt auch die Leakage mit den Unklarheiten im Bezug auf die praktische Anwendung bei der RSA-Primzahlgenerierung, wobei praktische Szenarien denkbar sind. 
 
-So werden an der Universität zu Lübeck zum Beginn des Wintersemsters in einem Einführungskurs die E-Mail-Zertifikate von den neuen Studenten lokal erzeugt. \todo{So wie was? Kein mensch weiß, was die Unterseite des ITSC ist. Vielleicht lieber DIe webseite, auf der die Zertifikatsgenerierung beschrieben wird. Bitte hier kein Mitabreiter, lass es mal beim Angreifer.}
-Ein Mitarbeiter könnte versuchen die Unterseite des ITSC, welche die Zertifikatsgenerierung beschreibt, zu manipulieren.
-Da der Zeitraum indem die Zertifikatsgenerierung stattfindet, bekannt sowie eingrenzt ist und es viele potenzielle Opfer gibt, kann der Angriff sich hier auszahlen.
-
+So werden die E-Mail-Zertifikate der neuen Studierenden der Universität zu Lübeck zum Beginn des Wintersemesters in einem Einführungskurs lokal erzeugt. 
+Eine Angreiferin könnte versuchen die Website zu manipulieren, welche die Zertifikatsgenerierung beschreibt.
+Da der Zeitraum indem die Zertifikatsgenerierung stattfindet, bekannt sowie eingegrenzt ist und es viele potenzielle Opfer gibt, kann der Angriff sich hier auszahlen.
 
 %wichtigste ergebnisse:
 %schnellere eviction-set suche und standard suche evaluiert
@@ -82,33 +38,71 @@ Da der Zeitraum indem die Zertifikatsgenerierung stattfindet, bekannt sowie eing
 %angriffsportierung von c nach browser nicht immer möglich probleme bremsen bzw angriff an sich langsamer
 
 \section{Ausblick}
-\todo{Hier kann mehr stehen. Trenne in zwei Kategorien: 1. Wie kann man den Angriff verbessern/welche technischen Fortschritte oder neue Erkenntnisse könnten den Angriff verbessern (z.B. bessere Timer (helfen dir nicht), mehr bremsen etc.) und dafür sorgen, dass die gefundene Leakage doch noch genutzt werden kann? Kann man den Angriff auf andere Hardware umschreiben und ist das sinnvoll? Und 2. Wie kann man Angriffe dieser Art verhindern und welche Forschung ist dafür nötig?}
 
-Als mögliche Lösung könnte die Angreiferin $n-1$ Instanzen ihres Angriffs starten, wobei $n$ der Anzahl der virtuellen Kerne entspricht. \todo{Als mögliche Lösung für welches Problem?}
+%1. Wie kann man den Angriff verbessern/welche technischen Fortschritte oder neue Erkenntnisse könnten den Angriff verbessern (z.B. bessere Timer (helfen dir nicht), mehr bremsen etc.) und dafür sorgen, dass die gefundene Leakage doch noch genutzt werden kann?
+%\todo{Hier rein, dass die gefundene Leakage genutzt werden kann, sofern man bessere Methoden zum bremsen findet.}
+
+Die fehlenden Möglichkeiten Code ausreichend zu Bremsen verhindern zurzeit eine erfolgreiche Portierung der RSA-Schlüsselgenerierungs-Leakage (siehe Abschnitt \ref{RSAGenGCDAttack}).
+Eine offene Frage ist daher, ob im Webkontext bessere Optionen zum Bremsen von Prozessen im Allgemeinen und spezifischen Codeteilen im Speziellen existieren.
+
+Da in Zukunft vermutlich kein eigener Count-Thread mehr nötig ist (siehe Abschnitt \ref{GooglePageIsolation}), sinkt der Ressourcenbedarf des Angriffs um einen Thread.
+So kann ein Angriff entweder mit einem Thread weniger auskommen oder der frei gewordene Thread wird zum Bremsen des Codes verwendet.
+
+In Abschnitt \ref{relatedWorkHyperthreading} wurde beschrieben, dass erweiterte Möglichkeiten bestehen wenn der Angriffsprozess auf demselben physischen Kern wie der Opferprozess läuft und im Browser der ausführende Kern nicht festgelegt werden kann.
+Als mögliche Lösung könnte die Angreiferin $n-1$ Instanzen ihres Angriffs starten, wobei $n$ der Anzahl der virtuellen Kerne entspricht. 
 Somit würde durchgehend eine Instanz auf demselben physischen Kern wie das Opferprogramm laufen.
+Allerdings ist der ausführende Kern nicht während der gesamten Ausführungszeit fix, sodass verschiedene Instanzen zu unterschiedlichen Zeiten den Angriff ausführen müssten.
+Somit ist die Auslotung eines solche Angriffs und die Suche nach Möglichkeiten die Wahl des ausführenden Kerns zu beeinflussen lohnenswert, da eine Klasse von nativen Angriffen (siehe Abschnitt \ref{relatedWorkHyperthreading}) im Browser realisierbar würde.
+
+
+%Kann man den Angriff auf andere Hardware umschreiben und ist das sinnvoll?
+Im Hinblick auf die Ersetzung des Desktop-Computers oder Notebooks durch Smartphone und Tablet, ist eine nähere Untersuchung der Mikroarchitekturen dieser Geräte interessant.
+Da diese Geräte dieselben Webtechnologien unterstützen, welche auch in dieser Arbeit zum Einsatz kamen, sind die Voraussetzungen vergleichbar.
+Jedoch bietet der Markt mobiler Geräte im Vergleich zum Desktop und Notebook-Bereich mehr Prozessorhersteller mit signifikanten Marktanteil, welche über unterschiedliche Mikroarchitekturen verfügen.
+Zwar sind die meisten Prozessoren ARM-kompatibel jedoch weisen die Performanceunterschiede zwischen den Prozessoren \cite{GeekbenchMobile} auf deutlich abweichende Designs hin.
+
+%2. Wie kann man Angriffe dieser Art verhindern und welche Forschung ist dafür nötig?
+\todo{Eigene Section Gegenmaßnahmen einfügen?} 
 
 Die Veröffentlichung von Meltdown und Spectre Anfang 2018 hat ein neues Bewusstsein für Relevanz von Cache-Angriffen geschaffen.
 Im Zuge dessen haben die Browserhersteller alle öffentlich bekannten Optionen für hochauflösende Timer unterbunden.
 Google ist der erste Hersteller, welcher seit Chrome Version 68 in der Standardeinstellung wieder hochauflösende Timer erlaubt.
-Dieser Schritt wird von Google mit der Einführung von Page-Isolation-Technik \cite{ChromeSiteIsolation} begründet, die eine Aufspaltung von verschiedenen Webseiten in unterschiedliche Prozesse sicherstellt und somit hinreichend vor den Gefahren von Meltdown und Spectre schützen soll.
+Dieser Schritt wird von Google mit der Einführung von Page-Isolation-Technik \cite{ChromeSiteIsolation} begründet, die eine Aufspaltung von verschiedenen Webseiten in unterschiedliche Prozesse sicherstellt und somit hinreichend vor den Gefahren von Meltdown und Spectre schützen soll (siehe auch Abschnitt \ref{GooglePageIsolation}).
 Gegen Angriffe auf den geteilten L3-Cache, welche in dieser Arbeit diskutiert wurden, hilft diese Technik nicht.
-Somit werden L3-Cache-Angriffe wieder ermöglicht und es liegt in der Hand der Softwareentwicklern ihre Implementierungen gegen diese Angriffe zu härten.
+Somit werden Angriffe wieder ermöglicht und es liegt in der Hand der Softwareentwickler ihre Implementierungen gegen diese Angriffe zu härten.
 
-Der geteilte und inklusive L3-Cache mit LRU oder einer vergleichbaren Eviciton-Policy wird in Intel-Prozessoren als das eigentliche Problem noch Jahre Bestand haben.
+Um den Code gegen Angriffe zu schützen, müssen Algorithmen mit konstanter Ausführungszeit (constant-time) und ohne eingabeabhängige Verzweigungen und Speicherzugriffe implementiert werden.
+Methoden für die Entwicklung solcher Algorithmen wurden bereits vorgestellt \cite{ConstTimeAlgorithm}.
+Jedoch ist die korrekte Anwendung schwierig wie etwa der Angriff auf die constant-time RSA-Implementierung von OpenSSL zeigt \cite{CacheBleed}.
+Im Webkontext kommt hinzu, dass der Javascript-Compiler viele Freiheiten besitzt und somit neue Leakages schaffen kann \cite{DriveByPaper}.
+Das Ausführungsverhalten von Javascript-basierten Kryptoimplementierungen wie OpenPGP.js kann sich also je nach Browser ändern und so zu unvorhergesehen Leakages führen.
+Daher ist eine Schnittstelle wie die WebCrypto API \cite{WebCryptoAPI} zu bevorzugen, da diese Kryptofunktionen nativ im Browser, der unter gleichbleibenden Bedingungen kompiliert wurde, ausführt.
+Alternativ könnte an einem deterministischen Ausführungsverhalten in Javascript geforscht werden, wobei auch Spracherweiterungen denkbar wären.
+
+Aber auch Anwender können Maßnahmen ergreifen, um sich vor Angriffen im Browser zu schützen.
+Wenn genaue Zeitquellen nicht benötigt werden, können auch speziell gehärtete Browser wie Fuzzyfox \cite{Fuzzyfox} Verwendung finden, welche die Auflösung der möglichen Zeitquellen im Browser herabsetzen \cite{FantasticTimers}.
+Zudem lässt sich bei vielen Systemen anhand der Lautstärke die Last des Systems ablesen. 
+Der hier vorgestellte Prime and Probe Angriff lastet bei einem Angriff mindestens zwei Kerne komplett aus und ist auf dem verwendeten Desktop-Testsystem akustisch detektierbar.
+Da der Angriff Javascript benötigt und in einem praktischen Szenario vorzugsweise über Werbeanzeigen ausgeliefert wird, stellen die ohnehin empfehlenswerten Ad- und Javascriptblocker eine effektive Gegenmaßnahme dar.
+
+Das eigentliche Problem, der geteilte und inklusive L3-Cache mit LRU oder einer vergleichbaren Eviciton-Policy, wird in Intel-Prozessoren noch Jahre Bestand haben.
 Zurzeit nutzen im Desktopbereich nur die High-End-Prozessoren in Form Von Skylake-X einen nicht inklusiven L3-Cache \cite{SkylakeXL3Cache}.
 Im Mainstream werden nicht exklusive L3-Caches eventuell mit der neuen Architektur Ice Lake eingeführt, welche frühestens Ende 2019 erscheinen wird \cite{IceLakeReleaseDate}.
 Dies legt zumindest die angekündigte Verdoppelung des L2-Caches pro Kern bei gleichbleibender L3-Cache Größe nahe.
-Die Prozessoren des Konkurrenten AMD sind aufgrund der exklusiven Caches \cite{CacheRyzen} vor diesen Angriffen nicht betroffen.
-
-\todo{Hier rein, dass die gefundene Leakage genutzt werden kann, sofern man bessere Methoden zum bremsen findet.}
+Die Prozessoren des Konkurrenten AMD hingegen, sind aufgrund der exklusiven Caches \cite{CacheRyzen} von diesen Angriffen nicht betroffen.
 
 Daher muss in Zukunft die Gefahr von Cache-Angriffen im Browser stärker berücksichtigt und mit Gegenmaßnahmen begegnet werden, da Websprachen der Angreiferin die komplette Kontrolle über den Code überlassen.
 
+%Denn bei einem inclusive ausgeführten Design würde die effektive L3-Cache Größe durch den verdoppelten L2-Cache weiter sinken.
 
+%Optional:
 
+%-Erkennung von ungewöhnlicher hoher Last einer Website bzw. Werbeanzeige mittels tools
 
-
-
-
-
-%Denn bei einem inclusive ausgeführten Design würde die effektive L3-Cache Größe durch den verdoppelten L2-Cache Weiter sinken.
+%Ein weitere Gegenmaßnahme ist die Partitionierung des Caches mittels Page Coloring \cite{CachePartioningCOLORIS}
+%Die Autoren verhindern Cache-Misses auf sensiblen Code und Daten mittels Intel TSX \cite{CachePartioningTSX}.
+%TLBleed
+%Whereas the cache can be partitioned to protect against cache attacks (such as in Cloak using TSX, or using CAT, or using page coloring),
+%https://www.usenix.org/system/files/conference/usenixsecurity17/sec17-gruss.pdf
+%https://software.intel.com/en-us/articles/introduction-to-cache-allocation-technology
+%https://www.cs.bu.edu/~richwest/slides/coloris.pdf

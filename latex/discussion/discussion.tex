@@ -1,11 +1,9 @@
 \chapter{Diskussion}
 \label{chapter:discussion}
 
-
-
-\section{Geschwindigkeit von Eviction-Set Suche}
-Wie in Abschnitt \ref{} beschrieben, unterliegen die Laufzeiten der Eviction sind
-
+%\section{Geschwindigkeit von Eviction-Set Suche}
+%Wie in Abschnitt %\ref{} 
+%beschrieben, unterliegen die Laufzeiten der Eviction sind
 
 \section{Warum viele Kerne sinnvoll sind}
 Da präzise Timer zurzeit mittels eines Shared-Array-Buffer erzeugt werden müssen, benötigt die Angreiferin mindestens drei virtuelle Kerne um ein Angriff auszuführen. Einen für die Iteration der Timer-Variable, einen für den Prime-and-Probe Angriffscode und einen auf dem das Opferprogramm läuft.
@@ -104,14 +102,8 @@ Mit dieser Beobachtung lässt sich
 Bermerkungen Mem-Alloc von Firefox/Chrome: https://www.cs.vu.nl/~giuffrida/papers/anc-ndss-2017.pdf
 \cite{ASLROnTheLine}
 
-\section{Wie wohl fühlen sich Meltdown und Spectre im Browser?}
-\label{MeltdownSpectreBrowser}
-
-Sofern Meltdown über Prozessgrenzen hinweg Speicher auslesen soll, muss der geschützte Speicher in den Adressebereich des Angriffsprozess gemappt werden.
-Dies ist im Browser nicht ohne weiteres möglich, da Webassembly eine eigene Speicheradressierung mitbringt.
-Auch Spectre
-
 \section{Warum ist Google so mutig?}
+\label{GooglePageIsolation}
 
 Wie erwähnt hat Google bereits Anfang August 2018 mit der Chrome Version 68 \cite{ChromeSharedArrayBufferAgain} die SharedArrayBuffer standardmäßig wieder aktiviert.
 Mozilla hingegen hat auch in der aktuellen Firefox Developer  Edition 63.0b8 (Stand Ende September 2018) die SharedArrayBuffer in der Standardeinstellung deaktiviert.
@@ -121,23 +113,15 @@ Firefox standardmäßig vier Content-Prozesse. D.h. Meltdown problematischer Ang
 Google jeder Tab in einem Prozess. \cite{ChromeSiteIsolation}
 
 
+\section{Wie wohl fühlen sich Meltdown und Spectre im Browser?}
+\label{MeltdownSpectreBrowser}
 
-\section{Gegenmaßnahmen als Verteidiger}
+https://alephsecurity.com/2018/06/26/spectre-browser-query-cache/
+\cite{OvercomingSpectreBrowserMitigations}
 
--Wechseln zu AMD
-
-TLBleed
-Whereas the cache can be partitioned to protect against cache attacks (such as in Cloak using TSX, or using CAT, or using page coloring),
-https://www.usenix.org/system/files/conference/usenixsecurity17/sec17-gruss.pdf
-https://software.intel.com/en-us/articles/introduction-to-cache-allocation-technology
-https://www.cs.bu.edu/~richwest/slides/coloris.pdf
-
--Abschalten von SharedArrayBuffer
-In Zukunft schwerer wenn performance.now() wieder hoch präzise
-
--Verwenden von speziell gehärteten Browsern Fuzzyfox
-
--Erkennung von ungewöhnlicher hoher Last einer Website bzw. Werbeanzeige
+Sofern Meltdown über Prozessgrenzen hinweg Speicher auslesen soll, muss der geschützte Speicher in den Adressebereich des Angriffsprozess gemappt werden.
+Dies ist im Browser nicht ohne weiteres möglich, da Webassembly eine eigene Speicheradressierung mitbringt.
+Auch Spectre
 
 \section{Triviale Divsionen: Ist das sinnvoll oder kann das Weg?}
 

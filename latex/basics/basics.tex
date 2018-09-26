@@ -318,10 +318,21 @@ Sofern es einen Treffer gibt, wird dieser Wert statt des veralteten Wertes aus S
 
 \section{Angegriffene Hardware und Software}
 
-Intel i7-4770 4C8T, 8GB Ram, Ubunutu 16.04
+Der Testrechner war ein Dell Precision T1700 mit einem Intel Core i7-4770 dessen 4 physischen Kerne beziehungsweise 8 virtuellen Kerne einen Grundtakt von 3,4GHz bieten.
+Der geteilte L3-Cache ist 8 MiB groß, besitzt eine Assoziativität von 16, eine Cache-Line-Größe von 64 Byte und 8192 Cache-Sets, die in 4 Slices aufgeteilt sind.
+Weiter wird ist ein Intel C226 Chipsatz und 8GB DDR3-1600 verbaut. 
+Als Betriebsystem wird Ubuntu 16.04.5 LTS (GNU/Linux 4.4.0-131-generic x86_64) verwendet. 
 
-Nuc i3-5... 2C4T, 
+Als Browser wurden Chromeium TODO, Firefox 62 sowie Firefox Developer Edition 63 getestet.
 
-Chrome 69, Firefox 62 und Dev 63
 
-\todo{Besser in Implementierung aufgehoben?}
+%Nuc i3-5... 2C4T, 
+
+Mozilla Network Security Services(NSS) \cite{MozillaNSS} ist eine Menge von Bibliotheken, welche eine plattformübergreifende Entwicklung von sicheren Client- und Server-Anwendungen anstrebt. Dabei wird unter anderem TLS oder S/MIME implementiert. Mozilla NSS wird etwa im Firefox-Browser und der Mail-Anwendung Thunderbird eingesetzt.
+Der Quellcode ist unter der Mozilla Public License verfügbar und kann online etwa im Firefox-Repository \cite{MozillaDXR} eingesehen werden.
+
+OpenPGP ist ein Standard für das Signieren, Ver- und Entschlüsseln von Daten, welcher im RFC 4880 \cite{rfc4880} definiert wird.
+OpenPGP.js \cite{OpenPGPjs} ist eine Opensource-Implementierung des OpenPGP-Protokolls in Javascript, welche sich zum Ziel gesetzt hat OpenPGP auf einer breiten Platte von Endgeräten zu ermöglichen.
+So wird OpenPGP.js etwa vom E-Mail-Dienst Protonmail \cite{Protonmail} genutzt.
+
+%\todo{Besser in Implementierung aufgehoben?}
