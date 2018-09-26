@@ -3,49 +3,52 @@
 
 %\todo{Sollen in die Einleitung Quellen?}
 
-Seitenkanalangriffe sind ein mächtiges Werkzeug für die Kryptanalyse, da sie es erlauben geheime Informationen wie den kryptografischen Schlüssel aus einem Gerät zu extrahieren.
+%(Es fehlt mir ein einleitender Satz wie etwa "Im Bereich der IT-Sicherheit gewinnt der externe Zugriff auf Daten Anderer zunehmende Bedeutung.") 
+Seitenkanalangriffe sind ein mächtiges Werkzeug für die Kryptanalyse, da sie es erlauben, geheime Informationen wie den kryptografischen Schlüssel aus einem Gerät wie einer Chipkarte zu extrahieren.
 Hierfür wird beispielsweise der Stromverbrauch oder die Berechnungsdauer verschiedener Ein- und Ausgaben gemessen.
-Bei physikalischen Seitenkanalangriffen ist die Angreiferin gezwungen eine gewisse örtliche Nähe zum System besitzen.
+Bei solchen physikalischen Seitenkanalangriffen ist die Angreiferin gezwungen, eine gewisse örtliche Nähe zum System zu besitzen.
 
-Seitenkanalangriffen auf die Mikroarchitektur eines Prozessors sind von dieser Einschränkung befreit, da die
-Ausführung von Code auf dem Zielsystem ausreicht.
-Seit der ersten Beschreibung von Seitenkanalangriffen auf die Mikroarchitektur vor über zehn Jahren, sind diese zu einem ernst zu nehmenden Sicherheitsrisiko herangewachsen.
+Seitenkanalangriffe auf die Mikroarchitektur eines Prozessors sind von dieser Einschränkung befreit, da die
+Ausführung von Programmcode %(bitte kurz erläutern!)
+auf dem Zielsystem ausreicht.
+Seit der ersten Beschreibung von Seitenkanalangriffen auf die Mikroarchitektur vor über zehn Jahren sind diese zu einem ernst zu nehmenden Sicherheitsrisiko herangewachsen.
 
 Auf der Mikroarchitekturebene konkurriert der Opferprozess mit dem Angriffsprozess um die Ressourcen des Prozessors, selbst wenn der Angriffsprozess mit keinen außerordentlichen Privilegien ausgestattet ist.
-Aufgrund dieser Konkurrenz kann die Angreiferin Informationen über den Opferprozess gewinnen, indem sie durch Messungen Varianzen bei dem Zugriff auf die Ressourcen feststellt.
+Aufgrund dieser Konkurrenz kann die Angreiferin Informationen über den Opferprozess gewinnen, indem sie durch Messungen Varianzen beim Zugriff auf die Ressourcen feststellt.
 
-Eine Reihe von Ressourcen hat sich als problematisch erwiesen, etwa die Einheiten der Sprungvorhersage oder der Return-Stack-Buffer.
+Eine Reihe von Ressourcen hat sich als problematisch erwiesen %(Warum?)
+, etwa die Einheiten der Sprungvorhersage oder der Return-Stack-Buffer.
 Das mit Abstand größte Problem stellen die vielfältigen Caches dar, welche eine feine Auflösung der Speicherzugriffe des Opferprozesses erlauben.
 Diese ermöglichen es, geheime Informationen wie kryptografische Schlüssel von RSA \cite{CacheBleedOpenSSLRSA} oder AES \cite{BernsteinAES} aus dem Opferprozess zu extrahieren.
-Weitere Anwendungsmöglichkeiten sind Keylogger \cite{Keylogger} und Überwachung der Webseitenaufrufe oder Nutzeraktivität \cite{TheSpyInTheSandbox}.
+Weitere Anwendungsmöglichkeiten sind Keylogger \cite{Keylogger} und Überwachungen der Webseitenaufrufe oder Nutzeraktivitäten \cite{TheSpyInTheSandbox}.
 
 Es ist trotz dieser Möglichkeiten wenig darüber bekannt, ob Cache-Angriffe praktisch relevant sind oder wie häufig sie eingesetzt werden.
-Einem breiten Angriffsverktor steht das im Großteil der Literatur angenommene Angriffsszenario entgegen, welches die Ausführung von nativen Code auf dem Opfersystem voraussetzt.
-Dieses Szenario hat seine Berechtigung unter anderem bei Angriffen auf virtuelle Maschinen, wo der Code der Angreiferin auf der selben Hardware wie der Opferprozess läuft (Cross-VM-Attack).
+Einem breiten Angriffsvektor steht das im Großteil der Literatur angenommene Angriffsszenario entgegen, welches die Ausführung von nativem Code auf dem Opfersystem voraussetzt.
+Dieses Szenario hat seine Berechtigung unter anderem bei Angriffen auf virtuelle Maschinen, wo der Code der Angreiferin auf der selben Hardware wie der des Opferprozesses läuft (Cross-VM-Attack).
 
-Auch Mehrbenutzersystemen fallen unter dieses Szenario, sind aber eher in Unternehmen und Organisationen von Relevanz.
-So ist es einem Studierenden der Universität zu Lübeck jederzeit möglich sich per SSH auf einen beliebigen Pool-Rechner einzuloggen, unabhängig davon ob der Rechner lokal in Benutzung ist.
+Auch Mehrbenutzersysteme, wie sie häufig in Unternehmen und Organisationen anzutreffen sind, fallen unter dieses Szenario.
+So ist es einem Studierenden der Universität zu Lübeck jederzeit möglich, sich per SSH auf einen beliebigen Pool-Rechner einzuloggen, unabhängig davon, ob der Rechner lokal in Benutzung ist.
 
 In einem typischen Endbenutzerszenario ist es realitätsfern vorauszusetzen, dass vom Opfer nativer Angriffscode ausgeführt wird.
-Denn den meisten Benutzern ist die einhergehende Gefahr der Ausführung von unbekannten nativen Code bewusst und andernfalls würden mögliche Cache-Angriffe das geringste Problem darstellen.
+Denn den meisten Benutzern ist die einhergehende Gefahr der Ausführung von unbekanntem nativem Code bewusst, und zudem würden mögliche Cache-Angriffe das geringste Problem darstellen.
 
-Daher gibt es Bestrebungen Cache-Angriffe auf Endbenutzergeräten zu ermöglichen \cite{TheSpyInTheSandbox,DriveByPaper,ASLROnTheLine}, in dem der Angriffscode in Websprachen wie Javascript übersetzt und vom Browser des Opfers ausgeführt wird.
-Da der Browser faktisch bei jedem Webseitenbesuch fremden und unbekannten Code ausführt, sind Möglichkeiten für die Angreiferin in Javascript und Co. entsprechend restriktiv.
-Daher sind Angriffe nur eingeschränkt oder aufwendiger auszuführen, wie sich im Verlaufe der Arbeit zeigen wird. 
+Daher gibt es Bestrebungen, Cache-Angriffe auf Endbenutzergeräte zu ermöglichen \cite{TheSpyInTheSandbox,DriveByPaper,ASLROnTheLine}, in- dem der Angriffscode in Websprachen wie Javascript übersetzt und vom Browser des Opfers ausgeführt wird.
+Da der Browser faktisch bei jedem Webseitenbesuch fremden und unbekannten Code ausführt, jedoch auch keine Angriffsfläche bieten soll, sind Möglichkeiten für die Angreiferin in Javascript und Co. entsprechend restriktiv.
+Auf Grund dieser Tatsachen sind Angriffe im Browser nur eingeschränkt oder aufwendiger auszuführen, wie sich im Verlaufe dieser Arbeit zeigen wird. 
 
 \section{Aufgabenstellung}
 
 %\todo{Ich wäre hier für section Aufgabenstellung. Außerdem ein kleines bisschen blbla: In Dieser Arbeit wird der Angrif aus PAPER nachimplementiert. Es handelt sich dabei um einen P and P Angriff, der über TECHNOLOGIE durchgeführt wird. Durch TECHNOLOGIE bekommt man VORTIELE. Im Laufe der Implementierung werden folgende Fragen bearbeitet: }
 
-In Dieser Arbeit wird unter anderem der Angriff aus dem Paper \cite{RSAKeyGeneration2} auf Mozilla NSS portiert. Es handelt sich dabei um einen Prime and Probe Angriff, der im Gegensatz zum Original-Paper über Javascript bzw. Webassembly durchgeführt wird. Dadurch erhöht sich die Zahl potenzieller Opfer, da der Angriff über eine Webseite oder Werbung auf dieser ausgerollt werden kann.
+In Dieser Arbeit wird unter anderem der Angriff aus dem Paper \cite{RSAKeyGeneration2} auf Mozilla NSS portiert. Es handelt sich dabei um einen Prime-and-Probe-Angriff, der im Gegensatz zum Original-Paper über Javascript bzw. Webassembly durchgeführt wird. Dadurch erhöht sich die Zahl potenzieller Opfer, da der Angriff über eine Webseite oder Werbung auf dieser ausgerollt werden kann.
 Außerdem werden neue Leakages in der RSA-Primzahlgeneriung von Mozilla NSS und OpenPGP.js analysiert und ihre Einsatzmöglichkeiten bei einem praktischen Angriff überprüft.
 
 \todo{Ist das genug?}
 
-Im Laufe der Arbeit werden folgende Fragen bearbeitet:
+Im Laufe der Arbeit werden folgende Fragen beantwortet:
 
 \begin{enumerate}
-\item Die Arbeiten \cite{TheSpyInTheSandbox,DriveByPaper,ASLROnTheLine} haben demonstriert, dass Cache-Angriffe im Browser möglich sind. 
+\item Die Arbeiten \cite{TheSpyInTheSandbox,DriveByPaper,ASLROnTheLine} haben demonstriert, dass Cache-Angriffe im Browser möglich sind. %(besser als Frage formulieren) Hier als kurze Einführung zur Frage weiter unten gedacht?
 Allerdings sind diese vor den Gegenmaßnahmen der Browserhersteller gegen Meltdown und Spectre veröffentlicht worden.
 Sind also im Oktober 2018 Cache-Angriffe aus dem Browser heraus möglich?
 
@@ -53,17 +56,17 @@ Sind also im Oktober 2018 Cache-Angriffe aus dem Browser heraus möglich?
 
 \item Wie kann die Initialisierung des Angriffs, das heißt die notwendige Eviciton-Set-Suche beschleunigt werden?
 
-\item Gibt es im Bereich der RSA-Schlüsselgenerierung Leakages die Informationen über den Schlüssel verraten und sind diese im Browser ausnutzbar?
+\item Gibt es im Bereich der RSA-Schlüsselgenerierung Leakages, die Informationen über den Schlüssel verraten und sind diese im Browser ausnutzbar?
 \end{enumerate}
 
 %\section{Ergebnisse}
 %\todo{diese Section (unterteilung, nicht Inhalt) kann dafür meinetwegen weg}
 
 Für die Beantwortung der ersten Frage spielt der Browser eine wichtige Rolle, da für Cache-Angriffe hochauflösende Timer im Nanosekundenbereich benötigt werden.
-In Chrome ist das Erzeugen eines solchen Timers durch einen Counter-Thread standardmäßig möglich, wobei dies in Firefox zurzeit ausschließlich in abgeänderten Einstellungen möglich ist.
+In Chrome ist das Erzeugen eines solchen Timers durch einen Counter-Thread standardmäßig möglich, wobei dies in Firefox zurzeit ausschließlich durch Veränderung der Browsereinstellung möglich ist.
 
 Der angesprochene Counter-Thread ist während des gesamten Angriffs voll ausgelastet, belegt also einen ganzen virtuellen Kern.
-Da Entwickler hochauflösende Timer nachfragen, wird Mozilla ebenso wie Google in Zukunft versuchen wieder hochauflösende Timer anbieten, wobei der zurzeit nötige Timer-Thread entfallen wird.
+Da Entwickler hochauflösende Timer nachfragen, wird Mozilla ebenso wie Google in Zukunft versuchen, wieder hochauflösende Timer anbieten, wobei der zurzeit nötige Timer-Thread entfallen wird.
 Dies wird passieren, sobald Maßnahmen gegen Meltdown und Spectre implementiert sind TODO cite.
 
 \par\medskip 
@@ -71,7 +74,7 @@ Dies wird passieren, sobald Maßnahmen gegen Meltdown und Spectre implementiert 
 \todo{das hier finde ich albern. Du kannst dir gern den Absatz umdefinieren, sodass du bei jedem Absatz einen medskip hast. Aber hier plötzlich damit anfangen finde ich komisch.}
 \todo{Sollte nur hier als Stilmittel verwendet werden, damit die Absätze den obigen Fragen besser zugeordnet werden können.}
 
-Beim Prime and Probe Angriff steht Browserimplementation einer nativen Implementation in nichts nach. Allerdings ist neben den Kosten für den Counter-Thread die zeitliche Auflösung des Angriffs um \todo{c code slot time messen} \% reduziert.
+Beim Prime-and-Probe-Angriff steht die Browserimplementation einer nativen Implementation in nichts nach. Allerdings ist neben den Kosten für den Counter-Thread die zeitliche Auflösung des Angriffs um \todo{c code slot time messen} \% reduziert.
 
 Der Opferprozess wird oft künstlich gebremst, da die Berechnungen auch beim Angriff mit nativen Code häufig zu schnell sind.
 Auch im Browser lassen sich Methoden umsetzen, um den Opferprozess zu bremsen. \todo{bremsvergleich c vs wasm/js}
@@ -81,21 +84,21 @@ Anhand eines Angriffs auf die RSA-Schlüsselgenerierung wird gezeigt, dass die P
 \par\medskip
 
 Um einen realistischen Angriff zu erhalten, ist eine kurze Initialisierungsphase Voraussetzung.
-Der in vielen Papern beschriebene Eviction-Set-Suchalgorithmus \cite{PrimeAndAbort, LiuPrimeAndProbe, DriveByPaper}, wurde in vielerlei Hinsicht optimiert und die Ergebnisse anschließend mit der ursprünglichen Variante verglichen. 
+Der in vielen Papers beschriebene Eviction-Set-Suchalgorithmus \cite{PrimeAndAbort, LiuPrimeAndProbe, DriveByPaper} wurde in vielerlei Hinsicht optimiert und die Ergebnisse anschließend mit der ursprünglichen Variante verglichen. 
 Des Weiteren wurde eine neue noch unveröffentlichte Technik im Kontext der Eviction-Set-Suche im Browser erprobt.
-Diese nutzt spezifische Eigenschaften der Store-Queue in Intel Prozessoren aus.
-Damit kann die Suche gegenüber dem optimierten Standardalgorithmus um \todo{Benchmarks für StoreFor vorantreiben} \% beschleunigen.
+Diese nutzt spezifische Eigenschaften der Store-Queue in Intel-Prozessoren aus.
+Damit kann die Suche gegenüber dem optimierten Standardalgorithmus um \todo{Benchmarks für StoreFor vorantreiben} \% beschleunigt werden.
 
-Häufig muss mehr als eine Cache-Line überwacht werden, weshalb es für die zeitliche Auflösung von Vorteil ist mehrere Angriffsinstanzen zu starten.
-Diese müssen jedoch die Eviction-Set-Suche nacheinander durchführen, da sie sich ansonsten gegenseitig beeinflussen würden.
-Somit würde sich der Performancevorteil in diesen Fällen amplifizieren.
+%Wenn mehr als eine Cache-Line überwacht werden soll, ist es für die zeitliche Auflösung von Vorteil, mehrere Angriffsinstanzen zu starten.
+%Diese müssen jedoch die Eviction-Set-Suche nacheinander durchführen, da sie sich ansonsten gegenseitig beeinflussen würden.
+%Somit würde sich der Performancevorteil in diesen Fällen amplifizieren (besser: erhöhen).
 
 \par\medskip
 
 Es wurden sowohl die Schlüsselgenerierung von Mozilla NSS als auch von OpenPGP.js auf Leakages untersucht. 
 Zum Einsatz kam dabei ein Werkzeug, welches automatisch potenzielle Leakages aufdeckt.
 Sowohl in der Primzahlgenerierung von Mozilla NSS als auch OpenPGP.js wurden Leakages entdeckt, welche die verwendeten Primzahlen in einem Gleichungssystem beschreiben.
-Es konnte nicht abschließend geklärt werden, ob diese Gleichungssysteme bei praktischen Instanzen wie RSA-2048 in annehmbarer Zeit gelöst werden können.
+Es konnte noch nicht abschließend geklärt werden, ob diese Gleichungssysteme bei praktischen Instanzen wie RSA-2048 in annehmbarer Zeit gelöst werden können.
 
 \todo{Soll in diesem Absatz klarer stehen, dass der Angriff nicht praktisch funktioniert?}
 Des Weiteren wurde ein bekannter Cache-Angriff auf die RSA-Schlüsselgenerierung in OpenSSL nach Mozilla NSS portiert.
@@ -109,7 +112,7 @@ Diese werden in Kapitel \ref{chapter:results} und \ref{chapter:discussion} genau
 Hier soll ein Überblick bereits getätigter Forschungsarbeiten im Rahmen der für die Arbeit relevanten Themenbereiche %Cache-Angriffe 
 %\todo{würde ich rausnehmen, cache-Angriffe sind ein zu großes Feld hier}, 
 Drive-by-Attacks 
-und Angriffe auf die RSA Schlüsselgenerierung gegeben werden. Zudem soll eine Abgrenzung gegenüber verwandten, aber für diese Arbeit nicht relevanten Themenbereiche stattfinden.
+und Angriffe auf die RSA Schlüsselgenerierung gegeben werden. Zudem soll eine Abgrenzung gegenüber verwandten, aber für diese Arbeit nicht relevanten Themenbereichen stattfinden.
 
 %\subsection{Cache-Angriffe}
 
@@ -120,26 +123,26 @@ und Angriffe auf die RSA Schlüsselgenerierung gegeben werden. Zudem soll eine A
 
 \subsection{Cache-Angriffe im Browser}
 
-Alle oben zitierten Arbeiten setzen die Ausführung von nativen Code auf dem Opfersystem voraus. Im Jahr 2015 wurde die erste Arbeit veröffentlicht \cite{TheSpyInTheSandbox}, welche sich mit Cache-Angriffen im Browser beschäftigt.
+Alle oben zitierten Arbeiten setzen die Ausführung von nativem Code auf dem Opfersystem voraus. Im Jahr 2015 wurde die erste Arbeit veröffentlicht \cite{TheSpyInTheSandbox}, welche sich mit Cache-Angriffen im Browser beschäftigt.
 Die Autoren konnten den Aufruf von verschiedenen bekannten Webseiten unterschiedlichen Cache-Zugriffsmustern zuordnen, um so das Surfverhalten von Nutzern zu überwachen.
 Gras et al. \cite{ASLROnTheLine} konnten im Browser erfolgreich die Speicherverwürfelung ASLR aushebeln, wobei sich der Angriff aufgrund der niedrigen zeitlichen Auflösung nicht zur Schlüsselextraktion eignet.
 
-Mit Rowhammer-Angriff \cite{Rowhammer} ist es möglich Bits im Speicher ohne Schreibzugriffe zu verändern, um beispielsweise Sicherheitsvorkehrungen zu umgehen. 
+Mit dem Rowhammer-Angriff \cite{Rowhammer} ist es möglich, Bits im Speicher ohne Schreibzugriffe zu verändern, um beispielsweise Sicherheitsvorkehrungen zu umgehen. 
 Dieser wurde von Gruss et al. erfolgreich in Javascript implementiert \cite{RowhammerJS}.
 
-Code der im Hinblick darauf designt wurde unabhängig von den Eingaben dieselbe Laufzeit und denselben Codepfad zu besitzen, verhindert viele Leakages.
+Code, der im Hinblick darauf designt wurde, unabhängig von den Eingaben dieselbe Laufzeit und denselben Codepfad zu besitzen, verhindert viele Leakages.
 Im Paper \cite{DriveByPaper} wurde dargestellt, dass solcher Code durch die Ausführung im Browser angreifbar wird.
-Durch die Freiheiten des Javascript-Compilers ist es möglich, dass je nach Eingabe unterschiedliche Codepfade ausführt werden und somit eine Leakage entsteht.
+Durch die Freiheiten des Javascript-Compilers ist es möglich, je nach Eingabe unterschiedliche Codepfade auszuführen und somit eine Leakage entstehen zu lassen.
 
 \subsection{Cache-Angriffe auf RSA}
 
-Viele Paper haben gezeigt \cite{CacheBleedOpenSSLRSA, FlushReload, DriveByPaper}, dass sich der RSA-Schlüssel oder Teile davon mittels Cache-Angriffen extrahieren lassen. Das Angriffsziel waren dabei Komponenten der Ver- und Entschlüsselung beispielsweise die modulare Exponentiationsfunktion \cite{CacheBleedOpenSSLRSA, DriveByPaper, DriveByPaper}. 
+Viele Paper haben gezeigt \cite{CacheBleedOpenSSLRSA, FlushReload, DriveByPaper}, dass sich der RSA-Schlüssel oder Teile davon mittels Cache-Angriffen extrahieren lassen. Das Angriffsziel waren dabei Komponenten der Ver- und Entschlüsselung, beispielsweise die modulare Exponentiationsfunktion \cite{CacheBleedOpenSSLRSA, DriveByPaper, DriveByPaper}. 
 
 %\todo{Hier vielleicht noch ein bisschen mehr darüber, wie diese Angriffe ablaufen? Traces von Multiplier-Tabellen sammeln, dann auswerten? Muss auch nicht, wäre nur Masse}
 
 Weniger Aufmerksamkeit wurde der RSA-Schlüsselgenerierung geschenkt, da diese im Gegensatz zur Ver- und Entschlüsselung nur einmal ausgeführt wird und damit schwieriger anzugreifen ist.
-In der 2018 verfassten Arbeit \cite{RSAKeyGeneration2} wird ein Angriff auf RSA-Schlüsselgenerierung in OpenSSL beschrieben.
-Hierfür wird die Funktion des größten gemeinsamen Teilers angegriffen, welche die Teilerfremdheit der beiden erzeugten Primzahlen $p$ und $q$ zu dem Exponenten $e$ überprüft.
+In der 2018 verfassten Arbeit \cite{RSAKeyGeneration2} wird ein Angriff auf die RSA-Schlüsselgenerierung in OpenSSL beschrieben.
+Hierfür wird die Funktion zum Finden des größten gemeinsamen Teilers angegriffen, welche die Teilerfremdheit der beiden erzeugten Primzahlen $p$ und $q$ zu dem Exponenten $e$ überprüft.
 
 %\todo{Trotzdem gibt es hier ein Paper. Dies ist die Stelle, an der du es beschreiben solltest. Dieses Paper bildet jetzt etwa 30 Prozent der Grundlage dieser Arbeit, da sollte mehr zu stehen. }
 
@@ -152,20 +155,20 @@ Hierfür wird die Funktion des größten gemeinsamen Teilers angegriffen, welche
 %Verweis auf Diskussion von Meltdown und Spectre im Browser 
 %Hinweis für Intel SGX und Hyperthreading, dass im Browser Kerne nicht frei gewählt werden können
 
-Vorherige Angriffe hatten die Extraktion von spezifischen Informationen wie Schlüsseln zum Ziel, allerdings können mit Cache-Angriffen auch beliebige Speicherinhalte, sogar über Sicherheitsgrenzen hinweg, ausgelesen werden.
+Vorherige Angriffe hatten die Extraktion von spezifischen Informationen wie Schlüsseln zum Ziel. Allerdings können mit Cache-Angriffen auch beliebige Speicherinhalte, sogar über Sicherheitsgrenzen hinweg, ausgelesen werden.
 Die im Jahr 2018 veröffentlichen Angriffe Meltdown \cite{MeltdownPaper} und Spectre \cite{SpectrePaper} nutzen die spekulative Ausführung der CPU aus, um an Speicherinhalte zu gelangen, für die keine Zugriffsrechte vorliegen.
 Meltdown greift dafür direkt auf die Speicherbereiche zu, wohingegen Spectre die Sprungvorhersage manipuliert, um den Zugriff privilegierter Prozesse auf bestimmte Speicherinhalte zu lenken.
 
 Beide Varianten erzeugen invalide Speicherzugriffe während der spekulativen Ausführung, das heißt der nach außen sichtbare Zustand der CPU bleibt unverändert erhalten, jedoch ändert sich der interne Zustand wie etwa die Cache-Inhalte.
 Um den Informationen über den veränderten internen Zustand der CPU zu erhalten, werden analog zu anderen Angriffen Differenzen in der Zugriffszeit auf verschiedene Cache-Einträge genutzt.
-Eine mögliche Nutzung der Meltdown und Spectre Angriffe im Browser wird im Abschnitt \ref{MeltdownSpectreBrowser} diskutiert.
+Eine mögliche Nutzung der Meltdown-und-Spectre-Angriffe im Browser wird im Abschnitt \ref{MeltdownSpectreBrowser} diskutiert.
 
 Heutzutage teilen sich eine Reihe von parallel ausgeführten Prozessen die Ressourcen des Systems.
 Sofern eine sichere Abschottung der Prozesse gegeneinander nicht gegeben ist, kann dies Sicherheitsprobleme erzeugen.
-Intel SGX erzeugt eine vertrauenswürdige Ausführungsumgebung, welche Speicherbereiche bereitstellt auf die selbst Prozesse mit erhöhten Rechten keinen Zugriff haben.
+Intel SGX erzeugt eine vertrauenswürdige Ausführungsumgebung, welche Speicherbereiche bereitstellt, auf die selbst Prozesse mit erhöhten Rechten keinen Zugriff haben.
 Wie \cite{CacheZoom,CacheAttacksIntelSGX} zeigen, sind diese sogenannten Enklaven ebenfalls über Caches angreifbar, sofern der Angriffsprozess auf demselben physischen Kern wie der Opferprozess läuft.
 
-Sofern der Prozess der Angreiferin und des Opfers auf demselben physischen Kern laufen, ergeben sich weitergehende Angriffsmöglichkeiten.
+In diesem Fall ergeben sich weitergehende Angriffsmöglichkeiten.
 So kann beispielsweise eine erhöhte räumliche Auflösung ermöglicht werden, welche über die übliche 64 Byte Cache-Line-Auflösung hinaus geht \cite{MemJam}.
 
 Ein im Juli 2018 veröffentlichter Angriff \cite{TLBleed} nutzt konkurrierende Zugriffe auf den Translation lookaside buffer(TLB) aus, welcher zwischen zwei Hyperthreads eines selben physischen Kerns geteilt ist.
@@ -176,54 +179,54 @@ Im Browser kann nicht ohne Weiteres ein Kern festgelegt werden, auf dem der Angr
 
 \section{Gliederung der Arbeit}
 
-Diese Arbeit untersucht aktuelle Fragestellungen bezüglich Cache-Angriffen, wobei sich auf praxisnahe Angriffe aus dem Browser heraus fokussiert wird.
+Diese Arbeit untersucht aktuelle Fragestellungen bezüglich Cache-Angriffen, wobei praxisnahe Angriffe aus dem Browser heraus im Vordergrund stehen.
 Im Hinblick auf die Praxisrelevanz wird eine neuartige Eviction-Set-Suche evaluiert, welche die Initialisierungsphase eines Angriffs beschleunigt.
 Des Weiteren werden Leakages in der RSA-Schlüsselgenerierung von Mozilla NSS und OpenPGP.js untersucht sowie Probleme bei der Portierung nativer Angriffen erörtert.
 
 \par \medskip                         
 
-Nach der Einleitung wird der aktuelle Forschungsstand zum Thema in Abschnitt \ref{related_work} dargelegt, um eine Einordnung der Arbeit in die Forschung zu ermöglichen.
+Nach der Einleitung wird der aktuelle Forschungsstand zum Thema in Abschnitt \ref{related_work} dargelegt, um eine Einordnung der Arbeit in die aktuelle Forschung zu ermöglichen.
 
 \par \medskip                     
 
 In Kapitel \ref{chapter:basics} werden die nötigen technische Grundlagen zum Verständnis der Arbeit vermittelt.
-So wird die in der Arbeit verwendete Angriffstechnik Prime and Probe vorgestellt und erläutert warum der Angriff in aktuellen Prozessoren funktioniert.
-Des Weiteren werden die notwendigen Voraussetzungen erläutert, wie beispielsweise die Verfügbarkeit hochpräziser Timer.
+So wird die in der Arbeit verwendete Angriffstechnik Prime and Probe vorgestellt und erläutert, warum der Angriff in aktuellen Prozessoren funktioniert.
+Des Weiteren werden die notwendigen Voraussetzungen erklärt wie beispielsweise die Verfügbarkeit hochpräziser Timer.
 Außerdem werden die vorteilhaften Merkmale eines Cache-Angriffs aus dem Browser beschrieben.
-Abschließend wird die Speicher-Disambiguierung erklärt, dessen Verständnis für die beschleunigte Eviction-Set-Suche elementar ist.
+Abschließend wird die Speicher-Disambiguierung erklärt, deren Verständnis für die beschleunigte Eviction-Set-Suche elementar ist.
 
 \par \medskip                     
 
 Mit der realen Implementierung des Angriffs in Javascript beziehungsweise Webassembly beschäftigt sich Kapitel \ref{chapter:preparation}.
-Es wird beschrieben wie die Voraussetzungen für einen Angriff im Webkontext trotz begrenzter Möglichkeiten geschaffen werden können.
+Es wird beschrieben, wie die Voraussetzungen für einen Angriff im Webkontext trotz begrenzter Möglichkeiten geschaffen werden können.
 Außerdem wird die Umsetzung des Eviction-Set-Suchalgorithmus im Webkontext beschrieben und dessen Leistung theoretisch analysiert.
 Zudem wird die Performance des Eviction-Set-Suchalgorithmus sowie diverse Optimierungen desselben in der Praxis evaluiert.
 Ein spezifisches Verhalten von Intel-Prozessoren im Bezug auf die Speicher-Disambiguierung, welches neue Möglichkeiten in der Eviction-Set-Suche eröffnet, wird erläutert.
-Erstmals wird beschrieben wie damit ein verbesserter Eviction-Set-Suchalgorthmius im Webkontext umsetzbar ist und wie dieser im Vergleich zur Standardversion performt.
+Erstmals wird beschrieben, wie damit ein verbesserter Eviction-Set-Suchalgorthmius im Webkontext umsetzbar ist und wie dieser im Vergleich zur Standardversion performt.
 Als Beispiel wird ein verdeckter Kanal vom Browser zu einem nativ laufenden Programm aufgebaut.
 
 \par \medskip                      
 
 Im \ref{chapter:results}. Kapitel werden verschiedene Leakages in der RSA-Schlüsselgenerierung von Mozilla NSS und OpenPGP.js analysiert.
-Dabei wird erörtert wie die Ergebnisse einer automatisierten Leakage-Erkennung miteinbezogen werden können.
-Bei der Leakage in der RSA-Primzahlgenerierung von Mozilla NSS und OpenPGP.js ist offen, ob sich diese eignet Teile der Primzahlen effizient zu rekonstruieren.
-Darüber hinaus wird die Portierung eines nativen Angriffs auf OpenSSL, hin zu einem Angriff im Browser auf Mozilla NSS analysiert.
+Dabei wird erörtert, wie die Ergebnisse einer automatisierten Leakage-Erkennung miteinbezogen werden können.
+Bei der Leakage in der RSA-Primzahlgenerierung von Mozilla NSS und OpenPGP.js ist offen, ob sich diese eignet, Teile der Primzahlen (Was ist damit gemeint?) effizient zu rekonstruieren.
+Darüber hinaus wird die Portierung eines nativen Angriffs auf OpenSSL hin zu einem Angriff im Browser auf Mozilla NSS analysiert.
 Dabei auftretende Fallstricke, wie beispielsweise der fehlende clflush-Befehl im Webkontext, werden herausgearbeitet und mögliche Lösungen diskutiert.
 
 \par \medskip                       
 
 Die Ergebnisse der Arbeit werden im \ref{chapter:discussion}. Kapitel besprochen.
-So wird beschrieben welche zusätzlichen Auswirkungen die Hardware und Software des Opfers auf die Erfolgswahrscheinlichkeit eines Angriffs hat.
+So wird beschrieben, welche zusätzlichen Auswirkungen die Hardware und Software des Opfers auf die Erfolgswahrscheinlichkeit eines Angriffs hat.
 Gegenmaßnahmen werden erläutert und die in diesem Kontext wichtige Rolle der Browserhersteller genannt.
 Des Weiteren werden Vorteile der RSA-Schlüsselgenerierung in OpenPGP.js gegenüber Mozilla NSS dargestellt.
-Am Schluss des Kapitels wird die Umsetzung der populären Meltdown und Spectre Angriffe im Webkontext diskutiert.
+Am Schluss des Kapitels wird die Umsetzung der populären Meltdown-und-Spectre Angriffe im Webkontext diskutiert.
 
 \par \medskip  
 
 Das letzte und \ref{chapter:conclusions}. Kapitel wird die vorherigen Ergenisse abschließend bewerten und einordnen.
-Zusätzlich wird ein Ausblick gewährt welche technischen Fortschritte und Erkenntnisse die Angriffsmöglichkeiten im Browser verbessern würden.
+Zusätzlich wird ein Ausblick gewährt, welche technischen Fortschritte und Erkenntnisse die Angriffsmöglichkeiten im Browser verbessern würden.
 Zudem wird ein Blick auf andere Endgeräte und deren Angreifbarkeit geworfen.
-Zuletzt werden die Seiten gewechselt und beschrieben wie Angriffe verhindert werden können und welche Forschung in diesen Bereich notwendig ist.
+Abschließend wird beschrieben, wie Angriffe verhindert werden können und welche Forschung in diesen Bereichen zukünftig notwendig ist.
 
 %Diese Arbeit ist in sechs Hauptkapitel untergliedert. 
 %Nach der Einleitung werden im zweiten Kapitel die notwendigen technischen Grundlagen erläutert, die für das Verständnis der nachfolgenden Kapitel bedeutend sind.

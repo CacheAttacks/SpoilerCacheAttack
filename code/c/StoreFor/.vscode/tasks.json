@@ -8,7 +8,7 @@
              "type": "shell",
              "command": "g++",
              "args": [
-                "-O0", "-g", "storefor.c", "storefor_find_es.c", "-o", "storefor"
+                "-O0", "-g", "storefor.c", "storefor_find_es.c", "multithread.c", "-o", "storefor", "-lpthread"
              ],
              "group": {
                  "kind": "build",

@@ -36,7 +36,32 @@ Wenn das angegriffene Endgerät $n$ virtuelle Kerne besitzt können also $n-3$ f
 
 \section{Viel hilft viel?}
 
-$n-1-k$ Kerne für Bremsung nutzbar mit $K$ Kerne für eigentliche Überwachung 
+Nach den Überlegungen des vorherigen Kapitels sind $n-1-k$ Kerne für die Bremsung nutzbar, wobei $k$ die Anzahl der Kerne für die eigentliche Überwachung ist. Abschnitt \ref{PracticalLeakageAnalysis} hat gezeigt, das s ein Thread die Shift beziehungsweise Subtraktions-Operation nicht ausreichend abbremst.
+Daher soll im Folgenden analysiert werden, ob mehrere Threads Vorteile beim Bremsen bringen.
+Der Testrechner hat 4 physische und 8 virtuelle Kerne und zu besseren Einschätzung des Effekts wird ausschließlich gebremst und nicht gemessen, das heißt es können bis zu 6 Bremsthreads auf die virtuellen Kerne verteilt werden.
+Zu beachten ist das Problem der Threadaufteilung, wenn mindestens 3 und höchstens 5 Bremsthreads verwendet werden.
+In diesem Fall werden Threads zeitweise exklusiv auf einem physischen Kern laufen und etwa doppelt so performant sein, wie Threads die sich ihren Kern mit einem anderem Thread teilen müssen.
+Da die Zuordnung der Threads zu den Kernen im Browser nicht verändert werden kann, ist unklar welche Threads alleine laufen.
+
+Daher werden die Laufzeitmessungen mehrere Sekunden durchgeführt und anschließend gemittelt, damit der Effekt nicht die Ergebnisse verfälscht.
+Der Bremseffekt sollte jedoch bei ab 3 Bremsthreads nachlassen, da sich die Bremsthread dann zeitweise den Kern mit einem anderen Thread teilen müssen.
+
+Die für die Bremsung wurden die Cache-Lines verwendet, welche in den Tests in Abschnitt \ref{PracticalLeakageAnalysis} (siehe Tabelle \ref{tbl:PerformanceDegShift} und \ref{tbl:PerformanceDegSub}) am besten bremsten.
+
+
+Tabelle \ref{} zeigt, den Effekt wenn mehrere Threads für den Bremsvorgang verwendet werden.
+
+
+opferprozess läuft die ganze zeit in eigenem prozess
+chrome dafür alle bremsthreads auch in einem prozess
+
+ref: 340,475,430k
+1t:347,477,443k
+2t:361,516,467k
+3t:373,505,467k
+4t:435,558,546k
+5t:448,574,556k
+6t:474,601,598k
 
 TODO multithread bench
 
