@@ -265,13 +265,13 @@ Diese Module können von Javascript als Bibliotheken geladen und verwendet werde
 
 \section{Drive-by Attacks}
 
-Die große Schwierigkeit eines Angriffs ist es den Schadcode auf dem Gerät des Opfers zur Ausführung zu bringen. Ein beliebte Methode ist das Social-Engineering, welches darauf abzielt bei Personen bestimmte Reaktionen wie das Öffnen eines E-Mail-Anhang hervorzurufen. Leider muss hier das Opfer selbst aktiv mitwirken, um dem Angriff zum Erfolg zu verhelfen.
+Die große Schwierigkeit (besser: Herausforderung) eines Angriffs (welcher Art von Angriff?) ist es, den Schadcode auf dem Gerät des Opfers zur Ausführung zu bringen. Eine beliebte Methode ist das so genannte Social-Engineering, welches darauf abzielt, bei Anwendern bestimmte Reaktionen wie etwa das Öffnen eines E-Mail-Anhangs hervorzurufen. Allerdings muss hier das Opfer selbst aktiv mitwirken, um dem Angriff zum Erfolg zu verhelfen.
 
-Im Gegensatz dazu steht der Drive-by Attack \cite{DriveByAttacksGeneric}, bei dem das Opfer bereits bei dem Besuch einer Website angegriffen wird. Zum einen ist es möglich durch Lücken im Browser beliebigen Code auf dem Gerät des Opfers auszuführen. Zum anderen wie etwa im Fall dieser Arbeit können die vorhandenen Mittel wie Javascript und Webassembly für einen Angriff genutzt werden.
-Die Erfolgswahrscheinlichkeit eines Angriffs ist hier bedeutend größer, da bereits von der Angreiferin geschaltete Werbeanzeigen auf häufig aufgerufenen Webseiten für einen großen Pool von Opfern ausreichen.
-Des Weiteren werden die meisten Opfer den Angriff nicht zu ihrem Ursprung zurückverfolgen können, da sie die Website mit der bösartigen Werbeanzeige regelmäßig besuchen.
+Im Gegensatz dazu steht der Drive-by-Attack \cite{DriveByAttacksGeneric}, bei dem das Opfer bereits durch den Besuch einer Website angegriffen wird. Zum einen ist es möglich, durch Lücken im Browser beliebigen Code auf dem Gerät des Opfers auszuführen. Zum anderen, wie in der vorliegenden Arbeit dargestellt, können die vorhandenen Mittel (Treffenderes Wort wählen, etwa: "Scriptsprachen") wie Javascript und Webassembly für einen Angriff genutzt werden.
+Die Erfolgswahrscheinlichkeit eines Angriffs ist im letzteren Fall bedeutend größer, da bereits die von der Angreiferin geschalteten Werbeanzeigen auf häufig aufgerufenen Webseiten für einen umfangreichen Pool von Opfern sorgen.
+Hinzu kommnt, dass die meisten Opfer den Angriff nicht zu ihrem Ursprung zurückverfolgen können, da sie die Website mit der bösartigen Werbeanzeige regelmäßig besuchen.
 
-Zusammenfassend ist das Schreiben von Drive-by Angriffen aufwendiger und setzt in der Regel die Kenntnis über unbekannte oder nicht gepatchte Sicherheitslücken voraus, verspricht dafür aber eine deutliche höhere Erfolgswahrscheinlichkeit.
+Somit ist, zusammenfassend bemerkt, das Schreiben von Drive-by-Angriffen zunächst aufwändiger und setzt in der Regel die Kenntnis unbekannter oder nicht gepatchter Sicherheitslücken voraus, verspricht dafür aber eine deutliche höhere Erfolgswahrscheinlichkeit.
 
 %Mit der zunehmenden Wandlung vieler Applikationen weg von der lokalen Desktopanwendung hin zur endgerätunabhängigen Webanwendung
 
@@ -283,44 +283,43 @@ Zusammenfassend ist das Schreiben von Drive-by Angriffen aufwendiger und setzt i
 
 \section{Speicher-Disambiguierung}
 
-Heutige Prozessoren wie etwa die Intel Core Reihe führen auch Store- und Load-Befehle Out-of-Order aus und stehen damit vor der Aufgabe, auf Datenabhängigkeiten zu reagieren \cite{memoryDisambiguationBlog}.
-Die Techniken für eine Speicher-Disambiguierung erkennen echte Abhängigkeiten zwischen Speicheroperationen während Ausführung. 
-Außerdem erlauben die Techniken der CPU zu einem vorherigen Zustand zurückzukehren sobald eine Abhängigkeit verletzt wurde.
+Heutige Prozessoren, wie etwa die Intel-Core-Reihe, führen auch (Warum "auch"? Das Wort würde ich streichen.) Store- und Load-Befehle Out-of-Order aus und stehen damit vor der Aufgabe, auf Datenabhängigkeiten (Was ist das denn?) zu reagieren \cite{memoryDisambiguationBlog}.
+Die Techniken für eine Speicher-Disambiguierung erkennen echte Abhängigkeiten zwischen Speicheroperationen während der Ausführung. (Der Satz steht hier ohne Zusammenhang.)
+Außerdem erlauben die Techniken der CPU, zu einem vorherigen Zustand zurückzukehren, sobald eine Abhängigkeit verletzt wurde.
 
-Die Möglichkeit Load- und Store-Befehle Out-of-Order auszuführen, sorgt für eine erhöhte Parallelität auf Instruktionsebene und eine damit verbesserte Single-Thread-Performance.
+Die Möglichkeit, Load- und Store-Befehle Out-of-Order auszuführen, sorgt für eine erhöhte Parallelität auf Instruktionsebene und eine damit verbesserte Single-Thread-Performance.
 Grafik \ref{fig:MemoryDisambiguation} zeigt ein Beispiel für die Speicher-Disambiguierung. 
 
 \label{fig:MemoryDisambiguation}
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.6\textwidth]{methods/memory_disambiguation.pdf}
-\caption{Beispiel für eine Speicher-Disambiguierung. Die Nummern in den Kreisen geben die chronologische und der weiße Pfeil am linken Rand die logische Ausführungsreihenfolge an. Load 2 kann nicht früher ausgeführt werden, da er von Store 1 abhängig ist. Load 4 hingegen ist von den anderen Operationen unabhängig und kann daher vor Store 1 und Store 3 ausgeführt werden. Durch diese vorgezogene Ausführung können Instruktionen die den Wert von X benötigen im Folgenden von einer geringen Zugriffslatenz profitieren. \cite{CacheAssoWiki}.}
+\caption{Beispiel für eine Speicher-Disambiguierung. Die Nummern in den Kreisen geben die chronologische und der weiße Pfeil am linken Rand die logische Ausführungsreihenfolge an. Load 2 kann nicht früher ausgeführt werden, da er von Store 1 abhängig ist. Load 4 hingegen ist von den anderen Operationen unabhängig und kann daher vor Store 1 und Store 3 ausgeführt werden. Durch diese vorgezogene Ausführung können Instruktionen, die den Wert von X benötigen, im Folgenden von einer geringen Zugriffslatenz profitieren. \cite{CacheAssoWiki}.}
 \end{figure}
 
-Um dies umzusetzen werden Store-Instruktionen bei der Ausführung nicht direkt an das Speichersystem, in diesem Fall den CPU-Cache, committed.
+Um dies (Bezug fehlt mir.) umzusetzen, werden Store-Instruktionen bei der Ausführung nicht direkt an das Speichersystem, in diesem Fall den CPU-Cache, committed (Also hier bitte auf deutsch: "Übermittelt"?)
 Stattdessen werden die Store-Instrukionen inklusive der Speicheradressen und Daten in einer Store-Queue gepuffert.
 Die Werte werden erst an das Speichersystem übergeben, wenn alle vorherigen Befehle im Code komplett abgeschlossen wurden.
-Dies vermeidet Write-after-Read(WAR) Konflikte bei denen ansonsten ein früheres LOAD einen inkorrekten Wert vom Speichersystem lesen würde, weil die Ausführung eines späteren STORE vorgezogen wurde.
-Auch Write-after-Write(WAW) Konflikte werden gelöst, da keine früheren STORES ihre Werte nach späteren STORES in das Speichersystem committen, wie es ohne STORE-Quee bei der Out-Of-Order Ausführung der Fall wäre. 
+Dies vermeidet Write-after-Read(WAR)-Konflikte, bei denen ansonsten ein früheres LOAD einen inkorrekten Wert vom Speichersystem lesen würde, weil die Ausführung eines späteren STORES vorgezogen wurde.
+Auch Write-after-Write(WAW)-Konflikte werden dadurch gelöst, da keine früheren STORES ihre Werte nach späteren STORES in das Speichersystem committen (s. o.), wie es ohne STORE-Queue bei der Out-Of-Order-Ausführung der Fall wäre. 
 
 Des Weiteren ermöglicht die Store-Queue die spekulative Ausführung von bedingten Verzweigungen, deren Richtung zum Ausführungszeitpunkt noch nicht bekannt ist.
-Wenn der Pfad falsch geraten wurde, muss die berechnete Pfad verworfen werden und alle STORES rückabgewickelt werden.
-Ohne die Store-Queue wäre dies nicht möglich, da in der Zwischenzeit die geschriebenen Werte von anderen Cores gelesen sein könnten und somit de Systemzustand korrumpiert wäre.
+Wenn ein Pfad falsch geraten wurde, muss der berechnete Pfad verworfen und alle STORES rückabgewickelt werden.
+Ohne die Store-Queue wäre dies nicht möglich, da in der Zwischenzeit die geschriebenen Werte von anderen Cores gelesen sein könnten und somit der Systemzustand korrumpiert wäre.
 
-Diese Überlegung führt zu einem neuen Problem, welches durch die Store-Queue entsteht.
-Angenommen ein STORE wird ausgeführt und seine Adresse und Daten in der Store-Queue gepuffert. Kurz danach liest ein LOAD von der selben Adresse auf die der STORE geschrieben hat.
-Würde der LOAD den Wert vom Speichersystem lesen, wäre der Wert veraltet, da der im Code vorher stehende STORE noch nicht committed wurde.
+Diese Überlegung führt zu einem neuen Problem (bei ???), welches durch die Store-Queue entsteht.
+Angenommen ein STORE wird ausgeführt und seine Adresse und seine Daten werden in der Store-Queue gepuffert. Kurz danach liest ein LOAD von der selben Adresse, auf die der STORE geschrieben hat.
+Würde der LOAD den Wert vom Speichersystem lesen, wäre der Wert veraltet, da der im Code vorher stehende STORE noch nicht committed (s. o.) wurde.
 
-Um diesem Problem zu begegnen, nutzten Prozessoren in der Store-Queue die store-to-load forwarding Technik.
-Hierfür erfüllt die Store-Queue neben dem puffern der STORES den Zweck Werte von in der Queue abgeschlossenen STORES, die noch nicht committed wurden, zu späteren LOADS weiterzuleiten.
+Um diesem Problem zu begegnen, nutzten Prozessoren in der Store-Queue die store-to-load-forwarding-Technik, die die Store-Queue veranlasst,neben dem Puffern der STORES den Zweck Werte (mir unklare Substantive!!!) von in der Queue abgeschlossenen STORES, die noch nicht committed (s. o.) wurden, zu späteren LOADS weiterzuleiten.
 Bei der Ausführung eines LOADS wird die als assoziativer Speicher umgesetzte Store-Queue nach STORES auf der selben Adresse durchsucht, welche in der logischen Ausführungsreihenfolge vorher auftauchen.
-Sofern es einen Treffer gibt, wird dieser Wert statt des veralteten Wertes aus Speichersystem verwendet.
+Sofern es einen Treffer gibt, wird dieser Wert statt des veralteten Wertes aus dem (???) Speichersystem verwendet.
 
 \section{Angegriffene Hardware und Software}
 
-Der Testrechner war ein Dell Precision T1700 mit einem Intel Core i7-4770 dessen 4 physischen Kerne beziehungsweise 8 virtuellen Kerne einen Grundtakt von 3,4GHz bieten.
+Der Testrechner war ein Dell Precision T1700 mit einem Intel Core i7-4770, dessen 4 physischen Kerne beziehungsweise 8 virtuellen Kerne einen Grundtakt von 3,4GHz bieten.
 Der geteilte L3-Cache ist 8 MiB groß, besitzt eine Assoziativität von 16, eine Cache-Line-Größe von 64 Byte und 8192 Cache-Sets, die in 4 Slices aufgeteilt sind.
-Weiter wird ist ein Intel C226 Chipsatz und 8GB DDR3-1600 verbaut. 
+Weiterhin ist ein Intel C226 Chipsatz und 8GB DDR3-1600 verbaut. 
 Als Betriebsystem wird Ubuntu 16.04.5 LTS (GNU/Linux 4.4.0-131-generic x86_64) verwendet. 
 
 Als Browser wurden Chromeium TODO, Firefox 62 sowie Firefox Developer Edition 63 getestet.
@@ -332,7 +331,7 @@ Mozilla Network Security Services(NSS) \cite{MozillaNSS} ist eine Menge von Bibl
 Der Quellcode ist unter der Mozilla Public License verfügbar und kann online etwa im Firefox-Repository \cite{MozillaDXR} eingesehen werden.
 
 OpenPGP ist ein Standard für das Signieren, Ver- und Entschlüsseln von Daten, welcher im RFC 4880 \cite{rfc4880} definiert wird.
-OpenPGP.js \cite{OpenPGPjs} ist eine Opensource-Implementierung des OpenPGP-Protokolls in Javascript, welche sich zum Ziel gesetzt hat OpenPGP auf einer breiten Platte von Endgeräten zu ermöglichen.
+OpenPGP.js \cite{OpenPGPjs} ist eine Opensource-Implementierung des OpenPGP-Protokolls in Javascript, welche sich zum Ziel gesetzt hat, OpenPGP auf einer breiten Platte (meinst du "Palette"?) von Endgeräten zu ermöglichen.
 So wird OpenPGP.js etwa vom E-Mail-Dienst Protonmail \cite{Protonmail} genutzt.
 
 %\todo{Besser in Implementierung aufgehoben?}
