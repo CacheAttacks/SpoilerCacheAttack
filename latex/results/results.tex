@@ -37,7 +37,8 @@ Falls dies fehlschlägt, wird der gesamte Vorgang bis zu zehnmal wiederholt, bev
 \end{algorithm}
 
 Die Zahl $random\_num$ wird an die Funktion mpp_make_prime in der Datei mpprime.c übergeben \ref{alg:makePrimeGenerationNSS}.
-Global definiert ist das Array $primes_tab$, das alle Primzahlen von 3 bis 2^16 beinhaltet. Dieses Array wird nicht dynamisch beim Start erzeugt. Stattdessen stehen alle benötigten Primzahlen fix im Quellcode. 
+Global definiert ist das Array $primes_tab$, das alle Primzahlen von 3 bis 2^16 beinhaltet. Dieses Array wird nicht dynamisch beim Start erzeugt.
+Stattdessen stehen alle benötigten Primzahlen fix im Quellcode. 
 Das Array $primes_tab$ wird im nachfolgenden Siebvorgang benötigt, um mit wenig Rechenleistung eine Reihe von Primzahlkandidaten auszuschließen.
 Dieser Siebvorgang wird in der Funktion mpp_sieve, die ebenfalls in mpprime.c zu finden ist, definiert \ref{alg:sievePrimeGenerationNSS}.
 Zahlen der Form $random\_num + 2 \cdot i$, mit $i \in [1\twodots SIEVE\_SIZE]$ sind mögliche Primzahlkandidaten.
@@ -54,7 +55,7 @@ Das $sieve$-Array dient später dazu, die Primzahlkandidaten der Form $random\_n
 Im ersten Fall muss also $sieve[0] = 1$ gesetzt werden, da $random\_num \mod small\_prime = 0$.
 Dies wird in der ersten Iteration der For-Schleife in Zeile 9 umgesetzt.
 Außerdem muss $sieve[j] = 1$ gesetzt werden, falls $j = k \cdot small\_prime / 2$ gilt, da wie oben festgestellt $random\_num + k \cdot small\_prime$ beziehungsweise $random\_num + 2 \cdot j$ zusammengesetzt ist.
-Jenes (Hier fehlt ein Nomen!) wird in den restlichen Iterationen der For-Schleife umgesetzt, wobei Einträge im $sieve$-Array nur gesetzt werden, wenn $k \cdot small\_prime$ gerade ist.
+Das Setzen von $sieve[j] = 1$ wird in den restlichen Iterationen der For-Schleife umgesetzt, wobei Einträge im $sieve$-Array nur gesetzt werden, wenn $k \cdot small\_prime$ gerade ist.
 Ungerade $k \cdot small\_prime$ sind uninteressant, da $random\_num$ ebenfalls ungerade ist und somit $random\_num + k \cdot small\_prime$ immer mindestens durch $2$ teilbar ist.
 
 Im zweiten Fall sei $random\_num$ nicht durch $small\_prime$ teilbar, das heißt $rem \neq 0$.
@@ -138,7 +139,8 @@ Das $primes\_tab$-Array ist vom Datentyp mp_digit, der bei einer Linux x64-Kompi
 Somit hat das $primes_tab$-Array eine Gesamtgröße von $8 \cdot 6541 = 52328 Bytes$ und liegt in $\lceil 52328 / 64 \rceil = 818$ verschiedenen Cache-Lines beziehungsweise $\lceil 52328 / 4096 \rceil = 13$ Pages.
 
 Angenommen, die zu primes_tab[0-7] gehörige Cache-Line wird mittels Prime-and-Probe überwacht, dann können nach Start des Siebvorgangs 8 Zugriffe mit jeweils etwa TODO Taktzyklen Abstand gemessen werden.
-Nach dem 8. Zugriff muss die überwachte Cache-Line auf $primes\_tab[8-15]$ für weitere 8 Zugriffe gewechselt werden usw. (???)
+%(besser?)
+Nach dem 8. Zugriff wird auf die Cache-Line $primes\_tab[8-15]$ gewechselt, um dort die nächsten 8 Zugriffe zu messen und so weiter.
 
 Um die notwendigen Cache-Sets zu finden, muss nur jeweils ein Cache-Set pro 4-KiB Page identifiziert werden, da wie bereits oben erwähnt die Adressen innerhalb einer Page identisch sind.
 Das Zugriffsmuster auf jeder Cache-Line des $primes\_tab$-Array entspricht immer 8 Zugriffen mit jeweils TODO Taktzyklen Pause. Außerdem liegt das $primes\_tab$-Array immer an derselben Adresse im Speicher.
@@ -164,7 +166,10 @@ Ihr ist aber bekannt, dass, solange $small\_prime$ < 64 (17 Primzahlen) ist, auf
 
 Durch die Änderung der letzten 12 Bits der Adressen eines bestehenden Eviction-Sets in derselben Weise entsteht ein neues gültiges Eviction-Set, welches im Folgenden als benachbartes Eviction-Set bezeichnet wird.
 
-Das $sieve$-Array in 512 Cache-Lines aufgeteilt ist, zwischen den Zugriffen auf das $sieve$-Array ist eine Pause von TODO Taktzyklen, aber die eigentliche Aktivität auf dem $sieve$-Array ist mit unter 100 Taktzyklen pro Iteration vergleichsweise kurz. (UNKLARER SATZBAU / UNKLARE Aussage)
+%(UNKLARER SATZBAU / UNKLARE Aussage)
+Das $sieve$-Array ist in 512 Cache-Lines aufgeteilt, auf die wie oben beschrieben nacheinander zugegriffen wird.
+Durch die Berechnung von $random\_num \mod small\_prime$ entsteht zwischen den Zugriffen auf das $sieve$-Array ist eine Pause von TODO Taktzyklen.
+Dagegen ist die eigentliche Aktivität auf dem $sieve$-Array (Zeile 9-11) mit unter 100 Taktzyklen pro Iteration vergleichsweise kurz.
 Daher muss die Angreiferin nach dem Zugriff auf das $primes\_tab$-Array eine Reihe von Eviction-Sets primen, warten, bis auf das $primes\_tab$-Array erneut zugegriffen wird, und dann proben.
 
 Sofern ein Eviction-Set in dieser Phase Aktivität gezeigt hat, werden in der nächsten Iteration seine benachbarten Sets überwacht.
@@ -190,11 +195,11 @@ Da $offset = offset\_ex - small\_prime$ ist $rem = small\_prime - (offset\_ex - 
 
 Es ist unbekannt, ob $rem$ gerade oder ungerade ist, weshalb $rem$ nicht weiter als auf 128 mögliche Werte eingegrenzt werden kann.
 
-Mit dieser Leakage ergeben sich "unscharfe" Kongurrenzen (UNKLARER AUSDRUCK) bezüglich des Wertes $random\_num$ der folgenden Form:
+Mit dieser Leakage ergeben sich Kongruenzen bezüglich des Wertes $random\_num$ der folgenden Form:
 \begin{align}
     random\_num \mod small\_prime \equiv a &\text{ mit } a \in A
 \end{align}
-a kann durch diese Leakage nicht exakt bestimmt werden, deshalb ist $A_i$ die Menge mit den möglichen Werten, welche a annehmen kann.
+$a$ kann durch diese Leakage nicht exakt bestimmt werden, deshalb ist $A_i$ die Menge mit den möglichen Werten, welche $a$ annehmen kann.
 Im oberen Beispiel gilt etwa $|A_i| = 128$ und $\{128,130,132,...,254\} \subsetneq A_i$, wobei die anderen 64 Einträge von $A_i$ durch $small\_prime$ definiert werden.
 
 Mit dieser Beobachtung kann für $random\_num$ folgendes Gleichungssystem definiert werden:
@@ -214,18 +219,20 @@ Im Fall der oben beschrieben Leakage bringt eine Gleichung aber 7 Bit oder 128 m
 Angenommen es existieren 1000 Gleichungen mit $bitlen(small\_prime_i) > 10 \: \forall i$, sodass es $2^{7000}$ mögliche Lösungen gibt und diese im Bereich 0 und $2^{10000}$ liegen.
 Da $2^{bits} < random\_num < 2^{bits+1}$ gilt und die möglichen Lösungen über den gesamten Lösungsraum verstreut sind, ist die Wahrscheinlichkeit hoch, eine eindeutige Lösung für $random\_num$ zu finden.
 
-Dem Autor ist allerdings unklar, wie schwierig eine Lösung dieses Problems ist (Hier bitte eine Begründung angeben. Sonst zu pauschale Aussage).
 Sofern erlaubt ist, dass die Moduli $small\_prime_i$ beliebige Werte annehmen könnten, ist das Problem beweisbar NP-schwer \cite{FuzzyCRTProof}.
-Eine wesentliche Voraussetzung für die Beweisidee sind hier die beliebigen Werte für die Moduli, sodass eine Adaption der Beweisidee an das ursprüngliche Problem nicht möglich scheint. 
+Eine wesentliche Voraussetzung für die Beweisidee sind hier die beliebigen Werte für die Moduli, sodass eine Adaption der Beweisidee an das ursprüngliche Problem nicht möglich scheint.
 
 Auch wenn das Problem NP-schwer sein sollte, schließt dies nicht automatisch eine schnelle Lösung für bestimme Instanzen des Problems aus.
 So lässt sich das Problem etwa als Integer Programming Problem (ILP) formulieren:
 Ein Constraint ist die Einschränkung von $random\_num$ in den Bereich von $2^{bits}$ bis $2^{bits+1}$.
 Und jede Modulo-Gleichung $x \equiv a \mod m$ wird zu $x + f \cdot m = a$ übersetzt.
 
-Typische ILP-Solver wie etwa LP-Solve arbeiten nicht mit großen Ganzzahlen über $2^64$, sodass diese als Lösung wegfallen.
-In Mathematica (???) lässt sich das Problem beschreiben, jedoch wurde der Versuch, kleine Probleminstanzen mit $random\_num \approx 2^100$ zu lösen, nach mehreren Stunden abgebrochen.
+Typische ILP-Solver wie etwa LP-Solve \cite{lpsolve} arbeiten nicht mit großen Ganzzahlen über $2^64$, sodass diese als Lösung wegfallen.
+In Mathematica \cite{Mathematica} lässt sich das Problem beschreiben, jedoch wurde der Versuch, kleine Probleminstanzen mit $random\_num \approx 2^100$ zu lösen, nach mehreren Stunden abgebrochen.
 Durch das Laufzeitverhalten lässt sich vermuten, dass Mathematica den langsamen und trivialen Ansatz verfolgt, alle Lösungsmöglichkeiten durchzuprobieren.
+
+%(besser)
+Aufgrund des Fehlens eines Beweises für die NP-Schwere oder eines effizienten Lösungsalgorithmus' ist dem Autor die Komplexität dieses Problems bewusst.
 
 Die Fallunterscheidung in der Funktion mpp_sieve in den Zeilen 5 bis 8 würde die Information liefern, ob $random\_num \mod small\_prime = 0$ ist.
 Unabhängig von $rem$ wird aber stets der gesamte Assemblercode für die Zeilen 5 bis 8 geladen (siehe \ref{fig:assemblyMppSieve}), da die Vergleichsoperation an Adresse 806A4 und der Code für die folgende For-Schleife an der Adresse 806CA immer benötigt wird.
@@ -310,8 +317,8 @@ small\_primes <- [7, 11, 13, 17, ..., 4999] //665 primes from 7 to 5000\;
 Auch hier ist der Siebvorgang ein möglicher Codeabschnitt, um Informationen über $random\_num$ zu gewinnen.
 Ansatzpunkt ist wie im letzten Abschnitt die Überwachung des $small\_primes$-Arrays, wobei Chrome auf dem verwendeten Testsystem 8 Byte für jeden Eintrag verwendet. Javascript legt die Größe des Datentyps für das $small\_primes$-Array nicht fest, weshalb diese Aussage nicht auf andere Systemkonfigurationen zutreffen muss.
 
-Der Wert $random\_num$ wird nach jedem Abbruch der Funktion $isProbablePrime$ um einen bestimmten Wert inkrementiert (bitte auf deutsch).
-Sei $random\_num_k$ der Wert $random\_num$ in dem $k.$-Durchlauf der Schleife in den Zeilen 7 bis 14. (Hier fehlt ein 2. Satzteil mit "dann".)
+Der Wert $random\_num$ wird nach jedem Abbruch der Funktion $isProbablePrime$ um einen bestimmten Wert erhöht.
+In den folgenden Absätzen sei $random\_num_k$ der Wert $random\_num$ in dem $k.$-Durchlauf der Schleife (Zeilen 7 bis 14).
 
 Es werden also pro Cache-Line, welche 8 Einträge des $small\_primes$-Array abdeckt, bis zu 8 Zugriffe im Abstand von der Dauer einer Modulo-Operation, hier im Mittel etwa 1600 Taktzyklen, erwartet.
 In der Cache-Line mit weniger als 8 Zugriffen gilt für einen der $small\_prime_i$-Werte $random\_num_k \mod small\_prime_i = 0$, wobei dies zu einem sofortigen Abbruch (siehe Zeile 20) führt.
@@ -322,6 +329,7 @@ Da sich $random\_num$ in jeder Schleifen-Iteration ändert, müssen die aus der 
 
 Die Differenz von $random\_num_k$ und $random\_num_{k+1}$ ist mit dem maximalen Wert im $adds$-Array, also 6 gleichzusetzen.
 Somit könnten aus den Beobachtungen Gleichungen folgender Form aufgestellt werden:
+
 \begin{align*}
     (random\_num + b) \mod small\_prime_j \not\equiv 0 &\text{ mit } b \in [k\twodots6k] \text{ und } j < i\\
     (random\_num + b) \mod small\_prime_i \equiv 0 &\text{ mit } b \in [k\twodots6k]
@@ -361,7 +369,7 @@ E(Anzahl Iterationen) & 95   & 142  & 189  & 379
 \end{tabular}
 \end{table}
 
-Um die Unsicherheit (Bezug unklar!) der obigen Gleichungen zu verringern, soll im Folgenden das $adds$-Array näher analysiert werden.
+Um die Unsicherheit der obigen Kongruenzen zu verringern, soll im Folgenden das $adds$-Array näher analysiert werden.
 Dieses benötigt im Chrome 8 Byte pro Dateneintrag und ist somit über 4 Cache-Lines mit folgenden Werten verstreut:\\
 Cache-Line 1: 1, 6, 5, 4, 3, 2, 1, 4\\
 Cache-Line 2: 3, 2, 1, 2, 1, 4, 3, 2\\
@@ -384,7 +392,7 @@ Folglich könnte das $adds$-Array dauerhaft außerhalb der Funktion vorgehalten 
 Dann könnte die Angreiferin die zu den 4 Cache-Lines gehörigen Eviction-Sets bereits im Voraus suchen.
 Mit der verwendeten Systemkonfiguration konnte ein solches Verhalten in Chrome nicht erzeugt werden.
 
-Zusammenfassend lassen sich Gleichungen wie im Abschnitt \ref{leakageMozillaNSS} aufstellen, wobei dem Autor unklar ist, wie schnell sich diese lösen lassen. (siehe oben. Bitte die Aussage begründen.)
+Zusammenfassend lassen sich Gleichungen wie im Abschnitt \ref{leakageMozillaNSS} aufstellen, wobei die selben Fragen offen sind.
 
 \section{Automatisierte Leakage-Suche}
 
@@ -505,7 +513,7 @@ Somit gilt $t>0$ solange, bis t ungefähr auf die Bitlänge 17 von $u=e$ geschru
 Wenn die Subtraktionen von $e$ außer Acht gelassen werden, wird t etwa $\operatorname{ld}(p) - \operatorname{ld}(e)$ mal geteilt, bevor der obige Fall eintritt.
 
 Gemäß der Definition der $Z_i$ verliert $t$ in jeder Iteration $Z_i$ Bits. 
-(UNKLARE SATZAUSSAGE!) Die Anzahl der Iterationen $k$ der Schleife in den Zeilen 11 bis 17 bis $t$ dieselbe Bitlänge wie $u$ erreicht, ist das kleinste $k$ welches folgende Gleichung erfüllt: 
+Die Anzahl der Iterationen $k$ die in der Schleife der Zeilen 11 bis 17 nötig sind bis $t$ dieselbe Bitlänge wie $u$ erreicht, ist das kleinste $k$ welches folgende Gleichung erfüllt: 
 \begin{align}
 \label{equationN}
 n = \sum\limits_i^k = Z_i >= \operatorname{ld}(p) - \operatorname{ld}(e)
@@ -619,7 +627,7 @@ Sobald eine beliebige Cache-Line einer 4-KiB-Page einem Eviction-Set zugeordnet 
 Daher genügt es, die Cache-Line von b500 bis b53f einem Eviction-Set zuzuordnen, um ein Eviction-Set für die Cache-Line von b940 bis b97f zu finden, welche für die Überwachung der Shift-Operation genutzt werden kann.
 
 Um die Werte $Z_i$ zu bestimmen, muss die Prime-and-Probe mindestens die gleiche Geschwindigkeit wie die Shift- beziehungsweise Subtraktionsfunktion erreichen.
-In der Tabelle \ref{tbl:ShiftSubCycles} sind die durchschnittlichen (hier fehlt ein Nomen) der Zyklen für beide Funktion bei verschiedenen Schlüssellängen angegeben. Zum Vergleich wurde die Dauer der gesamten $mp_gcd$-Funktion hinzugefügt.
+In der Tabelle \ref{tbl:ShiftSubCycles} ist die durchschnittliche Anzahl der Zyklen für beide Funktion bei verschiedenen Schlüssellängen angegeben. Zum Vergleich wurde die Dauer der gesamten $mp_gcd$-Funktion hinzugefügt.
 Die Dauer der Shift- sowie Subtraktionoperation hängt linear von der Schlüssellänge ab, wobei dies für die Dauer der gesamten $mp_gcd$-Funktion nicht der Fall ist.
 
 \begin{table}[h]
@@ -638,14 +646,14 @@ Sobald eine Auflösung von unter 330 Taktzyklen bereit steht, können Lücken in
 Andersherum wird die Abschätzung ungenau, wenn nur eine Auflösung im Bereich der Subtraktions-Operationsdauer bereitsteht, sodass beispielsweise die Unterscheidung von einer oder zwei zwischenzeitlichen Shift-Operationen fehleranfällig wird.
 
 Die Prime-and-Probe Implementation in Javascript/Webassembly erwies sich als zu langsam, um aufeinanderfolgende Shift-Operationen zu unterscheiden.
-Wie in den Benchmarks in Kapitel 2 beschrieben, dauert eine Prime-and-Probe Operation bei keiner (??? Meinst du "einer"?) Aktivität auf dem Cache-Set etwa 200ns, was ca. 700 Taktzyklen entspricht.
+Wie in den Benchmarks in Kapitel 2 beschrieben, dauert eine Prime-and-Probe Operation bei keiner Aktivität auf dem Cache-Set etwa 200ns, was ca. 700 Taktzyklen entspricht.
 Im Falle eines aktiven Cache-Set steigt die Dauer jedoch auf ca. 500ns (~1700 Taktzyklen) an.
-Selbst für eine Schlüssellänge von 8192 Bit ist dieser Wert noch ungenügend (besser: "zu") hoch.
+Selbst für eine Schlüssellänge von 8192 Bit ist dieser Wert noch zu hoch.
 
 Auch in anderen Fällen ist die Geschwindigkeit der überwachten Funktion zu schnell, um mittels der Prime-and-Probe-Funktion überwacht zu werden.
 Hierfür gibt es mehrere Vorschläge, die Funktion künstlich auszubremsen, welche in der Literatur \cite{MemoryLockingWu,MemoryLockingRisenpart,MemoryLockingJavaAndroid} unter dem Begriff "performance degradation attacks" beschrieben werden.
 Ein trivialer Angriff ist etwa die Überwachung selber, da diese mit der Prime-Phase ein Cache-Set komplett füllt, sodass Daten des angegriffenes Programms verdrängt und so aus dem langsamen Hauptspeicher geladen werden müssen.
-Der Effekt ist auch in umgekehrter Richtung, also dem angegriffenen Programm auf das Angriffsprogramm vorhanden. (Satzbau!)
+Der Effekt ist auch in umgekehrter Richtung, also von dem Opferprogramm auf das Angriffsprogramm vorhanden.
 Die Differenz der Prime-and-Probe-Dauer bei keiner gegenüber viel Aktivität auf dem Cache-Set veranschaulicht dies.
 
 In anderen Kontexten wird häufig der $clflush$-Befehl verwendet, um schnell und zuverlässig Daten aus dem Cache zu verdrängen. 

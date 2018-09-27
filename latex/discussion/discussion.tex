@@ -131,12 +131,26 @@ Bermerkungen Mem-Alloc von Firefox/Chrome: https://www.cs.vu.nl/~giuffrida/paper
 \label{GooglePageIsolation}
 
 Wie erwähnt hat Google bereits Anfang August 2018 mit der Chrome Version 68 \cite{ChromeSharedArrayBufferAgain} die SharedArrayBuffer standardmäßig wieder aktiviert.
-Mozilla hingegen hat auch in der aktuellen Firefox Developer  Edition 63.0b8 (Stand Ende September 2018) die SharedArrayBuffer in der Standardeinstellung deaktiviert.
+Mozilla hingegen hat auch in der aktuellen Firefox Developer Edition 63.0b8 (Stand Ende September 2018) die SharedArrayBuffer in der Standardeinstellung deaktiviert.
 
-Firefox standardmäßig vier Content-Prozesse. D.h. Meltdown problematischer Angriff, da Inhalte anderer Webseiten im gleich Addressbereich liegen.
+Google begründet seinen Schritt mit der Einführung der Site Isolation \cite{ChromeSiteIsolation}, welche jeden Renderprozess auf Dokumente einer Webseite beschränkt. Somit ist der Inhalt jeder Webseite in einem eigenen Prozess gekapselt und Chrome kann auf die Sicherheitsmaßnahmen des Betriebssystem zurückgreifen.
+Chrome besaß bereits vor der Version 68 eine Multiprozessarchitektur in der Tabs auf unterschiedliche Prozesse aufgeteilt wurden.
+Jedoch war es vorher möglich, dass eine vertrauenswürdige Webseite und ein darin enthaltender Iframe mit Inhalten einer bösartigen Webseite im selben Renderprozess landeten.
+In diesem Fall wäre ein Spectre-Angriff möglich, in welchem Daten wie Cookies oder Passwörter von der vertrauenswürdigen Seite abgeschöpft werden könnten.
+Der Unterschied lässt sich auch in der Praxis leicht anhand einer typischen mit Drittanbieterwerbung versehenen Webseite wie Spiegel online nachvollziehen.
+Chromium 67.0.3396.0 startet einen zusätzlichen Prozess, Chromium 68.0.3440.0 hingegen 6 weitere Prozesse, um Spiegel Online mit all seiner Werbung in einem neuen Tab darzustellen.
 
-Google jeder Tab in einem Prozess. \cite{ChromeSiteIsolation}
+%https://omahaproxy.appspot.com/
+%https://commondatastorage.googleapis.com/chromium-browser-snapshots/index.html?prefix=Win_x64/550416/
+%vs
+%https://commondatastorage.googleapis.com/chromium-browser-snapshots/index.html?prefix=Win_x64/594476/
 
+Mozilla arbeitet ebenfalls an Site-Isolation, wird aber vermutlich noch Monate brauchen, um dieses Feature in die Release-Version von Firefox zu integrieren \cite{FirefoxSiteIsolation}.
+Die aktuelle Firefox Developer Edition 63.0b8 teilt in der Standardeinstellung alle Webseiteninhalte auf vier Content-Prozesse auf. 
+Somit kann wie oben beschrieben mittels eines Spectre Angriffs auf alle Webseitendaten desjenigen Content-Prozesses zugegriffen werden, in dem die Webseite mit dem Angriffscode liegt.
+Tests haben ergeben, dass Firefox die Tabs nach dem Round-Robin-Verfahren auf die Content-Prozesse aufteilt, womit eine erfolgreiche Angreiferin die Webseitendaten von einem Viertel der offenen Tabs abgreifen könnte.
+
+Aus diesem Grund wird Mozilla in Firefox vermutlich erst nach der Einführung der Site Isolation Änderungen bezüglich der Verfügbarkeit hochpräsizer Timer vornehmen.
 
 \section{Wie wohl fühlen sich Meltdown und Spectre im Browser?}
 \label{MeltdownSpectreBrowser}
@@ -151,3 +165,7 @@ Auch Spectre
 \section{Triviale Divsionen: Ist das sinnvoll oder kann das Weg?}
 
 -Benchmarks von Mozilla NSS und OpenPGPjs ohne Divisionstests
+
+\section{Javascript vs. Webassembly}
+
+Vergleiche Javascript/webassembly bei prime and probe geschwindigkeit

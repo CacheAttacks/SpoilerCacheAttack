@@ -1,4 +1,21 @@
 \chapter*{Abstract}
 
-% Replace this blind text with your abstract
-\blindtext
+%Einleitungssatz (zu thema hinführen):
+%Eventuell Meltdown und Spectre als Aufhänger nutzen
+Browserbasierte Seitenkanalangriffe auf die Mikroarchitektur der CPU sind besonders verehrend, da bereits der Besuche einer Webseite ausreicht, um Opfer eines Angriffs zu werden.
+
+%kurz näher beschreiben wie das in etwa funktionert:
+So ein Angriff wird in Scriptsprachen wie Javascript implementiert und nutzt den geteilten L3-Caches der CPU aus um Informationen über die Speicherzugriffe anderer Programme zu erhalten.
+Der Angriff ist weder auf einen Exploit im Browser noch auf ein fahrlässiges Verhalten der Nutzer angewiesen.
+
+
+%was passiert in dieser Arbeit/Was sind wesentlich Ergenisse?
+%-Neue potenzielle gefährliche leakage in NSS und OpenPGP.js
+%-versuchte Portierung eines nativen RSA-Schlüsselgenerierungsangriff auf OpenSSL zu browsbasierten Angriff auf NSS
+%-Probleme bei Portierung wie Bremsen, verminderte Angriffsgeschwindigkeit im Browser werden analysiert
+%-Eviction-Set-Suchalgorithmus wird verbessert, neue Variante beschrieben und mit altem Algorithmus verglichen
+
+In dieser Arbeit werden neue Leakages in der RSA-Primzahlgenerierung von Mozilla NSS und OpenPGP.js analysiert und Nachteile die gegenüber einem nativen Angriff bestehen, erörtert.
+Exemplarisch wird die Portierung eines nativ laufenden Angriffs auf die RSA-Primzahlgenerierung %hin zu einem Browserangriff 
+untersucht und auftretende Fallstricke beschrieben.
+Des Weiteren wird ein neuer Eviction-Set-Algorithmus vorgestellt, der die in der Praxis wichtige Initalisierungsphase eines L3-Cache-Angriffs beschleunigt. 
