@@ -8,6 +8,9 @@
 #include <thread>         // std::thread, std::this_thread::yield
 #include <vector>         // std::vector
 #include <pthread.h>
+#include <time.h>   // for nanosleep
+#include <unistd.h> // for usleep
+#include "mehmet.h"
 
 #define PAGE_SIZE 4096
 #define PAGE_COUNT 16
@@ -84,28 +87,67 @@ void second_test(){
 
 #define N 10000
 
+inline void xchg(char *my_unaligned_addr){
+      asm volatile (
+      "xchg (%[unaligned_addr]), %%ecx;"
+    : //output
+    : [unaligned_addr] "a"(my_unaligned_addr) //input
+    : "ecx" // clobbered register
+    ); 
+}
+
+uint32_t measure_xchg(char *my_unaligned_addr){
+  uint32_t t1 = rdtscp32();
+  xchg(my_unaligned_addr);
+  return rdtscp32()-t1;
+}
+
 void risenpart_loop(char *unaligned_addr){
   uint32_t *times = (uint32_t*)calloc(N,sizeof(uint32_t));
     //loop i from (1..N):
   for(int i=0; i<N; i++){
-    uint32_t t1 = rdtscp32();
-    //printf("%i ", i);
-
     //atomic_op(unaligned_addr + i, some_value)
-    asm volatile (
-      "xchg (%[unaligned_addr]), %%ecx;"
-    : //output
-    : [unaligned_addr] "a"(unaligned_addr + i) //input
-    : "ecx" // clobbered register
-    ); 
+    times[i] = measure_xchg(unaligned_addr + i);
 
-    times[i] = rdtscp32()-t1;
+    //if(times[i] > 2000){
+      //printf("test: %i:%" PRIu32 "\n",i,times[i]);
+      //times[i] = measure_xchg(unaligned_addr + i);
+    //}
   }
-  // for(int i=0; i<N; i++){
-  //   if(times[i] > 1500){
-  //     printf("%i:%" PRIu32 "\n", i, times[i]);
-  //   }
-  // }
+  int start_pos=0,end_pos=0;
+  for(int i=100; i<N; i++){
+    if(times[i] > 2000){
+
+      if(start_pos > 0){
+        end_pos = i;
+        printf("start_pos:%i, end_pos:%i\n", start_pos, end_pos);
+        while(1){
+        for(int j=start_pos; j<=end_pos; j++)
+        {
+          measure_xchg(unaligned_addr + j);
+        }
+        }
+        break;
+      }
+
+      
+
+      if(start_pos == 0){
+        start_pos = i;
+      }
+
+      for(int j=0; j<=1000*1000*100; j++)
+      {
+        measure_xchg(unaligned_addr + i);
+      }
+
+      printf("%i:%" PRIu32 "\n", i, times[i]);
+
+      //for(int j=0; j<10;j++)
+      //printf("new %i:%" PRIu32 "\n", i, measure_xchg(unaligned_addr + i));
+    }
+  }
+  printf("finished\n");
   free(times);
 }
 
@@ -132,6 +174,25 @@ static void* measure_risepart(void*){
   }
 }
 
+void* measure_mehmet(void*){
+      int temp, temp2;
+    int dongu = 3000000;
+    //printf("%d",dongu);
+    int bir=1;
+    int iki=2;
+	int threshold = dongu*900;
+	
+  while(1){
+    uint64_t start = rdtscp64();
+    for (int i=1;i<=dongu;i++){
+      clflush(&temp);
+      temp2 = temp;
+      }
+      printf("%" PRIu64 "\n",rdtscp64()-start);
+
+  }
+}
+
 void test_risenpart(){
   // allocate memory multiples of 64 bits
   // char_ptr = allocate_memory((N+1)*8)
@@ -141,10 +202,22 @@ void test_risenpart(){
   //unaligned_addr = char_ptr + 2
   char *unaligned_addr = char_ptr + 2;
 
-  pthread_t thread1;
-  int rc = pthread_create( &thread1, NULL, &measure_risepart, NULL );                  
+  //pthread_t thread1;
+  //pthread_create( &thread1, NULL, &measure_risepart, NULL );    
 
-  for(int i=0; i<100; i++){
+  pthread_t thread2;
+  pthread_create( &thread2, NULL, &measure_mehmet, NULL );  
+
+  usleep(1000*1000*3);
+  
+  instruction_flusher_mehmet(NULL);  
+
+  pthread_t thread3;
+  pthread_create( &thread2, NULL, &instruction_flusher_mehmet, NULL );   
+
+  while(1){} 
+
+  for(int i=0; i<1; i++){
     risenpart_loop(unaligned_addr);
     if(i%10==9)
       printf("10 finished\n");

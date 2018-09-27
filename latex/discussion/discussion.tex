@@ -78,15 +78,39 @@ https://github.com/indutny/bn.js/blob/e69c617b3297b99aca429f30842e27979ef9beb5/l
 
 \section{Memory-locking: Mit Kanonen auf Spatzen schießen}
 
-TODO benchmarks einfügen
+Als Memory-locking soll im Folgenden ein Ansatz bezeichnet werden, welcher die Ausführungsgeschwindigkeit von Prozesses verlangsamt in dem der Zugriff auf den Hauptspeicher wiederholt kurzzeitig blockiert wird.
+Beschrieben und verwendet wurde diese Technik in \cite{MemoryLockingWu, MemoryLockingRisenpart, MemoryLockingJavaAndroid}.
+Um die kurzzeitige Blockierung des Memory-Buses zu erzwingen wird atomar auf eine Variable geschrieben, die in zwei Cache-Lines liegt.
 
-Risenpart:
-http://pages.cs.wisc.edu/~venkatv/pvstudy-usenixsecurity15.pdf
-\cite{MemoryLockingRisenpart}
+Atomare Operationen verursachen systemweite Blockierungen in den Speicherregionen auf denen sie arbeiten, wobei diese Blockierungen in Prozessoren nicht immer lokal begrenzt sind.
+Die ersten Generationen von x86-Prozessoren blockierten bei einer atomaren Operation noch den gesamten Speicherbus.
+Dies sorgt jedoch für Performanceeinbußen da ein Befehl alle Speicherzugriffe, die etwa aufgrund von Out-of-Order-Execution parallel ausgeführt werden könnten, blockiert.
+Des Weiteren skaliert dieser Ansatz schlecht mit Mehrkernprozessoren, da andere Kerne während der atomaren Operation auf Speicherzugriffe verzichten müssten.
 
-Wu:
-https://www.usenix.org/system/files/conference/usenixsecurity12/sec12-final97.pdf
-\cite{MemoryLockingWu}
+Häufig arbeiten atomare Operationen auf Speicherbereichen die in eine Cache-Line passen. Diese Eigenschaft nutzen x86-Prozessoren ab dem Pentium Pro aus, indem sie nur die zugehörige Cache-Line sperren und nicht mehr den gesamten Speicherbus.
+Auf diesen Systemen kann es dennoch zur vorübergehenden Sperrung des gesamten Speicherbusses kommen, etwa wenn der Speicher für die atomare Operation nicht alignt ist und sich über zwei Cache-Lines spannt.
+
+x86-Prozessoren ab dem Intel Nehalem und AMD K8/K10 verwenden anders als die vorherigen Generationen keinen gemeinsamen Speicherbus mehr. Stattdessen ist der Speicher aufgeteilt und jedem Kern ein Bereich als lokaler Speicher zugeordnet, auch Non-Uniform Memory Access   (NUMA) genannt. 
+Die Kerne besitzen direkten Zugriff auf ihren Speicherbereich, wobei auf die Bereiche der anderen Kerne über einen gemeinsamen Adressraum zugegriffen werden kann.
+Wenn die Daten einer atomare Operationen innerhalb einer Cache-Line liegen, wird hier analog zu den vorherigen Generationen nur diese Cache-Line gesperrt.
+Bei einer atomaren Operation dessen Daten sich über zwei Cache-Lines spannen, stimmen sich aufgrund des fehlenden gemeinsamen Speicherbusses alle Prozessoren ab, um ihre aktuell in Ausführung befindenden Speichertransaktionen zu flushen.
+Dies entspricht also einer Simulation für das Sperren des kompletten Speicherbusses.
+
+Diese Verhalten kann nun bewusst provoziert werden, indem atomare Operationen auf Daten zwischen zwei Cache-Lines ausgeführt werden.
+Dadurch werden alle Speicherzugriffe aller Programme gebremst, in der Hoffnung, dass sich das Opferprogramm stärker als das Angriffsprogramm verlangsamt.
+
+
+
+
+%TODO benchmarks einfügen
+
+%Risenpart:
+%http://pages.cs.wisc.edu/~venkatv/pvstudy-usenixsecurity15.pdf
+
+
+%Wu:
+%https://www.usenix.org/system/files/conference/usenixsecurity12/sec12-final97.pdf
+
 
 \section{Wie viel schneller muss er sein?}
 
