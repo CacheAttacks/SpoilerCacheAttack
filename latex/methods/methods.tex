@@ -160,27 +160,31 @@ Der wichtigste Teil für einen Prime-and-Probe-Angriff ist die Fähigkeit, zuver
 Webassembly-Code verwendet nur Adressen der emulierten Umgebung und hat keinerlei Zugriff auf das Mapping zu den virtuellen Adressen. 
 
 Somit sind die physischen Adressen in Webassembly durch gleich zwei Abstraktionsschichten geschützt. 
-Jedoch lässt sich (für ... ???) die Eigenschaft ausnutzen, dass im Betriebssystem 4-KiB-Pages existieren, sodass die letzten 12 Bits der virtuellen und physischen Adresse identisch sind. 
-Des Weiteren alloziert (??? erstellt?) Webassembly 4KiB-große Blöcke, die zur Übereinstimmung der 12 letzten Bits der Webassembly-Adresse mit der virtuellen und physischen führen.
+Jedoch lässt sich für das Finden der Eviction-Sets die Eigenschaft ausnutzen, dass im Betriebssystem 4-KiB-Pages existieren, sodass die letzten 12 Bits der virtuellen und physischen Adresse identisch sind. 
+Des Weiteren alloziert %(??? erstellt?) hier der Fachausdruck
+Webassembly 4KiB-große Blöcke, die zur Übereinstimmung der 12 letzten Bits der Webassembly-Adresse mit der virtuellen und physischen führen.
 
-Um aus dieser Eigenschaft Kapital zu schlagen, wird ein Array mindestens entsprechend der Größe des L3-Caches in Webassembly angelegt. Im Folgenden soll der Intel i7-4770 mit 8 MiB großem L3-Cache erneut als Basis dienen. In diesem Array sind nun $x$ Blöcke der Größe jeweils (??? Warum "jeweils"?) 4 KiB, deren letzten 12 Adressbits mit der physischen Adresse übereinstimmen. Im sogenannten Adresspool seien nun die Adressen des Arrays, bei denen die letzten 12 Bits gleich sind, also insgesamt $x$ Stück.
+Um aus dieser Eigenschaft Kapital zu schlagen, wird ein Array mindestens entsprechend der Größe des L3-Caches in Webassembly angelegt. Im Folgenden soll der Intel i7-4770 mit 8 MiB großem L3-Cache erneut als Basis dienen. In diesem Array sind nun $x$ Blöcke der Größe 4 KiB, deren letzten 12 Adressbits mit der physischen Adresse übereinstimmen. Im sogenannten Adresspool seien nun die Adressen des Arrays, bei denen die letzten 12 Bits gleich sind, also insgesamt $x$ Stück.
 
 Der i7-4770 besitzt 8192 Cache-Sets, die auf 4 Slices aufgeteilt sind, wobei für das Mapping der 2048 Cache-Sets innerhalb eines Slices nur die untersten 18 Bits der physischen Adresse relevant sind. Dabei bestimmen die Bits 6 bis 17 eindeutig das Cache-Set und die Bits 0 bis 5 das Offset innerhalb der Cache-Line.
 
 In welchem der 4 Slices die Daten landen, wird anhand der Adressbits 18 bis 63 bestimmt.
 Durch die Kenntnis der untersten 12 Bits der physischen Adresse sind gleichzeitig 6 Bits (6 bis 11) bekannt, welche für die Zuordnung zu den Cache-Sets verantwortlich sind.
 
-Angenommen, im Pool sind ausschließlich Adressen, bei denen die 12 untersten Bits jedes ??? Unklar.) der 4-KiB-großen Blöcke auf 0 gesetzt sind. Dann kann erwartet werden, dass im Mittel jede 128. 
+%??? Unklar.)(besser?)
+%Angenommen, im Pool sind ausschließlich Adressen, bei denen die 12 untersten Bits jedes ??? Unklar.) der 4-KiB-großen Blöcke auf 0 gesetzt sind.
+Angenommen, im Pool sind ausschließlich Adressen, bei denen die letzten 12 Bits auf 0 gesetzt sind. Somit ist ein Abstand von $2^12$ für aufeinanderfolgende Adressen gegeben und jede Adresse lässt sich genau einem der 4-KiB-großen Blöcke zuordnen.
+Dann kann erwartet werden, dass im Mittel jede 128. 
 Adresse auf das gleiche Cache-Set gemappt wird. Es gibt 8192 Möglichkeiten, eine Adresse einem Cache-Set zuzuordnen, also 13 Bits an Unsicherheit.
 Durch die Kenntnis der untersten 12 Bits der Adresse sind davon 6 Bits bekannt, welche für eine eindeutige Zuordnung sorgen. 
 Es bleiben noch 7 Bits an Unsicherheit, die durch Kenntnis der restlichen Adressbits beseitigt werden könnten.
 
 \subsection{Wahl der Adresspoolgröße}
 
-Um die Anzahl der Blöcke beziehungsweise die Arraygröße in Webassembly sinnvoll zu bestimmen, kann zuerst die vereinfachte Annahme getroffen werden, dass die physischen Adressbits 12 bis 63 der 4-KiB-Blöcke zufällig (fehlt hier nicht ein Wort?, etwa "ausgewählt / bestimmt") sind. 
+Um die Anzahl der Blöcke beziehungsweise die Arraygröße in Webassembly sinnvoll zu bestimmen, kann zuerst die vereinfachte Annahme getroffen werden, dass die physischen Adressbits 12 bis 63 der 4-KiB-Blöcke zufällig gewählt sind. 
 Die unbekannte Cache-Mapping-Funktion nimmt nun die zufälligen Bits 12 bis 63 und die auf 0 gesetzten Bits 0 bis 11 entgegen und gibt eines von 128 möglichen Cache-Sets zurück.
 Ziel ist es, mit einer Poolgröße $x$ und einer hohen Wahrscheinlichkeit für jedes Cache-Sets 16 Zuordnungen beziehungsweise ein Eviction-Set zu finden.
-Gesucht sei (ist???) die Wahrscheinlichkeit, bei einer Poolgröße $x$ mindestens 16 Zuordnungen zu einem fixen Cache-Set $cs$ bei 128 Möglichkeiten zu finden.
+Gesucht ist die Wahrscheinlichkeit, bei einer Poolgröße $x$ mindestens 16 Zuordnungen zu einem fixen Cache-Set $cs$ bei 128 Möglichkeiten zu finden.
 Hierfür eignet sich das Urnenmodell für Ziehungen mit Zurücklegen ohne Berücksichtigung der Reihenfolge, wobei die $x$ Adressen im Pool die Kugeln und die Cache-Sets die Farben der Kugeln repräsentieren. Sei $P(count(cs)>=16)$ die Wahrscheinlichkeit dafür, dass in der gezogenen Folge mindestens 16 mal das Cache-Set $cs$ auftaucht, unter der Bedingung, dass die Poolgröße $\#add = x$.
 Leichter ist es in diesem Fall, die Gegenwahrscheinlichkeit zu berechnen, die mit
 \begin{align*}
@@ -272,7 +276,7 @@ Hierzu wird ein Element aus dem Candidate-Set entfernt und dann erneut getestet,
 Falls ja, wird dieses Element wieder dem Adresspool hinzugefügt, andernfalls verbleibt es im Candidate-Set, da es notwendiger Bestandteil des Eviction-Sets ist.
 Dieser Vorgang wird für jedes Element im Candidate-Set einmal durchgeführt, so dass im fehlerfreien Fall schlussendlich 16 Elemente im Candidate-Set verbleiben.
 Durch Messrauschen kann auch hier wieder ein Element fälschlicherweise als relevant für das Eviction-Set eingestuft werden, weshalb die Contract-Phase dreimal wiederholt wird.
-Die zweite und dritte Wiederholung sind weit weniger kostenintensiv, da das Candidate-Set nach einer Contract-Phase bereits um hunderte (besser: mehrere 100 ...) Einträge bereinigt wurde.
+Die zweite und dritte Wiederholung sind weit weniger kostenintensiv, da das Candidate-Set nach einer Contract-Phase bereits mehrere 100 Einträge bereinigt wurde.
 
 \begin{algorithm}[h]
 %\algsetup{linenosize=\small}
@@ -289,13 +293,13 @@ Die zweite und dritte Wiederholung sind weit weniger kostenintensiv, da das Cand
 }
 \end{algorithm}
 
-Wenn im Anschluss sofort wieder eine neue Zeugenadresse aus dem Pool gewählt wird, könnte eine Adresse gewählt werden, welche auf das selbe Cache-Set wie die vorherige Zeugenadresse abgebildet wird.
+Wenn im Anschluss sofort wieder eine neue Zeugenadresse aus dem Pool gewählt wird, könnte eine Adresse gewählt werden, welche auf dasselbe Cache-Set wie die vorherige Zeugenadresse abgebildet wird.
 Deshalb folgt im Anschluss an eine erfolgreiche Contract-Phase die Collect-Phase.
 In dieser werden alle Adressen aus dem Pool entfernt, welche ebenfalls von dem in der Contract-Phase gefundenen Eviction-Set aus dem Cache verdrängt wurden (siehe auch Pseudocode \ref{alg:evictionSetCollect}).
-Durch diesen Schritt wird also vermieden, dass die spätere Menge von Eviction-Sets dahingehend überprüft werden müsste, ob Eviction-Sets paarweise das selbe zugrundeliegende Cache-Set besitzen. 
+Durch diesen Schritt wird also vermieden, dass die spätere Menge von Eviction-Sets dahingehend überprüft werden müsste, ob Eviction-Sets paarweise dasselbe zugrundeliegende Cache-Set besitzen. 
 Zudem beschleunigt die Collect-Phase die nächsten Iterationen, da weniger Adressen im Pool zur Verfügung stehen.
 Hierzu wird eine Adresse aus dem Pool durch einen Zugriff in den Cache geladen und anschließend auf alle Einträge im Eviction-Set zugegriffen.
-Daraufhin wird die Zugriffszeit auf die Adresse gemessen und bei einer erhöhten Zeit aus dem Pool entfernt, da dann die Adresse auf das selbe Cache-Set wie die Einträge des Eviction-Set beziehungsweise die letzte Zeugenadresse abgebildet wird.
+Daraufhin wird die Zugriffszeit auf die Adresse gemessen und bei einer erhöhten Zeit aus dem Pool entfernt, da dann die Adresse auf dasselbe Cache-Set wie die Einträge des Eviction-Set beziehungsweise die letzte Zeugenadresse abgebildet wird.
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
@@ -314,7 +318,7 @@ Daraufhin wird die Zugriffszeit auf die Adresse gemessen und bei einer erhöhten
 }
 \end{algorithm}
 
-Zusammenfassend wird in der Expand-Phase das Candidate-Set soweit vergrößert, bis es ein Eviction-Set bildet, danach wird es in der Contract-Phase auf die Größe 16 verkleinert und anschließend in der Collect-Phase werden alle auf das selbe Cache-Set abbildende (oder: "abgebildeten") Adressen aus dem Pool entfernt (siehe auch Pseudocode \ref{alg:evictionSetOverview}).
+Zusammenfassend wird in der Expand-Phase das Candidate-Set soweit vergrößert, bis es ein Eviction-Set bildet, danach wird es in der Contract-Phase auf die Größe 16 verkleinert und anschließend in der Collect-Phase werden alle auf dasselbe Cache-Set abgebildeten Adressen aus dem Pool entfernt (siehe auch Pseudocode \ref{alg:evictionSetOverview}).
 Das gefundene Eviction-Set wird gespeichert und der Vorgang solange wiederholt, bis die Anzahl der Pooladressen kleiner als 16 ist oder aufgrund von Fehlern in einer Phase mehrmals kein Eviction-Set gefunden wurde.
 
 \begin{algorithm}[h]
@@ -339,20 +343,20 @@ Das gefundene Eviction-Set wird gespeichert und der Vorgang solange wiederholt, 
 
 \subsection{Optimierung der Phasen}
 
-Ein Eviction-Set muss mindestens die Größe der Assoziativität (???) besitzen, weshalb es naheliegend ist, in der Expand-Phase nicht mit einem leeren Candidate-Set sondern mit einem der Größe der Assoziativität zu starten und so in jeder Expand-Phase Überprüfungen in der Größenordnung Assoziativität minus 1 einzusparen.
+Ein Eviction-Set muss mindestens die Größe der Cache-Assoziativität besitzen, weshalb es naheliegend ist, in der Expand-Phase nicht mit einem leeren Candidate-Set sondern mit einem der Größe der Assoziativität zu starten und so in jeder Expand-Phase Überprüfungen in der Größenordnung Assoziativität minus 1 einzusparen.
 Außerdem ist es nicht optimal, bei jeder Iteration dem Candidate-Set nur eine Adresse hinzuzufügen, da insbesondere bei einem kleinen Candidate-Set eine geringe Wahrscheinlichkeit besteht, dass eine zusätzliche Adresse dieses zu einem Eviction-Set werden lässt.
-Die Idee ist folglich, bei einem noch kleinen Candidate-Set in jeder Iteration (möglichst?) viele Adressen aus dem Pool hinzuzufügen und mit zunehmender Größe des Candidate-Sets die Anzahl der in jeder Iteration hinzukommenden Adressen zu verringern.
+Die Idee ist folglich, bei einem noch kleinen Candidate-Set in jeder Iteration möglichst viele Adressen aus dem Pool hinzuzufügen und mit zunehmender Größe des Candidate-Sets die Anzahl der in jeder Iteration hinzukommenden Adressen zu verringern.
 \todo{hattest du nicht auch getestet, in der contract-phase aussortierte Adressen direkt wieder dem CS zuzufügen?}
 
 \subsection{Details der realen Implementierung}
 
-Wie weiter oben beschrieben, wird insbesondere der Test, ob ein Set ein Eviction-Set für eine (?) bestimmte
-Adresse darstellt, mehrfach wiederholt, um Fehler auszuschließen. Problematisch ist dies vor allem in der Expand-Phase, da das Candidate-Set eine Größe von mehreren hundert Einträgen annimmt und nach jeder Iteration gegen die Zeugenadresse getestet wird. 
+Wie weiter oben beschrieben, wird insbesondere der Test, ob ein Set ein Eviction-Set für eine %(?) Warum "?"?
+bestimmte Adresse darstellt, mehrfach wiederholt, um Fehler auszuschließen. Problematisch ist dies vor allem in der Expand-Phase, da das Candidate-Set eine Größe von mehreren hundert Einträgen annimmt und nach jeder Iteration gegen die Zeugenadresse getestet wird. 
 Eine einzige erhöhte Zugriffszeitmessung würde das Candidate-Set fälschlicherweise als Eviction-Set für die Zeugenadresse einordnen. 
 Es wurde festgestellt, dass erhöhte Zugriffszeiten mehrmals hintereinander auftreten können. Deshalb wird eine erhöhte Messung in der Expand-Phase 20 mal erneut überprüft. 
 Hier bricht die Überprüfung ab, sobald eine der Messungen eine widersprüchliche Aussage zulässt.
 
-Trotz der hohen Anzahl der Wiederholungen sind die Kosten für diese Art der Überprüfung (???) gering, da im fehlerfreien Optimalfall nur zusätzlich 20 Prüfungen anfallen und in den meisten Fehlerfällen nur einzelne zusätzliche Überprüfungen durchgeführt werden. 
+Trotz der hohen Anzahl von 20 Wiederholungen sind die Kosten hierfür gering, da im fehlerfreien Optimalfall nur zusätzlich 20 Prüfungen anfallen und in den meisten Fehlerfällen nur einzelne zusätzliche Überprüfungen durchgeführt werden. 
 Demgegenüber steht der Vorteil, nicht fälschlicherweise in die Contract-Phase zu wechseln und dort erst spät zu merken, dass das Candidate-Set kein Eviction-Set ist.
 Wenn nun das Candidate-Set kein Eviction-Set für die Zeugenadresse ist, würde in der naiven Implementierung der Contract-Phase über alle Einträge des Candidate-Sets iteriert werden, aber kein Eintrag gelöscht.
 Denn die Zugriffszeit auf die Zeugenadresse wird immer niedrig bleiben, was den Algorithmus zur fälschlichen Annahme verleitet, alle Einträge seien für das Eviction-Set notwendig.
@@ -369,7 +373,8 @@ Die Idee hierbei ist, den Store-Buffer in einer Schleife mit einer Vielzahl von 
 Wenn einer der zuletzt hinzugefügten Befehle auf eine Adresse schreibt, deren letzte 20 physischen Adressbits identisch mit denen der Read-Adresse $x$ sind, dann lässt sich ein Ausschlag bei der Leseoperation für $x$ feststellen.
 
 Pseudocode \ref{alg:storeForward} beschreibt das Suchverfahren, um colliding addresses zu finden.
-Zuerst wird ein großer Speicherbereich alloziert (???), der ein Vielfaches der Page-Größe von 4 KiB hat.
+Zuerst wird ein großer Speicherbereich alloziert %(???) Fachausdruck für Speicher reservieren
+, der ein Vielfaches der Page-Größe von 4 KiB hat.
 Wie im Abschnitt \ref{evictionSetSearchAlgo} wird hier mittels 4-KiB-Speicherblöcken gesucht, da so die letzten 12 Bits der Adresse mit Sicherheit identisch sind.
 Dies beschleunigt die Suche um den Faktor 4096, da dann im Mittel etwa eine von $2^8$ statt eine von $2^{20}$ Adressen eine colliding address ist.
 Im Pseudocode werden colliding addresses zu $evictionBuffer[0]$ gesucht.
@@ -378,7 +383,7 @@ Wie oben beschrieben muss der Store-Buffer mit Schreibbefehlen geflutet werden, 
 Zeile 6 und 7 sorgen für die Schreibbefehle auf die Speicherblöcke $p + WINDOW - 1$ bis $p$ des Pools, sodass der Schreibzugriff auf den aktuell zu testenden Block $p$ als letztes erfolgt.
 Die Zeilen 8 bis 10 messen die Zeit für einen Lesezugriff auf die Adresse $evictionBuffer[0]$ beziehungsweise Speicherblock 0.
 
-Der Testvorgang für einen Speicherblock $p$ wird mehrfach wiederholt (Zeile 5) und die Zugriffszeit auf $evictionBuffer[0]$ gemittelt (Zeile 11), um anders begründete (wodurch?) Ausreißer bei der Zugriffszeit  auszuschließen. 
+Der Testvorgang für einen Speicherblock $p$ wird mehrfach wiederholt (Zeile 5) und die Zugriffszeit auf $evictionBuffer[0]$ gemittelt (Zeile 11), um Ausreißer bei der Zugriffszeit durch Timer- oder Systemrauschen auszuschließen. 
 
 Grafik \ref{fig:colliding_addresses_js_measurement} zeigt die typische Verteilung der Zugriffszeiten auf $evictionBuffer[0]$, stellt also $measurementBuffer$ visuell dar.
 
