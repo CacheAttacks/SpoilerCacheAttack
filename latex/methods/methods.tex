@@ -171,15 +171,15 @@ Der i7-4770 besitzt 8192 Cache-Sets, die auf 4 Slices aufgeteilt sind, wobei fü
 In welchem der 4 Slices die Daten landen, wird anhand der Adressbits 18 bis 63 bestimmt.
 Durch die Kenntnis der untersten 12 Bits der physischen Adresse sind gleichzeitig 6 Bits (6 bis 11) bekannt, welche für die Zuordnung zu den Cache-Sets verantwortlich sind.
 
-%??? Unklar.)(besser?)
-%Angenommen, im Pool sind ausschließlich Adressen, bei denen die 12 untersten Bits jedes ??? Unklar.) der 4-KiB-großen Blöcke auf 0 gesetzt sind.
-Angenommen, im Pool sind ausschließlich Adressen, bei denen die letzten 12 Bits auf 0 gesetzt sind. Somit ist ein Abstand von $2^12$ für aufeinanderfolgende Adressen gegeben und jede Adresse lässt sich genau einem der 4-KiB-großen Blöcke zuordnen.
+Angenommen, im Pool sind ausschließlich Adressen, bei denen die letzten 12 Bits auf 0 gesetzt sind. 
+Somit ist ein Abstand von $2^12$ für aufeinanderfolgende Adressen gegeben und jede Adresse lässt sich genau einem der 4-KiB-großen Blöcke zuordnen.
 Dann kann erwartet werden, dass im Mittel jede 128. 
 Adresse auf das gleiche Cache-Set gemappt wird. Es gibt 8192 Möglichkeiten, eine Adresse einem Cache-Set zuzuordnen, also 13 Bits an Unsicherheit.
 Durch die Kenntnis der untersten 12 Bits der Adresse sind davon 6 Bits bekannt, welche für eine eindeutige Zuordnung sorgen. 
 Es bleiben noch 7 Bits an Unsicherheit, die durch Kenntnis der restlichen Adressbits beseitigt werden könnten.
 
 \subsection{Wahl der Adresspoolgröße}
+\label{addressPoolSize}
 
 Um die Anzahl der Blöcke beziehungsweise die Arraygröße in Webassembly sinnvoll zu bestimmen, kann zuerst die vereinfachte Annahme getroffen werden, dass die physischen Adressbits 12 bis 63 der 4-KiB-Blöcke zufällig gewählt sind. 
 Die unbekannte Cache-Mapping-Funktion nimmt nun die zufälligen Bits 12 bis 63 und die auf 0 gesetzten Bits 0 bis 11 entgegen und gibt eines von 128 möglichen Cache-Sets zurück.
@@ -229,9 +229,10 @@ Häufig wird in Benchmarks angegeben, wie viele Eviction-Sets überhaupt gefunde
 Diese Fragestellung ist identisch mit dem ersten Szenario.
 Denn wenn ein fixes Eviction-Set mit einer Wahrscheinlichkeit von $x$ Prozent gefunden wird und die Zuordnung wie hier zufällig ist, dann werden insgesamt im Mittel $x/100 \cdot 128$ Eviction-Sets gefunden.
 
+TODO In Abb. 3.1 Kurve mit realen Daten einfügen
+TODO Benchmark Zeit einfügen, beschreiben das teilweise hohe Aussschläge von 5+ Min
 
-
-TODO verschiedene reale bechmarks einfügen \todo{ja, das finde ich auch. dringend.}
+%\todo{ja, das finde ich auch. dringend.}
 
 \subsection{Eviction-Set Suchalgorithmus}
 \label{evictionSetSearchAlgo}
@@ -346,22 +347,29 @@ Das gefundene Eviction-Set wird gespeichert und der Vorgang solange wiederholt, 
 Ein Eviction-Set muss mindestens die Größe der Cache-Assoziativität besitzen, weshalb es naheliegend ist, in der Expand-Phase nicht mit einem leeren Candidate-Set sondern mit einem der Größe der Assoziativität zu starten und so in jeder Expand-Phase Überprüfungen in der Größenordnung Assoziativität minus 1 einzusparen.
 Außerdem ist es nicht optimal, bei jeder Iteration dem Candidate-Set nur eine Adresse hinzuzufügen, da insbesondere bei einem kleinen Candidate-Set eine geringe Wahrscheinlichkeit besteht, dass eine zusätzliche Adresse dieses zu einem Eviction-Set werden lässt.
 Die Idee ist folglich, bei einem noch kleinen Candidate-Set in jeder Iteration möglichst viele Adressen aus dem Pool hinzuzufügen und mit zunehmender Größe des Candidate-Sets die Anzahl der in jeder Iteration hinzukommenden Adressen zu verringern.
+
+Contract-Phase löschen meherer Einträge problematisch da viele Fehler
+
+%Da zufällig eine Adresse aus dem Pool gezogen wird und die Aufteilung der Adressen im Pool auf die Cache-Sets als uniform angenommen werden kann (siehe Abschnitt \ref{addressPoolSize}), stellt sich die Frage, welches die optimale Anzahl an Adressen ist, die bei der ersten Iteration der Expand-Phase hinzugefügt werden sollten.
+
 \todo{hattest du nicht auch getestet, in der contract-phase aussortierte Adressen direkt wieder dem CS zuzufügen?}
 
 \subsection{Details der realen Implementierung}
 
-Wie weiter oben beschrieben, wird insbesondere der Test, ob ein Set ein Eviction-Set für eine %(?) Warum "?"?
-bestimmte Adresse darstellt, mehrfach wiederholt, um Fehler auszuschließen. Problematisch ist dies vor allem in der Expand-Phase, da das Candidate-Set eine Größe von mehreren hundert Einträgen annimmt und nach jeder Iteration gegen die Zeugenadresse getestet wird. 
+Wie weiter oben beschrieben, wird insbesondere der Test, ob ein Set ein Eviction-Set für eine bestimmte Adresse darstellt, mehrfach wiederholt, um Fehler auszuschließen. 
+Problematisch ist dies vor allem in der Expand-Phase, da das Candidate-Set eine Größe von mehreren hundert Einträgen annimmt und nach jeder Iteration gegen die Zeugenadresse getestet wird. 
 Eine einzige erhöhte Zugriffszeitmessung würde das Candidate-Set fälschlicherweise als Eviction-Set für die Zeugenadresse einordnen. 
 Es wurde festgestellt, dass erhöhte Zugriffszeiten mehrmals hintereinander auftreten können. Deshalb wird eine erhöhte Messung in der Expand-Phase 20 mal erneut überprüft. 
-Hier bricht die Überprüfung ab, sobald eine der Messungen eine widersprüchliche Aussage zulässt.
+Die Überprüfung ab sobald eine der Messungen eine widersprüchliche Aussage zulässt.
 
 Trotz der hohen Anzahl von 20 Wiederholungen sind die Kosten hierfür gering, da im fehlerfreien Optimalfall nur zusätzlich 20 Prüfungen anfallen und in den meisten Fehlerfällen nur einzelne zusätzliche Überprüfungen durchgeführt werden. 
 Demgegenüber steht der Vorteil, nicht fälschlicherweise in die Contract-Phase zu wechseln und dort erst spät zu merken, dass das Candidate-Set kein Eviction-Set ist.
+
 Wenn nun das Candidate-Set kein Eviction-Set für die Zeugenadresse ist, würde in der naiven Implementierung der Contract-Phase über alle Einträge des Candidate-Sets iteriert werden, aber kein Eintrag gelöscht.
 Denn die Zugriffszeit auf die Zeugenadresse wird immer niedrig bleiben, was den Algorithmus zur fälschlichen Annahme verleitet, alle Einträge seien für das Eviction-Set notwendig.
 Wir wissen jedoch, dass die Größe des Eviction-Sets der Assoziativität des L3-Caches entsprechen muss und können die Contract-Phase abbrechen, sobald eine mehr als der Assoziativität entsprechende Anzahl von Einträgen des Candidate-Sets als notwendig eingestuft wurden, da dann ein Fehler vorliegt.
 
+Angenommen es soll ein Prime-and-Probe-Operation ausgeführt und auf alle Einträge des Eviction-Sets wird mittels einer For-Schleife einmal zugegriffen.
 \todo{pointer chasing erklären}
 
 \section{Verbesserte Eviction-Set Suche mittels Store-to-load-forwarding}
@@ -418,7 +426,9 @@ Grafik \ref{fig:colliding_addresses_js_measurement} zeigt die typische Verteilun
 Tests haben ergeben, dass mit $WINDOW=64$ colliding addresses zuverlässig durch Peaks bei der Zeitmessung der Leseoperation für $x$ hervorstechen.
 Ein höherer Wert für $WINDOW$ bringt keine Vorteile bei der Identifizierung der colliding addressses, erhöht allerdings die Laufzeit der Suche.
 Andersherum verringern kleinere Werte für $WINDOW$ die Suchlaufzeit, sorgen aber auch für kleinere Peaks der colliding addresses bei der Zeitmessung, sodass eine Identifikation schwieriger wird.
-Da die Identifizierung unter Javascript bereits gegenüber C erschwert ist, existiert kein Spielraum, um den Wert von $WINDOW$ abzusenken. TODO bench that 
+Da die Identifizierung unter Javascript bereits gegenüber C erschwert ist, existiert kein Spielraum, um den Wert von $WINDOW$ abzusenken. 
+
+TODO Benchmarks einfügen, gegen alte Variante vergleichen
 
 
 
@@ -437,8 +447,8 @@ Da die Identifizierung unter Javascript bereits gegenüber C erschwert ist, exis
 \end{figure}
 
 
-TODO Algorithmus in Einzelheiten beschreiben
-\todo[size=\footnotesize]{Beschreibe den Algorithmus bitte in einzelteilen, und gib auch den code dafür einzeln an. Der komplette Code gehört in den Anhang.}
+%TODO Algorithmus in Einzelheiten beschreiben
+%\todo[size=\footnotesize]{Beschreibe den Algorithmus bitte in einzelteilen, und gib auch den code dafür einzeln an. Der komplette Code gehört in den Anhang.}
 %\todo[size=\footnotesize]{Nutze eine kleinere Schriftart für listings}
 
 

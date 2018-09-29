@@ -397,7 +397,8 @@ void prime_spam_es(void *app_state_ptr, int duration_sec)
   {
     if(nmonitored == 1)
     {
-      l3_repeatedprobe_spam_fast(this_app_state->l3, number_of_samples);
+      //l3_repeatedprobe_spam_fast(this_app_state->l3, number_of_samples);
+      l3_repeatedprobe_spam_fast_experimental(this_app_state->l3, number_of_samples);
     } 
     else 
     {

@@ -175,22 +175,30 @@ static void* measure_risepart(void*){
 }
 
 void* measure_mehmet(void*){
-      int temp, temp2;
-    int dongu = 3000000;
-    //printf("%d",dongu);
-    int bir=1;
-    int iki=2;
-	int threshold = dongu*900;
-	
+  int temp, temp2;
+	uint64_t threshold = 1000*1000*3;
   while(1){
     uint64_t start = rdtscp64();
-    for (int i=1;i<=dongu;i++){
+    for (int i=1;i<threshold;i++){
       clflush(&temp);
       temp2 = temp;
-      }
-      printf("%" PRIu64 "\n",rdtscp64()-start);
-
+    }
+    printf("%" PRIu64 "\n",rdtscp64()-start);
   }
+}
+
+void* while_1(void*){
+  while(1){}
+}
+
+void multithread_slow(int num_of_threads){
+    pthread_t *threads = (pthread_t*)malloc(sizeof(pthread_t)*num_of_threads);
+
+    for(int i = 0; i < num_of_threads; i++)
+    {
+            //index[i] = i;
+            pthread_create(&threads[i], NULL, instruction_flusher_mehmet, NULL);
+    }
 }
 
 void test_risenpart(){
@@ -208,9 +216,13 @@ void test_risenpart(){
   pthread_t thread2;
   pthread_create( &thread2, NULL, &measure_mehmet, NULL );  
 
-  usleep(1000*1000*3);
+  sleep(3);
   
-  instruction_flusher_mehmet(NULL);  
+  //instruction_flusher_mehmet(NULL); 
+  multithread_slow(1);
+
+    int p;
+  scanf ("%d",&p); 
 
   pthread_t thread3;
   pthread_create( &thread2, NULL, &instruction_flusher_mehmet, NULL );   
@@ -228,10 +240,14 @@ void test_risenpart(){
 
 int main ()
 {
+//instruction_flusher_mehmet(NULL);  
+
+  multithread_slow(5);
+
   //no clear difference between PTR_OFFSET 1 and 4
   //first_test();
 
-  test_risenpart();
+  //test_risenpart();
 
 
   //second_test();

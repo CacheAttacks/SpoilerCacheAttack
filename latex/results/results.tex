@@ -675,23 +675,23 @@ Tabelle \ref{tbl:PerformanceDegShift} betrachtet alle Cache-Lines, welche Code f
 Funktionen sind nicht auf Cache-Line-Grenzen alignt (???), weshalb die erste und letzte Cache-Line eines Funktionscodes auch Code für andere Funktionen beinhaltet.
 
 \begin{table}[h]
-\caption{RSA-2048 Performance-Degradation-Attack mittels Prime-Spam auf Cache-Lines, welche Code der Shift-Operation beinhalten. 1. Spalte: Adressbereich der durch den Angriff verdrängten Cache-Line, 2. Spalte: Funktionen deren Code innerhalb des Adressbereichs der Cache-Line liegt, Spalte "Shift", "Subtraktion" und "$mp\_gcd"$: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen bei einem aktiven Angriff auf die in Spalte 1 spezifizierte Cache-Line. Die erste Zeile gibt die Referenzzeiten ohne aktiven Angriff an. }
+\caption{RSA-2048 Performance-Degradation-Attack mittels Prime-Spam auf Cache-Lines, welche Code der Shift-Operation beinhalten. 1. Spalte: ID für die Cache-Line für übersichtlichere Bezeichnung, 2. Spalte: Adressbereich der durch den Angriff verdrängten Cache-Line, 3. Spalte: Funktionen deren Code innerhalb des Adressbereichs der Cache-Line liegt, Spalte "Shift", "Sub" und "$mp\_gcd"$: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen bei einem aktiven Angriff auf die in Spalte 2 spezifizierte Cache-Line. Die erste Zeile gibt die Referenzzeiten ohne aktiven Angriff an. Die horizontalen Linien innerhalb der Tabelle zeigen Sprünge zwischen Adressen der Cache-Lines an.}
 \label{tbl:PerformanceDegShift}
-\begin{tabular}{lllll}
-Cache-Line  & Funktion(en) innerhalb der Cache-Line                                  & Shift & Subtraktion & mp\_gcd \\[10pt]
-\multicolumn{2}{c}{Referenzzeiten ohne Prime-Spam}                      & 340   & 477         & 424k    \\
-b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 541   & 608         & 549k    \\
-b840$_{16}$ - b87f$_{16}$ & $s\_mp\_clamp, s\_mp\_exch$                 & 538   & 605         & 553k    \\
-bb40$_{16}$ - bb7f$_{16}$ & $s\_mp\_mul\_2d, s\_mp\_rshd$               & 450   & 514         & 479k    \\
-bb80$_{16}$ - bbbf$_{16}$ & $s\_mp\_rshd$                               & 451   & 542         & 486k    \\
-bbc0$_{16}$ - bbff$_{16}$ & $s\_mp\_rshd$                               & 486   & 563         & 581k    \\
-bc00$_{16}$ - bc3f$_{16}$ & $s\_mp\_rshd$                               & 520   & 563         & 597k    \\
-bc40$_{16}$ - bc7f$_{16}$ & $s\_mp\_rshd, s\_mp\_div\_2, s\_mp\_mul\_2$ & 480   & 503         & 474k    \\
-be00$_{16}$ - be3f$_{16}$ & $s\_mp\_mod\_2d, s\_mp\_div\_2d$            & 511   & 560         & 544k    \\
-be40$_{16}$ - be7f$_{16}$ & $s\_mp\_div\_2d$                            & 503   & 549         & 536k    \\
-be80$_{16}$ - bebf$_{16}$ & $s\_mp\_div\_2d$                            & 539   & 557         & 551k    \\
-bec0$_{16}$ - beff$_{16}$ & $s\_mp\_div\_2d$                            & 537   & 547         & 552k    \\
-bf00$_{16}$ - bf3f$_{16}$ & $s\_mp\_div\_2d, s\_mp\_norm$               & 470   & 506         & 485k   
+\begin{tabular}{llllll}
+ID & Cache-Line  & Funktion(en) innerhalb der Cache-Line                                  & Shift & Sub & mp\_gcd \\[10pt]
+\multicolumn{3}{c}{Referenzzeiten ohne Prime-Spam}                      & 340   & 477         & 424k    \\
+V1 & b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 541   & 608         & 549k    \\
+V2 & b840$_{16}$ - b87f$_{16}$ & $s\_mp\_clamp, s\_mp\_exch$                 & 538   & 605         & 553k    \\ \hline
+V3 & bb40$_{16}$ - bb7f$_{16}$ & $s\_mp\_mul\_2d, s\_mp\_rshd$               & 450   & 514         & 479k    \\
+V4 & bb80$_{16}$ - bbbf$_{16}$ & $s\_mp\_rshd$                               & 451   & 542         & 486k    \\
+V5 & bbc0$_{16}$ - bbff$_{16}$ & $s\_mp\_rshd$                               & 486   & 563         & 581k    \\
+V6 & bc00$_{16}$ - bc3f$_{16}$ & $s\_mp\_rshd$                               & 520   & 563         & 597k    \\
+V7 & bc40$_{16}$ - bc7f$_{16}$ & $s\_mp\_rshd, s\_mp\_div\_2, s\_mp\_mul\_2$ & 480   & 503         & 474k    \\ \hline
+V8 & be00$_{16}$ - be3f$_{16}$ & $s\_mp\_mod\_2d, s\_mp\_div\_2d$            & 511   & 560         & 544k    \\
+V9 & be40$_{16}$ - be7f$_{16}$ & $s\_mp\_div\_2d$                            & 503   & 549         & 536k    \\
+V10 & be80$_{16}$ - bebf$_{16}$ & $s\_mp\_div\_2d$                            & 539   & 557         & 551k    \\
+V11 & bec0$_{16}$ - beff$_{16}$ & $s\_mp\_div\_2d$                            & 537   & 547         & 552k    \\
+V12 & bf00$_{16}$ - bf3f$_{16}$ & $s\_mp\_div\_2d, s\_mp\_norm$               & 470   & 506         & 485k   
 \end{tabular}
 \end{table}
 
@@ -705,53 +705,53 @@ Anders als bei der Shift-Operation bremsen bei der Subtraktions-Operation die Ca
 \caption{RSA-2048 Performance-Degradation-Attack mittels Prime-Spam auf Cache-Lines, welche Code der Subtraktions-Operation beinhalten.
 Spalteninhalte analog zu Tabelle \ref{tbl:PerformanceDegShift}}
 \label{tbl:PerformanceDegSub}
-\begin{tabular}{lllll}
-Cache-Line & Funktion                     & Shift & Subtraktion & mp\_gcd \\[10pt]
-\multicolumn{2}{c}{Referenzzeiten ohne Prime-Spam}        & 340   & 477         & 424k    \\
-8440$_{16}$-847f$_{16}$  & $mp\_add, mp\_sub$             & 357   & 643         & 487k    \\
-8480$_{16}$-84bf$_{16}$  & $mp\_sub$                      & 359   & 684         & 538k    \\
-84c0$_{16}$-84ff$_{16}$  & $mp\_sub$                      & 362   & 681         & 531k    \\
-8500$_{16}$-853f$_{16}$  & $mp\_sub$                      & 357   & 700         & 538k    \\
-8540$_{16}$-857f$_{16}$  & $mp\_sub$                      & 362   & 683         & 534k    \\
-8580$_{16}$-85cf$_{16}$  & $mp\_sub$                      & 358   & 732         & 534k    \\
-85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 359   & 766         & 531k    \\
-ca40$_{16}$-ca7f$_{16}$  & $s\_mp\_sub, s\_mp\_sub\_3arg$ & 357   & 643         & 490k    \\
-ca80$_{16}$-cabf$_{16}$  & $s\_mp\_sub\_3arg$             & 359   & 644         & 494k    \\
-cac0$_{16}$-caff$_{16}$  & $s\_mp\_sub\_3arg$             & 357   & 675         & 534k    \\
-cb00$_{16}$-cb3f$_{16}$  & $s\_mp\_sub\_3arg$            & 358   & 669         & 536k    \\
-cb40$_{16}$-cb7f$_{16}$  & $s\_mp\_sub\_3arg$             & 357   & 663         & 533k    \\
-cb80$_{16}$-cbbf$_{16}$  & $s\_mp\_sub\_3arg$             & 359   & 676         & 546k    \\
-cbc0$_{16}$-cbff$_{16}$  & $s\_mp\_sub\_3arg$             & 356   & 663         & 535k    \\
-cc00$_{16}$-cc3f$_{16}$  & $s\_mp\_sub\_3arg, s\_mp\_mul$ & 352   & 571         & 483k   
+\begin{tabular}{llllll}
+ID &Cache-Line & Funktion                     & Shift & Sub & mp\_gcd \\[10pt]
+\multicolumn{3}{c}{Referenzzeiten ohne Prime-Spam}        & 340   & 477         & 424k    \\
+S1 & 8440$_{16}$-847f$_{16}$  & $mp\_add, mp\_sub$             & 357   & 643         & 487k    \\
+S2 & 8480$_{16}$-84bf$_{16}$  & $mp\_sub$                      & 359   & 684         & 538k    \\
+S3 & 84c0$_{16}$-84ff$_{16}$  & $mp\_sub$                      & 362   & 681         & 531k    \\
+S4 & 8500$_{16}$-853f$_{16}$  & $mp\_sub$                      & 357   & 700         & 538k    \\
+S5 & 8540$_{16}$-857f$_{16}$  & $mp\_sub$                      & 362   & 683         & 534k    \\
+S6 & 8580$_{16}$-85cf$_{16}$  & $mp\_sub$                      & 358   & 732         & 534k    \\
+S7 & 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 359   & 766         & 531k    \\ \hline
+S8 & ca40$_{16}$-ca7f$_{16}$  & $s\_mp\_sub, s\_mp\_sub\_3arg$ & 357   & 643         & 490k    \\
+S9 & ca80$_{16}$-cabf$_{16}$  & $s\_mp\_sub\_3arg$             & 359   & 644         & 494k    \\
+S10 & cac0$_{16}$-caff$_{16}$  & $s\_mp\_sub\_3arg$             & 357   & 675         & 534k    \\
+S11 & cb00$_{16}$-cb3f$_{16}$  & $s\_mp\_sub\_3arg$            & 358   & 669         & 536k    \\
+S12 & cb40$_{16}$-cb7f$_{16}$  & $s\_mp\_sub\_3arg$             & 357   & 663         & 533k    \\
+S13 & cb80$_{16}$-cbbf$_{16}$  & $s\_mp\_sub\_3arg$             & 359   & 676         & 546k    \\
+S14 & cbc0$_{16}$-cbff$_{16}$  & $s\_mp\_sub\_3arg$             & 356   & 663         & 535k    \\
+S15 & cc00$_{16}$-cc3f$_{16}$  & $s\_mp\_sub\_3arg, s\_mp\_mul$ & 352   & 571         & 483k   
 \end{tabular}
 \end{table}
 
 
-Zusammenfassend kann die Shift- beziehungsweise Subtraktionsoperation durch einen Angriff maximal von 340 auf 541 Taktzyklen beziehungsweise von 477 auf 766 gebremst werden, welches einer Erhöhung der Ausführungszeit von \~59\% respektive \~61\% entspricht.
+Zusammenfassend kann die Shift- beziehungsweise Subtraktionsoperation durch einen Angriff maximal von 340 auf 541 (V1) Taktzyklen beziehungsweise von 477 auf 766 (S7) gebremst werden, welches einer Erhöhung der Ausführungszeit von \~59\% respektive \~61\% entspricht.
 Tabelle \ref{tbl:PerformanceDegRSADifferentBitlength} zeigt, dass bei RSA-4096 und RSA-8192 prozentual und sogar absolut (Logik?) schwächere Effekte zu beobachten sind.
 Beim Vergleich wurden ausschließlich die Cache-Lines für die Shift- beziehungsweise Subtraktionsoperation getestet, welche den stärksten Bremseffekt bei RSA-2048 aufwiesen.
-So wird die Shift-Operation unter RSA-4096 von 543 auf 700 Taktzyklen und unter RSA-8192 von 982 auf 1125 Taktzyklen gebremst, welches die Ausführungszeit um \~29\% beziehungsweise \~15\% erhöht.
+So wird die Shift-Operation unter RSA-4096 von 543 auf 700 (V1) Taktzyklen und unter RSA-8192 von 982 auf 1125 (S7) Taktzyklen gebremst, welches die Ausführungszeit um \~29\% beziehungsweise \~15\% erhöht.
 
 \begin{table}[h]
 \caption{Performance-Degradation-Attack mittels Prime-Spam mit verschiedene RSA-Bitlängen.
 Als Cache-Lines wurden diejenigen verwendet, welche sich am effektivsten in RSA-2048 erwiesen haben.
 Spalteninhalte analog zu Tabelle \ref{tbl:PerformanceDegShift}}
 \label{tbl:PerformanceDegRSADifferentBitlength}
-\begin{tabular}{llllll}
-RSA-Bitlänge & Cache-Line & Funktion & Shift & Subtraktion & mp\_gcd \\[10pt]
-2048         &\multicolumn{2}{c}{Referenzzeiten ohne Prime-Spam}                                         & 340   & 477         & 424k    \\
-2048         & b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 541   & 608         & 549k    \\
-2048         & 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 359   & 766         & 531k    \\
-4096         & \multicolumn{2}{c}{Referenzzeiten ohne Prime-Spam}                                         & 543   & 723         & 1,19M    \\
-4096         & b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 700   & 770         & 1,64M    \\
-4096         & 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 609   & 1057         & 1,51M    \\
-8192         & \multicolumn{2}{c}{Referenzzeiten ohne Prime-Spam}                                         & 982   & 1223         & 3,71M    \\
-8192         & b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 1125   & 1553         & 4,83M    \\
-8192         & 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 1046   & 1679         & 4,64M    \\
+\begin{tabular}{lllllll}
+RSA-Bitlänge & ID & Cache-Line & Funktion & Shift & Subt & mp\_gcd \\[10pt]
+2048         &\multicolumn{3}{c}{Referenzzeiten ohne Prime-Spam}                                         & 340   & 477         & 424k    \\
+2048         & V1& b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 541   & 608         & 549k    \\
+2048         & S7& 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 359   & 766         & 531k    \\
+4096         & \multicolumn{3}{c}{Referenzzeiten ohne Prime-Spam}                                         & 543   & 723         & 1,19M    \\
+4096         & V1& b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 700   & 770         & 1,64M    \\
+4096         & S7& 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 609   & 1057         & 1,51M    \\
+8192         & \multicolumn{3}{c}{Referenzzeiten ohne Prime-Spam}                                         & 982   & 1223         & 3,71M    \\
+8192         & V1& b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 1125   & 1553         & 4,83M    \\
+8192         & S7& 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 1046   & 1679         & 4,64M    \\
 \end{tabular}
 \end{table}
 
-Die beiden Cache-Lines der $s\_mp\_clamp$-Funktion sind dabei zu bevorzugen, da sie beide Operationen gleichzeitig gut bis sehr gut bremsen.
+Die beiden Cache-Lines V1 und V2 der $s\_mp\_clamp$-Funktion sind dabei zu bevorzugen, da sie beide Operationen gleichzeitig gut bis sehr gut bremsen.
 Des Weiteren sollte der Fokus auf das Bremsen der Shiftoperation gelegt werden, da diese zum einen schneller und die Unterscheidung einzelner Shiftoperationen für die Rekonstruktion der Primzahl wesentlich ist.
 Zum anderen Bremsen viele der Cache-Lines mit Shift-Operationscode auch die Subtraktionsfunktion messbar, wobei dieses Phänomen andersherum nicht beobachtet werden kann. 
 %TODO warum??
@@ -760,6 +760,37 @@ Trotz der Effekte der Bremsung ist die Ausführungsgeschwindigkeit der Shift- be
 
 %\todo{Kannst du bitte einen ABsatz für dumme machen: Mit verlangsamung XY und XZ wird das beste Ergebnis erziehlt. Die zu messende Op dauert jetzt XXX lange. Da ein Prime und Probe Zyklus YYY lange dauert, kann immer noch nicht vernünftig gemessen werden.}
 
+TODO Ergenisse für Bremsen mehrerer Cache-Lines gleichzeitig in einem Thread
+
+single  multiple:
+V1 :519,519,506k
+V1,V2: 522,527,508k
+V10,V11:513,513,552k
+V6,V7:506,543,531k
+V1,V6: 623,529,528k
+V1,V2,V6:657,515,553k
+(auf anderen worker 719,521,588k scheint zwischen worker diff)
+V2,V6,V10:581,545,521k
+V1,V6,V10:603,540,524k
+V1,V2,V6,V10:629,537,531k
+V1,V2,V6,V10,V11:649,543,543k
+V1,V2,V6,V8,V9,V10,V11:645,555,554k
+V1,V2,V6,V7,V8,V9,V10,V11:622,546,542k
+V1-12:602,554,542k
+V1,V6,V7,V10,V11:585,528,524
+
+
+multithread
+2*V1,V2,V6 =730,532,610k (kein toller effekt)
+V1,V2,V6 und V7,V10 = 795,559,602k
+V1,V6,V10 und V2,V5,V11 = 563,561,530k
+V1 und V10 : 970,798, 856
+V1,V10 und V6: 811,648,735k
+V1 und V6,V10: 880,673,716k
+V1 und V1: 623, 722, 665 (gleich cache-line bremsen sinnlos)
+V1,V6 und V1,V10: 764,574,600k
+V1,V6 und V2,V10: 745,584,590k
+einzelene bei multi-thread am besten siehe ergebnisse
 
 
 

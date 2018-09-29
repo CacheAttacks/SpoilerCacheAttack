@@ -4,11 +4,11 @@
     "version": "2.0.0",
     "tasks": [
          {
-             "label": "build degradation_attack",
+             "label": "build performance_test",
              "type": "shell",
              "command": "g++",
              "args": [
-                "-pthread","-lpthread", "-D_REENTRANT", "-g", "degradation_attack.c", "mehmet.c", "-std=c++11", "-o", "degradation_attack", "-Wall", "-O0"
+                "-pthread","-lpthread", "-D_REENTRANT", "-g", "performance_test.c", "-std=c++11", "-o", "performance_test", "-Wall", "-O0"
              ],
              "group": {
                  "kind": "build",

@@ -1,6 +1,8 @@
 \chapter{Diskussion}
 \label{chapter:discussion}
 
+TODO Netten Einleitungssatz schreiben
+
 %\section{Geschwindigkeit von Eviction-Set Suche}
 %Wie in Abschnitt %\ref{} 
 %beschrieben, unterliegen die Laufzeiten der Eviction sind
@@ -46,24 +48,57 @@ Da die Zuordnung der Threads zu den Kernen im Browser nicht verändert werden ka
 Daher werden die Laufzeitmessungen mehrere Sekunden durchgeführt und anschließend gemittelt, damit der Effekt nicht die Ergebnisse verfälscht.
 Der Bremseffekt sollte jedoch bei ab 3 Bremsthreads nachlassen, da sich die Bremsthread dann zeitweise den Kern mit einem anderen Thread teilen müssen.
 
+Des Weiteren tritt ab 4 Bremsthreads eine zusätzliche Verlangsamung durch die mangelnde Anzahl an physischen Kernen ein.
+Um diese zu prüfen, wird ein Test mit verschieden vielen Bremsthreads durchgeführt, wobei die Bremsthreads keine Codezeilen der Shift- oder Subtraktions-Operation bremsen.
+Tabelle \ref{} zeigt, dass erst ab 4 Bremsthreads ein signifikanter Performancerückgang messbar ist.
+
+%Warum ist das eigentlich so?
+%Bei 3 Bremsthreads, einem Counter-Thread, sowie dem aktiven Opferprogramm werden insgesamt 5 Threads, bei nur 4 phsischen Kernen, genutzt. 
+%Dennoch tritt gegenüber 2 Bremsthreads reproduzierbar keine messbare Verlangsamung ein.
+%
+
+
 Die für die Bremsung wurden die Cache-Lines verwendet, welche in den Tests in Abschnitt \ref{PracticalLeakageAnalysis} (siehe Tabelle \ref{tbl:PerformanceDegShift} und \ref{tbl:PerformanceDegSub}) am besten bremsten.
 
+TODO Benchmarkergebnisse ausformulieren. Betonen, dass nicht mehrere Cache-Line pro Thread genutzt werden sollten (Überraschend, da beim Bremsthread mehrere Cache-Lines besser). 
 
-Tabelle \ref{} zeigt, den Effekt wenn mehrere Threads für den Bremsvorgang verwendet werden.
+%V1: 1: 's_mp_clamp_0', //s_mp_clamp>: 541,608,549k
+%V2: 2:  33: 's_mp_clamp_1', //538,605,553k
+%V10:4:  58: 's_mp_div_2d_2', //539,557,551k
+%V11: 5:  59: 's_mp_div_2d_3', //537,547,552k 536,551,557k
+%V6: 3:  48: 's_mp_rshd_3', //520,571,597k  500,536,548k, 509,543,562k
+%V8: 6:  56: 's_mp_div_2d_0', //s_mp_div_2d>: 511,560, 544k  526,564,542k
 
 
-opferprozess läuft die ganze zeit in eigenem prozess
-chrome dafür alle bremsthreads auch in einem prozess
 
-ref: 340,475,430k
-1t:347,477,443k
-2t:361,516,467k
-3t:373,505,467k
-4t:435,558,546k
-5t:448,574,556k
-6t:474,601,598k
+%Tabelle \ref{} zeigt, den Effekt wenn mehrere Threads für den Bremsvorgang verwendet werden.
 
-TODO multithread bench
+
+%opferprozess läuft die ganze zeit in eigenem prozess
+%chrome dafür alle bremsthreads auch in einem prozess
+
+%ref: 340,475,430k
+%1t:347,477,443k
+%2t:361,516,467k
+%3t:373,505,467k
+%4t:435,558,546k
+%5t:448,574,556k
+%6t:474,601,598k
+
+%c ref threads:
+%ref:341,486,436k
+%3:359,494,454k
+%4:366,504,461k
+%5:410,531,511k
+%6:438,585,544k
+%7:486,583,594k
+
+%-O0:
+%3:358,489,450k
+%4:362,494,454k
+%5:454,582,567k
+
+%TODO multithread bench
 
 \section{Warum OpenPGP.js nicht anfällig ist}
 
@@ -77,6 +112,7 @@ pow (Zeile 3332) scheinbar fixed window implementation:\\
 https://github.com/indutny/bn.js/blob/e69c617b3297b99aca429f30842e27979ef9beb5/lib/bn.js
 
 \section{Memory-locking: Mit Kanonen auf Spatzen schießen}
+\label{MemoryLocking}
 
 Als Memory-locking soll im Folgenden ein Ansatz bezeichnet werden, welcher die Ausführungsgeschwindigkeit von Prozesses verlangsamt in dem der Zugriff auf den Hauptspeicher wiederholt kurzzeitig blockiert wird.
 Beschrieben und verwendet wurde diese Technik in \cite{MemoryLockingWu, MemoryLockingRisenpart, MemoryLockingJavaAndroid}.
@@ -99,6 +135,71 @@ Dies entspricht also einer Simulation für das Sperren des kompletten Speicherbu
 Diese Verhalten kann nun bewusst provoziert werden, indem atomare Operationen auf Daten zwischen zwei Cache-Lines ausgeführt werden.
 Dadurch werden alle Speicherzugriffe aller Programme gebremst, in der Hoffnung, dass sich das Opferprogramm stärker als das Angriffsprogramm verlangsamt.
 
+TODO Beschreiben warum nicht geeignet und Benchmarkergenisse ausformulieren
+
+%perf deg in c ohne zusätze:
+%ref:341, 480, 432k
+%1t:373,522,469
+%1t:370,522,470
+%2t:361,506,455
+%3t:392,542,479
+%4t:797,986,977k
+
+
+%test c programm mit clflush verdoppelt laufzeit (referenz-zeit=105):
+%1t:195-230
+%2t:191-300
+%3t:230-500
+%4t:280-750
+%5t:220-960
+  %  uint64_t start = rdtscp64();
+  %  for (int i=1;i<=dongu;i++){
+  %    clflush(&temp);
+  %    temp2 = temp;
+  %    }
+
+%Verlansamung von Prime-and-probe Operation von 500ns auf 930ns wenn Aktivität auf Cache-set
+
+%ref: 348,473,438k
+%prime spam v1 only: 539, 600, 566k
+%deg 1t only:370,510,469k
+%prime spam v1 und deg 1t: 894,527,594k
+%prime spam v1 und deg 2t: 628,527,526k(vermutlich wegen 5 threads insgesamt, reproduzierbar langsamer als 1t deg)
+
+%deg 2t only: 388, 521, 488k
+%deg 2+ eher unnötig, da ab 4threads ganzer pc rumlahmt
+
+%prime spam v1(clamp0),v6(rshd3) only: 964,787,865k
+
+%prime spam v1(clamp0),v6(rshd3) und deg 1t: 1337,596,743k
+%(problem hierbei einzelene operationen dauern bis zu 3000 taktzyklen)
+%prime spam v1(clamp0),v6(rshd3) und deg 2t: 1262,575,701k
+%(problem hierbei einzelene operationen dauern bis zu 2000 taktzyklen, weniger krasse peaks als bei 1t)
+
+%fazit threads besser in bremsthread stecken, anstatt in deg
+
+
+%multithread bremsen:
+%problem bremsen verursacht peaks bei shift ketten:
+%13360848296169248 1224 -1 
+%13360848296169583 335 -1 
+%13360848296170242 659 -1 
+%aber zu langsam um meherere am stück zu bremsen
+
+
+%deg 1t und prime spam 2t(v1 und v10): 1312,680,803k
+
+%deg 1t und prime spam 3t(v1 und v6 und v10): 1462,636,837k
+%(peaks über 2000 nicht so krass wie bei prime spam v1(clamp0),v6(rshd3) und deg 1t
+%hierbei messen 3070ns pro p-and-p
+
+%measure p-and-p: 500 bei aktivität, 
+%900 bei aktivität und 1t deg
+%(!!!)370ns bei keiner aktivität und 1t deg
+
+%zeige diagram auf cache-set ohne aktivität bei laufendem deg vs nicht laufendem deg
+
+
 
 
 
@@ -114,11 +215,13 @@ Dadurch werden alle Speicherzugriffe aller Programme gebremst, in der Hoffnung, 
 
 \section{Wie viel schneller muss er sein?}
 
+Abschnitt \ref{} und \ref{MemoryLocking}
+
 Beschreiben bei wie vielen Taktzyklen Pausen mp_gcd ausgelesen werden kann.
 
 \section{Speicherallokation: Wie hilfsbereit ist das Betriebssystem?}
 
-Wenn der Speicher wenig fragmentiert ist, etwa nach dem Booten und große zusammenhängende physischer Speicherbereiche frei ist, scheint Ubuntu 16.04.5 LTS dahin zu tendieren das $evictionBuffer$-Array in diese Bereiche zu mappen.
+Wenn der Speicher wenig fragmentiert ist, etwa nach dem Booten und große zusammenhängende physischer Speicherbereiche frei sind, scheint Ubuntu 16.04.5 LTS dahin zu tendieren das $evictionBuffer$-Array in diese Bereiche zu mappen.
 Angenommen der komplette evictionBuffer wird in einen zusammenhängeden physischen Speicherbereich gemappt. Dann ist zu erwarten, dass nach jeweils $2^8$ Speicherblöcken eine neue colliding address gefunden wird, da $2^8$ Speicherblöcke genau $2^20$ Bytes belegen und bei einer colliding address die letzten 20 Bit identisch sind.
 
 Die ersten Versuche fanden statt, nachdem der Testrechner schon über 30 Minuten in Betrieb war und viele Tests und Programme ausgeführt wurden.
