@@ -397,8 +397,8 @@ void prime_spam_es(void *app_state_ptr, int duration_sec)
   {
     if(nmonitored == 1)
     {
-      //l3_repeatedprobe_spam_fast(this_app_state->l3, number_of_samples);
-      l3_repeatedprobe_spam_fast_experimental(this_app_state->l3, number_of_samples);
+      l3_repeatedprobe_spam_fast(this_app_state->l3, number_of_samples);
+      //l3_repeatedprobe_spam_fast_experimental(this_app_state->l3, number_of_samples);
     } 
     else 
     {
@@ -622,8 +622,8 @@ void find_interesting_eviction_sets(void *app_state_ptr, float threshold_factor,
   // putchar('\n');
 }
 
-void storefor_build_es(void *app_state_ptr, int max_es){
+void storefor_build_es(void *app_state_ptr, int max_es, int benchmarkruns){
   struct app_state *this_app_state = (struct app_state *)app_state_ptr;
 
-  storefor_write();
+  storefor_write(benchmarkruns);
 }

@@ -1334,14 +1334,17 @@ a <- "\U2063"
 my_labels <- c("WS alle Eviction-Sets zu finden", 
                      paste0("WS ein fixes Eviction-Set zu finden            "))
 
+mean_data_df[,"mean_es"] <- mean_data_df[,"mean_es"] / 8192 * 100
+mean_data_df[mean_data_df[,"mean_es"]>100,"mean_es"] <- 100 
+
 plot <- 
-  ggplot2::ggplot(merged_melt, ggplot2::aes(x, value, color=variable)) + 
-  ggplot2::geom_line(ggplot2::aes(linetype=variable)) +
+  ggplot2::ggplot() + 
+  ggplot2::geom_line(data=merged_melt, ggplot2::aes(x, value, color=variable, linetype=variable)) +
   ggplot2::scale_y_continuous(name="Wahrscheinlichkeit (\\%)", 
-                              limits=c(80, 100),
-                              breaks=seq(80,100,2)) +
+                              limits=c(74, 100),
+                              breaks=seq(74,100,2)) +
   ggplot2::scale_x_continuous(name="Anzahl an Adressen im Pool (x)", 
-                              limits=c(2400, 5000), 
+                              limits=c(2048, 5000), 
                               breaks=c(seq(2500,5000,500)))+
   ggplot2::theme(legend.position = c(0.788, 0.1), legend.title=ggplot2::element_blank())+
   ggplot2::scale_linetype(labels = my_labels) +
@@ -1351,7 +1354,8 @@ plot <-
     keywidth=0.1,
     keyheight=1.1,
     default.unit="inch")
-  )
+  ) +
+  ggplot2::geom_point(data=mean_data_df, mapping=ggplot2::aes(x=blocks,y=mean_es))
 
 ggplot2TikzPlot('plot_combined_es_prob.tex', plot, 5.98, 4)
 

@@ -172,7 +172,7 @@ In welchem der 4 Slices die Daten landen, wird anhand der Adressbits 18 bis 63 b
 Durch die Kenntnis der untersten 12 Bits der physischen Adresse sind gleichzeitig 6 Bits (6 bis 11) bekannt, welche für die Zuordnung zu den Cache-Sets verantwortlich sind.
 
 Angenommen, im Pool sind ausschließlich Adressen, bei denen die letzten 12 Bits auf 0 gesetzt sind. 
-Somit ist ein Abstand von $2^12$ für aufeinanderfolgende Adressen gegeben und jede Adresse lässt sich genau einem der 4-KiB-großen Blöcke zuordnen.
+Somit ist ein Abstand von $2^{12}$ für aufeinanderfolgende Adressen gegeben und jede Adresse lässt sich genau einem der 4-KiB-großen Blöcke zuordnen.
 Dann kann erwartet werden, dass im Mittel jede 128. 
 Adresse auf das gleiche Cache-Set gemappt wird. Es gibt 8192 Möglichkeiten, eine Adresse einem Cache-Set zuzuordnen, also 13 Bits an Unsicherheit.
 Durch die Kenntnis der untersten 12 Bits der Adresse sind davon 6 Bits bekannt, welche für eine eindeutige Zuordnung sorgen. 
@@ -222,19 +222,20 @@ Die durchgezogene Linie im Diagramm \ref{fig:combined_es_prob} gibt die Erfolgsw
 \begin{scaletikzpicturetowidth}{\textwidth}
 \input{methods/plot_combined_es_prob.tex}
 \end{scaletikzpicturetowidth}
-\caption{Die gestrichelte Kurve (Y-Achse) veranschaulicht die Wahrscheinlichkeit, ein fixes Eviction-Set mit einer bestimmten Anzahl an Pooladressen (X-Achse) bei einer Assoziativität von 16 zu finden. Die durchgezogene Linie stellt die Wahrscheinlichkeit dar, alle 8192 Eviction-Sets zu finden.}
+\caption{Die gestrichelte Kurve (Y-Achse) veranschaulicht die Wahrscheinlichkeit, ein fixes Eviction-Set mit einer bestimmten Anzahl an Pooladressen (X-Achse) bei einer Assoziativität von 16 zu finden. Die einzelnen Punkte Werte dar, die mit dem Eviction-Set-Suchalgorithmus in der Praxis ermittelt wurden.
+Die durchgezogene Linie stellt die Wahrscheinlichkeit dar, alle 8192 Eviction-Sets zu finden.}
 \end{figure}
 
 Häufig wird in Benchmarks angegeben, wie viele Eviction-Sets überhaupt gefunden wurden.
 Diese Fragestellung ist identisch mit dem ersten Szenario.
 Denn wenn ein fixes Eviction-Set mit einer Wahrscheinlichkeit von $x$ Prozent gefunden wird und die Zuordnung wie hier zufällig ist, dann werden insgesamt im Mittel $x/100 \cdot 128$ Eviction-Sets gefunden.
 
-TODO In Abb. 3.1 Kurve mit realen Daten einfügen
+TODO In Abb. 3 Mehr reale Daten einfügen
 TODO Benchmark Zeit einfügen, beschreiben das teilweise hohe Aussschläge von 5+ Min
 
 %\todo{ja, das finde ich auch. dringend.}
 
-\subsection{Eviction-Set Suchalgorithmus}
+\subsection{Eviction-Set-Suchalgorithmus}
 \label{evictionSetSearchAlgo}
 
 Im Folgenden soll der Algorithmus beschrieben werden, der die Adressen im Pool verschiedenen Eviction-Sets zuordnet.
@@ -348,7 +349,8 @@ Ein Eviction-Set muss mindestens die Größe der Cache-Assoziativität besitzen,
 Außerdem ist es nicht optimal, bei jeder Iteration dem Candidate-Set nur eine Adresse hinzuzufügen, da insbesondere bei einem kleinen Candidate-Set eine geringe Wahrscheinlichkeit besteht, dass eine zusätzliche Adresse dieses zu einem Eviction-Set werden lässt.
 Die Idee ist folglich, bei einem noch kleinen Candidate-Set in jeder Iteration möglichst viele Adressen aus dem Pool hinzuzufügen und mit zunehmender Größe des Candidate-Sets die Anzahl der in jeder Iteration hinzukommenden Adressen zu verringern.
 
-Contract-Phase löschen meherer Einträge problematisch da viele Fehler
+TODO probleme mit Contract Phase beschreiben
+%Contract-Phase löschen meherer Einträge problematisch da viele Fehler
 
 %Da zufällig eine Adresse aus dem Pool gezogen wird und die Aufteilung der Adressen im Pool auf die Cache-Sets als uniform angenommen werden kann (siehe Abschnitt \ref{addressPoolSize}), stellt sich die Frage, welches die optimale Anzahl an Adressen ist, die bei der ersten Iteration der Expand-Phase hinzugefügt werden sollten.
 
@@ -374,35 +376,17 @@ Angenommen es soll ein Prime-and-Probe-Operation ausgeführt und auf alle Eintr�
 
 \section{Verbesserte Eviction-Set Suche mittels Store-to-load-forwarding}
 
-Die Forscher TODO sind auf ein Verhalten bei Intel-Prozessoren gestoßen, das das Auffinden von Adressen ermöglicht, deren 20 letzten physischen Bits gleich sind, ohne auf Techniken wie Huge-Pages zugreifen zu müssen.
-Solche Adressen seien nachfolgend \textit{colliding addresses} genannt.
+Die Forscher Saad Islam und Ahmad Moghimi \cite{TODO} sind auf ein Verhalten bei Intel-Prozessoren gestoßen, das das Auffinden von Adressen ermöglicht, deren 20 letzten physischen Bits gleich sind, ohne auf Techniken wie Huge-Pages zugreifen zu müssen.
+Solche Adressen seien nachfolgend \textit{colliding-addresses} genannt.
 Die Idee hierbei ist, den Store-Buffer in einer Schleife mit einer Vielzahl von Schreibbefehlen zu fluten und direkt danach eine Zeitmessung für das Lesen einer Adresse $x$ auszuführen.
 
 Wenn einer der zuletzt hinzugefügten Befehle auf eine Adresse schreibt, deren letzte 20 physischen Adressbits identisch mit denen der Read-Adresse $x$ sind, dann lässt sich ein Ausschlag bei der Leseoperation für $x$ feststellen.
 
-Pseudocode \ref{alg:storeForward} beschreibt das Suchverfahren, um colliding addresses zu finden.
-Zuerst wird ein großer Speicherbereich alloziert %(???) Fachausdruck für Speicher reservieren
-, der ein Vielfaches der Page-Größe von 4 KiB hat.
-Wie im Abschnitt \ref{evictionSetSearchAlgo} wird hier mittels 4-KiB-Speicherblöcken gesucht, da so die letzten 12 Bits der Adresse mit Sicherheit identisch sind.
-Dies beschleunigt die Suche um den Faktor 4096, da dann im Mittel etwa eine von $2^8$ statt eine von $2^{20}$ Adressen eine colliding address ist.
-Im Pseudocode werden colliding addresses zu $evictionBuffer[0]$ gesucht.
-Hierzu werden iterativ (Zeile 3) Speicherblöcke aus dem Pool auf diese Eigenschaft hin untersucht.
-Wie oben beschrieben muss der Store-Buffer mit Schreibbefehlen geflutet werden, wobei $WINDOW$ deren Anzahl angibt.
-Zeile 6 und 7 sorgen für die Schreibbefehle auf die Speicherblöcke $p + WINDOW - 1$ bis $p$ des Pools, sodass der Schreibzugriff auf den aktuell zu testenden Block $p$ als letztes erfolgt.
-Die Zeilen 8 bis 10 messen die Zeit für einen Lesezugriff auf die Adresse $evictionBuffer[0]$ beziehungsweise Speicherblock 0.
-
-Der Testvorgang für einen Speicherblock $p$ wird mehrfach wiederholt (Zeile 5) und die Zugriffszeit auf $evictionBuffer[0]$ gemittelt (Zeile 11), um Ausreißer bei der Zugriffszeit durch Timer- oder Systemrauschen auszuschließen. 
-
-Grafik \ref{fig:colliding_addresses_js_measurement} zeigt die typische Verteilung der Zugriffszeiten auf $evictionBuffer[0]$, stellt also $measurementBuffer$ visuell dar.
-
-
-
-
-
+Pseudocode \ref{alg:storeForward} beschreibt das Suchverfahren, um colliding-addresses zu finden.
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
-\caption{Pseudo-C-Code für das Finden von colliding addresses}
+\caption{Pseudo-C-Code für das Finden von colliding-addresses}
 \label{alg:storeForward}
 
 \Fn{$FindCollidingAddresses()$}{
@@ -423,19 +407,19 @@ Grafik \ref{fig:colliding_addresses_js_measurement} zeigt die typische Verteilun
 }
 \end{algorithm}
 
-Tests haben ergeben, dass mit $WINDOW=64$ colliding addresses zuverlässig durch Peaks bei der Zeitmessung der Leseoperation für $x$ hervorstechen.
-Ein höherer Wert für $WINDOW$ bringt keine Vorteile bei der Identifizierung der colliding addressses, erhöht allerdings die Laufzeit der Suche.
-Andersherum verringern kleinere Werte für $WINDOW$ die Suchlaufzeit, sorgen aber auch für kleinere Peaks der colliding addresses bei der Zeitmessung, sodass eine Identifikation schwieriger wird.
-Da die Identifizierung unter Javascript bereits gegenüber C erschwert ist, existiert kein Spielraum, um den Wert von $WINDOW$ abzusenken. 
+Zuerst wird ein großer Speicherbereich alloziert %(???) Fachausdruck für Speicher reservieren
+, der ein Vielfaches der Page-Größe von 4 KiB hat.
+Wie im Abschnitt \ref{evictionSetSearchAlgo} wird hier mittels 4-KiB-Speicherblöcken gesucht, da so die letzten 12 Bits der Adresse mit Sicherheit identisch sind.
+Dies beschleunigt die Suche um den Faktor 4096, da dann im Mittel etwa eine von $2^8$ statt eine von $2^{20}$ Adressen eine colliding address ist.
+Im Pseudocode werden colliding-addresses zu $evictionBuffer[0]$ gesucht.
+Hierzu werden iterativ (Zeile 3) Speicherblöcke aus dem Pool auf diese Eigenschaft hin untersucht.
+Wie oben beschrieben muss der Store-Buffer mit Schreibbefehlen geflutet werden, wobei $WINDOW$ deren Anzahl angibt.
+Zeile 6 und 7 sorgen für die Schreibbefehle auf die Speicherblöcke $p + WINDOW - 1$ bis $p$ des Pools, sodass der Schreibzugriff auf den aktuell zu testenden Block $p$ als letztes erfolgt.
+Die Zeilen 8 bis 10 messen die Zeit für einen Lesezugriff auf die Adresse $evictionBuffer[0]$ beziehungsweise Speicherblock 0.
 
-TODO Benchmarks einfügen, gegen alte Variante vergleichen
+Der Testvorgang für einen Speicherblock $p$ wird mehrfach wiederholt (Zeile 5) und die Zugriffszeit auf $evictionBuffer[0]$ gemittelt (Zeile 11), um Ausreißer bei der Zugriffszeit durch Timer- oder Systemrauschen auszuschließen. 
 
-
-
-
-%\newtextend
-
-
+Grafik \ref{fig:colliding_addresses_js_measurement} zeigt die typische Verteilung der Zugriffszeiten auf $evictionBuffer[0]$, stellt also $measurementBuffer$ visuell dar.
 
 \label{fig:colliding_addresses_js_measurement}
 \begin{figure}[h]
@@ -443,8 +427,35 @@ TODO Benchmarks einfügen, gegen alte Variante vergleichen
 \begin{scaletikzpicturetowidth}{\textwidth}
 \input{methods/storeForward_all_valid.tex}
 \end{scaletikzpicturetowidth}
-\caption{Erkennung von colliding addresses unter Javascript. Punkte geben die Latenz für eine Leseoperation auf eine fixe Adresse an, nachdem Schreiboperationen auf jeden der 64 Blöcke im aktuellen Fenster durchgeführt wurden. Die drei dickeren Punkte stellen vom Algorithmus identifizierte colliding addresses dar. Es wurde verifiziert, dass diese drei Adressen Teil eines späteren Eviction-Set geworden sind und somit die Identifikation seitens des Algorithmus korrekt war.}
+\caption{Erkennung von colliding-addresses unter Javascript. Punkte geben die Latenz für eine Leseoperation auf eine fixe Adresse an, nachdem Schreiboperationen auf jeden der 64 Blöcke im aktuellen Fenster durchgeführt wurden. Die drei dickeren Punkte stellen vom Algorithmus identifizierte colliding-addresses dar. Es wurde verifiziert, dass diese drei Adressen Teil eines späteren Eviction-Set geworden sind und somit die Identifikation seitens des Algorithmus korrekt war.}
 \end{figure}
+
+Tests haben ergeben, dass mit $WINDOW=64$ colliding-addresses zuverlässig durch Peaks bei der Zeitmessung der Leseoperation für $x$ hervorstechen.
+Ein höherer Wert für $WINDOW$ bringt keine Vorteile bei der Identifizierung der colliding addressses, erhöht allerdings die Laufzeit der Suche.
+Andersherum verringern kleinere Werte für $WINDOW$ die Suchlaufzeit, sorgen aber auch für kleinere Peaks der colliding-addresses bei der Zeitmessung, sodass eine Identifikation schwieriger wird.
+%Da die Identifizierung unter Javascript bereits gegenüber C erschwert ist, existiert kein Spielraum, um den Wert von $WINDOW$ abzusenken. 
+
+Angenommen es wird ein Pool mit $x$ colliding-addresses gefunden.
+Da die letzten 20 Bits aller Adressen gleich sind, gibt es auf dem verwendeten Testsystem nur 4 mögliche Cache-Sets denen die Adressen zugeordnet werden können.
+Die Anzahl der möglichen Cache-Sets ist gleichbedeutend mit der Anzahl der Slices, da unteren 20 Bits das Cache-Set innerhalb eines Slice komplett bestimmen.
+
+Wenn nun $x$ groß genug gewählt ist, können aus dem colliding-address-Pool 4 Eviction-Sets gebildet werden, wobei die untersten 12 Bits aller Adressen im Pool auf 0 gesetzt sind. Daher können aus jedem der 4 Eviction-Sets wiederum 63 neue Eviction-Sets gebildet werden, indem die Bits 6 bis 11 der bestehenden Eviction-Sets nach und nach inkrementiert werden.
+
+Somit muss insgesamt 32 Mal (32*4*64=8192) ein colliding-address-Pool aufgebaut werden, um alle Eviction-Sets zu bestimmen.
+Dabei ist sicherzustellen, dass die letzten 20 Bits der Adresse des Block zu dem die colliding-addresses gesucht werden 
+
+Das Finden einer ausreichend großen Menge an colliding-addresses ist schnell TODO benchmark, weshalb sich die Berechnungszeit vor allem auf die Suche nach den 4 Eviction-Sets in den colliding-address-Pools beschränkt.
+In Tests hat sich Pool-Größe von 115 als geeignet herausgestellt.
+Häufig sind weit weniger Adressen ausreichend, jedoch zieht eine gescheiterte Eviction-Set-Suche eine erneute Suche mit etwas vergrößertem Pool nach sich, wobei die Kosten im Verhältnis zum Suchen der colliding-addresses hoch sind.
+Deshalb ist es günstiger bereits am Anfang mehr colliding-addresses zu Suchen, um den Fall einer gescheiterten Eviction-Set-Suche zu vermeiden.
+
+Diese Methode ist schneller als der Standardalgorithmus zum Finden von Eviction-Sets, da bei diesem 128 Evicton-Sets in einer Pool-Größe von etwa 4000 (siehe Abschnitt \ref{addressPoolSize}) gefunden werden müssen, wohingegen bei der neuen Methode das 32-malige Finden von 4 Eviction-Sets bei einer Pool-Größe von 115 ausreicht.
+
+TODO Benchmarks als Grafik einfügen, gegen alte Variante vergleichen
+
+
+
+
 
 
 %TODO Algorithmus in Einzelheiten beschreiben

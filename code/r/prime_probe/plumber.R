@@ -186,7 +186,7 @@ a <- Sys.time()
   tbl_melt[["sample"]] <- rep(1:nrow(tbl), ncol(tbl))
   colnames(tbl_melt)[1] <- "es"
   #cap at 3500
-  max_value <- 5000
+  max_value <- 1000
   tbl_melt[tbl_melt$value>max_value,"value"] <- max_value
   b <- Sys.time()
   print(b-a)

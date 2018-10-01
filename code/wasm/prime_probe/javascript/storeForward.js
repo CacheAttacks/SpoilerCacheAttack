@@ -190,7 +190,7 @@ if (typeof mergeInto !== 'undefined')
           uint32wasmMem[uint32ptrAdressArr + numberOfStoreForAdd] = uint8ptrStoreForAdd;
           numberOfStoreForAdd++;
 
-          if(numberOfStoreForAdd >= 115){ //try to create es
+          if(numberOfStoreForAdd >= 128){ //try to create es
             //console.log(bufferedOutput);
             if(Module['asm']._try_to_create_es(uint8ptrAddressArr, numberOfStoreForAdd) != 0){
               //console.log(output);

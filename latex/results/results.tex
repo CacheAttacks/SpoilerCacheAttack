@@ -394,19 +394,19 @@ Mit der verwendeten Systemkonfiguration konnte ein solches Verhalten in Chrome n
 
 Zusammenfassend lassen sich Gleichungen wie im Abschnitt \ref{leakageMozillaNSS} aufstellen, wobei dieselben Fragen offen sind.
 
-\section{Automatisierte Leakage-Suche}
+%\section{Automatisierte Leakage-Suche}
 
-TODO tool von jan und beispiel beschreiben
-warum mit javascript nicht so einfach möglich
+%TODO tool von jan und beispiel beschreiben
+%warum mit javascript nicht so einfach möglich
 
- da es auf Windows basiert, in dem Fall eine DLL
-oder EXE-Datei, was vermutlich nicht so leicht geht. Genauer gesagt
-nutzt das Tool Intels "Pin" um aus einem Programm während dessen
-Ausführung Informationen wie Speicherzugriffe rauszuziehen (Dynamic
-Instrumentation). Dafür muss das Programm dann wie gesagt nativ auf dem
-System laufen.
+% da es auf Windows basiert, in dem Fall eine DLL
+%oder EXE-Datei, was vermutlich nicht so leicht geht. Genauer gesagt
+%nutzt das Tool Intels "Pin" um aus einem Programm während dessen
+%Ausführung Informationen wie Speicherzugriffe rauszuziehen (Dynamic
+%Instrumentation). Dafür muss das Programm dann wie gesagt nativ auf %dem
+%System laufen.
 
-https://software.intel.com/en-us/articles/pin-a-dynamic-binary-instrumentation-tool
+%https://software.intel.com/en-us/articles/pin-a-dynamic-binary-instrumentation-tool
 
 
 \section{Zusätzliche Schlüsselprüfungen in Mozilla NSS}
@@ -555,7 +555,7 @@ Welche Adressen die Funktionen im Assemblercode haben, ist in Tabelle \ref{tbl:a
 \begin{table}[h]
 \caption{Größe, Start- und Endadresse der für die Shift-Operation relevanten Funktionen (fett hervorgehoben) sowie deren direkten Nachbarn im Assemblercode.}
 \label{tbl:assOffsetShift}
-\begin{tabular}{llll}
+\begin{tabular}{cccc}
 Funktion       & Startadresse & Endadresse & Differenz (Größe der Funktion) \\[10pt]
 s\_mp\_alloc   & b7d0$_{16}$        & b7f4$_{16}$      & 25$_{16}$   \\
 s\_mp\_free    & b7f5$_{16}$        & b815$_{16}$      & 21$_{16}$   \\
@@ -605,7 +605,7 @@ Welche Adressen die Funktionen im Assemblercode haben, ist in Tabelle \ref{tbl:a
 \begin{table}[h]
 \caption{Größe, Start- und Endadresse der für die Subtraktions-Operation relevanten Funktionen (fett hervorgehoben) sowie deren direkten Nachbarn im Assemblercode.}
 \label{tbl:assOffsetSub}
-\begin{tabular}{llll}
+\begin{tabular}{cccc}
 Funktion         & Startadresse & Endadresse & Differenz (Größe der Funktion) \\[10pt]
 mp\_add & 8377$_{16}$ & 846f$_{16}$ & f8$_{16}$\\
 \textbf{mp\_sub} & 8470$_{16}$ & 85c3$_{16}$ & 153$_{16}$ \\
@@ -633,7 +633,7 @@ Die Dauer der Shift- sowie Subtraktionoperation hängt linear von der Schlüssel
 \begin{table}[h]
 \caption{Darstellung des linearen Zusammenhangs der Taktzyklendauer einer Shift- und Subtraktionsfunktion zu der Bitlänge. Als Vergleich die Dauer der gesamten GCD-Funktion ohne linearen Zusammenhang zu der Bitlänge.}
 \label{tbl:ShiftSubCycles}
-\begin{tabular}{llll}
+\begin{tabular}{cccc}
 Bitlänge    & 2048 & 4096 & 8192 \\
 Shift       & 340  & 577  & 9597 \\
 Subtraktion & 477  & 718  & 1223 \\
@@ -650,6 +650,9 @@ Wie in den Benchmarks in Kapitel 2 beschrieben, dauert eine Prime-and-Probe Oper
 Im Falle eines aktiven Cache-Set steigt die Dauer jedoch auf ca. 500ns (~1700 Taktzyklen) an.
 Selbst für eine Schlüssellänge von 8192 Bit ist dieser Wert noch zu hoch.
 
+\section{Ausführungsgeschwindigkeit bremsen}
+\label{PerformanceDegSingleThread}
+
 Auch in anderen Fällen ist die Geschwindigkeit der überwachten Funktion zu schnell, um mittels der Prime-and-Probe-Funktion überwacht zu werden.
 Hierfür gibt es mehrere Vorschläge, die Funktion künstlich auszubremsen, welche in der Literatur \cite{MemoryLockingWu,MemoryLockingRisenpart,MemoryLockingJavaAndroid} unter dem Begriff "performance degradation attacks" beschrieben werden.
 Ein trivialer Angriff ist etwa die Überwachung selber, da diese mit der Prime-Phase ein Cache-Set komplett füllt, sodass Daten des angegriffenes Programms verdrängt und so aus dem langsamen Hauptspeicher geladen werden müssen.
@@ -661,9 +664,8 @@ Ein Äquivalent existiert jedoch weder in Javascript noch in Webassembly.
 
 Des Weiteren kann die Ausführung von Code im Browser nicht auf bestimmte CPU-Kerne fixiert werden. Hiermit sind Angriffe, die einen Thread mit hoher Rechenlast auf dem gleichen physischen Kern wie das Opferprogramm laufen lassen, nicht ohne Weiteres möglich.
 
-Der oben beschriebene triviale Angriff kann optimiert werden, um die Performancereduktion zu erhöhen. Dafür wird die Prime-and-Probe-Operation ohne Zeitmessung für eine bestimmte Zeit in einer Endlosschleife, nachfolgend Prime-Spam genannt, ausgeführt. 
-\todo{um die Performancereduktion zu erhöhen muss man viel drüber nachdenken. Kann man das noch besser formulieren?}
-\todo{um die Performancereduktion zu erhöhen muss man viel drüber nachdenken. Hä?}
+Der oben beschriebene triviale Angriff kann optimiert werden, um die Ausführungsgeschwindigkeit weiter zu bremsen. 
+Dafür wird die Prime-and-Probe-Operation ohne Zeitmessung für eine bestimmte Zeit in einer Endlosschleife, nachfolgend Prime-Spam genannt, ausgeführt.
 
 Wie oben beschrieben, erstreckt sich der relevante Code für die Shift- und Subtraktions-Operation über mehrere Funktionen und Cache-Lines.
 Jeder dieser Cache-Lines ist ein potenzielles Ziel für die Performancereduktion.
@@ -677,7 +679,7 @@ Funktionen sind nicht auf Cache-Line-Grenzen alignt (???), weshalb die erste und
 \begin{table}[h]
 \caption{RSA-2048 Performance-Degradation-Attack mittels Prime-Spam auf Cache-Lines, welche Code der Shift-Operation beinhalten. 1. Spalte: ID für die Cache-Line für übersichtlichere Bezeichnung, 2. Spalte: Adressbereich der durch den Angriff verdrängten Cache-Line, 3. Spalte: Funktionen deren Code innerhalb des Adressbereichs der Cache-Line liegt, Spalte "Shift", "Sub" und "$mp\_gcd"$: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen bei einem aktiven Angriff auf die in Spalte 2 spezifizierte Cache-Line. Die erste Zeile gibt die Referenzzeiten ohne aktiven Angriff an. Die horizontalen Linien innerhalb der Tabelle zeigen Sprünge zwischen Adressen der Cache-Lines an.}
 \label{tbl:PerformanceDegShift}
-\begin{tabular}{llllll}
+\begin{tabular}{cclccc}
 ID & Cache-Line  & Funktion(en) innerhalb der Cache-Line                                  & Shift & Sub & mp\_gcd \\[10pt]
 \multicolumn{3}{c}{Referenzzeiten ohne Prime-Spam}                      & 340   & 477         & 424k    \\
 V1 & b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 541   & 608         & 549k    \\
@@ -705,7 +707,7 @@ Anders als bei der Shift-Operation bremsen bei der Subtraktions-Operation die Ca
 \caption{RSA-2048 Performance-Degradation-Attack mittels Prime-Spam auf Cache-Lines, welche Code der Subtraktions-Operation beinhalten.
 Spalteninhalte analog zu Tabelle \ref{tbl:PerformanceDegShift}}
 \label{tbl:PerformanceDegSub}
-\begin{tabular}{llllll}
+\begin{tabular}{cclccc}
 ID &Cache-Line & Funktion                     & Shift & Sub & mp\_gcd \\[10pt]
 \multicolumn{3}{c}{Referenzzeiten ohne Prime-Spam}        & 340   & 477         & 424k    \\
 S1 & 8440$_{16}$-847f$_{16}$  & $mp\_add, mp\_sub$             & 357   & 643         & 487k    \\
@@ -728,7 +730,7 @@ S15 & cc00$_{16}$-cc3f$_{16}$  & $s\_mp\_sub\_3arg, s\_mp\_mul$ & 352   & 571   
 
 
 Zusammenfassend kann die Shift- beziehungsweise Subtraktionsoperation durch einen Angriff maximal von 340 auf 541 (V1) Taktzyklen beziehungsweise von 477 auf 766 (S7) gebremst werden, welches einer Erhöhung der Ausführungszeit von \~59\% respektive \~61\% entspricht.
-Tabelle \ref{tbl:PerformanceDegRSADifferentBitlength} zeigt, dass bei RSA-4096 und RSA-8192 prozentual und sogar absolut (Logik?) schwächere Effekte zu beobachten sind.
+Tabelle \ref{tbl:PerformanceDegRSADifferentBitlength} zeigt, dass bei RSA-4096 und RSA-8192 prozentual und sogar bei den absoluten Werten schwächere Effekte zu beobachten sind.
 Beim Vergleich wurden ausschließlich die Cache-Lines für die Shift- beziehungsweise Subtraktionsoperation getestet, welche den stärksten Bremseffekt bei RSA-2048 aufwiesen.
 So wird die Shift-Operation unter RSA-4096 von 543 auf 700 (V1) Taktzyklen und unter RSA-8192 von 982 auf 1125 (S7) Taktzyklen gebremst, welches die Ausführungszeit um \~29\% beziehungsweise \~15\% erhöht.
 
@@ -737,7 +739,7 @@ So wird die Shift-Operation unter RSA-4096 von 543 auf 700 (V1) Taktzyklen und u
 Als Cache-Lines wurden diejenigen verwendet, welche sich am effektivsten in RSA-2048 erwiesen haben.
 Spalteninhalte analog zu Tabelle \ref{tbl:PerformanceDegShift}}
 \label{tbl:PerformanceDegRSADifferentBitlength}
-\begin{tabular}{lllllll}
+\begin{tabular}{ccclccc}
 RSA-Bitlänge & ID & Cache-Line & Funktion & Shift & Subt & mp\_gcd \\[10pt]
 2048         &\multicolumn{3}{c}{Referenzzeiten ohne Prime-Spam}                                         & 340   & 477         & 424k    \\
 2048         & V1& b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 541   & 608         & 549k    \\
@@ -756,41 +758,61 @@ Des Weiteren sollte der Fokus auf das Bremsen der Shiftoperation gelegt werden, 
 Zum anderen Bremsen viele der Cache-Lines mit Shift-Operationscode auch die Subtraktionsfunktion messbar, wobei dieses Phänomen andersherum nicht beobachtet werden kann. 
 %TODO warum??
 
-Trotz der Effekte der Bremsung ist die Ausführungsgeschwindigkeit der Shift- beziehungsweise Subtraktionsoperation in allen Fällen zu hoch, da eine Prime-and-Probe-Operation \~1500 Taktzyklen benötigt.
+In den obigen Tabellen wurde jeweils nur eine Cache-Line gebremst.
+Tabelle \ref{tbl:PerformanceDegMultiple} zeigt, lässt sich der Bremseffekt verbessern, wenn statt einer mehrere Cache-Lines gebremst werden.
+
+\begin{table}[h]
+\caption{RSA-2048 Performance-Degradation-Attack mittels Prime-Spam auf meherere Cache-Lines. Für die Auflösung der Cache-Line Ids siehe Tabelle \ref{tbl:PerformanceDegShift}. Die 2. Spalte gibt der Übersicht halber nur die Funktionen innerhalb der Cache-Lines (1. Spalte) an, welche bei der Berechnung der Shift-Operation relevant sind. So wird etwa die Funktion $s\_mp\_free$ in der ersten Zeile nicht aufgeführt, obwohl die Cache-Line V1 Teile des Codes von $s\_mp\_free$ enthält.}
+\label{tbl:PerformanceDegMultiple}
+\begin{tabular}{llccc}
+Cache-Line IDs   & \multicolumn{1}{l}{Relevante Funktion(en) innerhalb der Cache-Line} & Shift & Sub & mp\_gcd \\
+V1,V2            & $s\_mp\_clamp$                                                        & 542   & 557 & 528k    \\
+V10,V11          & $s\_mp\_div\_2d$                                                      & 533   & 533 & 572k    \\
+V6,V7            & $s\_mp\_rshd,s\_mp\_div\_2$                                           & 526   & 563 & 551k    \\
+V1,V6            & $s\_mp\_clamp,s\_mp\_rshd$                                            & 643   & 549 & 548k    \\
+V1,V2,V6         & $s\_mp\_clamp,s\_mp\_rshd$                                            & 677   & 535 & 573k    \\
+V2,V6,V10        & $s\_mp\_clamp,s\_mp\_rshd,s\_mp\_div\_2d$                             & 601   & 565 & 541k    \\
+V1,V6,V10        & $s\_mp\_clamp,s\_mp\_rshd,s\_mp\_div\_2d$                             & 623   & 560 & 544k    \\
+V1,V2,V6,V10     & $s\_mp\_clamp,s\_mp\_rshd,s\_mp\_div\_2d$                             & 649   & 557 & 551k    \\
+V1,V2,V6,V10,V11 & $s\_mp\_clamp,s\_mp\_rshd,s\_mp\_div\_2d$                             & 669   & 563 & 563k    \\
+V1,V2,V6,V8-V11  & $s\_mp\_clamp,s\_mp\_rshd,s\_mp\_div\_2d$                             & 665   & 575 & 574k    \\
+V1,V2,V6-V11     & $s\_mp\_clamp,s\_mp\_rshd,s\_mp\_div\_2,s\_mp\_div\_2d$               & 622   & 574 & 562k    \\
+V1-V12           & $s\_mp\_clamp,s\_mp\_rshd,s\_mp\_div\_2,s\_mp\_div\_2d$               & 622   & 574 & 562k 
+\end{tabular}
+\end{table}
+
+Da nur ein Thread die Bremsung ausführt, werden die Cache-Lines nacheinander mittels Prime-Spam gebremst, sodass jede Cache-Line die gleichen Anteile an der Berechnungszeit des Bremsthreads erhält.
+Auffällig ist, dass die Cache-Lines möglichst nicht die gleiche Funktionen abdecken sollten.
+Beispielsweise bringt das Bremsen von V1 und V2 gegenüber dem alleinigen Bremsen von V1 oder V2 keinerlei Vorteile.
+
+Echte Vorteile im Vergleich zum Bremsen einer Cache-Line ergeben sich sobald die Cache-Lines verschiedene Funktionen abdecken.
+So decken V1,V2,V6 drei verschiedene Funktionen ab die im Laufe der Shift-Operation benötigt werden und erzielen damit eine um 25\% beziehungsweise 136 Taktzyklen erhöhte Ausführungszeit gegenüber des besten Ergebnisses mit nur einer Cache-Line.
+Insgesamt kann als die mittlere Zeit für eine Shift-Operation um 99\% von 340 auf 677 Taktzyklen erhöht werden.
+
+Trotz der Effekte der Bremsung ist die Ausführungsgeschwindigkeit der Shift- beziehungsweise Subtraktionsoperation in allen Fällen zu hoch, da eine Prime-and-Probe-Operation \~1700 Taktzyklen benötigt.
+Ein weiteres Problem dieser Methode ist, dass sie nicht alle Shift- beziehungsweise Subtraktions-Operation gleichmäßig stark bremsen, wie folgendes Beispiel erläutert:
+Eine Operationsfolge innerhalb der $mp\_gcd$-Funktion startet mit einer Subtraktions-Operation, folgend von $x$ Shift-Operationen und abschließend wieder einer Subtraktions-Operation.
+Vor dem Beginn der ersten Shift-Operation wurden durch den Prim-Spam-Thread Teile des Codes aus dem Cache verdrängt.
+Deshalb ist die erste Shift-Operation stark gebremst, da sie Codeteile aus dem Hauptspeicher laden muss. 
+Die Prime-Spam-Funktion ist nur aber zu langsam um während der Berechnungsphase der Shift-Operation erneut Teile des Codes aus dem Cache zu verdrängen.
+Deshalb kann die Zweite Shift-Operation in der Folge den Code aus dem Cache nutzen und ist so deutlich schneller in der Ausführung.
+%Bei einer späteren Shift-Operation wiederum 
+
+Ab wann ein Angriff möglich wäre, wird in Abschnitt \ref{Howfast} analysiert.
 
 %\todo{Kannst du bitte einen ABsatz für dumme machen: Mit verlangsamung XY und XZ wird das beste Ergebnis erziehlt. Die zu messende Op dauert jetzt XXX lange. Da ein Prime und Probe Zyklus YYY lange dauert, kann immer noch nicht vernünftig gemessen werden.}
 
-TODO Ergenisse für Bremsen mehrerer Cache-Lines gleichzeitig in einem Thread
 
-single  multiple:
-V1 :519,519,506k
-V1,V2: 522,527,508k
-V10,V11:513,513,552k
-V6,V7:506,543,531k
-V1,V6: 623,529,528k
-V1,V2,V6:657,515,553k
-(auf anderen worker 719,521,588k scheint zwischen worker diff)
-V2,V6,V10:581,545,521k
-V1,V6,V10:603,540,524k
-V1,V2,V6,V10:629,537,531k
-V1,V2,V6,V10,V11:649,543,543k
-V1,V2,V6,V8,V9,V10,V11:645,555,554k
-V1,V2,V6,V7,V8,V9,V10,V11:622,546,542k
-V1-12:602,554,542k
-V1,V6,V7,V10,V11:585,528,524
-
-
-multithread
-2*V1,V2,V6 =730,532,610k (kein toller effekt)
-V1,V2,V6 und V7,V10 = 795,559,602k
-V1,V6,V10 und V2,V5,V11 = 563,561,530k
-V1 und V10 : 970,798, 856
-V1,V10 und V6: 811,648,735k
-V1 und V6,V10: 880,673,716k
-V1 und V1: 623, 722, 665 (gleich cache-line bremsen sinnlos)
-V1,V6 und V1,V10: 764,574,600k
-V1,V6 und V2,V10: 745,584,590k
-einzelene bei multi-thread am besten siehe ergebnisse
+%multithread
+%2*V1,V2,V6 =730,532,610k (kein toller effekt)
+%V1,V2,V6 und V7,V10 = 795,559,602k
+%V1,V6,V10 und V2,V5,V11 = 563,561,530k
+%V1 und V10 : 970,798, 856
+%V1 und V6,V10: 880,673,716k
+%V1 und V1: 623, 722, 665 (gleich cache-line bremsen sinnlos)
+%V1,V6 und V1,V10: 764,574,600k
+%V1,V6 und V2,V10: 745,584,590k
+%einzelene bei multi-thread am besten siehe ergebnisse
 
 
 

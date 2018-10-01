@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <unistd.h> // for usleep
 
 //code from mehmet
 //Hit by the Bus: QoS Degradation Attack on Android
@@ -78,6 +79,7 @@ for(i = firstline; i <= lastline; i++){
 		//clflush(&bir);
 //		start = rdtscp();
 		temp = fadd(unaligned_addr+i,bir);
+		//usleep(1);
 //		time = rdtscp() - start;
 //		printf("addr %d addition took %d cycles\n",i,time);
 		}

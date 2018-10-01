@@ -94,7 +94,7 @@ int L3_THRESHOLD_OFFSET = 0;
 #define MAX_SIZE_AFTER_SECOND_CONTRACT 100
 
 // experiments shows: valid es => max three contract calls
-#define MAX_CONTRACT_CALLS 3
+#define MAX_CONTRACT_CALLS 10
 
 // choose percentage of availible mem blocks in the pool before first es testing
 #define EXPAND_START_VALUE_FACTOR 0.3
@@ -668,14 +668,14 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
         printf_ex("after first contract call => vl_len(es) >= %i => break\n",
                MAX_SIZE_AFTER_FIRST_CONTRACT);
 #endif
-        break;
+        //break;
       }
       if (i == 1 && vl_len(es) >= MAX_SIZE_AFTER_SECOND_CONTRACT) {
 #ifdef DEBUG_CONTRACT
         printf_ex("after first contract call => vl_len(es) >= %i => break\n",
                MAX_SIZE_AFTER_SECOND_CONTRACT);
 #endif
-        break;
+        //break;
       }
       size_old = vl_len(es);
     }

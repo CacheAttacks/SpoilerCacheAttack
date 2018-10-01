@@ -124,7 +124,8 @@ int main(int ac, char **av)
   // exit(1);
   printf_ex("----------------TESTS FINISHED------------------\n");
 
-  //storefor_build_es(this_app_state, 0);
+  //uncomment for storefor bench
+  storefor_build_es(this_app_state, 0, 20);
 
   //storefor_write_SAB();
 

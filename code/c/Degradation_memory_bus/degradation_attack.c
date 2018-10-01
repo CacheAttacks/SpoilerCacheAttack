@@ -242,7 +242,7 @@ int main ()
 {
 //instruction_flusher_mehmet(NULL);  
 
-  multithread_slow(5);
+  multithread_slow(1);
 
   //no clear difference between PTR_OFFSET 1 and 4
   //first_test();

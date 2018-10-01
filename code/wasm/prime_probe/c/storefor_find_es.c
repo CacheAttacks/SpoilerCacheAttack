@@ -12,6 +12,7 @@
 #include "l3.h"
 #include "printf_wrapper.h"
 #include "storefor_find_es.h"
+#include "es_management.h"
 
 // static inline uint32_t memaccesstime(void *v)
 // {
@@ -162,7 +163,7 @@ void storefor_write_SAB(){
   store_for_js_SAB(buffer_size);
 }
 
-void storefor_write(){
+void storefor_write(int benchmarkruns){
   //test if allocated buffer is continous physical memory (speed eviction set search by a factor of 2^8)
 	
 	// 8MB Buffer
@@ -170,22 +171,36 @@ void storefor_write(){
 	// evictionBuffer = (uint8_t*) malloc(PAGE_COUNT * PAGE_SIZE);
 	// memset(evictionBuffer, 0, PAGE_COUNT * PAGE_SIZE);	
 
-  uint32_t buffer_size = PAGE_COUNT * PAGE_SIZE;
-  uint8_t* buffer = mmap(NULL, buffer_size, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE,
-                  -1, 0);
+  while(benchmarkruns){
 
-  uint32_t storefor_add_arr_size = 120;
-  uint8_t * storefor_add_arr = (uint8_t*) malloc(sizeof(uint32_t) * storefor_add_arr_size);
-	memset(storefor_add_arr, 0, sizeof(uint32_t) * storefor_add_arr_size);	
+    uint32_t timer_before = get_time_in_ms();
 
-	#define WINDOW_SIZE 64
+    uint32_t buffer_size = PAGE_COUNT * PAGE_SIZE;
+    uint8_t* buffer = mmap(NULL, buffer_size, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE,
+                    -1, 0);
 
-  l3 = l3_create_only(31, 5, buffer_size);
+    uint32_t storefor_add_arr_size = 120;
+    uint8_t * storefor_add_arr = (uint8_t*) malloc(sizeof(uint32_t) * storefor_add_arr_size);
+    memset(storefor_add_arr, 0, sizeof(uint32_t) * storefor_add_arr_size);	
 
-	//printf_ex("target_add:%p\n", buffer);
-	//measurement_funct(buffer, WINDOW_SIZE, buffer);
-  for(int i=0; i<1; i++){
-  store_for_js((uint32_t)buffer, buffer_size, (uint32_t)storefor_add_arr, storefor_add_arr_size, (uint32_t)(buffer+i*PAGE_SIZE));
+    #define WINDOW_SIZE 64
+
+    l3 = l3_create_only(31, 5, buffer_size);
+
+    //printf_ex("target_add:%p\n", buffer);
+    //measurement_funct(buffer, WINDOW_SIZE, buffer);
+    for(int i=0; i<32; i++){
+    store_for_js((uint32_t)buffer, buffer_size, (uint32_t)storefor_add_arr, storefor_add_arr_size, (uint32_t)(buffer+i*PAGE_SIZE));
+    }
+
+    uint32_t timer_after = get_time_in_ms();
+    printf_ex("time StoreFor:%u\n", (timer_after - timer_before) / 1000);
+
+    if(benchmarkruns){
+      munmap(buffer, buffer_size);
+      l3_release(l3);
+      benchmarkruns--;
+    }
   }
 
   //store_for_js((uint32_t)buffer, bufsize);

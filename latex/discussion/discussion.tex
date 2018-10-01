@@ -1,7 +1,7 @@
 \chapter{Diskussion}
 \label{chapter:discussion}
 
-TODO Netten Einleitungssatz schreiben
+In diesem Kapitel sollen die Ergebnisse der vorherigen eingeordnet und sich daraus ergebende Fragestellungen diskutiert werden.
 
 %\section{Geschwindigkeit von Eviction-Set Suche}
 %Wie in Abschnitt %\ref{} 
@@ -36,21 +36,91 @@ Sobald die Browserhersteller die Auflösung von $performance.now()$ wieder in de
 
 Wenn das angegriffene Endgerät $n$ virtuelle Kerne besitzt können also $n-3$ für die Verlangsamung des Opferprogramms eingesetzt werden.
 
-\section{Viel hilft viel?}
+\section{Multithread Prime-Spam: Viel hilft viel?}
+\label{MoreIsBetter}
 
-Nach den Überlegungen des vorherigen Kapitels sind $n-1-k$ Kerne für die Bremsung nutzbar, wobei $k$ die Anzahl der Kerne für die eigentliche Überwachung ist. Abschnitt \ref{PracticalLeakageAnalysis} hat gezeigt, das s ein Thread die Shift beziehungsweise Subtraktions-Operation nicht ausreichend abbremst.
+Nach den Überlegungen des vorherigen Kapitels sind $n-1-k$ Kerne für die Bremsung nutzbar, wobei $k \geq 1$ die Anzahl der Kerne für die eigentliche Überwachung ist. 
+Abschnitt \ref{PracticalLeakageAnalysis} hat gezeigt, dass ein Thread die Shift beziehungsweise Subtraktions-Operation nicht ausreichend abbremst.
 Daher soll im Folgenden analysiert werden, ob mehrere Threads Vorteile beim Bremsen bringen.
 Der Testrechner hat 4 physische und 8 virtuelle Kerne und zu besseren Einschätzung des Effekts wird ausschließlich gebremst und nicht gemessen, das heißt es können bis zu 6 Bremsthreads auf die virtuellen Kerne verteilt werden.
 Zu beachten ist das Problem der Threadaufteilung, wenn mindestens 3 und höchstens 5 Bremsthreads verwendet werden.
 In diesem Fall werden Threads zeitweise exklusiv auf einem physischen Kern laufen und etwa doppelt so performant sein, wie Threads die sich ihren Kern mit einem anderem Thread teilen müssen.
-Da die Zuordnung der Threads zu den Kernen im Browser nicht verändert werden kann, ist unklar welche Threads alleine laufen.
+Da die Zuordnung der Threads zu den Kernen im Browser nicht verändert werden kann, ist unklar welche Threads zu welchem Zeitpunkt alleine laufen.
 
-Daher werden die Laufzeitmessungen mehrere Sekunden durchgeführt und anschließend gemittelt, damit der Effekt nicht die Ergebnisse verfälscht.
-Der Bremseffekt sollte jedoch bei ab 3 Bremsthreads nachlassen, da sich die Bremsthread dann zeitweise den Kern mit einem anderen Thread teilen müssen.
+Daher werden die Laufzeitmessungen mehrere Sekunden durchgeführt und anschließend gemittelt, damit der Effekt die Ergebnisse nicht verfälscht.
+%Der Bremseffekt sollte somit ab 3 Bremsthreads nachlassen, da sich die Bremsthreads dann zeitweise die Kerne mit einem anderen Thread teilen müssen.
 
-Des Weiteren tritt ab 4 Bremsthreads eine zusätzliche Verlangsamung durch die mangelnde Anzahl an physischen Kernen ein.
-Um diese zu prüfen, wird ein Test mit verschieden vielen Bremsthreads durchgeführt, wobei die Bremsthreads keine Codezeilen der Shift- oder Subtraktions-Operation bremsen.
-Tabelle \ref{} zeigt, dass erst ab 4 Bremsthreads ein signifikanter Performancerückgang messbar ist.
+%Somit tritt ab 3 Bremsthreads eine zusätzliche Verlangsamung durch die mangelnde Anzahl an physischen Kernen ein.
+Um den Effekt, der alleine durch die Last der zusätzlichen Threads entsteht, einschätzen zu können, wird ein Test mit Bremsthreads durchgeführt die keine Codezeilen der Shift- oder Subtraktions-Operation bremsen.
+Tabelle \ref{tbl:PrimeSpamMultithreadRef} zeigt, dass ab 4 Bremsthreads ein signifikanter Performancerückgang messbar ist, welcher bei den folgenden Ergebnissen mit einberechnet werden muss.
+
+\begin{table}[h]
+\caption{Zeigt die Ausführungsgeschwindigkeit bei einer unterschiedlichen Anzahl an Bremsthread, welche nicht die Shift- oder Subtraktions-Funktion bremsen. Spalte "Shift", "Sub" und "$mp\_gcd"$: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen.}
+\label{tbl:PrimeSpamMultithreadRef}
+\begin{tabular}{cccc}
+Anzahl der Bremsthreads & Shift & Sub & mp\_gcd \\
+0                      & 340   & 475 & 430k    \\
+1                      & 347   & 477 & 443k    \\
+2                      & 361   & 516 & 467k    \\
+3                      & 373   & 505 & 467k    \\
+4                      & 435   & 558 & 546k    \\
+5                      & 448   & 574 & 556k    \\
+6                      & 474   & 601 & 598k   
+\end{tabular}
+\end{table}
+
+In den folgenden Tests wird sich, aufgrund der Vielzahl von Möglichkeiten die Cache-Lines auf die Threads verteilen, auf die Shift-Operation beschränkt, welche für das Rekonstruieren der Primzahlen wesentlich ist.
+Für die Tests wurden die Cache-Lines verwendet, welche in Abschnitt \ref{PracticalLeakageAnalysis} (siehe Tabelle \ref{tbl:PerformanceDegShift} und \ref{tbl:PerformanceDegMultiple}) am besten bremsten.
+Weiterhin werden nur ausgewählte Ergebnisse gezeigt, welche die mit dem besten gemessenen Bremsverhalten einschließen.
+Tabelle \ref{tbl:PerformanceDegShiftMultithreadTwo} zeigt die Ergenisse mit zwei Prime-Spam-Threads.
+
+\begin{table}[h]
+\caption{Zeigt das Bremsverhalten mit zwei Prime-Spam-Threads. Die \% in der 1. Spalte trennen die Threads, so werden etwa zwei Threads bei denen der 1. Thread die Cache-Lines V1,V6 und der 2.Thread die Cache-Lines V1,V10 bremst als V1,V6 \& V1,V10 beschrieben. Spalte "Shift", "Sub" und "$mp\_gcd"$: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen. Für eine Beschreibung der Cache-Line IDs siehe Tabelle \ref{tbl:PerformanceDegShift}}
+\label{tbl:PerformanceDegShiftMultithreadTwo}
+\begin{tabular}{lccc}
+Aufteilung der Cache-Lines auf die Threads & Shift & Sub & mp\_gcd \\
+V1,V2,V6 \& V1,V2,V6                       & 730   & 532 & 610k    \\
+V1,V2,V6 \& V7,V10                         & 795   & 559 & 602k    \\
+V1,V6,V10 \& V2,V5,V11                     & 563   & 561 & 530k    \\
+V1 \& V6,V10                               & 880   & 673 & 716k    \\
+V1 \& V1                                   & 623   & 722 & 665k    \\
+V1,V6 \& V1,V10                            & 764   & 574 & 600k    \\
+V1,V6 \& V2,V10                            & 745   & 584 & 590k    \\
+V1 \& V2                                   & 569   & 496 & 611k    \\
+V10 \& V11                                 & 529   & 519 & 630k    \\
+V1 \& V10                                  & 942   & 510 & 797k    \\
+V2 \& V10                                  & 928   & 548 & 788k    \\
+V1 \& V11                                  & 672   & 521 & 731k    \\
+V1 \& V6                                   & 959   & 619 & 807k    \\
+V1 \& V7                                   & 752   & 533 & 667k    \\
+\end{tabular}
+\end{table}
+
+Bei einem Bremsthread wurde im Abschnitt \ref{PerformanceDegSingleThread} festgestellt, dass es besser ist verschiedene Cache-Lines zu bremsen.
+Dieser Effekt tritt bei mehreren Bremsthread nicht mehr auf, sodass es besser ist pro Thread nur eine Cache-Line zu bremsen.
+
+Tabelle \ref{tbl:PerformanceDegShiftMultithreadTwo} zeigt die Ergenisse mit mehr zwei Prime-Spam-Threads, wobei hier die in Tabelle \ref{tbl:PrimeSpamMultithreadRef} beschriebenen Effekte auftreten.
+
+\begin{table}[h]
+\caption{Zeigt das Bremsverhalten mit mehr als Prime-Spam-Threads. Beschreibung analog zu Tabelle \ref{tbl:PerformanceDegShiftMultithreadTwo}. Zu beachten ist hier, dass die hohe Anzahl der Threads an sich zu der Verlangsamung der Ausführung beiträgt (siehe Tabelle \ref{tbl:PrimeSpamMultithreadRef}).}
+\label{tbl:PerformanceDegShiftMultithreadThreePlus}
+\begin{tabular}{lccc}
+V1 \& V6 \& V8                             & 1017  & 652 & 903k    \\
+V1 \& V6 \& V10                            & 900   & 618 & 927k    \\
+V1 \& V2 \& V6                             & 717   & 553 & 709k    \\
+V1 \& V2 \& V6 \& V10                      & 913   & 755 & 944k    \\
+V1 \& V2 \& V6 \& V10 \& V11               & 1026  & 809 & 1106k   \\
+V1 \& V2 \& V6 \& V8 \& V10 \& V11         & 1109  & 915 & 1354k  
+\end{tabular}
+\end{table}
+
+Wenn diese Effekte miteinbezogen werden, sind mehr als zwei Bremsthreads nicht nennenswert besser als zwei.
+Zusätzlich werden zusätzliche Bremsthreads auch die Messung der Zugriffszeiten verlangsamen, da nicht ausreichend physische Kern vorhanden sind.
+
+Im Ergebnis können zwei Bremsthreads gegenüber einem die Shift-Operation auf 959 statt 677 Taktzyklen bremsen, welches einer Verbesserung von 42\% entspricht.
+Insgesamt kann die Shift-Operation um 182\% respektive 619 Taktzyklen gebremst werden.
+Auf dem Testrechner konnte keine Verbesserung durch drei Bremsthreads festgestellt werden, wobei auf einem Prozessor mit mehr physischen Kernen damit gerechnet werden kann, dass mehr als zwei Threads signifikante Verbesserungen bringen.
+
 
 %Warum ist das eigentlich so?
 %Bei 3 Bremsthreads, einem Counter-Thread, sowie dem aktiven Opferprogramm werden insgesamt 5 Threads, bei nur 4 phsischen Kernen, genutzt. 
@@ -58,9 +128,9 @@ Tabelle \ref{} zeigt, dass erst ab 4 Bremsthreads ein signifikanter Performancer
 %
 
 
-Die für die Bremsung wurden die Cache-Lines verwendet, welche in den Tests in Abschnitt \ref{PracticalLeakageAnalysis} (siehe Tabelle \ref{tbl:PerformanceDegShift} und \ref{tbl:PerformanceDegSub}) am besten bremsten.
 
-TODO Benchmarkergebnisse ausformulieren. Betonen, dass nicht mehrere Cache-Line pro Thread genutzt werden sollten (Überraschend, da beim Bremsthread mehrere Cache-Lines besser). 
+
+%TODO Benchmarkergebnisse ausformulieren. Betonen, dass nicht mehrere Cache-Line pro Thread genutzt werden sollten (Überraschend, da beim Bremsthread mehrere Cache-Lines besser). 
 
 %V1: 1: 's_mp_clamp_0', //s_mp_clamp>: 541,608,549k
 %V2: 2:  33: 's_mp_clamp_1', //538,605,553k
@@ -72,6 +142,17 @@ TODO Benchmarkergebnisse ausformulieren. Betonen, dass nicht mehrere Cache-Line 
 
 
 %Tabelle \ref{} zeigt, den Effekt wenn mehrere Threads für den Bremsvorgang verwendet werden.
+
+%multithread
+%2*V1,V2,V6 =730,532,610k (kein toller effekt)
+%V1,V2,V6 und V7,V10 = 795,559,602k
+%V1,V6,V10 und V2,V5,V11 = 563,561,530k
+%V1 und V10 : 970,798, 856
+%V1 und V6,V10: 880,673,716k
+%V1 und V1: 623, 722, 665 (gleich cache-line bremsen sinnlos)
+%V1,V6 und V1,V10: 764,574,600k
+%V1,V6 und V2,V10: 745,584,590k
+%einzelene bei multi-thread am besten siehe ergebnisse
 
 
 %opferprozess läuft die ganze zeit in eigenem prozess
@@ -111,31 +192,112 @@ https://github.com/openpgpjs/openpgpjs/blob/master/src/crypto/public_key/rsa.js
 pow (Zeile 3332) scheinbar fixed window implementation:\\
 https://github.com/indutny/bn.js/blob/e69c617b3297b99aca429f30842e27979ef9beb5/lib/bn.js
 
-\section{Memory-locking: Mit Kanonen auf Spatzen schießen}
+\section{Memory-Locking: Mit Kanonen auf Spatzen schießen}
 \label{MemoryLocking}
 
-Als Memory-locking soll im Folgenden ein Ansatz bezeichnet werden, welcher die Ausführungsgeschwindigkeit von Prozesses verlangsamt in dem der Zugriff auf den Hauptspeicher wiederholt kurzzeitig blockiert wird.
+Als Memory-Locking soll im Folgenden ein Ansatz bezeichnet werden, welcher die Ausführungsgeschwindigkeit von Prozessen verlangsamt in dem der Zugriff auf den Hauptspeicher wiederholt kurzzeitig blockiert wird.
 Beschrieben und verwendet wurde diese Technik in \cite{MemoryLockingWu, MemoryLockingRisenpart, MemoryLockingJavaAndroid}.
-Um die kurzzeitige Blockierung des Memory-Buses zu erzwingen wird atomar auf eine Variable geschrieben, die in zwei Cache-Lines liegt.
+Die grundlegende Idee ist es die Blockierung des Speicher-Busses zu erzwingen, indem atomar auf eine Variable geschrieben wird, die in zwei Cache-Lines liegt.
 
-Atomare Operationen verursachen systemweite Blockierungen in den Speicherregionen auf denen sie arbeiten, wobei diese Blockierungen in Prozessoren nicht immer lokal begrenzt sind.
+Atomare Operationen verursachen systemweite Blockierungen in den Speicherregionen auf denen sie arbeiten, wobei diese Blockierungen nicht immer lokal begrenzt sind.
 Die ersten Generationen von x86-Prozessoren blockierten bei einer atomaren Operation noch den gesamten Speicherbus.
-Dies sorgt jedoch für Performanceeinbußen da ein Befehl alle Speicherzugriffe, die etwa aufgrund von Out-of-Order-Execution parallel ausgeführt werden könnten, blockiert.
+Dies sorgt jedoch für Performanceeinbußen, da ein Befehl alle Speicherzugriffe, die etwa aufgrund von Out-of-Order-Execution parallel ausgeführt werden könnten, blockiert.
 Des Weiteren skaliert dieser Ansatz schlecht mit Mehrkernprozessoren, da andere Kerne während der atomaren Operation auf Speicherzugriffe verzichten müssten.
 
-Häufig arbeiten atomare Operationen auf Speicherbereichen die in eine Cache-Line passen. Diese Eigenschaft nutzen x86-Prozessoren ab dem Pentium Pro aus, indem sie nur die zugehörige Cache-Line sperren und nicht mehr den gesamten Speicherbus.
+Häufig arbeiten atomare Operationen auf Speicherbereichen die in eine Cache-Line passen. Diese Eigenschaft nutzen x86-Prozessoren ab dem Pentium Pro aus, indem sie nur die zugehörige Cache-Line und nicht mehr den gesamten Speicherbus sperren.
 Auf diesen Systemen kann es dennoch zur vorübergehenden Sperrung des gesamten Speicherbusses kommen, etwa wenn der Speicher für die atomare Operation nicht alignt ist und sich über zwei Cache-Lines spannt.
 
-x86-Prozessoren ab dem Intel Nehalem und AMD K8/K10 verwenden anders als die vorherigen Generationen keinen gemeinsamen Speicherbus mehr. Stattdessen ist der Speicher aufgeteilt und jedem Kern ein Bereich als lokaler Speicher zugeordnet, auch Non-Uniform Memory Access   (NUMA) genannt. 
+x86-Prozessoren ab dem Intel Nehalem und AMD K8/K10 verwenden im Gegensatz zu den vorherigen Generationen keinen gemeinsamen Speicherbus mehr. Stattdessen ist der Speicher aufgeteilt und jedem Kern ein Bereich als lokaler Speicher zugeordnet, auch Non-Uniform Memory Access (NUMA) genannt. 
 Die Kerne besitzen direkten Zugriff auf ihren Speicherbereich, wobei auf die Bereiche der anderen Kerne über einen gemeinsamen Adressraum zugegriffen werden kann.
-Wenn die Daten einer atomare Operationen innerhalb einer Cache-Line liegen, wird hier analog zu den vorherigen Generationen nur diese Cache-Line gesperrt.
-Bei einer atomaren Operation dessen Daten sich über zwei Cache-Lines spannen, stimmen sich aufgrund des fehlenden gemeinsamen Speicherbusses alle Prozessoren ab, um ihre aktuell in Ausführung befindenden Speichertransaktionen zu flushen.
-Dies entspricht also einer Simulation für das Sperren des kompletten Speicherbusses.
+Wenn die Daten einer atomaren Operation innerhalb einer Cache-Line liegen, wird hier analog zu den vorherigen Generationen nur diese Cache-Line gesperrt.
+Bei einer atomaren Operation dessen Daten sich über zwei Cache-Lines spannen, stimmen sich aufgrund des fehlenden gemeinsamen Speicherbusses alle Prozessoren ab, um ihre aktuell in Ausführung befindenden Speichertransaktionen zu flushen \cite{MemoryLockingWu}.
+Dies entspricht einer Simulation für das Sperren des kompletten Speicherbusses.
 
-Diese Verhalten kann nun bewusst provoziert werden, indem atomare Operationen auf Daten zwischen zwei Cache-Lines ausgeführt werden.
-Dadurch werden alle Speicherzugriffe aller Programme gebremst, in der Hoffnung, dass sich das Opferprogramm stärker als das Angriffsprogramm verlangsamt.
+Dieses Verhalten kann nun bewusst provoziert werden, indem atomare Operationen auf Daten, die zwischen zwei Cache-Lines liegen, ausgeführt werden. Pseudocode \ref{alg:FindSlowAtomicOperations} zeigt exemplarisch die Umsetzung, wobei die dort verwendete atomare Operation einen Pointer auf einen 4-Byte Datentyp erwartet. 
+Der Pseudo-Code zeigt wie eine Adresse gefunden wird auf der eine atomare Operation lange dauert, etwa wenn die Adresse am Ende einer Cache-Line liegt und so die 4 Byte auf denen die atomare Operation arbeitet in zwei Cache-Lines liegen. 
+Wenn so eine Adresse gefunden wurde, wird die atomare Operation auf dieser endlos wiederholt.
 
-TODO Beschreiben warum nicht geeignet und Benchmarkergenisse ausformulieren
+\begin{algorithm}[h]
+\DontPrintSemicolon
+\caption{Pseudocode für ein Memory-Locking Angriff}
+\label{alg:FindSlowAtomicOperations}
+
+\Fn{$Find\_Slow\_Addresses(size)$}{
+    byte_arr <- malloc(size)\;
+    \For{i = 0; i < size - 4; i++}{
+		start <- timeStamp()\;
+    	atomicOperation(get_ptr(byte_arr[i]))\;
+		\If{timeStamp() - start > threshold}{
+		    print("Found slow Operation at" + i)\;
+		    \While{true}{
+		        atomicOperation(get_ptr(byte_arr[i]))\;
+		    }
+		}
+	}
+}
+\end{algorithm}
+
+Dadurch werden die Speicherzugriffe aller Programme gebremst, in der Hoffnung, dass sich das Opferprogramm stärker als das Angriffsprogramm verlangsamt.
+
+Der Angriff wird zuerst in C getestet, da hier leicht eine atomare Operation mit x-86 Instruktionen wie $xchg$ oder $fadd$ erzeugt werden kann.
+Ein erster Test mit ausschließlich einem oder zwei laufenden Memory-Locking-Threads offenbart, dass die Ausführung der Shift-Operation und Subtraktions-Funktion nicht nennenswert verlangsamt wird (siehe Tabelle \ref{tbl:MemoryLockingResults}).
+
+\begin{table}[h]
+\caption{Performance-Degradation-Attack mittels Prime-Spam und Memory-Locking. 1. Spalte: Anzahl der Threads die für das Memory-Locking eingesetzt wurden, 2. Spalte: Cache-Lines in der Shift-Operation die mittels Prime-Spam gebremst wurden (siehe \ref{tbl:PerformanceDegShift} für Id-Zuordnung), Spalte "Shift", "Sub" und "$mp\_gcd"$: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen.}
+\label{tbl:MemoryLockingResults}
+\begin{tabular}{ccccc}
+ML-Threads & Cache-Line IDs     & Shift & Sub & mp\_gcd \\
+0                   & -               & 341   & 480 & 432k    \\
+1                   & -               & 370   & 510 & 469k    \\
+2                   & -               & 361   & 506 & 455k    \\
+0                   & V1              & 539   & 600 & 566k    \\
+1                   & V1              & 894   & 527 & 594k    \\
+2                   & V1              & 628   & 527 & 526k    \\
+0                   & V1 \& V6        & 964   & 587 & 865k    \\
+1                   & V1 \& V6        & 1337  & 596 & 743k    \\
+2                   & V1 \& V6        & 1262  & 575 & 701k    \\
+1                   & V1 \& V6 \& V10 & 1312  & 680 & 803k   
+\end{tabular}
+\end{table}
+
+Dies ist jedoch erwartbar, das der Code für die Shift- und Subtraktions-Operationen komplett in den Cache passt und so Speicherzugriffe vermieden werden können.
+
+Interessanter ist daher die Kombination mit einem Prime-Spam-Angriff (siehe Abschnitt \ref{PracticalLeakageAnalysis} und \ref{MoreIsBetter}), welcher Codeteile der Shift- und Subtraktions-Operation aus dem L3-Cache verdrängt, sodass diese bei der Ausführung wiederholt aus dem Hauptspeicher geladen werden müssen.
+So verlangsamt die Kombination von einem Memory-Locking-Thread mit einem Prime-Spam-Threads auf die Cache-Line V1 die Shift-Operation auf 894 Taktzyklen (siehe Tabelle \ref{tbl:MemoryLockingResults}).
+Wenn der Memory-Locking-Thread zusammen mit zwei Prime-Spam-Threads auf die Cache-Lines V1 und V6 (eine der besten Kombinationen nach Abschnitt \ref{MoreIsBetter}) genutzt wird, verlangsamt sich die Shift-Operation im Mittel auf 1337 Taktzyklen.
+Dies ist besser als alle Ergebnisse die mit einem Memory-Locking-Thread und drei Prime-Spam-Threads sowie mit ausschließlich drei Prime-Spam-Threads (siehe Abschnitt \ref{MoreIsBetter}) erzielt werden konnten.
+Zusätzlich ist zu bemerken, dass durch den Memory-Locking-Angriff die Ausführungszeit der Shift-Operation sehr stark schwankt.
+So sind bei im Mittel 1337 Taktzyklen einige Operationen mit \~3000 Taktzyklen zu beobachten.
+Diese entstehen wenn Codeteile der Shift-Operation gerade durch den Prime-Spam-Thread aus dem Cache verdrängt wurden und der Ladevorgang des Codes aus dem Hauptspeicher mit der atomaren Operation zusammenfällt.
+
+Somit kann festgehalten werden, dass Prime-Spam mit Memory-Locking in Kombination im Mittel besser bremst als eine der beiden Techniken alleine.
+Jedoch hat die Technik negative Auswirkungen auf die Prime-and-Probe-Operation, welche in der Grafik \ref{fig:MemoryLockingIssues} visualisiert werden.
+Unten sind die Zugriffszeiten eines nicht aktiven Cache-Sets ohne Memory-Locking-Angriff und oben mit aktiven Memory-Locking-Angriff zu sehen.
+Mit aktiven Memory-Locking-Angriff zeigen sich in regelmäßigen Abständen hohe Zugriffszeiten, die durch die notwendigen Speicherzugriffe während der Prime-and-Probe-Operation entstehen.
+
+\label{fig:MemoryLockingIssues}
+\begin{figure}[h]
+\centering
+\begin{scaletikzpicturetowidth}{\textwidth}
+\input{discussion/plot_memory_locking_issues.tex}
+\end{scaletikzpicturetowidth}
+\caption{50 Messungen der Zugriffszeit mittels Prime-and-Probe auf einem Cache-Set ohne Aktivität. Der obere Teil der Abbildung ist mit, der untere ohne Memory-Locking-Angriff entstanden. Im oberen Teil ist zu sehen wie der Memory-Locking-Angriff Speicherzugriffe verzögert.}
+\end{figure}
+
+Das Muster der erhöhten Zugriffszeiten ist zu unregelmäßig um es ohne Weiteres zu filtern.
+Des Weiteren sind erhöhte Zugriffszeiten die durch das Opferprogramm entstehen ebenfalls im Bereich von 250 bis 350 Zeiteinheiten.
+Es kann aber bei Zugriffszeiten von über 400 davon ausgegangen werden, dass bei diesem Sample auch das Opferprogramm für die erhöhte Zugriffszeit verantwortlich ist, da der Memory-Locking-Angriff alleine keine Zugriffszeiten von über 400 verursacht.
+Problematisch sind allerdings Zugriffszeiten von etwa 300 bei denen nicht mehr unterschieden werden kann, ob der Ausschlag vom Memory-Locking-Angriff oder von Zugriffen des Opferprogramms verursacht wurde.
+
+Die Frequenz der Störungen kann verringert werden, indem der Memory-Locking-Angriff verlangsamt wird, etwa durch das Hinzufügen einer Sleep-Operation in der Schleife der Zeile 8, wobei im Umkehrschluss allerdings auch die Speicherzugriffe weniger häufig gebremst werden.
+
+Zusammengefasst kann der Memory-Locking-Angriff den Speicherzugriffe in regelmäßigen Abständen stark verlangsamen, ist aber für einen Prime-and-Probe-Angriff ungeeignet.
+Ursächlich dafür ist der Einfluss auf den Messvorgang, welcher in den gleichen Abständen stark verlangsamt wird und so hohe Zugriffszeiten in vielen Fällen nicht eindeutig zugeordnet werden können.
+Zudem verlangsamt der Angriff die Shift-Operation nur, wenn deren Code aus dem Cache verdrängt wurde.
+Dies wird hier durch die Prime-Spam-Methode forciert, welche aber ebenfalls durch den Memory-Locking-Angriff gebremst wird.
+
+%TODO Übersichtstabelle
+%TODO Beschreiben warum nicht geeignet und Benchmarkergenisse ausformulieren
 
 %perf deg in c ohne zusätze:
 %ref:341, 480, 432k
@@ -214,6 +376,7 @@ TODO Beschreiben warum nicht geeignet und Benchmarkergenisse ausformulieren
 
 
 \section{Wie viel schneller muss er sein?}
+\label{Howfast}
 
 Abschnitt \ref{} und \ref{MemoryLocking}
 

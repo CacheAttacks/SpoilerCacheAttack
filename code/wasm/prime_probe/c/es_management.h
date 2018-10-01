@@ -63,4 +63,4 @@ void get_idle_times(void *app_state_ptr, int min_index, int max_index,
 void find_interesting_eviction_sets(void *app_state_ptr, float threshold_factor,
                                     int number_of_samples);
 
-void storefor_build_es(void *app_state_ptr, int max_es);
+void storefor_build_es(void *app_state_ptr, int max_es, int benchmarkruns);
