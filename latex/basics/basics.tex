@@ -77,7 +77,7 @@ Des Weiteren wird der Cache in \textit{Slices} unterteilt, wobei jede Slice eine
 
 
 
-%\todo[size=\footnotesize]{Hier fehlt wieder Mapping durch letzte Bits der Adresse (Beschrieben in Abschnitt Prime and Probe)}
+%\todo[size=\footnotesize]{Hier fehlt wieder Mapping durch letzte Bits der Adresse (Beschrieben in Abschnitt Prime-and-Probe)}
 
 %Ein CPU-Cache enthält mehrere Einträge, welche folgende Bestandteile besitzen:
 %\begin{enum}
@@ -99,7 +99,7 @@ Eine Angreiferin könnte ein Programm entwickeln, welches Informationen über de
 
 %\newtext
 
-\subsection{Flush and Reload}
+\subsection{Flush-and-Reload}
 
 Diese Angriffstechnik wurde 2014 von Yuval Yarom
 und Katrina Falkner veröffentlicht \cite{FlushReload}.
@@ -121,7 +121,7 @@ Ein typisches Beispiel hierfür sind geteilte Bibliotheken, zum Beispiel .so Dat
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
-\caption{Pseudo-Code für Flush and Reload}
+\caption{Pseudo-Code für Flush-and-Reload}
 \label{alg:flush_and_reload}
 \SetAlgoNlRelativeSize{-2}
 
@@ -138,15 +138,15 @@ Ein typisches Beispiel hierfür sind geteilte Bibliotheken, zum Beispiel .so Dat
 
 \end{algorithm}
 
-\subsection{Prime and Probe}
+\subsection{Prime-and-Probe}
 
-Ein erfolgreicher Prime and Probe Angriff auf den L3-Cache wurde 2015 von Liu et al. veröffentlicht \cite{LiuPrimeAndProbe}.
-Er unterscheidet sich von Prime and Probe Angriffen auf niedrigere Cache-Level durch die aufwendigere Eviction-Set Suche.
+Ein erfolgreicher Prime-and-Probe Angriff auf den L3-Cache wurde 2015 von Liu et al. veröffentlicht \cite{LiuPrimeAndProbe}.
+Er unterscheidet sich von Prime-and-Probe Angriffen auf niedrigere Cache-Level durch die aufwendigere Eviction-Set Suche.
 
 Ein \textit{Eviction-Set} sei eine Menge Adressen, welche einen Cache-Eintrag aus einem Cache verdrängen kann. D.h. ein Eviction-Set, welches einen Eintrag aus dem L3-Cache löscht, würde den gleichen Zweck wie der \textit {clflush}-Assemblerbefehl im Flush-and-Reload-Angriff erfüllen. 
 Um einen Eintrag aus dem Cache zu verdrängen, müssen mehrere Adressen der Daten aus dem Eviction-Set von der CPU auf das gleiche Cache-Set wie der zu verdrängende Eintrag abgebildet werden, so dass die Größe eines Eviction-Sets mindestens die Assoziativität des Caches erreichen muss.
 
-Die Idee beim Prime and Probe Angriff besteht darin, in einer sich wiederholenden Abfolge zuerst den Cache zu primen, dann das Opferprogramm rechnen zu lassen und anschließend zu proben.
+Die Idee beim Prime-and-Probe Angriff besteht darin, in einer sich wiederholenden Abfolge zuerst den Cache zu primen, dann das Opferprogramm rechnen zu lassen und anschließend zu proben.
 In der Priming-Phase werden mittels der Eviction-Sets gezielt Cache-Sets vollständig mit den Daten aus dem Eviction-Sets belegt.
 In der anschließenden Berechnungsphase werden einige Einträge aus den geprimten Cache-Sets vom Opferprogramm verdrängt. Abschließend berechnet die Angreiferin die Summe der Zugriffszeiten auf alle Einträge in einem Eviction-Set.
 Sofern das Opferprogramm in dem zum Eviction-Set korrelierenden Cache-Set Einträge verdrängt hat, kann die Angreiferin eine Abweichung nach oben in ihrer Messung feststellen, da die verdrängten Einträge eine erhöhte Zugriffszeit verursachen. Somit kann aus den Zugriffszeiten der Eviction-Sets auf die Speicherzugriffe des Opferprogramms geschlossen werden.
@@ -159,7 +159,7 @@ So ist aber in der Regel das Mapping der virtuellen und physischen Adressen bei 
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
-\caption{Psuedo-Code für Prime and probe}
+\caption{Psuedo-Code für Prime-and-Probe}
 \label{alg:prime_and_pribe}
 
 \Fn{$flushAndReload(address)$}{
@@ -296,7 +296,7 @@ Grafik \ref{fig:MemoryDisambiguation} zeigt ein Beispiel für die Speicher-Disam
 \label{fig:MemoryDisambiguation}
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.6\textwidth]{methods/memory_disambiguation.pdf}
+\includegraphics[width=0.6\textwidth]{methods/grayscale_memory_disambiguation.pdf}
 \caption{Beispiel für eine Speicher-Disambiguierung. Die Nummern in den Kreisen geben die chronologische und der weiße Pfeil am linken Rand die logische Ausführungsreihenfolge an. Load 2 kann nicht früher ausgeführt werden, da er von Store 1 abhängig ist. Load 4 hingegen ist von den anderen Operationen unabhängig und kann daher vor Store 1 und Store 3 ausgeführt werden. Durch diese vorgezogene Ausführung können Instruktionen, die den Wert von X benötigen, im Folgenden von einer geringen Zugriffslatenz profitieren. \cite{CacheAssoWiki}.}
 \end{figure}
 

@@ -18,7 +18,7 @@ Des Weiteren steht mit dem Emscripten-Compiler ein Tool bereit, welches die Übe
 Der hier ausgeführte Cache-Angriff benötigt wie in beschrieben präzise Timer, welche eine Auflösung von unter 30 ns bereitstellen sollten. Dennoch könnte die Suche nach \textit{Eviction-Sets} auch mit schlechteren Timerauflösungen bewerkstelligt werden, indem Operationen mehrfach ausgeführt werden und die Differenz der aufsummierten Zeiten zur Bewertung herangezogen wird.
 Im \textit{Eviction-Set}-Algorithmus könnte etwa die Funktion $checkevict$ wie in Algorithmus \ref{alg:checkevict_low_resolution} angepasst werden, wobei der Parameter $repeatIterations$ abhängig von der Timerauflösung gewählt wird. 
 Es besteht jedoch das Problem, schwache Aktivitäten im Cache-Set während des eigentlichen Angriffs aufzudecken, da im Worst-Case nur ein Eintrag aus dem beobachteten Cache-Set verdrängt wird und somit lediglich die Zugriffszeit zwischen einem Hit und einem Miss ausschlaggebend ist. 
-In diesem Fall könnte die Dauer mehrerer Prime and Probe-Iterationen gesamtheitlich gemessen werden, und zwar unter der Vermutung, dass auf die für die Verdrängung verantwortliche Adresse über die Zeit mehrfach zugegriffen wird. %\todo{Ich verstehe den nächsten Satz nicht. Satz redesignt}
+In diesem Fall könnte die Dauer mehrerer Prime-and-Probe-Iterationen gesamtheitlich gemessen werden, und zwar unter der Vermutung, dass auf die für die Verdrängung verantwortliche Adresse über die Zeit mehrfach zugegriffen wird. %\todo{Ich verstehe den nächsten Satz nicht. Satz redesignt}
 Die direkten Auswirkungen eines niedrig aufgelösten Timers sind also eine geringere zeitliche Auflösung von Cache-Aktivitäten oder die Nichtregestrierung von schwachen.
 
 \begin{algorithm}[h]
@@ -450,6 +450,8 @@ Häufig sind weit weniger Adressen ausreichend, jedoch zieht eine gescheiterte E
 Deshalb ist es günstiger bereits am Anfang mehr colliding-addresses zu Suchen, um den Fall einer gescheiterten Eviction-Set-Suche zu vermeiden.
 
 Diese Methode ist schneller als der Standardalgorithmus zum Finden von Eviction-Sets, da bei diesem 128 Evicton-Sets in einer Pool-Größe von etwa 4000 (siehe Abschnitt \ref{addressPoolSize}) gefunden werden müssen, wohingegen bei der neuen Methode das 32-malige Finden von 4 Eviction-Sets bei einer Pool-Größe von 115 ausreicht.
+
+Des Weiteren kann die Suche nach dem colliding-address-Pool
 
 TODO Benchmarks als Grafik einfügen, gegen alte Variante vergleichen
 

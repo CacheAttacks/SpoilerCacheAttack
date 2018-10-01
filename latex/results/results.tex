@@ -551,6 +551,27 @@ Die $s\_mp\_div\_2d$-Funktion setzt die Division mittels der $s\_mp\_rshd$-Funkt
 Am Ende der $s\_mp\_div\_2d$-Funktion erfolgt ein Funktionsaufruf an $s\_mp\_clamp$, um die entstandenen führenden Nullen zu entfernen.
 Welche Adressen die Funktionen im Assemblercode haben, ist in Tabelle \ref{tbl:assOffsetShift} ersichtlich. 
 
+\begin{tikzpicture}[level distance=1.5cm,
+  level 1/.style={sibling distance=2cm},
+  level 2/.style={sibling distance=1.5cm},
+  grow=right,sibling distance        = 3em,
+    level distance          = 10em]
+  \node {mp_gcd}
+    child {node {s_mp_div_2}
+      child {node {s_mp_div_2d}
+        child {node {s_mp_rshd}}
+        child {node {s_mp_clamp}}
+      }
+    }
+    child {node {mp_sub}
+    child {node {s_mp_sub_3arg}
+        child {node {s_mp_clamp}}
+      }
+    };
+\end{tikzpicture}
+
+
+
 
 \begin{table}[h]
 \caption{Größe, Start- und Endadresse der für die Shift-Operation relevanten Funktionen (fett hervorgehoben) sowie deren direkten Nachbarn im Assemblercode.}
@@ -674,7 +695,9 @@ Da ein Prime-Spam auf eine Cache-Line einen kompletten physischen Kern auslastet
 Um die Auswirkung vom Prime-Spam auf unterschiedliche Cache-Lines zu bewerten, wird die $mp\_gcd$-Funktion mit den Parametern $e=65535$ und $p-1$ ausgeführt.
 $p$ ist eine zufällige aber über den gesamten Benchmarkzeitraum feste Pseudoprimzahl, wobei RSA-2048 als Parameter gewählt wurde.
 Tabelle \ref{tbl:PerformanceDegShift} betrachtet alle Cache-Lines, welche Code für die Shift-Operation beinhalten, wobei die Funktion $s\_mp\_clamp$ wie oben erwähnt auch in der Subtraktionsoperation verwendet wird.
-Funktionen sind nicht auf Cache-Line-Grenzen alignt (???), weshalb die erste und letzte Cache-Line eines Funktionscodes auch Code für andere Funktionen beinhaltet.
+Funktionen sind nicht auf Cache-Line-Grenzen aligned
+%(???) Fachausdruck für Speicherausrichtung
+, weshalb die erste und letzte Cache-Line eines Funktionscodes auch Code für andere Funktionen beinhaltet.
 
 \begin{table}[h]
 \caption{RSA-2048 Performance-Degradation-Attack mittels Prime-Spam auf Cache-Lines, welche Code der Shift-Operation beinhalten. 1. Spalte: ID für die Cache-Line für übersichtlichere Bezeichnung, 2. Spalte: Adressbereich der durch den Angriff verdrängten Cache-Line, 3. Spalte: Funktionen deren Code innerhalb des Adressbereichs der Cache-Line liegt, Spalte "Shift", "Sub" und "$mp\_gcd"$: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen bei einem aktiven Angriff auf die in Spalte 2 spezifizierte Cache-Line. Die erste Zeile gibt die Referenzzeiten ohne aktiven Angriff an. Die horizontalen Linien innerhalb der Tabelle zeigen Sprünge zwischen Adressen der Cache-Lines an.}
