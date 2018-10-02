@@ -118,14 +118,16 @@ int main(int ac, char **av)
 
   this_app_state->l3_threshold = mem_access_testing(100000, 0);
   // this_app_state->l3_threshold = 45;
-  this_app_state->l3_threshold = 31;
+  this_app_state->l3_threshold = 34;
+  //sandy 36
+  //haswell 31
   // flush_l3(0,0,0);
   // mem_access_testing(100000, 0);
   // exit(1);
   printf_ex("----------------TESTS FINISHED------------------\n");
 
   //uncomment for storefor bench
-  storefor_build_es(this_app_state, 0, 20);
+  //storefor_build_es(this_app_state, 0, 20);
 
   //storefor_write_SAB();
 

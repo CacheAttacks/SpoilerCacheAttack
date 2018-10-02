@@ -94,7 +94,7 @@ int L3_THRESHOLD_OFFSET = 0;
 #define MAX_SIZE_AFTER_SECOND_CONTRACT 100
 
 // experiments shows: valid es => max three contract calls
-#define MAX_CONTRACT_CALLS 10
+#define MAX_CONTRACT_CALLS 3
 
 // choose percentage of availible mem blocks in the pool before first es testing
 #define EXPAND_START_VALUE_FACTOR 0.3
@@ -324,7 +324,7 @@ static int timedwalk(void *list, register void *candidate, int walk_size,
   //   buffer = mmap(NULL, block_size*pages, PROT_READ|PROT_WRITE,
   //   MAP_ANON|MAP_PRIVATE, -1, 0);
   // }
-  int a = memaccess(candidate);
+  volatile int a = memaccess(candidate);
   for (int i = 0;
        i < CHECKTIMES *
                (debug ? FACTORDEBUG : (print ? FACTORPRINT : FACTORNORMAL));
@@ -335,7 +335,8 @@ static int timedwalk(void *list, register void *candidate, int walk_size,
 
     // walk(list,20); was default why???
 #ifdef WASM
-    or_walk = walk(list, walk_size);
+walk_through(list);
+    //or_walk = walk(list, walk_size);
     // walk_through(list);
 #else
     or_walk = walk(list, 20);
@@ -346,8 +347,8 @@ static int timedwalk(void *list, register void *candidate, int walk_size,
     // access memory in the same page
     // use page start (last 12 bits zero)
     // maybe collide with ADDRESS_OFFSET
-    void *candiate_page = (void *)(((uintptr_t)candidate >> 12) << 12);
-    memaccess(candiate_page);
+    //void *candiate_page = (void *)(((uintptr_t)candidate >> 12) << 12);
+    //memaccess(candiate_page);
 
     uint32_t time = memaccesstime(candidate, info);
 
@@ -668,14 +669,14 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
         printf_ex("after first contract call => vl_len(es) >= %i => break\n",
                MAX_SIZE_AFTER_FIRST_CONTRACT);
 #endif
-        //break;
+        break;
       }
       if (i == 1 && vl_len(es) >= MAX_SIZE_AFTER_SECOND_CONTRACT) {
 #ifdef DEBUG_CONTRACT
         printf_ex("after first contract call => vl_len(es) >= %i => break\n",
                MAX_SIZE_AFTER_SECOND_CONTRACT);
 #endif
-        //break;
+        break;
       }
       size_old = vl_len(es);
     }

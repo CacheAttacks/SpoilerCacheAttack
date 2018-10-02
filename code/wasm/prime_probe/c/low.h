@@ -391,12 +391,14 @@ walk(void *p, int count)
     return 0;
 
   int or = 0;
+  void *q = p;
   do
   {
     void *old_p = p;
     p = *((void **)p);
     or |= (int)p;
-    if (p == old_p)
+    q = *((void **)q);
+    if (q == old_p)
     {
       break;
     }

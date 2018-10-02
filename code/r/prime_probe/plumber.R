@@ -251,7 +251,7 @@ plotchannel <- function(){
   tbl <- data.table::fread(data)
   if(ncol(tbl) == 1){
     #tbl[,"sample"] <- 1:nrow(tbl)
-    max_value <- 400
+    max_value <- 1000
     tbl[tbl$V1>max_value, "V1"] <- max_value
     #plot <- ggplot2::ggplot(tbl, ggplot2::aes(x = sample, y = V1)) + ggplot2::geom_histogram(stat = "identity")
     #print(plot)

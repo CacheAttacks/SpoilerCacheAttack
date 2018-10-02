@@ -185,13 +185,13 @@ Angenommen es wurde ein Zugriff auf die Cache-Line $sieve[64-127]$, aber nicht a
 Weiter kann nicht $random\_num \mod small\_prime = 0$ gelten, da ansonsten ein Zugriff auf die Cache-Line $sieve[0-63]$ messbar wäre. 
 Es wird nun zwischen verschiedenen Werten für die Variable offset (siehe Zeile 6 und 8 in mpp_sieve) unterschieden.
 
-1. Fall: Sei $offset \in [128\twodots254]$ und gerade, also $offset \mod 2 = 0$. 
+1. Fall: Sei $offset \in [128\twodot$S1_2$54]$ und gerade, also $offset \mod 2 = 0$. 
 
-Dann ist $rem = small\_prime - offset$ und durch die Kenntnis von $small\_prime$ und $offset \in [128\twodots254]$ gerade kann $rem$ auf 64 mögliche Werte eingegrenzt werden.
+Dann ist $rem = small\_prime - offset$ und durch die Kenntnis von $small\_prime$ und $offset \in [128\twodot$S1_2$54]$ gerade kann $rem$ auf 64 mögliche Werte eingegrenzt werden.
 
-2. Fall: Sei $offset$ ungerade, also $offset \mod 2 = 1$ und $offset_ex = offset + small\_prime \in [128\twodots254]$ und $offset_ex \mod 2 = 0$. Da $i=offset$ und $offset$ ungerade erfolgt in der ersten Iteration der For-Schleife kein Zugriff auf das $sieve$-Array. Wenn der Zugriff also in der zweiten Iteration erfolgt, ist $i = offset + small\_prime = offset\_ex$.
+2. Fall: Sei $offset$ ungerade, also $offset \mod 2 = 1$ und $offset_ex = offset + small\_prime \in [128\twodot$S1_2$54]$ und $offset_ex \mod 2 = 0$. Da $i=offset$ und $offset$ ungerade erfolgt in der ersten Iteration der For-Schleife kein Zugriff auf das $sieve$-Array. Wenn der Zugriff also in der zweiten Iteration erfolgt, ist $i = offset + small\_prime = offset\_ex$.
 
-Da $offset = offset\_ex - small\_prime$ ist $rem = small\_prime - (offset\_ex - small\_prime) = 2 \cdot small\_prime - offset\_ex$ und durch die Kenntnis von $small\_prime$ und $offset\_ex \in [128\twodots254]$ gerade kann $rem$ auf 64 mögliche Werte eingegrenzt werden.
+Da $offset = offset\_ex - small\_prime$ ist $rem = small\_prime - (offset\_ex - small\_prime) = 2 \cdot small\_prime - offset\_ex$ und durch die Kenntnis von $small\_prime$ und $offset\_ex \in [128\twodot$S1_2$54]$ gerade kann $rem$ auf 64 mögliche Werte eingegrenzt werden.
 
 Es ist unbekannt, ob $rem$ gerade oder ungerade ist, weshalb $rem$ nicht weiter als auf 128 mögliche Werte eingegrenzt werden kann.
 
@@ -209,7 +209,7 @@ Mit dieser Beobachtung kann für $random\_num$ folgendes Gleichungssystem defini
     random\_num \mod \prod_i small\_prime_i &> 2^{bits}
 \end{align*}
 $A_i$ ist hier analog zu oben die Menge der möglichen Werte für $random\_num \mod small\_prime_i$, die durch die Leakage bekannt werden.
-Um den Lösungsraum dieses Gleichungssystems einzuschränken, wird die Tatsache genutzt, dass $2^{bits} < random\_num < 2^{bits+1}$.
+Um den Lösungsraum dieses Gleichungssystems einzuschränken, wird die Tat$S2_5$he genutzt, dass $2^{bits} < random\_num < 2^{bits+1}$.
 
 Angenommen jedes $a_i$ wäre eindeutig, das heißt $|A_i|=1$, dann existiert gemäß dem chinesischen Restsatz \ref{chinese_remainder} genau eine Lösung im Bereich von $0$ bis $\prod_i small\_prime_i$.
 Weiter sei $bitlen(small\_prime_i) > 10 \: \forall i$, dann würden $bitlen(random\_num)/10$ Gleichungen ausreichen, um $random\_num$ eindeutig zu bestimmen.
@@ -331,8 +331,8 @@ Die Differenz von $random\_num_k$ und $random\_num_{k+1}$ ist mit dem maximalen 
 Somit könnten aus den Beobachtungen Gleichungen folgender Form aufgestellt werden:
 
 \begin{align*}
-    (random\_num + b) \mod small\_prime_j \not\equiv 0 &\text{ mit } b \in [k\twodots6k] \text{ und } j < i\\
-    (random\_num + b) \mod small\_prime_i \equiv 0 &\text{ mit } b \in [k\twodots6k]
+    (random\_num + b) \mod small\_prime_j \not\equiv 0 &\text{ mit } b \in [k\twodot$S1_6$k] \text{ und } j < i\\
+    (random\_num + b) \mod small\_prime_i \equiv 0 &\text{ mit } b \in [k\twodot$S1_6$k]
 \end{align*}
 
 Es steht die Frage im Raum, wie viele Gleichungen für die vollständige Rekonstruktion einer Primzahl benötigt werden.
@@ -344,7 +344,7 @@ zeigt die zu erwartenden Werte für verschiedene Primzahlbitlängen.
 Angenommen $small\_prime_i$ hat im Mittel eine Bitlänge von $l$, dann liefert die zweite Gleichung $l$ Bit an Information über (random\_num + b).
 Allerdings erhöht sich durch $b$ die Anzahl der möglichen Lösungen mit jeder Gleichung um den Faktor 6.
 Analog zu den Betrachtungen im Abschnitt \ref{leakageMozillaNSS} kann jedoch die Zusatzinformation $2^{bits} < random\_num < 2^{bits+1}$ herangezogen werden, um den Lösungsraum einzuschränken.
-Somit gibt es bei $t$-Gleichungen $6^t$ mögliche Lösungen, welche sich auf das Intervall $[0 \twodots2^{l\cdot t}]$ verteilen, wobei nur Lösungen im Intervall $[2^{bits} \twodots 2^{bits+1}]$ valide sind.
+Somit gibt es bei $t$-Gleichungen $6^t$ mögliche Lösungen, welche sich auf das Intervall $[0 \twodot$S1_2$^{l\cdot t}]$ verteilen, wobei nur Lösungen im Intervall $[2^{bits} \twodots 2^{bits+1}]$ valide sind.
 Wenn $t > \lceil bits/10 \rceil$ gilt, dann ist $6^t/2^{l \cdot t} \cdot 2^{bits}$ eine Abschätzung, wie viele der möglichen Lösungen im Mittel im validen Intervall $[2^{bits} \twodots 2^{bits+1}]$ zu finden sind.
 
 Es bleibt zu klären, wie viele der Gleichungen des 2. Typs erwartet werden können, oder anders ausgedrückt, wie viele Zahlen im Mittel getestet werden müssen, bis eine davon die Primzahltests besteht. 
@@ -397,7 +397,7 @@ Zusammenfassend lassen sich Gleichungen wie im Abschnitt \ref{leakageMozillaNSS}
 %\section{Automatisierte Leakage-Suche}
 
 %TODO tool von jan und beispiel beschreiben
-%warum mit javascript nicht so einfach möglich
+%warum mit Javascript nicht so einfach möglich
 
 % da es auf Windows basiert, in dem Fall eine DLL
 %oder EXE-Datei, was vermutlich nicht so leicht geht. Genauer gesagt
@@ -545,12 +545,10 @@ Mittels des Coppersmith-Angriffs \cite{CoppersmithBound} benötigt die Angreifer
 Wie im vorherigen Abschnitt beschrieben, muss die Angreiferin die Werte $Z_i$ bestimmen.
 Hierzu bietet es sich an, die Codefragmente zu überwachen, welche die Shift- beziehungsweise Subtraktionsfunktionen ausführen.
 
-In Mozilla NSS wird die Shift-Operation durch die Funktion $s\_mp\_div\_2$ umgesetzt.
-Diese ist wiederum nur ein Wrapper und ruft intern die $s\_mp\_div\_2d$-Funktion mit dem Parameter 1 auf, welches dem Teilen durch 2^1 entspricht.
-Die $s\_mp\_div\_2d$-Funktion setzt die Division mittels der $s\_mp\_rshd$-Funktion (Rechtsshift) um. 
-Am Ende der $s\_mp\_div\_2d$-Funktion erfolgt ein Funktionsaufruf an $s\_mp\_clamp$, um die entstandenen führenden Nullen zu entfernen.
-Welche Adressen die Funktionen im Assemblercode haben, ist in Tabelle \ref{tbl:assOffsetShift} ersichtlich. 
-
+\label{fig:covert_channel}
+\begin{figure}[h]
+\centering
+\begin{scaletikzpicturetowidth}{\textwidth}
 \begin{tikzpicture}[level distance=1.5cm,
   level 1/.style={sibling distance=2cm},
   level 2/.style={sibling distance=1.5cm},
@@ -569,9 +567,15 @@ Welche Adressen die Funktionen im Assemblercode haben, ist in Tabelle \ref{tbl:a
       }
     };
 \end{tikzpicture}
+\end{scaletikzpicturetowidth}
+\caption{Zeigt die Funktionen welche beim Ausführen der Shift- und Subtraktions-Operation in Mozilla NSS aufgerufen werden.}
+\end{figure}
 
-
-
+In Mozilla NSS wird die Shift-Operation durch die Funktion $s\_mp\_div\_2$ umgesetzt.
+Diese ist wiederum nur ein Wrapper und ruft intern die $s\_mp\_div\_2d$-Funktion mit dem Parameter 1 auf, welches dem Teilen durch 2^1 entspricht.
+Die $s\_mp\_div\_2d$-Funktion setzt die Division mittels der $s\_mp\_rshd$-Funktion (Rechtsshift) um. 
+Am Ende der $s\_mp\_div\_2d$-Funktion erfolgt ein Funktionsaufruf an $s\_mp\_clamp$, um die entstandenen führenden Nullen zu entfernen.
+Welche Adressen die Funktionen im Assemblercode haben, ist in Tabelle \ref{tbl:assOffsetShift} ersichtlich. 
 
 \begin{table}[h]
 \caption{Größe, Start- und Endadresse der für die Shift-Operation relevanten Funktionen (fett hervorgehoben) sowie deren direkten Nachbarn im Assemblercode.}
@@ -675,7 +679,7 @@ Selbst für eine Schlüssellänge von 8192 Bit ist dieser Wert noch zu hoch.
 \label{PerformanceDegSingleThread}
 
 Auch in anderen Fällen ist die Geschwindigkeit der überwachten Funktion zu schnell, um mittels der Prime-and-Probe-Funktion überwacht zu werden.
-Hierfür gibt es mehrere Vorschläge, die Funktion künstlich auszubremsen, welche in der Literatur \cite{MemoryLockingWu,MemoryLockingRisenpart,MemoryLockingJavaAndroid} unter dem Begriff "performance degradation attacks" beschrieben werden.
+Hierfür gibt es mehrere Vorschläge, die Funktion künstlich auszubremsen, welche in der Literatur \cite{MemoryLockingWu,MemoryLockingRisenpart,MemoryLockingJavaAndroid} unter dem Begriff performance-degradation-attacks beschrieben werden.
 Ein trivialer Angriff ist etwa die Überwachung selber, da diese mit der Prime-Phase ein Cache-Set komplett füllt, sodass Daten des angegriffenes Programms verdrängt und so aus dem langsamen Hauptspeicher geladen werden müssen.
 Der Effekt ist auch in umgekehrter Richtung, also von dem Opferprogramm auf das Angriffsprogramm vorhanden.
 Die Differenz der Prime-and-Probe-Dauer bei keiner gegenüber viel Aktivität auf dem Cache-Set veranschaulicht dies.
@@ -700,23 +704,23 @@ Funktionen sind nicht auf Cache-Line-Grenzen aligned
 , weshalb die erste und letzte Cache-Line eines Funktionscodes auch Code für andere Funktionen beinhaltet.
 
 \begin{table}[h]
-\caption{RSA-2048 Performance-Degradation-Attack mittels Prime-Spam auf Cache-Lines, welche Code der Shift-Operation beinhalten. 1. Spalte: ID für die Cache-Line für übersichtlichere Bezeichnung, 2. Spalte: Adressbereich der durch den Angriff verdrängten Cache-Line, 3. Spalte: Funktionen deren Code innerhalb des Adressbereichs der Cache-Line liegt, Spalte "Shift", "Sub" und "$mp\_gcd"$: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen bei einem aktiven Angriff auf die in Spalte 2 spezifizierte Cache-Line. Die erste Zeile gibt die Referenzzeiten ohne aktiven Angriff an. Die horizontalen Linien innerhalb der Tabelle zeigen Sprünge zwischen Adressen der Cache-Lines an.}
+\caption{RSA-2048 performance-degradation-attack mittels Prime-Spam auf Cache-Lines, welche Code der Shift-Operation beinhalten. 1. Spalte: ID für die Cache-Line für übersichtlichere Bezeichnung, 2. Spalte: Adressbereich der durch den Angriff verdrängten Cache-Line, 3. Spalte: Funktionen deren Code innerhalb des Adressbereichs der Cache-Line liegt, Spalte „Shift“, „Sub“ und „$mp\_gcd$“: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen bei einem aktiven Angriff auf die in Spalte 2 spezifizierte Cache-Line. Die erste Zeile gibt die Referenzzeiten ohne aktiven Angriff an. Die horizontalen Linien innerhalb der Tabelle zeigen Sprünge zwischen Adressen der Cache-Lines an.}
 \label{tbl:PerformanceDegShift}
 \begin{tabular}{cclccc}
 ID & Cache-Line  & Funktion(en) innerhalb der Cache-Line                                  & Shift & Sub & mp\_gcd \\[10pt]
 \multicolumn{3}{c}{Referenzzeiten ohne Prime-Spam}                      & 340   & 477         & 424k    \\
-V1 & b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 541   & 608         & 549k    \\
-V2 & b840$_{16}$ - b87f$_{16}$ & $s\_mp\_clamp, s\_mp\_exch$                 & 538   & 605         & 553k    \\ \hline
-V3 & bb40$_{16}$ - bb7f$_{16}$ & $s\_mp\_mul\_2d, s\_mp\_rshd$               & 450   & 514         & 479k    \\
-V4 & bb80$_{16}$ - bbbf$_{16}$ & $s\_mp\_rshd$                               & 451   & 542         & 486k    \\
-V5 & bbc0$_{16}$ - bbff$_{16}$ & $s\_mp\_rshd$                               & 486   & 563         & 581k    \\
-V6 & bc00$_{16}$ - bc3f$_{16}$ & $s\_mp\_rshd$                               & 520   & 563         & 597k    \\
-V7 & bc40$_{16}$ - bc7f$_{16}$ & $s\_mp\_rshd, s\_mp\_div\_2, s\_mp\_mul\_2$ & 480   & 503         & 474k    \\ \hline
-V8 & be00$_{16}$ - be3f$_{16}$ & $s\_mp\_mod\_2d, s\_mp\_div\_2d$            & 511   & 560         & 544k    \\
-V9 & be40$_{16}$ - be7f$_{16}$ & $s\_mp\_div\_2d$                            & 503   & 549         & 536k    \\
-V10 & be80$_{16}$ - bebf$_{16}$ & $s\_mp\_div\_2d$                            & 539   & 557         & 551k    \\
-V11 & bec0$_{16}$ - beff$_{16}$ & $s\_mp\_div\_2d$                            & 537   & 547         & 552k    \\
-V12 & bf00$_{16}$ - bf3f$_{16}$ & $s\_mp\_div\_2d, s\_mp\_norm$               & 470   & 506         & 485k   
+$V1_1$ & b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 541   & 608         & 549k    \\
+$V1_2$ & b840$_{16}$ - b87f$_{16}$ & $s\_mp\_clamp, s\_mp\_exch$                 & 538   & 605         & 553k    \\ \hline
+$V2_1$ & bb40$_{16}$ - bb7f$_{16}$ & $s\_mp\_mul\_2d, s\_mp\_rshd$               & 450   & 514         & 479k    \\
+$V2_2$ & bb80$_{16}$ - bbbf$_{16}$ & $s\_mp\_rshd$                               & 451   & 542         & 486k    \\
+$V2_3$ & bbc0$_{16}$ - bbff$_{16}$ & $s\_mp\_rshd$                               & 486   & 563         & 581k    \\
+$V2_4$ & bc00$_{16}$ - bc3f$_{16}$ & $s\_mp\_rshd$                               & 520   & 563         & 597k    \\
+$V2_5 3_1$ & bc40$_{16}$ - bc7f$_{16}$ & $s\_mp\_rshd, s\_mp\_div\_2, s\_mp\_mul\_2$ & 480   & 503         & 474k    \\ \hline
+$V4_1$ & be00$_{16}$ - be3f$_{16}$ & $s\_mp\_mod\_2d, s\_mp\_div\_2d$            & 511   & 560         & 544k    \\
+$V4_2$ & be40$_{16}$ - be7f$_{16}$ & $s\_mp\_div\_2d$                            & 503   & 549         & 536k    \\
+$V4_3$ & be80$_{16}$ - bebf$_{16}$ & $s\_mp\_div\_2d$                            & 539   & 557         & 551k    \\
+$V4_4$ & bec0$_{16}$ - beff$_{16}$ & $s\_mp\_div\_2d$                            & 537   & 547         & 552k    \\
+$V4_5$ & bf00$_{16}$ - bf3f$_{16}$ & $s\_mp\_div\_2d, s\_mp\_norm$               & 470   & 506         & 485k   
 \end{tabular}
 \end{table}
 
@@ -727,56 +731,56 @@ Tabelle \ref{tbl:PerformanceDegSub} betrachtet alle Cache-Lines, welche Code fü
 Anders als bei der Shift-Operation bremsen bei der Subtraktions-Operation die Cache-Lines der $mp\_sub$ signifikant besser als die Cache-Lines der $s\_mp\_clamp$-Funktion.
 
 \begin{table}[h]
-\caption{RSA-2048 Performance-Degradation-Attack mittels Prime-Spam auf Cache-Lines, welche Code der Subtraktions-Operation beinhalten.
+\caption{RSA-2048 performance-degradation-attack mittels Prime-Spam auf Cache-Lines, welche Code der Subtraktions-Operation beinhalten.
 Spalteninhalte analog zu Tabelle \ref{tbl:PerformanceDegShift}}
 \label{tbl:PerformanceDegSub}
 \begin{tabular}{cclccc}
 ID &Cache-Line & Funktion                     & Shift & Sub & mp\_gcd \\[10pt]
 \multicolumn{3}{c}{Referenzzeiten ohne Prime-Spam}        & 340   & 477         & 424k    \\
-S1 & 8440$_{16}$-847f$_{16}$  & $mp\_add, mp\_sub$             & 357   & 643         & 487k    \\
-S2 & 8480$_{16}$-84bf$_{16}$  & $mp\_sub$                      & 359   & 684         & 538k    \\
-S3 & 84c0$_{16}$-84ff$_{16}$  & $mp\_sub$                      & 362   & 681         & 531k    \\
-S4 & 8500$_{16}$-853f$_{16}$  & $mp\_sub$                      & 357   & 700         & 538k    \\
-S5 & 8540$_{16}$-857f$_{16}$  & $mp\_sub$                      & 362   & 683         & 534k    \\
-S6 & 8580$_{16}$-85cf$_{16}$  & $mp\_sub$                      & 358   & 732         & 534k    \\
-S7 & 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 359   & 766         & 531k    \\ \hline
-S8 & ca40$_{16}$-ca7f$_{16}$  & $s\_mp\_sub, s\_mp\_sub\_3arg$ & 357   & 643         & 490k    \\
-S9 & ca80$_{16}$-cabf$_{16}$  & $s\_mp\_sub\_3arg$             & 359   & 644         & 494k    \\
-S10 & cac0$_{16}$-caff$_{16}$  & $s\_mp\_sub\_3arg$             & 357   & 675         & 534k    \\
-S11 & cb00$_{16}$-cb3f$_{16}$  & $s\_mp\_sub\_3arg$            & 358   & 669         & 536k    \\
-S12 & cb40$_{16}$-cb7f$_{16}$  & $s\_mp\_sub\_3arg$             & 357   & 663         & 533k    \\
-S13 & cb80$_{16}$-cbbf$_{16}$  & $s\_mp\_sub\_3arg$             & 359   & 676         & 546k    \\
-S14 & cbc0$_{16}$-cbff$_{16}$  & $s\_mp\_sub\_3arg$             & 356   & 663         & 535k    \\
-S15 & cc00$_{16}$-cc3f$_{16}$  & $s\_mp\_sub\_3arg, s\_mp\_mul$ & 352   & 571         & 483k   
+$S1_1$ & 8440$_{16}$-847f$_{16}$  & $mp\_add, mp\_sub$             & 357   & 643         & 487k    \\
+$S1_2$ & 8480$_{16}$-84bf$_{16}$  & $mp\_sub$                      & 359   & 684         & 538k    \\
+$S1_3$ & 84c0$_{16}$-84ff$_{16}$  & $mp\_sub$                      & 362   & 681         & 531k    \\
+$S1_4$ & 8500$_{16}$-853f$_{16}$  & $mp\_sub$                      & 357   & 700         & 538k    \\
+$S1_5$ & 8540$_{16}$-857f$_{16}$  & $mp\_sub$                      & 362   & 683         & 534k    \\
+$S1_6$ & 8580$_{16}$-85cf$_{16}$  & $mp\_sub$                      & 358   & 732         & 534k    \\
+$S1_7$ & 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 359   & 766         & 531k    \\ \hline
+$S2_1$ & ca40$_{16}$-ca7f$_{16}$  & $s\_mp\_sub, s\_mp\_sub\_3arg$ & 357   & 643         & 490k    \\
+$S2_2$ & ca80$_{16}$-cabf$_{16}$  & $s\_mp\_sub\_3arg$             & 359   & 644         & 494k    \\
+$S2_3$ & cac0$_{16}$-caff$_{16}$  & $s\_mp\_sub\_3arg$             & 357   & 675         & 534k    \\
+$S2_4$ & cb00$_{16}$-cb3f$_{16}$  & $s\_mp\_sub\_3arg$            & 358   & 669         & 536k    \\
+$S2_5$ & cb40$_{16}$-cb7f$_{16}$  & $s\_mp\_sub\_3arg$             & 357   & 663         & 533k    \\
+$S2_6$ & cb80$_{16}$-cbbf$_{16}$  & $s\_mp\_sub\_3arg$             & 359   & 676         & 546k    \\
+$S2_7$ & cbc0$_{16}$-cbff$_{16}$  & $s\_mp\_sub\_3arg$             & 356   & 663         & 535k    \\
+$S2_8$ & cc00$_{16}$-cc3f$_{16}$  & $s\_mp\_sub\_3arg, s\_mp\_mul$ & 352   & 571         & 483k   
 \end{tabular}
 \end{table}
 
 
-Zusammenfassend kann die Shift- beziehungsweise Subtraktionsoperation durch einen Angriff maximal von 340 auf 541 (V1) Taktzyklen beziehungsweise von 477 auf 766 (S7) gebremst werden, welches einer Erhöhung der Ausführungszeit von \~59\% respektive \~61\% entspricht.
-Tabelle \ref{tbl:PerformanceDegRSADifferentBitlength} zeigt, dass bei RSA-4096 und RSA-8192 prozentual und sogar bei den absoluten Werten schwächere Effekte zu beobachten sind.
+Zusammenfassend kann die Shift- beziehungsweise Subtraktionsoperation durch einen Angriff maximal von 340 auf 541 ($V1_1$) Taktzyklen beziehungsweise von 477 auf 766 ($S1_7$) gebremst werden, welches einer Erhöhung der Ausführungszeit von \~59\% respektive \~61\% entspricht.
+Tabelle \ref{tbl:PerformanceDegR$S2_6$ifferentBitlength} zeigt, dass bei RSA-4096 und RSA-8192 prozentual und sogar bei den absoluten Werten schwächere Effekte zu beobachten sind.
 Beim Vergleich wurden ausschließlich die Cache-Lines für die Shift- beziehungsweise Subtraktionsoperation getestet, welche den stärksten Bremseffekt bei RSA-2048 aufwiesen.
-So wird die Shift-Operation unter RSA-4096 von 543 auf 700 (V1) Taktzyklen und unter RSA-8192 von 982 auf 1125 (S7) Taktzyklen gebremst, welches die Ausführungszeit um \~29\% beziehungsweise \~15\% erhöht.
+So wird die Shift-Operation unter RSA-4096 von 543 auf 700 ($V1_1$) Taktzyklen und unter RSA-8192 von 982 auf 1125 ($S1_7$) Taktzyklen gebremst, welches die Ausführungszeit um \~29\% beziehungsweise \~15\% erhöht.
 
 \begin{table}[h]
-\caption{Performance-Degradation-Attack mittels Prime-Spam mit verschiedene RSA-Bitlängen.
+\caption{Performance-degradation-attack mittels Prime-Spam mit verschiedene RSA-Bitlängen.
 Als Cache-Lines wurden diejenigen verwendet, welche sich am effektivsten in RSA-2048 erwiesen haben.
 Spalteninhalte analog zu Tabelle \ref{tbl:PerformanceDegShift}}
-\label{tbl:PerformanceDegRSADifferentBitlength}
+\label{tbl:PerformanceDegR$S2_6$ifferentBitlength}
 \begin{tabular}{ccclccc}
 RSA-Bitlänge & ID & Cache-Line & Funktion & Shift & Subt & mp\_gcd \\[10pt]
 2048         &\multicolumn{3}{c}{Referenzzeiten ohne Prime-Spam}                                         & 340   & 477         & 424k    \\
-2048         & V1& b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 541   & 608         & 549k    \\
-2048         & S7& 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 359   & 766         & 531k    \\
+2048         & $V1_1$& b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 541   & 608         & 549k    \\
+2048         & $S1_7$& 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 359   & 766         & 531k    \\
 4096         & \multicolumn{3}{c}{Referenzzeiten ohne Prime-Spam}                                         & 543   & 723         & 1,19M    \\
-4096         & V1& b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 700   & 770         & 1,64M    \\
-4096         & S7& 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 609   & 1057         & 1,51M    \\
+4096         & $V1_1$& b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 700   & 770         & 1,64M    \\
+4096         & $S1_7$& 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 609   & 1057         & 1,51M    \\
 8192         & \multicolumn{3}{c}{Referenzzeiten ohne Prime-Spam}                                         & 982   & 1223         & 3,71M    \\
-8192         & V1& b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 1125   & 1553         & 4,83M    \\
-8192         & S7& 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 1046   & 1679         & 4,64M    \\
+8192         & $V1_1$& b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 1125   & 1553         & 4,83M    \\
+8192         & $S1_7$& 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 1046   & 1679         & 4,64M    \\
 \end{tabular}
 \end{table}
 
-Die beiden Cache-Lines V1 und V2 der $s\_mp\_clamp$-Funktion sind dabei zu bevorzugen, da sie beide Operationen gleichzeitig gut bis sehr gut bremsen.
+Die beiden Cache-Lines $V1_1$ und $V1_2$ der $s\_mp\_clamp$-Funktion sind dabei zu bevorzugen, da sie beide Operationen gleichzeitig gut bis sehr gut bremsen.
 Des Weiteren sollte der Fokus auf das Bremsen der Shiftoperation gelegt werden, da diese zum einen schneller und die Unterscheidung einzelner Shiftoperationen für die Rekonstruktion der Primzahl wesentlich ist.
 Zum anderen Bremsen viele der Cache-Lines mit Shift-Operationscode auch die Subtraktionsfunktion messbar, wobei dieses Phänomen andersherum nicht beobachtet werden kann. 
 %TODO warum??
@@ -785,31 +789,31 @@ In den obigen Tabellen wurde jeweils nur eine Cache-Line gebremst.
 Tabelle \ref{tbl:PerformanceDegMultiple} zeigt, lässt sich der Bremseffekt verbessern, wenn statt einer mehrere Cache-Lines gebremst werden.
 
 \begin{table}[h]
-\caption{RSA-2048 Performance-Degradation-Attack mittels Prime-Spam auf meherere Cache-Lines. Für die Auflösung der Cache-Line Ids siehe Tabelle \ref{tbl:PerformanceDegShift}. Die 2. Spalte gibt der Übersicht halber nur die Funktionen innerhalb der Cache-Lines (1. Spalte) an, welche bei der Berechnung der Shift-Operation relevant sind. So wird etwa die Funktion $s\_mp\_free$ in der ersten Zeile nicht aufgeführt, obwohl die Cache-Line V1 Teile des Codes von $s\_mp\_free$ enthält.}
+\caption{RSA-2048 Performance-Degradation-Attack mittels Prime-Spam auf mehrere Cache-Lines. Für die Auflösung der Cache-Line Ids siehe Tabelle \ref{tbl:PerformanceDegShift}. Die 2. Spalte gibt der Übersicht halber nur die Funktionen innerhalb der Cache-Lines (1. Spalte) an, welche bei der Berechnung der Shift-Operation relevant sind. So wird etwa die Funktion $s\_mp\_free$ in der ersten Zeile nicht aufgeführt, obwohl die Cache-Line $V1_1$ Teile des Codes von $s\_mp\_free$ enthält. Aus Platzgründen wurde die Funktionsnamen gekürzt, wobei für den vollen Funktionsnamen $*$ mit $s_mp_$  zu substituieren ist.}
 \label{tbl:PerformanceDegMultiple}
 \begin{tabular}{llccc}
-Cache-Line IDs   & \multicolumn{1}{l}{Relevante Funktion(en) innerhalb der Cache-Line} & Shift & Sub & mp\_gcd \\
-V1,V2            & $s\_mp\_clamp$                                                        & 542   & 557 & 528k    \\
-V10,V11          & $s\_mp\_div\_2d$                                                      & 533   & 533 & 572k    \\
-V6,V7            & $s\_mp\_rshd,s\_mp\_div\_2$                                           & 526   & 563 & 551k    \\
-V1,V6            & $s\_mp\_clamp,s\_mp\_rshd$                                            & 643   & 549 & 548k    \\
-V1,V2,V6         & $s\_mp\_clamp,s\_mp\_rshd$                                            & 677   & 535 & 573k    \\
-V2,V6,V10        & $s\_mp\_clamp,s\_mp\_rshd,s\_mp\_div\_2d$                             & 601   & 565 & 541k    \\
-V1,V6,V10        & $s\_mp\_clamp,s\_mp\_rshd,s\_mp\_div\_2d$                             & 623   & 560 & 544k    \\
-V1,V2,V6,V10     & $s\_mp\_clamp,s\_mp\_rshd,s\_mp\_div\_2d$                             & 649   & 557 & 551k    \\
-V1,V2,V6,V10,V11 & $s\_mp\_clamp,s\_mp\_rshd,s\_mp\_div\_2d$                             & 669   & 563 & 563k    \\
-V1,V2,V6,V8-V11  & $s\_mp\_clamp,s\_mp\_rshd,s\_mp\_div\_2d$                             & 665   & 575 & 574k    \\
-V1,V2,V6-V11     & $s\_mp\_clamp,s\_mp\_rshd,s\_mp\_div\_2,s\_mp\_div\_2d$               & 622   & 574 & 562k    \\
-V1-V12           & $s\_mp\_clamp,s\_mp\_rshd,s\_mp\_div\_2,s\_mp\_div\_2d$               & 622   & 574 & 562k 
+Cache-Line IDs   & \begin{tabular}[c]{@{}l@{}}Relevante Funktion(en) \\ innerhalb der Cache-Line\end{tabular} & Shift & Sub & mp\_gcd \\
+$V1_1$,$V1_2$            & $*clamp$                                                        & 542   & 557 & 528k    \\
+$V4_3$,$V4_4$          & $*div\_2d$                                                      & 533   & 533 & 572k    \\
+$V2_4$,$V2_5 3_1$            & $*rshd,*div\_2$                                           & 526   & 563 & 551k    \\
+$V1_1$,$V2_4$            & $*clamp,*rshd$                                            & 643   & 549 & 548k    \\
+$V1_1$,$V1_2$,$V2_4$         & $*clamp,*rshd$                                            & 677   & 535 & 573k    \\
+$V1_2$,$V2_4$,$V4_3$        & $*clamp,*rshd,*div\_2d$                             & 601   & 565 & 541k    \\
+$V1_1$,$V2_4$,$V4_3$        & $*clamp,*rshd,*div\_2d$                             & 623   & 560 & 544k    \\
+$V1_1$,$V1_2$,$V2_4$,$V4_3$     & $*clamp,*rshd,*div\_2d$                             & 649   & 557 & 551k    \\
+$V1_1$,$V1_2$,$V2_4$,$V4_3$,$V4_4$ & $*clamp,*rshd,*div\_2d$                             & 669   & 563 & 563k    \\
+$V1_1$,$V1_2$,$V2_4$,$V4_1$-$V4_4$  & $*clamp,*rshd,*div\_2d$                             & 665   & 575 & 574k    \\
+$V1_1$,$V1_2$,$V2_4$-$V4_4$     & $*clamp,*rshd,*div\_2,*div\_2d$               & 622   & 574 & 562k    \\
+$V1_1$-$V4_5$           & $*clamp,*rshd,*div\_2,*div\_2d$               & 622   & 574 & 562k 
 \end{tabular}
 \end{table}
 
 Da nur ein Thread die Bremsung ausführt, werden die Cache-Lines nacheinander mittels Prime-Spam gebremst, sodass jede Cache-Line die gleichen Anteile an der Berechnungszeit des Bremsthreads erhält.
 Auffällig ist, dass die Cache-Lines möglichst nicht die gleiche Funktionen abdecken sollten.
-Beispielsweise bringt das Bremsen von V1 und V2 gegenüber dem alleinigen Bremsen von V1 oder V2 keinerlei Vorteile.
+Beispielsweise bringt das Bremsen von $V1_1$ und $V1_2$ gegenüber dem alleinigen Bremsen von $V1_1$ oder $V1_2$ keinerlei Vorteile.
 
 Echte Vorteile im Vergleich zum Bremsen einer Cache-Line ergeben sich sobald die Cache-Lines verschiedene Funktionen abdecken.
-So decken V1,V2,V6 drei verschiedene Funktionen ab die im Laufe der Shift-Operation benötigt werden und erzielen damit eine um 25\% beziehungsweise 136 Taktzyklen erhöhte Ausführungszeit gegenüber des besten Ergebnisses mit nur einer Cache-Line.
+So decken $V1_1$,$V1_2$,$V2_4$ drei verschiedene Funktionen ab die im Laufe der Shift-Operation benötigt werden und erzielen damit eine um 25\% beziehungsweise 136 Taktzyklen erhöhte Ausführungszeit gegenüber des besten Ergebnisses mit nur einer Cache-Line.
 Insgesamt kann als die mittlere Zeit für eine Shift-Operation um 99\% von 340 auf 677 Taktzyklen erhöht werden.
 
 Trotz der Effekte der Bremsung ist die Ausführungsgeschwindigkeit der Shift- beziehungsweise Subtraktionsoperation in allen Fällen zu hoch, da eine Prime-and-Probe-Operation \~1700 Taktzyklen benötigt.
@@ -827,14 +831,14 @@ Ab wann ein Angriff möglich wäre, wird in Abschnitt \ref{Howfast} analysiert.
 
 
 %multithread
-%2*V1,V2,V6 =730,532,610k (kein toller effekt)
-%V1,V2,V6 und V7,V10 = 795,559,602k
-%V1,V6,V10 und V2,V5,V11 = 563,561,530k
-%V1 und V10 : 970,798, 856
-%V1 und V6,V10: 880,673,716k
-%V1 und V1: 623, 722, 665 (gleich cache-line bremsen sinnlos)
-%V1,V6 und V1,V10: 764,574,600k
-%V1,V6 und V2,V10: 745,584,590k
+%2*$V1_1$,$V1_2$,$V2_4$ =730,532,610k (kein toller effekt)
+%$V1_1$,$V1_2$,$V2_4$ und $V2_5 3_1$,$V4_3$ = 795,559,602k
+%$V1_1$,$V2_4$,$V4_3$ und $V1_2$,$V2_3$,$V4_4$ = 563,561,530k
+%$V1_1$ und $V4_3$ : 970,798, 856
+%$V1_1$ und $V2_4$,$V4_3$: 880,673,716k
+%$V1_1$ und $V1_1$: 623, 722, 665 (gleich cache-line bremsen sinnlos)
+%$V1_1$,$V2_4$ und $V1_1$,$V4_3$: 764,574,600k
+%$V1_1$,$V2_4$ und $V1_2$,$V4_3$: 745,584,590k
 %einzelene bei multi-thread am besten siehe ergebnisse
 
 
@@ -847,7 +851,7 @@ Ab wann ein Angriff möglich wäre, wird in Abschnitt \ref{Howfast} analysiert.
 %5:  59: 's_mp_div_2d_3', //537,547,552k 536,551,557k
 
 %TODO slowdown Techniken und benchmarks auf verschiedene codeteile beschreiben\\
-%TODO wie schnell ist javascript, eventuell in Kapitel 2 näher beschreiben
+%TODO wie schnell ist javacript, eventuell in Kapitel 2 näher beschreiben
 
 
 %TODO beschreiben warum der angriff so nicht in wasm/js möglich ist, warum er in c möglich ist, clflush vs prime spam usw.

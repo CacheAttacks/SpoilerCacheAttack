@@ -343,6 +343,11 @@ Das gefundene Eviction-Set wird gespeichert und der Vorgang solange wiederholt, 
 }
 \end{algorithm}
 
+%\subsection{Umgang mit der adaptiven Eviction-Policy}
+
+%Bei Testen des Eviction-Set-Algorithmus fiel auf, dass es Zeiträume gab in der die Contract-Phase das Eviction-Set trotz mehrerer Durchläufe kaum verkleinern konnte. Im Extremfällen konnte es über eine Minute dauern bis wieder ein Eviction-Set gefunden wurde.
+
+
 \subsection{Optimierung der Phasen}
 
 Ein Eviction-Set muss mindestens die Größe der Cache-Assoziativität besitzen, weshalb es naheliegend ist, in der Expand-Phase nicht mit einem leeren Candidate-Set sondern mit einem der Größe der Assoziativität zu starten und so in jeder Expand-Phase Überprüfungen in der Größenordnung Assoziativität minus 1 einzusparen.
@@ -517,7 +522,7 @@ Mit den in der Grafik verwendeten Parametern ergibt sich eine ungefähre Netto-D
 \begin{scaletikzpicturetowidth}{\textwidth}
 \input{methods/covert_channel_example.tex}
 \end{scaletikzpicturetowidth}
-\caption{Verdeckter Kanal mit einem Javascript/Webassembly-Empfänger und einem C-Programm als Sender. Dargestellt ist das zweimalige Empfangen des Bitstrings "0010001110" im Bereich von 38 bis 147 und von 165 bis 282. Der obere Plot spiegelt die Zeitmessung mittels Prime-and-Probe wieder, wobei die graue durchgezogene Linie $2 \cdot Median(y)$ ist. Zugriffswerte oberhalb der Linie werden als 1 und unterhalb als 0 interpretiert. Der untere Plot zeigt dies daraus erkannte Muster. Größe Blöcke von Einsen wie etwa im Bereich 21 bis 37 dienen der Synchronisation zwischen Sender und Empfänger. Die Nullen im Bitstring werden über den Abstand zwischen Einsen beziehungsweise dem Synchronisationsblock ermittelt.}
+\caption{Verdeckter Kanal mit einem Javascript/Webassembly-Empfänger und einem C-Programm als Sender. Dargestellt ist das zweimalige Empfangen des Bitstrings „0010001110“ im Bereich von 38 bis 147 und von 165 bis 282. Der obere Plot spiegelt die Zeitmessung mittels Prime-and-Probe wieder, wobei die graue durchgezogene Linie $2 \cdot Median(y)$ ist. Zugriffswerte oberhalb der Linie werden als 1 und unterhalb als 0 interpretiert. Der untere Plot zeigt dies daraus erkannte Muster. Größe Blöcke von Einsen wie etwa im Bereich 21 bis 37 dienen der Synchronisation zwischen Sender und Empfänger. Die Nullen im Bitstring werden über den Abstand zwischen Einsen beziehungsweise dem Synchronisationsblock ermittelt.}
 \end{figure}
 \captionsetup[figure]{skip=10pt}
 

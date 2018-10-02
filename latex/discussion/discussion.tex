@@ -57,7 +57,7 @@ Um den Effekt, der allein durch die Last der zusätzlichen Threads entsteht, ein
 Tabelle \ref{tbl:PrimeSpamMultithreadRef} zeigt, dass ab 4 Bremsthreads ein signifikanter Performancerückgang messbar ist, welcher bei den folgenden Ergebnissen mit einberechnet werden muss.
 
 \begin{table}[h]
-\caption{Zeigt die Ausführungsgeschwindigkeit bei unterschiedlichen Anzahlen an Bremsthreads, welche nicht die Shift- oder Subtraktions-Funktion bremsen. Spalte "Shift", "Sub" und "$mp\_gcd"$: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen.}
+\caption{Zeigt die Ausführungsgeschwindigkeit bei unterschiedlichen Anzahlen an Bremsthreads, welche nicht die Shift- oder Subtraktions-Funktion bremsen. Spalte „Shift“, „Sub“ und „$mp\_gcd$“: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen.}
 \label{tbl:PrimeSpamMultithreadRef}
 \begin{tabular}{cccc}
 Anzahl der Bremsthreads & Shift & Sub & mp\_gcd \\
@@ -77,24 +77,24 @@ Weiterhin werden nur ausgewählte Ergebnisse gezeigt, die die mit dem besten gem
 Tabelle \ref{tbl:PerformanceDegShiftMultithreadTwo} zeigt die Ergenisse mit zwei Prime-Spam-Threads.
 
 \begin{table}[h]
-\caption{Zeigt das Bremsverhalten mit zwei Prime-Spam-Threads. Die \% in der 1. Spalte trennen die Threads, so werden etwa zwei Threads, bei denen der 1. Thread die Cache-Lines V1 sowie V6 und der 2.Thread die Cache-Lines V1 sowie V10 bremsen als V1,V6 \& V1,V10 beschrieben. Spalte "Shift", "Sub" und "$mp\_gcd"$: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen. Für eine Beschreibung der Cache-Line IDs siehe Tabelle \ref{tbl:PerformanceDegShift}}
+\caption{Zeigt das Bremsverhalten mit zwei Prime-Spam-Threads. Die \% in der 1. Spalte trennen die Threads, so werden etwa zwei Threads, bei denen der 1. Thread die Cache-Lines $V1_1$ sowie $V2_4$ und der 2.Thread die Cache-Lines $V1_1$ sowie $V4_3$ bremsen als $V1_1$,$V2_4$ \& $V1_1$,$V4_3$ beschrieben. Spalte „Shift“, „Sub“ und „$mp\_gcd$“: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen. Für eine Beschreibung der Cache-Line IDs siehe Tabelle \ref{tbl:PerformanceDegShift}}
 \label{tbl:PerformanceDegShiftMultithreadTwo}
 \begin{tabular}{lccc}
 Aufteilung der Cache-Lines auf die Threads & Shift & Sub & mp\_gcd \\
-V1,V2,V6 \& V1,V2,V6                       & 730   & 532 & 610k    \\
-V1,V2,V6 \& V7,V10                         & 795   & 559 & 602k    \\
-V1,V6,V10 \& V2,V5,V11                     & 563   & 561 & 530k    \\
-V1 \& V6,V10                               & 880   & 673 & 716k    \\
-V1 \& V1                                   & 623   & 722 & 665k    \\
-V1,V6 \& V1,V10                            & 764   & 574 & 600k    \\
-V1,V6 \& V2,V10                            & 745   & 584 & 590k    \\
-V1 \& V2                                   & 569   & 496 & 611k    \\
-V10 \& V11                                 & 529   & 519 & 630k    \\
-V1 \& V10                                  & 942   & 510 & 797k    \\
-V2 \& V10                                  & 928   & 548 & 788k    \\
-V1 \& V11                                  & 672   & 521 & 731k    \\
-V1 \& V6                                   & 959   & 619 & 807k    \\
-V1 \& V7                                   & 752   & 533 & 667k    \\
+$V1_1$,$V1_2$,$V2_4$ \& $V1_1$,$V1_2$,$V2_4$                       & 730   & 532 & 610k    \\
+$V1_1$,$V1_2$,$V2_4$ \& $V2_5 3_1$,$V4_3$                         & 795   & 559 & 602k    \\
+$V1_1$,$V2_4$,$V4_3$ \& $V1_2$,$V2_3$,$V4_4$                     & 563   & 561 & 530k    \\
+$V1_1$ \& $V2_4$,$V4_3$                               & 880   & 673 & 716k    \\
+$V1_1$ \& $V1_1$                                   & 623   & 722 & 665k    \\
+$V1_1$,$V2_4$ \& $V1_1$,$V4_3$                            & 764   & 574 & 600k    \\
+$V1_1$,$V2_4$ \& $V1_2$,$V4_3$                            & 745   & 584 & 590k    \\
+$V1_1$ \& $V1_2$                                   & 569   & 496 & 611k    \\
+$V4_3$ \& $V4_4$                                 & 529   & 519 & 630k    \\
+$V1_1$ \& $V4_3$                                  & 942   & 510 & 797k    \\
+$V1_2$ \& $V4_3$                                  & 928   & 548 & 788k    \\
+$V1_1$ \& $V4_4$                                  & 672   & 521 & 731k    \\
+$V1_1$ \& $V2_4$                                   & 959   & 619 & 807k    \\
+$V1_1$ \& $V2_5 3_1$                                   & 752   & 533 & 667k    \\
 \end{tabular}
 \end{table}
 
@@ -107,12 +107,12 @@ Tabelle \ref{tbl:PerformanceDegShiftMultithreadTwo} zeigt die Ergenisse mit mehr
 \caption{Zeigt das Bremsverhalten mit mehr als (hier fehlt eine Zahl!) Prime-Spam-Threads. Beschreibung analog zu Tabelle \ref{tbl:PerformanceDegShiftMultithreadTwo}. Zu beachten ist hier, dass die hohe Anzahl der Threads an sich zu der Verlangsamung der Ausführung beiträgt (siehe Tabelle \ref{tbl:PrimeSpamMultithreadRef}).}
 \label{tbl:PerformanceDegShiftMultithreadThreePlus}
 \begin{tabular}{lccc}
-V1 \& V6 \& V8                             & 1017  & 652 & 903k    \\
-V1 \& V6 \& V10                            & 900   & 618 & 927k    \\
-V1 \& V2 \& V6                             & 717   & 553 & 709k    \\
-V1 \& V2 \& V6 \& V10                      & 913   & 755 & 944k    \\
-V1 \& V2 \& V6 \& V10 \& V11               & 1026  & 809 & 1106k   \\
-V1 \& V2 \& V6 \& V8 \& V10 \& V11         & 1109  & 915 & 1354k  
+$V1_1$ \& $V2_4$ \& $V4_1$                             & 1017  & 652 & 903k    \\
+$V1_1$ \& $V2_4$ \& $V4_3$                            & 900   & 618 & 927k    \\
+$V1_1$ \& $V1_2$ \& $V2_4$                             & 717   & 553 & 709k    \\
+$V1_1$ \& $V1_2$ \& $V2_4$ \& $V4_3$                      & 913   & 755 & 944k    \\
+$V1_1$ \& $V1_2$ \& $V2_4$ \& $V4_3$ \& $V4_4$               & 1026  & 809 & 1106k   \\
+$V1_1$ \& $V1_2$ \& $V2_4$ \& $V4_1$ \& $V4_3$ \& $V4_4$         & 1109  & 915 & 1354k  
 \end{tabular}
 \end{table}
 
@@ -134,26 +134,26 @@ Auf dem Testrechner konnte keine weitere Verlangsamung durch drei Bremsthreads f
 
 %TODO Benchmarkergebnisse ausformulieren. Betonen, dass nicht mehrere Cache-Line pro Thread genutzt werden sollten (Überraschend, da beim Bremsthread mehrere Cache-Lines besser). 
 
-%V1: 1: 's_mp_clamp_0', //s_mp_clamp>: 541,608,549k
-%V2: 2:  33: 's_mp_clamp_1', //538,605,553k
-%V10:4:  58: 's_mp_div_2d_2', //539,557,551k
-%V11: 5:  59: 's_mp_div_2d_3', //537,547,552k 536,551,557k
-%V6: 3:  48: 's_mp_rshd_3', //520,571,597k  500,536,548k, 509,543,562k
-%V8: 6:  56: 's_mp_div_2d_0', //s_mp_div_2d>: 511,560, 544k  526,564,542k
+%$V1_1$: 1: 's_mp_clamp_0', //s_mp_clamp>: 541,608,549k
+%$V1_2$: 2:  33: 's_mp_clamp_1', //538,605,553k
+%$V4_3$:4:  58: 's_mp_div_2d_2', //539,557,551k
+%$V4_4$: 5:  59: 's_mp_div_2d_3', //537,547,552k 536,551,557k
+%$V2_4$: 3:  48: 's_mp_rshd_3', //520,571,597k  500,536,548k, 509,543,562k
+%$V4_1$: 6:  56: 's_mp_div_2d_0', //s_mp_div_2d>: 511,560, 544k  526,564,542k
 
 
 
 %Tabelle \ref{} zeigt den Effekt, wenn mehrere Threads für den Bremsvorgang verwendet werden.
 
 %multithread
-%2*V1,V2,V6 =730,532,610k (kein toller effekt)
-%V1,V2,V6 und V7,V10 = 795,559,602k
-%V1,V6,V10 und V2,V5,V11 = 563,561,530k
-%V1 und V10 : 970,798, 856
-%V1 und V6,V10: 880,673,716k
-%V1 und V1: 623, 722, 665 (gleich cache-line bremsen sinnlos [etwas laxe Formulierung])
-%V1,V6 und V1,V10: 764,574,600k
-%V1,V6 und V2,V10: 745,584,590k
+%2*$V1_1$,$V1_2$,$V2_4$ =730,532,610k (kein toller effekt)
+%$V1_1$,$V1_2$,$V2_4$ und $V2_5 3_1$,$V4_3$ = 795,559,602k
+%$V1_1$,$V2_4$,$V4_3$ und $V1_2$,$V2_3$,$V4_4$ = 563,561,530k
+%$V1_1$ und $V4_3$ : 970,798, 856
+%$V1_1$ und $V2_4$,$V4_3$: 880,673,716k
+%$V1_1$ und $V1_1$: 623, 722, 665 (gleich cache-line bremsen sinnlos [etwas laxe Formulierung])
+%$V1_1$,$V2_4$ und $V1_1$,$V4_3$: 764,574,600k
+%$V1_1$,$V2_4$ und $V1_2$,$V4_3$: 745,584,590k
 %einzelne bei multi-thread am besten siehe ergebnisse
 
 
@@ -201,11 +201,10 @@ Als Memory-Locking soll im Folgenden ein Ansatz bezeichnet werden, welcher die A
 Beschrieben und verwendet wurde diese Technik in \cite{MemoryLockingWu, MemoryLockingRisenpart, MemoryLockingJavaAndroid}.
 Die grundlegende Idee besteht darin, dass die Blockierung des Speicher-Busses erzwungen wird, indem man atomar auf eine Variable schreibt, die in zwei Cache-Lines liegt.
 
-Atomare Operationen verursachen systemweite Blockierungen in den Speicherregionen, auf denen sie arbeiten, wobei diese Blockierungen nicht immer lokal begrenzt sind.
+Atomare Operationen verur$S2_5$hen systemweite Blockierungen in den Speicherregionen, auf denen sie arbeiten, wobei diese Blockierungen nicht immer lokal begrenzt sind.
 Die ersten Generationen von x86-Prozessoren blockierten bei einer atomaren Operation noch den gesamten Speicherbus.
 Dies sorgt jedoch für Performanceeinbußen, da ein Befehl alle Speicherzugriffe, die etwa aufgrund von Out-of-Order-Execution parallel ausgeführt werden könnten, blockiert.
-Des Weiteren skaliert %(Ausdruck(???) 
-dieser Ansatz schlecht mit Mehrkernprozessoren, da andere Kerne während der atomaren Operation auf Speicherzugriffe verzichten müssten.
+Des Weiteren skaliert dieser Ansatz schlecht mit Mehrkernprozessoren, da andere Kerne während der atomaren Operation auf Speicherzugriffe verzichten müssten.
 
 Häufig arbeiten atomare Operationen auf Speicherbereichen, die in eine Cache-Line passen. Diese Eigenschaft nutzen x86-Prozessoren ab dem Pentium Pro aus, indem sie nur die zugehörige Cache-Line und nicht mehr den gesamten Speicherbus sperren.
 Auf diesen Systemen kann es dennoch zur vorübergehenden Sperrung des gesamten Speicherbusses kommen, etwa wenn der Speicher für die atomare Operation nicht 
@@ -248,28 +247,28 @@ Der Angriff wird zuerst in C getestet, da hier leicht eine atomare Operation mit
 Ein erster Test mit ausschließlich einem oder zwei laufenden Memory-Locking-Threads offenbart, dass die Ausführung der Shift-Operation und Subtraktions-Funktion nicht nennenswert verlangsamt wird (siehe Tabelle \ref{tbl:MemoryLockingResults}).
 
 \begin{table}[h]
-\caption{Performance-Degradation-Attack mittels Prime-Spam und Memory-Locking. 1. Spalte: Anzahl der Threads, die für das Memory-Locking eingesetzt wurden, 2. Spalte: Cache-Lines in der Shift-Operation, die mittels Prime-Spam gebremst wurden (siehe \ref{tbl:PerformanceDegShift} für Id-Zuordnung), Spalte "Shift", "Sub" und "$mp\_gcd"$: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen.}
+\caption{Performance-degradation-attack mittels Prime-Spam und Memory-Locking. 1. Spalte: Anzahl der Threads, die für das Memory-Locking eingesetzt wurden, 2. Spalte: Cache-Lines in der Shift-Operation, die mittels Prime-Spam gebremst wurden (siehe \ref{tbl:PerformanceDegShift} für Id-Zuordnung), Spalte „Shift“, „Sub“ und „$mp\_gcd$“: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen.}
 \label{tbl:MemoryLockingResults}
 \begin{tabular}{ccccc}
 ML-Threads & Cache-Line IDs     & Shift & Sub & mp\_gcd \\
 0                   & -               & 341   & 480 & 432k    \\
 1                   & -               & 370   & 510 & 469k    \\
 2                   & -               & 361   & 506 & 455k    \\
-0                   & V1              & 539   & 600 & 566k    \\
-1                   & V1              & 894   & 527 & 594k    \\
-2                   & V1              & 628   & 527 & 526k    \\
-0                   & V1 \& V6        & 964   & 587 & 865k    \\
-1                   & V1 \& V6        & 1337  & 596 & 743k    \\
-2                   & V1 \& V6        & 1262  & 575 & 701k    \\
-1                   & V1 \& V6 \& V10 & 1312  & 680 & 803k   
+0                   & $V1_1$              & 539   & 600 & 566k    \\
+1                   & $V1_1$              & 894   & 527 & 594k    \\
+2                   & $V1_1$              & 628   & 527 & 526k    \\
+0                   & $V1_1$ \& $V2_4$        & 964   & 587 & 865k    \\
+1                   & $V1_1$ \& $V2_4$        & 1337  & 596 & 743k    \\
+2                   & $V1_1$ \& $V2_4$        & 1262  & 575 & 701k    \\
+1                   & $V1_1$ \& $V2_4$ \& $V4_3$ & 1312  & 680 & 803k   
 \end{tabular}
 \end{table}
 
 Das durch die Memory-Locking-Threads alleine keine Verlangsamung eintritt, kann damit erklärt werden, dass der Code für die Shift- und Subtraktions-Operationen komplett in den Cache passt und so Speicherzugriffe vermieden werden können.
 
 Interessanter ist daher die Kombination mit einem Prime-Spam-Angriff (siehe Abschnitt \ref{PracticalLeakageAnalysis} und \ref{MoreIsBetter}), welcher Codeteile der Shift- und Subtraktions-Operation aus dem L3-Cache verdrängt, sodass diese bei der Ausführung wiederholt aus dem Hauptspeicher geladen werden müssen.
-So verlangsamt die Kombination eines Memory-Locking-Threads mit einem Prime-Spam-Thread auf die Cache-Line V1 die Shift-Operation auf 894 Taktzyklen (siehe Tabelle \ref{tbl:MemoryLockingResults}).
-Wenn der Memory-Locking-Thread zusammen mit zwei Prime-Spam-Threads auf die Cache-Lines V1 und V6 (eine der besten Kombinationen nach Abschnitt \ref{MoreIsBetter}) genutzt wird, verlangsamt sich die Shift-Operation im Mittel auf 1337 Taktzyklen.
+So verlangsamt die Kombination eines Memory-Locking-Threads mit einem Prime-Spam-Thread auf die Cache-Line $V1_1$ die Shift-Operation auf 894 Taktzyklen (siehe Tabelle \ref{tbl:MemoryLockingResults}).
+Wenn der Memory-Locking-Thread zusammen mit zwei Prime-Spam-Threads auf die Cache-Lines $V1_1$ und $V2_4$ (eine der besten Kombinationen nach Abschnitt \ref{MoreIsBetter}) genutzt wird, verlangsamt sich die Shift-Operation im Mittel auf 1337 Taktzyklen.
 Dies ist besser als alle Ergebnisse, die mit einem Memory-Locking-Thread und drei Prime-Spam-Threads sowie mit ausschließlich drei Prime-Spam-Threads (siehe Abschnitt \ref{MoreIsBetter}) erzielt werden konnten.
 Zusätzlich ist zu bemerken, dass durch den Memory-Locking-Angriff die Ausführungszeit der Shift-Operation sehr stark schwankt.
 So sind bei im Mittel 1337 Taktzyklen einige Operationen mit \~3000 Taktzyklen zu beobachten.
@@ -291,8 +290,8 @@ Mit aktivem Memory-Locking-Angriff zeigen sich in regelmäßigen Abständen hohe
 
 Das Muster der erhöhten Zugriffszeiten ist zu unregelmäßig, um es mit einfachen Mitteln zu filtern.
 Des Weiteren sind erhöhte Zugriffszeiten, die durch das Opferprogramm entstehen, ebenfalls im Bereich von 250 bis 350 Zeiteinheiten.
-Es kann aber bei Zugriffszeiten von über 400 davon ausgegangen werden, dass bei diesem Sample auch das Opferprogramm für die erhöhte Zugriffszeit verantwortlich ist, da der Memory-Locking-Angriff allein keine Zugriffszeiten von über 400 verursacht.
-Problematisch sind allerdings Zugriffszeiten von etwa 300, bei denen nicht mehr unterschieden werden kann, ob der Ausschlag vom Memory-Locking-Angriff oder von Zugriffen des Opferprogramms verursacht wurde.
+Es kann aber bei Zugriffszeiten von über 400 davon ausgegangen werden, dass bei diesem Sample auch das Opferprogramm für die erhöhte Zugriffszeit verantwortlich ist, da der Memory-Locking-Angriff allein keine Zugriffszeiten von über 400 verur$S2_5$ht.
+Problematisch sind allerdings Zugriffszeiten von etwa 300, bei denen nicht mehr unterschieden werden kann, ob der Ausschlag vom Memory-Locking-Angriff oder von Zugriffen des Opferprogramms verur$S2_5$ht wurde.
 
 Die Frequenz der Störungen kann verringert werden, indem der Memory-Locking-Angriff verlangsamt wird, etwa durch das Hinzufügen einer Sleep-Operation in der Schleife der Zeile 8, wobei im Umkehrschluss allerdings auch die Speicherzugriffe weniger häufig gebremst werden.
 
@@ -328,36 +327,36 @@ Dies wird hier durch die Prime-Spam-Methode forciert, welche ebenfalls durch den
 %Verlansamung von Prime-and-probe Operation von 500ns auf 930ns, wenn Aktivität auf Cache-set
 
 %ref: 348,473,438k
-%prime spam v1 only: 539, 600, 566k
+%prime spam $V1_1$ only: 539, 600, 566k
 %deg 1t only:370,510,469k
-%prime spam v1 und deg 1t: 894,527,594k
-%prime spam v1 und deg 2t: 628,527,526k(vermutlich wegen 5 threads insgesamt, reproduzierbar langsamer als 1t deg)
+%prime spam $V1_1$ und deg 1t: 894,527,594k
+%prime spam $V1_1$ und deg 2t: 628,527,526k(vermutlich wegen 5 threads insgesamt, reproduzierbar langsamer als 1t deg)
 
 %deg 2t only: 388, 521, 488k
 %deg 2+ eher unnötig, da ab 4threads ganzer pc rumlahmt
 
-%prime spam v1(clamp0),v6(rshd3) only: 964,787,865k
+%prime spam $V1_1$(clamp0),$V2_4$(rshd3) only: 964,787,865k
 
-%prime spam v1(clamp0),v6(rshd3) und deg 1t: 1337,596,743k
+%prime spam $V1_1$(clamp0),$V2_4$(rshd3) und deg 1t: 1337,596,743k
 %(problem hierbei: Einzelene Operationen dauern bis zu 3000 Taktzyklen)
-%prime spam v1(clamp0),v6(rshd3) und deg 2t: 1262,575,701k
+%prime spam $V1_1$(clamp0),$V2_4$(rshd3) und deg 2t: 1262,575,701k
 %(problem hierbei: Einzelene Operationen dauern bis zu 2000 Taktzyklen, weniger krasse Peaks als bei 1t)
 
 %fazit threads besser in bremsthread stecken, anstatt in deg
 
 
 %multithread bremsen:
-%problem bremsen verursacht peaks bei shift ketten:
+%problem bremsen verur$S2_5$ht peaks bei shift ketten:
 %13360848296169248 1224 -1 
 %13360848296169583 335 -1 
 %13360848296170242 659 -1 
 %aber zu langsam um meherere am stück zu bremsen
 
 
-%deg 1t und prime spam 2t(v1 und v10): 1312,680,803k
+%deg 1t und prime spam 2t($V1_1$ und $V4_3$): 1312,680,803k
 
-%deg 1t und prime spam 3t(v1 und v6 und v10): 1462,636,837k
-%(peaks über 2000 nicht so krass wie bei prime spam v1(clamp0),v6(rshd3) und deg 1t
+%deg 1t und prime spam 3t($V1_1$ und $V2_4$ und $V4_3$): 1462,636,837k
+%(peaks über 2000 nicht so krass wie bei prime spam $V1_1$(clamp0),$V2_4$(rshd3) und deg 1t
 %hierbei messen 3070ns pro p-and-p
 
 %measure p-and-p: 500 bei aktivität, 
@@ -413,9 +412,9 @@ In Grafik \ref{fig:ObserveShiftDifferentBreaks} wird die Überwachung einer Folg
 \caption{Zu sehen ist die Überwachung einer Shift-Operationsfolge bei verschiedenen Pausezeiten zwischen den Shift-Operationen und ohne zusätzliche Bremsungen.}
 \end{figure}
 
+Somit ist etwa eine mittlere Shift-Operationsdauer von etwa TODO Taktzyklen notwendig, um einzelne Shift-Operationen voneinander trennen zu können und so eine Rekonsturktion der Primzahlen zu ermöglichen.
 
-
-Beschreiben bei wie vielen Taktzyklen Pausen mp_gcd ausgelesen werden kann.
+%Beschreiben bei wie vielen Taktzyklen Pausen mp_gcd ausgelesen werden kann.
 
 \section{Speicherallokation: Wie hilfsbereit ist das Betriebssystem?}
 
@@ -437,8 +436,7 @@ Dann können Abstandsfolgen wie
 256, 256, 256, 256, 256, 256, 271, 256, 256, 256
 \end{align*}
 beobachtet werden.
-Bei den gegebenen Beispielen sind vereinzelt Abstände %(???)
-ungleich 256 zu beobachten, die scheinbar nicht aus einem Fehler bei der colliding-address Erkennung resultieren.
+Bei den gegebenen Beispielen sind vereinzelt Abstände ungleich 256 zu beobachten, die scheinbar nicht aus einem Fehler bei der colliding-address Erkennung resultieren.
 
 Denn angenommen die Abweichungen stammen aus vereinzelten Fehlern bei der Erkennung, dann sollten Abstandsfolgen wie 256, 353, 159, 256 entstehen mit $353+159=2*256$.
 Die beobachteten Folgen jedoch weisen nach der vereinzelten Abweichung häufig wieder den Abstand 256 auf, sodass die Abweichung kein Fehler in der Erkennung zu sein scheint.
@@ -474,8 +472,7 @@ Chromium 67.0.3396.0 startet einen zusätzlichen Prozess, Chromium 68.0.3440.0 h
 Mozilla arbeitet ebenfalls an Site-Isolation, wird aber vermutlich noch Monate brauchen, um dieses Feature in die Release-Version von Firefox zu integrieren \cite{FirefoxSiteIsolation}.
 Die aktuelle Firefox Developer Edition 63.0b8 teilt in der Standardeinstellung alle Webseiteninhalte auf vier Content-Prozesse auf. 
 Somit kann - wie oben beschrieben - mittels eines Spectre-Angriffs auf alle Webseitendaten des Content-Prozesses zugegriffen werden, in dem die Webseite mit dem Angriffscode liegt.
-Eigene Tests %(Quelle angeben!) (???)
-haben ergeben, dass Firefox die Tabs nach dem Round-Robin-Verfahren auf die Content-Prozesse aufteilt, womit eine erfolgreiche Angreiferin die Webseitendaten von einem Viertel der offenen Tabs abgreifen könnte.
+Eigene Tests haben ergeben, dass Firefox die Tabs nach dem Round-Robin-Verfahren auf die Content-Prozesse aufteilt, womit eine erfolgreiche Angreiferin die Webseitendaten von einem Viertel der offenen Tabs abgreifen könnte.
 
 Aus diesem Grund wird Mozilla in Firefox vermutlich erst nach der Einführung der Site Isolation Änderungen bezüglich der Verfügbarkeit hochpräsizer Timer vornehmen.
 
@@ -493,8 +490,42 @@ Auch Spectre
 
 %-Benchmarks von Mozilla NSS und OpenPGPjs ohne Divisionstests
 
-\section{Javascript vs. Webassembly}
+\section{Javacript vs. Webassembly}
 
-Wie in Kapitel \ref{chapter:preparation} beschrieben, ist der Prime-and-Probe-Angriff in 
+Wie in Kapitel \ref{chapter:preparation} beschrieben, ist der Prime-and-Probe-Angriff in Webassembly geschrieben.
+Der Ablauf einer Prime-and-Probe-Operation wird in Pseudocode \ref{alg:WasmPrimeAndProbe} beschrieben.
 
-%Vergleiche Javascript/webassembly bei Prime-and-Probe geschwindigkeit
+\begin{algorithm}[h]
+\DontPrintSemicolon
+\caption{Pseudocode für die Prime-and-Probe-Operation in Webassembly}
+\label{alg:WasmPrimeAndProbe}
+
+\Fn{$Prime\_And\_Probe(ptr_eviction_set)$}{
+    start <- get_counter_value_via_javascript()\;
+    first_entry <- ptr_eviction_set\;
+    \Repeat{ptr_eviction_set $\neq$ first_entry}{
+        ptr_eviction_set <- *ptr_eviction_set\;
+    }
+    \Return get_counter_value_via_javascript() - start
+}
+\end{algorithm}
+
+Zurzeit ist Webassembly nicht Multithreading fähig \cite{WebassemblyThreads}, das heißt aus dem Webassembly-Kontext kann nicht direkt auf die Zählvariable des SharedArrayBuffers zugegriffen werden.
+Stattdessen muss der Wert der Zählvariable über Javascript abgerufen werden.
+Um Javascript aus Webassembly aufzurufen, existieren mehrere Möglichkeiten \cite{CallJavaScriptFromWasm}, wobei sich die Implementierung einer C API in JavaScript am performantesten herausgestellt hat.
+
+Alternativ kann auch die gesamte Prime-and-Probe-Operation in Javascript implementiert werden, wobei der Wert der Zählvariable ohne Umwege abgefragt werden kann.
+Um die Performance der beiden Implementationen zu vergleichen, wird die mittlere Dauer einer Prime-and-Probe-Operation durch die Ausfürhung von einer Million Operationen approxmiert.
+So dauert eine Prime-and-Probe-Operation in Webassembly bei keiner Aktivität auf dem Cache-Set etwa 190 ns, wobei diese Zeit auf 440 ns ansteigt, wenn die Cache-Line $V2_5 3_1$ während der Ausführung der $mp\_gcd$-Funktion überwacht wird.
+
+In der Javascript-Implementation und erhöht sich die Zeit bei keiner Aktivität auf dem Cache-Set um etwa 20 ns auf etwa 210 ns, wobei die benötigte Zeit bei einem aktiven Cache-Set um etwa 40 ns auf 400 ns sinkt.
+
+Somit lässt sich mit der Umsetzung der Prime-and-Operation in Javascript ein \~ 10\% schneller Prime-and-Probe-Vorgang realisieren.
+Jedoch neigen die gemessenen Zugriffswerte in Javascript phasenweise zu starken Rauschen, so sind auch bei keiner Aktivität auf dem Cache-Set reproduzierbar mehr als hundert Mal hintereinander Zugriffszeiten von über 400 zu beobachten.
+Diese verrauschten Phasen erklären auch die längere mittlere Dauer von 210 ns bei keiner Aktivität auf dem Cache-Set.
+
+Zusammenfassend wiegen die verrauschten Ergebnisse schwerer als der Performancevorteil, sodass die Implementierung in Webassembly die bessere Wahl darstellt.
+Da die Umsetzung von Multithread in Webassembly geplant ist \cite{WebassemblyThreads}, kann bei dieser Implementierung in Zukunft mit einem Performancegewinn gerechnet werden, da dann die Javascript-Funktionsaufrufe entfallen.
+
+
+%Vergleiche Javacript/webassembly bei Prime-and-Probe geschwindigkeit
