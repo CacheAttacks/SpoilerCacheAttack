@@ -21,8 +21,8 @@ Der Angriff nutzt die spezifische Eigenschaft der Intel-Architektur aus, die den
 So ist der Angriff beispielsweise nicht auf Prozessoren des Konkurrenten AMD lauffähig.
 
 Ein großer Vorteil des Angriffs ist, dass er wenig Spuren nach der Ausführung hinterlässt.
-Trotz der Möglichkeit des Angriffs aus dem Browser heraus, ist dieser in der Praxis 
-aufwendig.
+Trotz der Möglichkeit des Angriffs aus dem Browser heraus%, kommt hier ein Komma hin oder nicht? 
+ist dieser in der Praxis aufwendig.
 Denn er ist speziell auf den Code einer Softwareversion abgestimmt, und diese muss zum Zeitpunkt des Angriffs laufen und die gewünschten Berechnungen ausführen. 
 Zudem ist nicht jeder Angriff ein Erfolg. So hat beispielsweise der native Angriff auf die RSA-Keygenerierung \cite{RSAKeyGeneration2} nur eine Erfolgsquote von etwa 28\%.
 
@@ -57,11 +57,12 @@ Somit ist die Auslotung eines solche Angriffs und die Suche nach Möglichkeiten,
 %Kann man den Angriff auf andere Hardware umschreiben und ist das sinnvoll?
 Im Hinblick auf die Ersetzung des Desktop-Computers oder Notebooks durch Smartphone und Tablet ist eine nähere Untersuchung der Mikroarchitekturen dieser Geräte interessant.
 Da diese Geräte dieselben Webtechnologien unterstützen, welche auch in dieser Arbeit zum Einsatz kamen, sind die Voraussetzungen vergleichbar.
-Jedoch bietet der Markt mobiler Geräte im Vergleich zum Desktop- und Notebook-Bereich zahlreiche Prozessorenhersteller mit signifikantem Marktanteil, welche unterschiedliche Mikroarchitekturen verwenden.
-Zwar sind die meisten Prozessoren ARM-kompatibel, jedoch weisen die Performanceunterschiede zwischen den Prozessoren \cite{GeekbenchMobile} auf deutlich abweichende Designs hin.
+Problematisch ist jedoch die zu Intel-Prozessoren unterschiedliche Struktur und Eviction-Policy der Caches \cite{ARMCacheAttacks}.
+Außerdem bietet der Markt mobiler Geräte im Vergleich zum Desktop- und Notebook-Bereich zahlreiche Prozessorenhersteller mit signifikantem Marktanteil, welche unterschiedliche Mikroarchitekturen verwenden.
+Zwar sind die meisten Prozessoren ARM-kompatibel, jedoch weisen die Performanceunterschiede zwischen den Prozessoren \cite{GeekbenchMobile} auf deutlich abweichende Designs hin. 
 
 %2. Wie kann man Angriffe dieser Art verhindern und welche Forschung ist dafür nötig?
-\todo{Eigene Section Gegenmaßnahmen einfügen?} 
+\subsection{Gegenmaßnahmen} 
 
 Die Veröffentlichung von Meltdown und Spectre Anfang 2018 hat ein neues Bewusstsein für die Relevanz von Cache-Angriffen geschaffen.
 In der Folge haben die Browserhersteller alle öffentlich bekannten Optionen für hochauflösende Timer unterbunden.
@@ -86,12 +87,12 @@ Der hier vorgestellte Prime-and-Probe-Angriff lastet bei einem Angriff mindesten
 Da der Angriff Javascript benötigt und in einem praktischen Szenario vorzugsweise über Werbeanzeigen ausgeführt wird, stellen die ohnehin empfehlenswerten Ad- und Javascriptblocker eine effektive Gegenmaßnahme dar.
 
 Das eigentliche Problem, der geteilte und inklusive L3-Cache mit LRU oder einer vergleichbaren Eviciton-Policy, wird in Intel-Prozessoren noch Jahre Bestand haben.
-Zurzeit nutzen im Desktopbereich nur die High-End-Prozessoren in Form Von Skylake-X einen nicht inklusiven L3-Cache \cite{SkylakeXL3Cache}.
+Zurzeit nutzen im Desktopbereich nur die High-End-Prozessoren in Form von Skylake-X einen nicht inklusiven L3-Cache \cite{SkylakeXL3Cache}.
 Im Mainstream werden nicht exklusive L3-Caches eventuell mit der neuen Architektur Ice Lake eingeführt, welche frühestens Ende 2019 erscheinen wird \cite{IceLakeReleaseDate}.
 Dies legt zumindest die angekündigte Verdoppelung des L2-Caches pro Kern bei gleichbleibender L3-Cache-Größe nahe.
 Die Prozessoren des Konkurrenten AMD hingegen sind aufgrund der exklusiven Caches \cite{CacheRyzen} von diesen Angriffen nicht betroffen.
 
-Zusammenfassend sind Cache-Angriff im Browser allgegenwärtig und sollten von Softwareseite mit den genannten Gegenmaßnahmen begegnet werden, da Websprachen der Angreiferin die komplette Kontrolle über den Code überlassen und hardwareseitige Lösungen erst in einigen Jahren flächendeckend verfügbar sein werden.
+Cache-Angriffe im Browser sind allgegenwärtig und ihnen sollte von Softwareseite mit den genannten Gegenmaßnahmen begegnet werden, da Websprachen der Angreiferin die komplette Kontrolle über den Code überlassen und hardwareseitige Lösungen erst in einigen Jahren flächendeckend verfügbar sein werden.
 
 %Zusammenfassend muss in Zukunft die Gefahr von Cache-Angriffen im Browser stärker berücksichtigt und mit Gegenmaßnahmen begegnet werden, .
 %(Der letzte Satz muss konkreter über die von dir angesprochenen Gegenmaßnahmen Auskunft geben.)

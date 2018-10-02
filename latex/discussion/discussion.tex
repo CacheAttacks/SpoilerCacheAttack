@@ -7,7 +7,7 @@ In diesem Kapitel sollen die Ergebnisse der vorherigen (besser: der durchgeführ
 %Wie in Abschnitt %\ref{} 
 %beschrieben, unterliegen die Laufzeiten der Eviction sind
 
-\section{Cache-Angriff: Warum viele Kerne sinnvoll sind }
+\section{Anzahl der benötigten Kerne}
 
 Ein Cache-Angriff im Browser ist wie in den letzten Kapiteln gezeigt möglich, sofern präzise Timer vorhanden sind. Da präzise Timer zurzeit mittels eines Shared-Array-Buffer erzeugt werden müssen, benötigt die Angreiferin mindestens drei virtuelle Kerne, um einen Angriff auszuführen. Einen Kern für die Iteration der Timer-Variable, einen für den Prime-and-Probe- Angriffscode und einen, auf dem das Opferprogramm läuft.
 
@@ -38,7 +38,7 @@ Sobald die Browserhersteller die Auflösung von $performance.now()$ wieder in de
 
 Wenn das angegriffene Endgerät $n$ virtuelle Kerne besitzt, können also $n-3$ für die Verlangsamung des Opferprogramms eingesetzt werden.
 
-\section{Multithread Prime-Spam: Viel hilft viel?}
+\section{Multithread Prime-Spam: Wie stark kann der Angriff gebremst werden?}
 \label{MoreIsBetter}
 
 Nach den Überlegungen des vorherigen Kapitels sind $n-1-k$ Kerne für die Bremsung nutzbar, wobei $k \geq 1$ die Anzahl der Kerne für die eigentliche Überwachung ist. 
@@ -194,7 +194,7 @@ https://github.com/openpgpjs/openpgpjs/blob/master/src/crypto/public_key/rsa.js
 pow (Zeile 3332) scheinbar fixed window implementation:\\
 https://github.com/indutny/bn.js/blob/e69c617b3297b99aca429f30842e27979ef9beb5/lib/bn.js
 
-\section{Memory-Locking: Mit Kanonen auf Spatzen schießen}
+\section{Memory-Locking}
 \label{MemoryLocking}
 
 Als Memory-Locking soll im Folgenden ein Ansatz bezeichnet werden, welcher die Ausführungsgeschwindigkeit von Prozessen verlangsamt, in dem der Zugriff auf den Hauptspeicher wiederholt kurzzeitig blockiert wird.
@@ -379,10 +379,10 @@ Dies wird hier durch die Prime-Spam-Methode forciert, welche ebenfalls durch den
 %https://www.usenix.org/system/files/conference/usenixsecurity12/sec12-final97.pdf
 
 
-\section{Wie viel mehr muss gebremst werden?}
+\section{Wie viel mehr muss der Angriff gebremst werden?}
 \label{Howfast}
 
-Abschnitt \ref{MoreIsBetter} und \ref{MemoryLocking} haben gezeigt, dass die Prim-Spam und Memory-Locking auch mit mehreren Threads nicht ausreichen, um Teil der Primzahlen zu rekonstruieren.
+Abschnitt \ref{MoreIsBetter} und \ref{MemoryLocking} haben gezeigt, dass die (???) Prim-Spam und Memory-Locking auch mit mehreren Threads nicht ausreichen, um einen Teil der Primzahlen zu rekonstruieren.
 
 Im Folgenden soll daher untersucht werden, wie viel mehr gebremst werden muss, um eine Rekonstruktion zu ermöglichen.
 Dazu wird nach jeder Shift- und Subtraktions-Operation eine künstliche Pause von $x$-Taktzyklen eingefügt.
@@ -399,8 +399,8 @@ Pausenzeit & Shift & Sub & mp\_gcd \\
 \end{tabular}
 \end{table}
 
-Dies Methode sorgt im Gegensatz zu den Bremsverfahren mittels Prim-Spam und Memory-Locking für gleichmäßig erhöhte Ausführungszeiten der Shift-Operation.
-In der Praxis können die angegeben Ausführungszeiten daher als untere Schranke für einen erfolgreichen Angriff angenommen werden.
+Diese Methode sorgt im Gegensatz zu den Bremsverfahren mittels Prim-Spam und Memory-Locking für gleichmäßig erhöhte Ausführungszeiten der Shift-Operation.
+In der Praxis können die angegebenen Ausführungszeiten daher als untere Schranke für einen erfolgreichen Angriff angenommen werden.
 In Grafik \ref{fig:ObserveShiftDifferentBreaks} wird die Überwachung einer Folge von Shift-Operationen bei verschiedenen Pausenzeiten visualisiert.
 
 \label{fig:ObserveShiftDifferentBreaks}
@@ -409,20 +409,20 @@ In Grafik \ref{fig:ObserveShiftDifferentBreaks} wird die Überwachung einer Folg
 \begin{scaletikzpicturetowidth}{\textwidth}
 %\input{discussion/plot_observe_shift_different_breaks.tex}
 \end{scaletikzpicturetowidth}
-\caption{Zu sehen ist die Überwachung einer Shift-Operationsfolge bei verschiedenen Pausezeiten zwischen den Shift-Operationen und ohne zusätzliche Bremsungen.}
+\caption{Zu sehen ist die Überwachung einer Shift-Operationsfolge bei verschiedenen Pausenzeiten zwischen den Shift-Operationen und ohne zusätzliche Bremsungen.}
 \end{figure}
 
-Somit ist etwa eine mittlere Shift-Operationsdauer von etwa TODO Taktzyklen notwendig, um einzelne Shift-Operationen voneinander trennen zu können und so eine Rekonsturktion der Primzahlen zu ermöglichen.
+Somit ist etwa eine mittlere Shift-Operationsdauer von etwa TODO Taktzyklen notwendig, um einzelne Shift-Operationen voneinander trennen zu können und so eine Rekonstruktion der Primzahlen zu ermöglichen.
 
 %Beschreiben bei wie vielen Taktzyklen Pausen mp_gcd ausgelesen werden kann.
 
-\section{Speicherallokation: Wie hilfsbereit ist das Betriebssystem?}
+\section{Speicherallokation}
 
-Wenn der Speicher, etwa nach dem Booten, wenig fragmentiert ist und große zusammenhängende physische Speicherbereiche frei sind, scheint Ubuntu 16.04.5 LTS das $evictionBuffer$-Array bvrozugt in diese Bereiche zu mappen.
+Wenn der Speicher, etwa nach dem Booten, wenig fragmentiert ist und große zusammenhängende physische Speicherbereiche frei sind, scheint Ubuntu 16.04.5 LTS das $evictionBuffer$-Array bevorzugt in diese Bereiche zu mappen.
 Angenommen der komplette evictionBuffer wird in einen zusammenhängeden physischen Speicherbereich gemappt. Dann ist zu erwarten, dass nach jeweils $2^8$ Speicherblöcken eine neue colliding-address gefunden wird, da $2^8$ Speicherblöcke genau $2^{20}$ Bytes belegen und bei einer colliding-address die letzten 20 Bits identisch sind.
 
 Die ersten Versuche hierzu fanden statt, nachdem der Testrechner bereits über 30 Minuten in Betrieb war und viele Tests und Programme ausgeführt worden waren.
-Wenn man unter diesen Bedingungen den Abstand der ersten 10 Speicherblöcke zueinander angeschaut, welche eine colliding-address zum Speicherblock 0 bilden, zeigen sich Abstandsfolgen wie 
+Wenn man unter diesen Bedingungen den Abstand der ersten 10 Speicherblöcke, welche eine colliding-address zum Speicherblock 0 bilden, zueinander anschaut, zeigen sich Abstandsfolgen wie 
 \begin{align*} 
 654, 938, 1438, 224, 372, 543, 464, 84, 38, 134\\
 170, 236, 573, 66, 452, 124, 206, 228, 1026, 62
@@ -438,7 +438,7 @@ Dann können Abstandsfolgen wie
 beobachtet werden.
 Bei den gegebenen Beispielen sind vereinzelt Abstände ungleich 256 zu beobachten, die scheinbar nicht aus einem Fehler bei der colliding-address Erkennung resultieren.
 
-Denn angenommen die Abweichungen stammen aus vereinzelten Fehlern bei der Erkennung, dann sollten Abstandsfolgen wie 256, 353, 159, 256 entstehen mit $353+159=2*256$.
+Denn angenommen, die Abweichungen stammen aus vereinzelten Fehlern bei der Erkennung, dann sollten Abstandsfolgen wie 256, 353, 159, 256 entstehen mit $353+159=2*256$.
 Die beobachteten Folgen jedoch weisen nach der vereinzelten Abweichung häufig wieder den Abstand 256 auf, sodass die Abweichung kein Fehler in der Erkennung zu sein scheint.
 
 Ein weiteres Indiz dafür liefert die erfolgreiche Verifikation, dass der Speicherblock mit dem abweichenden Abstand später Teil eines Eviction-Sets wird.
@@ -451,7 +451,7 @@ Mit dieser Beobachtung lässt sich (???)
 Bermerkungen Mem-Alloc von Firefox/Chrome: https://www.cs.vu.nl/~giuffrida/papers/anc-ndss-2017.pdf
 \cite{ASLROnTheLine}
 
-\section{Warum ist Google so mutig?}
+\section{Warum Google Timer im Browser reaktiviert}
 \label{GooglePageIsolation}
 
 Wie erwähnt hat Google bereits Anfang August 2018 mit der Chrome Version 68 \cite{ChromeSharedArrayBufferAgain} die SharedArrayBuffer standardmäßig wieder aktiviert.
@@ -476,14 +476,14 @@ Eigene Tests haben ergeben, dass Firefox die Tabs nach dem Round-Robin-Verfahren
 
 Aus diesem Grund wird Mozilla in Firefox vermutlich erst nach der Einführung der Site Isolation Änderungen bezüglich der Verfügbarkeit hochpräsizer Timer vornehmen.
 
-\section{Wie wohl fühlen sich Meltdown und Spectre im Browser?}
-\label{MeltdownSpectreBrowser}
+%\section{Wie wohl fühlen sich Meltdown und Spectre im Browser?}
+%\label{MeltdownSpectreBrowser}
 
-https://alephsecurity.com/2018/06/26/spectre-browser-query-cache/
-\cite{OvercomingSpectreBrowserMitigations}
+%https://alephsecurity.com/2018/06/26/spectre-browser-query-cache/
+%\cite{OvercomingSpectreBrowserMitigations}
 
-Sofern Meltdown über Prozessgrenzen hinweg Speicher auslesen soll, muss der geschützte Speicher in den (???) Adressbereich des Angriffsprozess gemappt werden.
-Dies ist im Browser nicht ohne weiteres möglich, da Webassembly eine eigene Speicheradressierung mitbringt.
+%Sofern Meltdown über Prozessgrenzen hinweg Speicher auslesen soll, muss der geschützte Speicher in den (???) Adressbereich des Angriffsprozess gemappt werden.
+%Dies ist im Browser nicht ohne weiteres möglich, da Webassembly eine eigene Speicheradressierung mitbringt.
 Auch Spectre
 
 %\section{Triviale Divsionen: Ist das sinnvoll oder kann das Weg?}
@@ -493,7 +493,7 @@ Auch Spectre
 \section{Javacript vs. Webassembly}
 
 Wie in Kapitel \ref{chapter:preparation} beschrieben, ist der Prime-and-Probe-Angriff in Webassembly geschrieben.
-Der Ablauf einer Prime-and-Probe-Operation wird in Pseudocode \ref{alg:WasmPrimeAndProbe} beschrieben.
+Der Ablauf einer solchen Prime-and-Probe-Operation wird in Pseudocode \ref{alg:WasmPrimeAndProbe} beschrieben.
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
@@ -510,7 +510,7 @@ Der Ablauf einer Prime-and-Probe-Operation wird in Pseudocode \ref{alg:WasmPrime
 }
 \end{algorithm}
 
-Zurzeit ist Webassembly nicht Multithreading fähig \cite{WebassemblyThreads}, das heißt aus dem Webassembly-Kontext kann nicht direkt auf die Zählvariable des SharedArrayBuffers zugegriffen werden.
+Zurzeit ist Webassembly nicht Multithreadingfähig \cite{WebassemblyThreads}, das heißt aus dem Webassembly-Kontext kann nicht direkt auf die Zählvariable des SharedArrayBuffers zugegriffen werden.
 Stattdessen muss der Wert der Zählvariable über Javascript abgerufen werden.
 Um Javascript aus Webassembly aufzurufen, existieren mehrere Möglichkeiten \cite{CallJavaScriptFromWasm}, wobei sich die Implementierung einer C API in JavaScript am performantesten herausgestellt hat.
 
@@ -521,11 +521,8 @@ So dauert eine Prime-and-Probe-Operation in Webassembly bei keiner Aktivität au
 In der Javascript-Implementation und erhöht sich die Zeit bei keiner Aktivität auf dem Cache-Set um etwa 20 ns auf etwa 210 ns, wobei die benötigte Zeit bei einem aktiven Cache-Set um etwa 40 ns auf 400 ns sinkt.
 
 Somit lässt sich mit der Umsetzung der Prime-and-Operation in Javascript ein \~ 10\% schneller Prime-and-Probe-Vorgang realisieren.
-Jedoch neigen die gemessenen Zugriffswerte in Javascript phasenweise zu starken Rauschen, so sind auch bei keiner Aktivität auf dem Cache-Set reproduzierbar mehr als hundert Mal hintereinander Zugriffszeiten von über 400 zu beobachten.
-Diese verrauschten Phasen erklären auch die längere mittlere Dauer von 210 ns bei keiner Aktivität auf dem Cache-Set.
+Jedoch neigen die gemessenen Zugriffswerte in Javascript phasenweise zu starkem Rauschen, so sind auch bei keiner Aktivität auf dem Cache-Set reproduzierbar mehr als hundert Mal hintereinander Zugriffszeiten von über 400 zu beobachten.
+Diese verrauschten Phasen erklären die längere mittlere Dauer von 210 ns bei keiner Aktivität auf dem Cache-Set.
 
-Zusammenfassend wiegen die verrauschten Ergebnisse schwerer als der Performancevorteil, sodass die Implementierung in Webassembly die bessere Wahl darstellt.
-Da die Umsetzung von Multithread in Webassembly geplant ist \cite{WebassemblyThreads}, kann bei dieser Implementierung in Zukunft mit einem Performancegewinn gerechnet werden, da dann die Javascript-Funktionsaufrufe entfallen.
-
-
-%Vergleiche Javacript/webassembly bei Prime-and-Probe geschwindigkeit
+Zusammenfassend lässt sich sagen, dass die verrauschten Ergebnisse schwerer wiegen als der Performancevorteil, sodass die Implementierung in Webassembly die bessere Wahl darstellt.
+Da die Umsetzung von Multithread in Webassembly geplant ist \cite{WebassemblyThreads}, kann bei dieser Implementierung in Zukunft mit einem Performancegewinn gerechnet werden, weil dann die Javascript-Funktionsaufrufe entfallen.
