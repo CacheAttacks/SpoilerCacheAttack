@@ -3,9 +3,11 @@
 
 Im Folgenden sollen Verfahren und Techniken %hier thmea nochmal angreifen ,techniken wofür etc.
 erläutert werden, welche für das Verständnis der späteren Kapitel essenziell sind.
-%Nochmal Thema einfügen 
+Die relevanten Hardwarekomponenten und Vorrausetzungen an die Caches werden erklärt.
+Zudem werden grundlegende Cache-Angriffe wie Prime-and-Probe sowie Flush-and-Reload vorgestellt.
+Außerdem werden die mathematischen Grundlagen für die spätere Leakage-Analyse von RSA beschrieben.
 
-\todo[size=\footnotesize]{Hier sollte mehr stehen als ein Satz, ergibt sich vielleicht später. Hier gehört die Erklärung des Themas hin sowie eine Bestimmung der Rewlevanz des Themas für die Forschung.} 
+%\todo[size=\footnotesize]{Hier sollte mehr stehen als ein Satz, ergibt sich vielleicht später. Hier gehört die Erklärung des Themas hin sowie eine Bestimmung der Rewlevanz des Themas für die Forschung.} 
 %\todo[size=\footnotesize]{Generell: Du tendierst zu verschachtelten und langen Sätzen. Versuche, Simplere Sätze mit höchstens einem Komma und ohne Zwischeneinschübe zu verwenden. }
 \section{Virtuelle Speicherverwaltung}
 
@@ -33,7 +35,7 @@ Angenommen 4 Bytes Daten an Adresse \lstinline!0b10110111!
 werden angefordert, dann lagert der Cache die 64 Bytes beginnend mit der Adresse \lstinline!0b10000000! ein.
 Heutige Arbeitsspeichermodule liefern 8 Bytes zeitgleich, wobei die CPU mit einem einzigen Befehl einen Burst von 8 Übertragungen initiieren kann, die das Lesen und Schreiben einer gesamten 64-Bytes-Cache-Line ermöglichen.
 Das Vorausladen von aktuell nicht benötigten Daten liegt in der Lokalitätseigenschaft typischer Programme begründet \cite{tanenbaumLocality}. So besagt die zeitliche Lokalität, dass aktuell verwendete Daten mit hoher Wahrscheinlichkeit in naher Zukunft erneut benötigt werden. Räumlich Lokalität hingegen besagt, dass beim Zugriff einer bestimmten Speicheradresse benachbarte Speicheradressen in naher Zukunft mit hoher Wahrscheinlichkeit benötigt werden.
-Somit ist es von Vorteil, gleichzeitig 64 Bytes zu laden, da die zusätzlich geladenen Bytes mit hoher Wahrscheinlichkeit in den nächsten Zyklen ebenfalls benötigt werden. Der Performancenachteil, welcher durch ein Laden von gleichzeitig 64 Bytes entsteht, ist daher vernachlässigbar.
+Somit ist es von Vorteil, gleichzeitig 64 Bytes zu laden, da die zusätzlich geladenen Bytes mit hoher Wahrscheinlichkeit in den nächsten Zyklen ebenfalls benötigt werden. Der Performancenachteil, welcher durch ein Laden von gleichzeitig 64 Bytes entsteht, ist im Gegensatz dazu vernachlässigbar.
 
 Ein Prozessorcache besteht üblicherweise aus mehreren Ebenen, Cache-Levels genannt, wobei die Core-Architektur etwa 3 Cache-Levels besitzt, welche absteigend größer und langsamer werden. Ein Intel i7-4770 besitzt pro physischen Kern beispielsweise einen 32 KiB-L1-Datencache mit einer Zugriffslatenz von 4 bis 5 Taktzyklen und einen 256 KiB-L2-Cache mit einer Latenz von 12 Taktzyklen \cite{CacheStatsHaswell}.
 Im Unterschied zu den beiden ersten Cache-Levels teilen sich in der Core-Architektur alle Kerne den L3-Cache. 
@@ -147,7 +149,7 @@ Ein \textit{Eviction-Set} sei eine Menge Adressen, welche einen Cache-Eintrag au
 Um einen Eintrag aus dem Cache zu verdrängen, müssen mehrere Adressen der Daten aus dem Eviction-Set von der CPU auf das gleiche Cache-Set wie der zu verdrängende Eintrag abgebildet werden, so dass die Größe eines Eviction-Sets mindestens die Assoziativität des Caches erreichen muss.
 
 Die Idee beim Prime-and-Probe Angriff besteht darin, in einer sich wiederholenden Abfolge zuerst den Cache zu primen, dann das Opferprogramm rechnen zu lassen und anschließend zu proben.
-In der Priming-Phase werden mittels der Eviction-Sets gezielt Cache-Sets vollständig mit den Daten aus dem Eviction-Sets belegt.
+In der Priming-Phase werden mittels der Eviction-Sets gezielt Cache-Sets vollständig mit den Daten aus dem Eviction-Set belegt.
 In der anschließenden Berechnungsphase werden einige Einträge aus den geprimten Cache-Sets vom Opferprogramm verdrängt. Abschließend berechnet die Angreiferin die Summe der Zugriffszeiten auf alle Einträge in einem Eviction-Set.
 Sofern das Opferprogramm in dem zum Eviction-Set korrelierenden Cache-Set Einträge verdrängt hat, kann die Angreiferin eine Abweichung nach oben in ihrer Messung feststellen, da die verdrängten Einträge eine erhöhte Zugriffszeit verursachen. Somit kann aus den Zugriffszeiten der Eviction-Sets auf die Speicherzugriffe des Opferprogramms geschlossen werden.
 
@@ -186,6 +188,7 @@ So ist aber in der Regel das Mapping der virtuellen und physischen Adressen bei 
 \subsection{Timer}
 
 Beide eben beschrieben Angriffsmethoden setzen voraus, dass die Angreiferin Laufzeitunterschiede zwischen dem Ladevorgang aus dem Cache und dem Hauptspeicher zuverlässig unterscheiden kann. Beim AIDA64-Benchmark mit einem aktuellen Intel i7-8700K ist die L3-Cache-Latenz im Mittel bei 12 ns, wobei gepaart mit DDR4-3200 CL16 RAM die Hauptspeicherlatenz im Mittel 49 ns beträgt \cite{i78700kLatency}. Somit ist eine Timer-Auflösung von unter 30 ns Voraussetzung für ein erfolgreichen Angriff. Anschaulich ist dies auch im Diagramm \ref{fig:RAMCacheLatency} zu sehen. Die Autoren verwendeten ein i7-4960HQ und haben Zugriffszeitdifferenzen für Cache-Miss und Hit von etwa 70 ns festgestellt. 
+Auf dem Testsystem mit einem Intel i7-4770 und DDR3-1600 RAM konnten etwa Differenzen von TODO gemessen werden.
 
 \label{fig:RAMCacheLatency}
 \begin{figure}[h]
@@ -193,23 +196,6 @@ Beide eben beschrieben Angriffsmethoden setzen voraus, dass die Angreiferin Lauf
 \includegraphics[width=0.55\textwidth]{basics/i7-4790HQ_latency_plot.pdf}
 \caption{Wahrscheinlichkeitsverteilung der Zugriffszeiten für eine aus dem Cache verdrängte und dort vorliegende Variable \cite{TheSpyInTheSandbox}}
 \end{figure}
-
-\section{Chinesischer Restsatz}
-\label{chinese_remainder}
-
-Beschrieben sei ein System linearer Kongruenzen \cite{CRTref}:
-\begin{align*}
-x \equiv a_1 &(\mod m_1)\\
-x \equiv a_2 &(\mod m_2)\\
-\vdots\\
-x \equiv a_3 &(\mod m_3)
-\end{align*}
-Für dieses System sollen alle $x$ bestimmt werden, welche alle Gleichungen erfüllen.
-Wenn alle $m_1,m_2,...,m_n$ paarweise teilerfremde natürliche Zahlen sein, so existiert für jedes ganzahlige Tupel $a_1, ..., a_n$ genau eine Lösung $x \in \{0,1,...,kgV(m_1,m_2,...,m_n)\}$ \cite{CRTwiki}.
-
-Sofern alle Moduli $m_i$ Primzahlen sind vereinfacht sich $kgV(m_1,m_2,...,m_n)$ zu $\prod_i m_i$.
-
-Eine konkrete Lösung für $x$ ist etwa mit Hilfe des erweiterten euklidischen Algorithmus berechenbar.
 
 \section{RSA}
 
@@ -245,6 +231,23 @@ Im Rahmen dieser Arbeit liegt der Fokus darauf, während der Schlüsselgenerieru
 
 %RSA Key Gen, RSA Verschlüsselung Entschlüsselung
 
+\section{Chinesischer Restsatz}
+\label{chinese_remainder}
+
+Beschrieben sei ein System linearer Kongruenzen \cite{CRTref}:
+\begin{align*}
+x \equiv a_1 &(\mod m_1)\\
+x \equiv a_2 &(\mod m_2)\\
+\vdots\\
+x \equiv a_3 &(\mod m_3)
+\end{align*}
+Für dieses System sollen alle $x$ bestimmt werden, welche alle Gleichungen erfüllen.
+Wenn alle $m_1,m_2,...,m_n$ paarweise teilerfremde natürliche Zahlen sein, so existiert für jedes ganzahlige Tupel $a_1, ..., a_n$ genau eine Lösung $x \in \{0,1,...,kgV(m_1,m_2,...,m_n)\}$ \cite{CRTwiki}.
+
+Sofern alle Moduli $m_i$ Primzahlen sind vereinfacht sich $kgV(m_1,m_2,...,m_n)$ zu $\prod_i m_i$.
+
+Eine konkrete Lösung für $x$ ist etwa mit Hilfe des erweiterten euklidischen Algorithmus berechenbar.
+
 
 \section{Javascript und Webassembly}
 
@@ -273,7 +276,7 @@ Im Gegensatz dazu steht der Drive-by-Attack \cite{DriveByAttacksGeneric}, bei de
 Die Erfolgswahrscheinlichkeit eines Angriffs ist im letzteren Fall bedeutend größer, da bereits die von der Angreiferin geschalteten Werbeanzeigen auf häufig aufgerufenen Webseiten für einen umfangreichen Pool von Opfern sorgen.
 Hinzu kommnt, dass die meisten Opfer den Angriff nicht zu ihrem Ursprung zurückverfolgen können, da sie die Website mit der bösartigen Werbeanzeige regelmäßig besuchen.
 
-Somit ist, zusammenfassend bemerkt, das Schreiben von Drive-by-Angriffen zunächst aufwändiger und setzt in der Regel die Kenntnis unbekannter oder nicht gepatchter Sicherheitslücken voraus, verspricht dafür aber eine deutliche höhere Erfolgswahrscheinlichkeit.
+Somit ist das Schreiben von Drive-by-Angriffen zunächst aufwändiger und setzt in der Regel die Kenntnis unbekannter oder nicht gepatchter Sicherheitslücken voraus, verspricht dafür aber eine deutliche höhere Erfolgswahrscheinlichkeit als Angriffe bei denen das Opfer, etwa durch die aktive Ausführung von Code, mitwirken muss.
 
 %Mit der zunehmenden Wandlung vieler Applikationen weg von der lokalen Desktopanwendung hin zur endgerätunabhängigen Webanwendung
 
@@ -319,14 +322,15 @@ Diese veranlasst die Store-Queue, abgeschlossene STORES, die noch nicht an den S
 Bei der Ausführung eines LOADS wird die als assoziativer Speicher umgesetzte Store-Queue nach STORES auf derselben Adresse durchsucht, welche in der logischen Ausführungsreihenfolge vorher auftauchen.
 Sofern es einen Treffer gibt, wird der Wert des abgeschlossenen STORES aus der Store-Queue anstatt des veralteten Wertes aus dem Speichersystem verwendet.
 
+Die verbesserten Eviction-Set Suche in Abschnitt \ref{StoreFor} nutzt ein Verhalten der Speicher-Disambiguierung von Intel-Prozessoren aus.
+
 \section{Angegriffene Hardware und Software}
 
 Der Testrechner war ein Dell Precision T1700 mit einem Intel Core i7-4770, dessen 4 physischen Kerne beziehungsweise 8 virtuellen Kerne einen Grundtakt von 3,4GHz bieten.
 Der geteilte L3-Cache ist 8 MiB groß, besitzt eine Assoziativität von 16, eine Cache-Line-Größe von 64 Byte und 8192 Cache-Sets, die in 4 Slices aufgeteilt sind.
 Weiterhin ist ein Intel C226 Chipsatz und 8GB DDR3-1600 verbaut. 
 Als Betriebsystem wird Ubuntu 16.04.5 LTS (GNU/Linux 4.4.0-131-generic x86_64) verwendet. 
-
-Als Browser wurden Chromeium TODO, Firefox 62 sowie Firefox Developer Edition 63 getestet.
+Die getesteten Browser sind Chromium 68.0.3440.106, Firefox 62 sowie Firefox Developer Edition 63.
 
 
 %Nuc i3-5... 2C4T, 
@@ -335,7 +339,7 @@ Mozilla Network Security Services(NSS) \cite{MozillaNSS} ist eine Menge von Bibl
 Der Quellcode ist unter der Mozilla Public License verfügbar und kann online etwa im Firefox-Repository \cite{MozillaDXR} eingesehen werden.
 
 OpenPGP ist ein Standard für das Signieren, Ver- und Entschlüsseln von Daten, welcher im RFC 4880 \cite{rfc4880} definiert wird.
-OpenPGP.js \cite{OpenPGPjs} ist eine Opensource-Implementierung des OpenPGP-Protokolls in Javascript, welche sich zum Ziel gesetzt hat, OpenPGP auf einer breiten Palette (meinst du "Palette"?) von Endgeräten zu ermöglichen.
-So wird OpenPGP.js etwa vom E-Mail-Dienst Protonmail \cite{Protonmail} genutzt.
+OpenPGP.js \cite{OpenPGPjs} ist eine Opensource-Implementierung des OpenPGP-Protokolls in Javascript, welche sich zum Ziel gesetzt hat, OpenPGP auf einer breiten Palette von Endgeräten zu ermöglichen.
+%So wird OpenPGP.js etwa vom E-Mail-Dienst Protonmail \cite{Protonmail} genutzt.
 
 %\todo{Besser in Implementierung aufgehoben?}

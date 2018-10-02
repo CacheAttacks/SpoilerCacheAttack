@@ -399,6 +399,7 @@ Um diesem Verhalten entgegenzuwirken, wird Pointer-Chasing eingesetzt (siehe auc
 Hierbei werden die Einträge des Eviction-Sets analog zu einer verketten List gespeichert, womit der Prozessor immer zuerst die Daten eines Eintrags lesen muss, bevor er die Adresse für den nächsten Eintrag kennt.
 
 \section{Verbesserte Eviction-Set Suche mittels Store-to-load-forwarding}
+\label{StoreFor}
 
 Die Forscher Saad Islam und Ahmad Moghimi \cite{TODO} sind auf ein Verhalten bei Intel-Prozessoren gestoßen, das das Auffinden von Adressen ermöglicht, deren 20 letzten physischen Bits gleich sind, ohne auf Techniken wie Huge-Pages zugreifen zu müssen.
 Solche Adressen seien nachfolgend \textit{colliding-addresses} genannt.

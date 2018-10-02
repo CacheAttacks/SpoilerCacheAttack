@@ -68,7 +68,7 @@ Der angesprochene Counter-Thread ist während des gesamten Angriffs voll ausgela
 Da Entwickler hochauflösende Timer nachfragen, wird Mozilla ebenso wie Google in Zukunft versuchen, wieder hochauflösende Timer anzubieten, wobei der zurzeit nötige Timer-Thread entfallen wird.
 Dies wird passieren, sobald Maßnahmen gegen Meltdown und Spectre implementiert sind (siehe Abschnitt \ref{GooglePageIsolation}).
 
-
+\par \medskip  
 
 %\todo{das hier finde ich albern. Du kannst dir gern den Absatz umdefinieren, sodass du bei jedem Absatz einen medskip hast. Aber hier plötzlich damit anfangen finde ich komisch.}
 %\todo{Sollte nur hier als Stilmittel verwendet werden, damit die Absätze den obigen Fragen besser zugeordnet werden können.}
@@ -80,7 +80,7 @@ Auch im Browser lassen sich Methoden umsetzen, um den Opferprozess zu bremsen. %
 Aufgrund der fehlenden clflush-Instruktion, ist die damit verwendete Bremsmethode im Browser nicht umsetzbar.
 Anhand eines Angriffs auf die RSA-Schlüsselgenerierung wird gezeigt, dass die Portierung eines nativ laufenden Angriffs aufgrund dieser Einschränkungen nicht immer möglich ist.
 
-
+\par \medskip  
 
 Um einen realistischen Angriff zu erhalten, ist eine kurze Initialisierungsphase Voraussetzung.
 Der in vielen Papers beschriebene Eviction-Set-Suchalgorithmus \cite{PrimeAndAbort, LiuPrimeAndProbe, DriveByPaper} wurde in vielerlei Hinsicht optimiert und die Ergebnisse anschließend mit der ursprünglichen Variante verglichen. 
@@ -92,7 +92,7 @@ Damit kann die Suche gegenüber dem optimierten Standardalgorithmus um \todo{Ben
 %Diese müssen jedoch die Eviction-Set-Suche nacheinander durchführen, da sie sich ansonsten gegenseitig beeinflussen würden.
 %Somit würde sich der Performancevorteil in diesen Fällen amplifizieren (besser: erhöhen).
 
-
+\par \medskip  
 
 Es wurden sowohl die Schlüsselgenerierung von Mozilla NSS als auch von OpenPGP.js auf Leakages untersucht. 
 %Zum Einsatz kam dabei ein Werkzeug (Welches ist das? Wie heißt es?), welches automatisch potenzielle Leakages aufdeckt.
@@ -147,34 +147,34 @@ Hierfür wird die Funktion zum Finden des größten gemeinsamen Teilers angegrif
 
 %\cite{BSIRSAKeyGeneration}  
 
-\subsection{Spekulative Ausführung, Enklaven und Hyperthreading}
-\label{relatedWorkHyperthreading}
+% \subsection{Spekulative Ausführung, Enklaven und Hyperthreading}
+% \label{relatedWorkHyperthreading}
 
-%\todo{hier fehlt völlig der BEzug zu deiner Arbeit. Du müsstest hier noch schreiben, dass wir diese Lücken nicht ausnutzen und dir einen Grund ausdenken warum wir das nicht tun. }
-%Verweis auf Diskussion von Meltdown und Spectre im Browser 
-%Hinweis für Intel SGX und Hyperthreading, dass im Browser Kerne nicht frei gewählt werden können
+% %\todo{hier fehlt völlig der BEzug zu deiner Arbeit. Du müsstest hier noch schreiben, dass wir diese Lücken nicht ausnutzen und dir einen Grund ausdenken warum wir das nicht tun. }
+% %Verweis auf Diskussion von Meltdown und Spectre im Browser 
+% %Hinweis für Intel SGX und Hyperthreading, dass im Browser Kerne nicht frei gewählt werden können
 
-Vorherige Angriffe hatten die Extraktion von spezifischen Informationen wie Schlüsseln zum Ziel. Allerdings können mit Cache-Angriffen auch beliebige Speicherinhalte, sogar über Prozess- und Betriebssystemgrenzen hinweg, ausgelesen werden.
-Die im Jahr 2018 veröffentlichen Angriffe Meltdown \cite{MeltdownPaper} und Spectre \cite{SpectrePaper} nutzen die spekulative Ausführung der CPU aus, um an Speicherinhalte zu gelangen, für die keine Zugriffsrechte vorliegen.
-Meltdown greift dafür direkt auf die Speicherbereiche zu, wohingegen Spectre die Sprungvorhersage manipuliert, um den Zugriff privilegierter Prozesse auf bestimmte Speicherinhalte zu lenken.
+% Vorherige Angriffe hatten die Extraktion von spezifischen Informationen wie Schlüsseln zum Ziel. Allerdings können mit Cache-Angriffen auch beliebige Speicherinhalte, sogar über Prozess- und Betriebssystemgrenzen hinweg, ausgelesen werden.
+% Die im Jahr 2018 veröffentlichen Angriffe Meltdown \cite{MeltdownPaper} und Spectre \cite{SpectrePaper} nutzen die spekulative Ausführung der CPU aus, um an Speicherinhalte zu gelangen, für die keine Zugriffsrechte vorliegen.
+% Meltdown greift dafür direkt auf die Speicherbereiche zu, wohingegen Spectre die Sprungvorhersage manipuliert, um den Zugriff privilegierter Prozesse auf bestimmte Speicherinhalte zu lenken.
 
-Beide Varianten erzeugen invalide Speicherzugriffe während der spekulativen Ausführung. Das heißt, der nach außen sichtbare Zustand der CPU bleibt unverändert erhalten, jedoch ändert sich der interne Zustand wie etwa die Cache-Inhalte.
-Um den Informationen über den veränderten internen Zustand der CPU zu erhalten, werden analog zu anderen Angriffen Differenzen in der Zugriffszeit auf verschiedene Cache-Einträge genutzt.
-%Eine mögliche Nutzung der Meltdown-und-Spectre-Angriffe im Browser wird im Abschnitt \ref{MeltdownSpectreBrowser} diskutiert.
+% Beide Varianten erzeugen invalide Speicherzugriffe während der spekulativen Ausführung. Das heißt, der nach außen sichtbare Zustand der CPU bleibt unverändert erhalten, jedoch ändert sich der interne Zustand wie etwa die Cache-Inhalte.
+% Um den Informationen über den veränderten internen Zustand der CPU zu erhalten, werden analog zu anderen Angriffen Differenzen in der Zugriffszeit auf verschiedene Cache-Einträge genutzt.
+% %Eine mögliche Nutzung der Meltdown-und-Spectre-Angriffe im Browser wird im Abschnitt \ref{MeltdownSpectreBrowser} diskutiert.
 
-Heutzutage teilen sich eine Reihe von parallel ausgeführten Prozessen die Ressourcen des Systems.
-Sofern eine sichere Abschottung der Prozesse gegeneinander nicht gegeben ist, kann dies Sicherheitsprobleme erzeugen.
-Intel SGX erzeugt eine vertrauenswürdige Ausführungsumgebung, welche Speicherbereiche bereitstellt, auf die selbst Prozesse mit erhöhten Rechten keinen Zugriff haben.
-Wie \cite{CacheZoom,CacheAttacksIntelSGX} zeigen, sind diese sogenannten Enklaven ebenfalls über Caches angreifbar, sofern der Angriffsprozess auf demselben physischen Kern wie der Opferprozess läuft.
+% Heutzutage teilen sich eine Reihe von parallel ausgeführten Prozessen die Ressourcen des Systems.
+% Sofern eine sichere Abschottung der Prozesse gegeneinander nicht gegeben ist, kann dies Sicherheitsprobleme erzeugen.
+% Intel SGX erzeugt eine vertrauenswürdige Ausführungsumgebung, welche Speicherbereiche bereitstellt, auf die selbst Prozesse mit erhöhten Rechten keinen Zugriff haben.
+% Wie \cite{CacheZoom,CacheAttacksIntelSGX} zeigen, sind diese sogenannten Enklaven ebenfalls über Caches angreifbar, sofern der Angriffsprozess auf demselben physischen Kern wie der Opferprozess läuft.
 
-In diesem Fall ergeben sich weitergehende Angriffsmöglichkeiten.
-So kann beispielsweise eine erhöhte räumliche Auflösung ermöglicht werden, welche über die übliche 64 Byte Cache-Line-Auflösung hinausgeht \cite{MemJam}.
+% In diesem Fall ergeben sich weitergehende Angriffsmöglichkeiten.
+% So kann beispielsweise eine erhöhte räumliche Auflösung ermöglicht werden, welche über die übliche 64 Byte Cache-Line-Auflösung hinausgeht \cite{MemJam}.
 
-Ein im Juli 2018 veröffentlichter Angriff \cite{TLBleed} nutzt konkurrierende Zugriffe auf den Translation lookaside buffer(TLB) aus, welcher zwischen zwei Hyperthreads eines selben physischen Kerns geteilt ist.
-Um Angriffe auf geteilte Caches zu verhindern, kann der Cache partitioniert werden, wobei keine vergleichbare Technik für den TLB bekannt ist.
-Im Zuge der Veröffentlichung wurde im Betriebssystem OpenBSD Hyperthreading auf allen Intel-Prozessoren standardmäßig deaktiviert \cite{OpenBSDHyperthreading}.
+% Ein im Juli 2018 veröffentlichter Angriff \cite{TLBleed} nutzt konkurrierende Zugriffe auf den Translation lookaside buffer(TLB) aus, welcher zwischen zwei Hyperthreads eines selben physischen Kerns geteilt ist.
+% Um Angriffe auf geteilte Caches zu verhindern, kann der Cache partitioniert werden, wobei keine vergleichbare Technik für den TLB bekannt ist.
+% Im Zuge der Veröffentlichung wurde im Betriebssystem OpenBSD Hyperthreading auf allen Intel-Prozessoren standardmäßig deaktiviert \cite{OpenBSDHyperthreading}.
 
-Im Browser kann nicht ohne Weiteres ein Kern festgelegt werden, auf dem der Angriffscode ausgeführt wird, weshalb eine Ausnutzung dieser Lücken nicht ohne Weiteres möglich ist.
+% Im Browser kann nicht ohne Weiteres ein Kern festgelegt werden, auf dem der Angriffscode ausgeführt wird, weshalb eine Ausnutzung dieser Lücken nicht ohne Weiteres möglich ist.
 
 \section{Gliederung der Arbeit}
 

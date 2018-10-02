@@ -1,7 +1,4 @@
 Fragen:
-introduction:
-\todo{das hier finde ich albern. Du kannst dir gern den Absatz umdefinieren, sodass du bei jedem Absatz einen medskip hast. Aber hier plötzlich damit anfangen finde ich komisch.}
-\todo{Sollte nur hier als Stilmittel verwendet werden, damit die Absätze den obigen Fragen besser zugeordnet werden können.}
 
 
 basics
@@ -19,6 +16,7 @@ results:
 
 
 Prüfen: Initialisierungsdauer linear mit der Anzahl der Angriffsinstanzen
+Ist Abschnitt Spekulative Ausführung ... in verwandte Arbeiten notwendig?
 
 %(fixen)
 Aufgrund des Fehlens eines Beweises für die NP-Schwere oder eines effizienten Lösungsalgorithmus' ist dem Autor die Komplexität dieses Problems bewusst.
@@ -26,10 +24,8 @@ Aufgrund des Fehlens eines Beweises für die NP-Schwere oder eines effizienten L
 
 Algorithmus zu Pseudocode umbenennen
 
-Masse erzeugen:
-Verwandete Arbeiten mehr über RSA-Angriff schreiben siehe TODO
-Analyse der Mod-Funktion (optional)
-Analyse der Miller-Rabin-Funktion (optional)
+Auf dem Testsystem mit einem Intel i7-4770 und DDR3-1600 RAM konnten etwa Differenzen von TODO gemessen werden.
+
 
 Kapitel Implementation:
 Benchmark zu Eviction-Set Suche vervollständigen
@@ -41,26 +37,38 @@ Vervollständigung von StoreForward
 Kapitel Identifikation von Angriffszielen:
 Funktionsnamen besser kenntlich machen
 
-Beschreibung von Jan Tool und die Ergebnisse davon
-Wenn dann einleitungssatz hinzufügen
-%Zum Einsatz kam dabei ein Werkzeug (Welches ist das? Wie heißt es?), welches automatisch potenzielle Leakages aufdeckt.
+
 
 \todo{schreib bitte in die Bildunterschrift mit rein, was man hier sieht. Das gilt für alle Abbildungen, wo du das noch nicht tust}
 
 
 Diskussion:
-Ideen: 
-Ist die Eviction-Set-Search schnell genug für praktische Angriffe?\\
 
-Eventuell: Vergleiche Bremsverhalten mit clflush in native c code,
-Achtung aufwendig da Eviction-Set Zuordnung in c implementiert werden muss
 
 Schätze ab wann ein Angriff auf mp_gcd möglich wäre (evaluerien mit delay parameter)\\
 
+
+
+
 anführungszeichen fixen „Sub“
+
+
+
+
 
 check: 01.10: Prime and Probe überall zu Prime-and-Probe geändert
 01.10 : colliding address zu colliding-address
+
+Masse erzeugen:
+Beschreibung von Jan Tool und die Ergebnisse davon
+Wenn dann einleitungssatz hinzufügen
+%Zum Einsatz kam dabei ein Werkzeug (Welches ist das? Wie heißt es?), welches automatisch potenzielle Leakages aufdeckt.
+
+Verwandete Arbeiten mehr über RSA-Angriff schreiben siehe TODO
+Analyse der Mod-Funktion (optional)
+Analyse der Miller-Rabin-Funktion (optional)
+Eventuell: Vergleiche Bremsverhalten mit clflush in native c code,
+Achtung aufwendig da Eviction-Set Zuordnung in c implementiert werden muss
 
 
 %kopfzeile tabelle absetzen
