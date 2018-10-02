@@ -1,7 +1,8 @@
 \chapter{Schlussbetrachtung}
 \label{chapter:conclusions}
 
-In diesem Kapitel werden die wesentlichen Ergebnisse dieser Arbeit zusammengefasst und die gewonnenen Erkenntnisse bewertet (und im Hinblick auf die vier Ausgangsfragen Lösungsansätze präsentiert/beurteilt/überprüft).
+In diesem Kapitel werden die wesentlichen Ergebnisse dieser Arbeit zusammengefasst und die gewonnenen Erkenntnisse %im Hinblick auf die vier Ausgangsfragen
+überprüft.
 Abschließend wird ein Ausblick in die Zukunft der Cache-Angriffe im Allgemeinen sowie Browserangriffe im Speziellen gewährt.
 
 \section{Bewertung}
@@ -21,14 +22,12 @@ Der Angriff nutzt die spezifische Eigenschaft der Intel-Architektur aus, die den
 So ist der Angriff beispielsweise nicht auf Prozessoren des Konkurrenten AMD lauffähig.
 
 Ein großer Vorteil des Angriffs ist, dass er wenig Spuren nach der Ausführung hinterlässt.
-Trotz der Möglichkeit des Angriffs aus dem Browser heraus
-ist dieser in der Praxis aufwendig, (Nein, nur ein Prädikat und damit ein Hauptsatz)
-denn er ist speziell auf den Code einer Softwareversion abgestimmt, und diese muss zum Zeitpunkt des Angriffs laufen und die gewünschten Berechnungen ausführen. 
+Trotz der Möglichkeit des Angriffs aus dem Browser heraus ist dieser in der Praxis aufwendig, denn er ist speziell auf den Code einer Softwareversion abgestimmt, und diese muss zum Zeitpunkt des Angriffs laufen und die gewünschten Berechnungen ausführen. 
 Zudem ist nicht jeder Angriff ein Erfolg. So hat beispielsweise der native Angriff auf die RSA-Keygenerierung \cite{RSAKeyGeneration2} nur eine Erfolgsquote von etwa 28\%.
 
 Diesen Einschränkungen unterliegt auch die Leakage mit den Unklarheiten in Bezug auf die praktische Anwendung bei der RSA-Primzahlgenerierung (siehe Abschnitt \ref{leakageMozillaNSS} und \ref{LeakageOpenPGPjs}), wobei etwa folgendes Szenario denkbar ist:
 Die E-Mail-Zertifikate der neuen Studierenden der Universität zu Lübeck werden zum Beginn des Wintersemesters in einem Einführungskurs lokal erzeugt. 
-Eine Angreiferin (weiblich?) könnte versuchen, die Website zu manipulieren, welche die Zertifikatsgenerierung beschreibt.
+Eine Angreiferin könnte versuchen, die Website zu manipulieren, welche die Zertifikatsgenerierung beschreibt.
 Da der Zeitraum, in dem die Zertifikatsgenerierung stattfindet, bekannt sowie eingegrenzt ist und es viele potenzielle Opfer gibt, könnte sich der Angriff hier auszahlen.
 
 %wichtigste ergebnisse:
@@ -48,7 +47,7 @@ Da in Zukunft vermutlich kein eigener Count-Thread mehr nötig ist (siehe Abschn
 So kann ein Angriff entweder mit einem Thread weniger auskommen oder der frei gewordene Thread wird zum Bremsen des Codes verwendet.
 
 In Abschnitt \ref{relatedWorkHyperthreading} wurde beschrieben, dass erweiterte Angriffsmöglichkeiten bestehen, wenn der Prozess auf demselben physischen Kern wie dem des Opferprozesses läuft und im Browser der ausführende Kern nicht festgelegt werden kann.
-Als mögliche Lösung könnte die Angreiferin (weiblich?) $n-1$ Instanzen ihres (weiblich?) Angriffs starten, wobei $n$ der Anzahl der virtuellen Kerne entspricht. 
+Als mögliche Lösung könnte die Angreiferin $n-1$ Instanzen ihres Angriffs starten, wobei $n$ der Anzahl der virtuellen Kerne entspricht. 
 Somit würde durchgehend eine Instanz auf demselben physischen Kern wie dem des Opferprogramms laufen.
 Allerdings ist der ausführende Kern nicht während der gesamten Ausführungszeit fix, sodass verschiedene Instanzen zu unterschiedlichen Zeiten den Angriff ausführen müssten.
 Somit ist die Auslotung eines solche Angriffs und die Suche nach Möglichkeiten, die Wahl des ausführenden Kerns zu beeinflussen, lohnenswert, da eine Klasse von nativen Angriffen (siehe Abschnitt \ref{relatedWorkHyperthreading}) im Browser realisierbar würde.
@@ -92,8 +91,8 @@ Im Mainstream werden nicht exklusive L3-Caches eventuell mit der neuen Architekt
 Dies legt zumindest die angekündigte Verdoppelung des L2-Caches pro Kern bei gleichbleibender L3-Cache-Größe nahe.
 Die Prozessoren des Konkurrenten AMD hingegen sind aufgrund der exklusiven Caches \cite{CacheRyzen} von diesen Angriffen nicht betroffen.
 
-Cache-Angriffe im Browser sind allgegenwärtig und ihnen sollte von Softwareseite mit den genannten Gegenmaßnahmen begegnet werden, da Websprachen der Angreiferin (weiblich?) die komplette Kontrolle über den Code überlassen und hardwareseitige Lösungen erst in einigen Jahren flächendeckend verfügbar sein werden.
-(Wo kommen die Antworten auf die vier Eingangsfragen? Struktur der Arbeit inkl. Fazit ist mir nicht ganz klar; vielleicht rekurrierst du auf die Fragen im Fazit direkt, wenn es strukturell Sinn ergibt?)
+Cache-Angriffe im Browser sind allgegenwärtig und ihnen sollte von Softwareseite mit den genannten Gegenmaßnahmen begegnet werden, da Websprachen der Angreiferin die komplette Kontrolle über den Code überlassen und hardwareseitige Lösungen erst in einigen Jahren flächendeckend verfügbar sein werden.
+%(Wo kommen die Antworten auf die vier Eingangsfragen? Struktur der Arbeit inkl. Fazit ist mir nicht ganz klar; vielleicht rekurrierst du auf die Fragen im Fazit direkt, wenn es strukturell Sinn ergibt?)
 %Zusammenfassend muss in Zukunft die Gefahr von Cache-Angriffen im Browser stärker berücksichtigt und mit Gegenmaßnahmen begegnet werden, .
 %(Der letzte Satz muss konkreter über die von dir angesprochenen Gegenmaßnahmen Auskunft geben.)
 

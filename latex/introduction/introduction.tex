@@ -6,29 +6,30 @@
 %(Es fehlt mir ein einleitender Satz wie etwa "Im Bereich der IT-Sicherheit gewinnt der externe Zugriff auf Daten anderer (wer sind diese anderen genau?) zunehmende Bedeutung (gute Einleitung, aber warum und für wen sind diese Angriffe interessant?).") 
 Seitenkanalangriffe sind ein mächtiger Angriff, da sie es unter anderem erlauben, geheime Informationen wie den kryptografischen Schlüssel aus einem Gerät wie einer Chipkarte zu extrahieren.
 Hierfür wird beispielsweise der Stromverbrauch oder die Berechnungsdauer verschiedener Ein- und Ausgaben gemessen.
-Bei solchen physikalischen Seitenkanalangriffen ist die Angreiferin (warum weiblich?) gezwungen, eine gewisse ("gewiss" ist zu ungenau, hast du Meter- oder Kilometerangaben, Reichweiten, etc.?) örtliche Nähe zum System zu besitzen.
+Bei solchen physikalischen Seitenkanalangriffen ist die Angreiferin gezwungen, eine örtliche Nähe zum System zu besitzen.
 
 Seitenkanalangriffe auf die Mikroarchitektur eines Prozessors sind von dieser Einschränkung befreit, da die
-Ausführung von einem /dem Programmcode (welchem? oder gibt es nur einen?)
+Ausführung von Programmcode %einem /dem  (welchem? oder gibt es nur einen?) allgemein gemeint
 auf dem Zielsystem ausreicht.
 Seit der ersten Beschreibung von Seitenkanalangriffen auf die Mikroarchitektur vor über zehn Jahren \cite{FirstCacheAttackDES} sind diese zu einem ernst zu nehmenden Sicherheitsrisiko herangewachsen \cite{OpenBSDHyperthreading}.
 
 Auf der Mikroarchitekturebene konkurriert der Opferprozess mit dem Angriffsprozess um die Ressourcen des Prozessors, selbst wenn der Angriffsprozess mit keinen außerordentlichen Privilegien ausgestattet ist.
-Aufgrund dieser Konkurrenz kann die Angreiferin (erneut weiblich? generneutrale Formulierung: der Angreifende oder die angreifende Person) Informationen über den Opferprozess gewinnen, indem sie (erneut weiblich?) durch Messungen Varianzen beim Zugriff auf die Ressourcen feststellt.
+Aufgrund dieser Konkurrenz kann die Angreiferin %(erneut weiblich? generneutrale Formulierung: der Angreifende oder die angreifende Person)
+Informationen über den Opferprozess gewinnen, indem sie durch Messungen Varianzen beim Zugriff auf die Ressourcen feststellt.
 
-Eine Reihe von Ressourcen hat sich als problematisch erwiesen (Warum?), etwa die Einheiten der Sprungvorhersage oder der Return-Stack-Buffer.
+Eine Reihe von Ressourcen hat sich durch das Leaken von Informationen als problematisch erwiesen, etwa die Einheiten der Sprungvorhersage oder der Return-Stack-Buffer.
 Das mit Abstand größte Problem stellen die vielfältigen Caches dar, welche eine Überwachung der Speicherzugriffe des Opferprozesses erlauben.
 Diese ermöglichen es, geheime Informationen wie kryptografische Schlüssel von RSA \cite{CacheBleedOpenSSLRSA} oder AES \cite{BernsteinAES} aus dem Opferprozess zu extrahieren.
 Weitere Anwendungsmöglichkeiten sind Keylogger \cite{Keylogger} und Überwachungen der Webseitenaufrufe oder Nutzeraktivitäten \cite{TheSpyInTheSandbox}.
 
 Es ist trotz dieser Möglichkeiten wenig darüber bekannt, ob Cache-Angriffe praktisch relevant sind oder wie häufig sie eingesetzt werden.
-Einem breiten Angriffsvektor steht das im Großteil der Literatur angenommene Angriffsszenario entgegen, welches die Ausführung von einem nativen Code auf dem Opfersystem voraussetzt.
-Dieses Szenario hat seine Berechtigung unter anderem bei Angriffen auf virtuelle Maschinen, wo der Code der Angreiferin (weiblich?) auf derselben Hardware wie der des Opferprozesses läuft (Cross-VM-Attack).
+Einem breiten Angriffsvektor steht das im Großteil der Literatur angenommene Angriffsszenario entgegen, welches die Ausführung von nativem Code auf dem Opfersystem voraussetzt.
+Dieses Szenario hat seine Berechtigung unter anderem bei Angriffen auf virtuelle Maschinen, wo der Code der Angreiferin auf derselben Hardware wie der des Opferprozesses läuft (Cross-VM-Attack).
 
 Auch Mehrbenutzersysteme, wie sie häufig in Unternehmen und Organisationen anzutreffen sind, fallen unter dieses Szenario.
-So ist es einem Studierenden (welche Voraussetzunge muss der Studierende mitbringen? z.B. 3. Mastersemester oder mit Kenntnisse über ...) der Universität zu Lübeck jederzeit möglich, sich per SSH auf einen beliebigen Pool-Rechner einzuloggen, unabhängig davon, ob der Rechner lokal in Benutzung ist.
+So ist es jedem Studierenden der Universität zu Lübeck jederzeit möglich, sich per SSH auf einen beliebigen Pool-Rechner einzuloggen, unabhängig davon, ob der Rechner lokal in Benutzung ist.
 
-In einem typischen Endbenutzerszenario ist es realitätsfern vorauszusetzen, dass vom Opfer ein nativer Angriffscode ausgeführt wird.
+In einem typischen Endbenutzerszenario ist es realitätsfern vorauszusetzen, dass vom Opfer nativer Angriffscode ausgeführt wird.
 Denn den meisten Benutzern ist die einhergehende Gefahr der Ausführung von unbekanntem nativem Code bewusst, und zudem würden mögliche Cache-Angriffe das geringste Problem darstellen. (Warum?)
 
 Daher gibt es Bestrebungen, Cache-Angriffe auf Endbenutzergeräte zu ermöglichen \cite{TheSpyInTheSandbox,DriveByPaper,ASLROnTheLine}, indem der Angriffscode in Websprachen wie Javascript übersetzt und vom Browser des Opfers ausgeführt wird.
@@ -47,10 +48,9 @@ Außerdem werden neue Leakages in der RSA-Primzahlgenerierung von Mozilla NSS un
 Im Laufe der Arbeit werden folgende Fragen beantwortet:
 
 \begin{enumerate}
-\item Sind im Oktober 2018 Cache-Angriffe aus dem Browser heraus möglich? (Versuche die Frage so zu formulieren, dass nicht einfach nur eine Ja- /Nein Antwort möglich ist, sondern in der Fragestellung bereits eine Begründung indiziert wird. (W-Fragen, wie bei 2., 3., 4.)
+\item Unter welchen Bedingungen sind im Oktober 2018 Cache-Angriffe aus dem Browser heraus möglich?
 Die Arbeiten \cite{TheSpyInTheSandbox,DriveByPaper,ASLROnTheLine} haben demonstriert, dass Cache-Angriffe im Browser möglich sind.
-Allerdings sind diese vor den Gegenmaßnahmen der Browserhersteller gegen Meltdown und Spectre veröffentlicht worden. (Ist diese Frage für deine Arbeit noch relevant, wenn inzwischen schon eine Antwort gefunden und veröffentlicht worden ist? Willst du diese noch einmal überprüfen oder modifizieren?)
-
+Allerdings sind diese vor den Gegenmaßnahmen der Browserhersteller gegen Meltdown und Spectre veröffentlicht worden.
 
 \item Welchen Einschränkungen unterliegen die Cache-Angriffe im Browser gegenüber Cache-Angriffen mit nativem Code?
 
@@ -75,7 +75,7 @@ Dies wird passieren, sobald Maßnahmen gegen Meltdown und Spectre implementiert 
 
 Beim Prime-and-Probe-Angriff steht die Browserimplementation einer nativen Implementation in nichts nach. Allerdings ist neben den Kosten für den Counter-Thread die zeitliche Auflösung des Angriffs um \todo{c code slot time messen} TODO \% reduziert.
 
-Der Opferprozess wird oft künstlich gebremst, da die Berechnungen auch beim Angriff mit dem nativen Code häufig zu schnell sind.
+Der Opferprozess wird oft künstlich gebremst, da die Berechnungen auch beim Angriff mit nativem Code häufig zu schnell sind.
 Auch im Browser lassen sich Methoden umsetzen, um den Opferprozess zu bremsen. %\todo{bremsvergleich c vs wasm/js}
 Aufgrund der fehlenden clflush-Instruktion, ist die damit verwendete Bremsmethode im Browser nicht umsetzbar.
 Anhand eines Angriffs auf die RSA-Schlüsselgenerierung wird gezeigt, dass die Portierung eines nativ laufenden Angriffs aufgrund dieser Einschränkungen nicht immer möglich ist.
@@ -95,7 +95,7 @@ Damit kann die Suche gegenüber dem optimierten Standardalgorithmus um \todo{Ben
 
 
 Es wurden sowohl die Schlüsselgenerierung von Mozilla NSS als auch von OpenPGP.js auf Leakages untersucht. 
-Zum Einsatz kam dabei ein Werkzeug (Welches ist das? Wie heißt es?), welches automatisch potenzielle Leakages aufdeckt.
+%Zum Einsatz kam dabei ein Werkzeug (Welches ist das? Wie heißt es?), welches automatisch potenzielle Leakages aufdeckt.
 Sowohl in der Primzahlgenerierung von Mozilla NSS als auch OpenPGP.js wurden Leakages entdeckt, welche die verwendeten Primzahlen in einem Gleichungssystem beschreiben.
 Es konnte noch nicht abschließend geklärt werden, ob diese Gleichungssysteme bei praktischen Instanzen wie RSA-2048 in annehmbarer Zeit gelöst werden können.
 
@@ -103,7 +103,7 @@ Es konnte noch nicht abschließend geklärt werden, ob diese Gleichungssysteme b
 Des Weiteren wurde ein bekannter Cache-Angriff auf die RSA-Schlüsselgenerierung in OpenSSL nach Mozilla NSS portiert.
 Der ursprüngliche Angriff setzte die Ausführung nativen Codes voraus, wobei in dieser Arbeit eine Umsetzung im Browser geprüft wurde.
 Dabei konnten mehrere Probleme identifiziert werden, welche Portierungen von nativen Cache-Angriffen hin zu Implementierungen im Browser erschweren. 
-Diese werden in Kapitel \ref{chapter:results} und \ref{chapter:discussion} genauer beschrieben und diskutiert (evtl. Operator beurteilt/bewertet/überprüft?).
+Diese werden in Kapitel \ref{chapter:results} und \ref{chapter:discussion} genauer beschrieben und beurteilt.
 
 \section{Forschungsstand/Verwandte Arbeiten}
 \label{related_work}
@@ -122,7 +122,7 @@ und Angriffe auf die RSA Schlüsselgenerierung gegeben werden. Zudem soll eine A
 
 \subsection{Cache-Angriffe im Browser}
 
-Alle oben zitierten Arbeiten setzen die Ausführung von einem nativen Code auf dem Opfersystem voraus. Im Jahr 2015 wurde die erste Arbeit \cite{TheSpyInTheSandbox}, welche sich mit Cache-Angriffen im Browser beschäftigt, veröffentlicht.
+Alle oben zitierten Arbeiten setzen die Ausführung von nativem Code auf dem Opfersystem voraus. Im Jahr 2015 wurde die erste Arbeit \cite{TheSpyInTheSandbox}, welche sich mit Cache-Angriffen im Browser beschäftigt, veröffentlicht.
 Die Autoren konnten den Aufruf von verschiedenen bekannten Webseiten unterschiedlichen Cache-Zugriffsmustern zuordnen, um so das Surfverhalten von Nutzern zu überwachen.
 Gras et al. \cite{ASLROnTheLine} konnten im Browser erfolgreich die Speicherverwürfelung ASLR aushebeln, wobei sich der Angriff aufgrund der niedrigen zeitlichen Auflösung nicht zur Schlüsselextraktion eignet.
 
@@ -214,15 +214,15 @@ Dabei auftretende Fallstricke, wie beispielsweise der fehlende clflush-Befehl im
 
 \par \medskip                       
 
-Die Ergebnisse der Arbeit werden im \ref{chapter:discussion}. Kapitel (besprochen) (hier anderen Operator verwenden: erörtert/bewertet/dazu Stellung genommen, etc.).
+Die Ergebnisse der Arbeit werden im \ref{chapter:discussion}. Kapitel bewertet.
 So wird beschrieben, welche zusätzlichen Auswirkungen die Hardware und Software des Opfers auf die Erfolgswahrscheinlichkeit eines Angriffs hat.
-Gegenmaßnahmen werden erläutert, indem (und) die in diesem Kontext wichtige Rolle der Browserhersteller untersucht wird? (genannt) (anderer Operator: Hier nennst du genaugenommen schon die wichtige Rolle der Browserherstellung, evtl. indem Verknüpfung?).
+Gegenmaßnahmen werden erläutert, indem die in diesem Kontext wichtige Rolle der Browserhersteller untersucht wird.
 Des Weiteren werden Vorteile der RSA-Schlüsselgenerierung in OpenPGP.js gegenüber Mozilla NSS dargestellt.
 Am Schluss des Kapitels wird die Umsetzung der populären Meltdown-und-Spectre Angriffe im Webkontext beurteilt.
 
 \par \medskip  
 
-Das letzte und \ref{chapter:conclusions}. Kapitel wird die vorherigen Ergebnisse abschließend bewerten und einordnen (worein ordnest du ein?).
+Das letzte und \ref{chapter:conclusions}. Kapitel wird die vorherigen Ergebnisse abschließend bewerten.
 Zusätzlich wird ein Ausblick gewährt, welche technischen Fortschritte und Erkenntnisse die Angriffsmöglichkeiten im Browser verbessern würden.
 Zudem wird ein Blick auf andere Endgeräte und deren Angreifbarkeit geworfen.
 Abschließend wird beschrieben, wie Angriffe verhindert werden können und welche Forschung in diesen Bereichen zukünftig notwendig ist.
