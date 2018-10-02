@@ -11,16 +11,16 @@ So ein Angriff wird in Scriptsprachen wie Javascript implementiert und nutzt den
 Der Angriff ist weder auf einen Exploit im Browser noch auf fahrlässiges Verhalten der Nutzer angewiesen.
 
 
-%was passiert in dieser Arbeit/Was sind wesentlich Ergenisse?
+%was passiert in dieser Arbeit/Was sind wesentliche Ergenisse?
 %-Neue potenzielle gefährliche leakage in NSS und OpenPGP.js
-%-versuchte Portierung eines nativen RSA-Schlüsselgenerierungsangriff auf OpenSSL zu browsbasierten Angriff auf NSS
+%-versuchte Portierung eines nativen RSA-Schlüsselgenerierungsangriff auf OpenSSL zu Browser-basierten Angriff auf NSS
 %-Probleme bei Portierung wie Bremsen, verminderte Angriffsgeschwindigkeit im Browser werden analysiert
-%-Eviction-Set-Suchalgorithmus wird verbessert, neue Variante beschrieben und mit altem Algorithmus verglichen
+%-Eviction-Set-Suchalgorithmus wird verbessert, neue Variante beschrieben und mit altem Algorithmus vergleichen
 
 %\todo{wurde der Drive by angriff nachimplementiert und es wurde versucht, den nativen Angriff auf RSA-Primzahlgenerierung (QUELLE) in den Browser zu portieren. Zusätzlich wurden} 
 
-In dieser Arbeit wird ein Browser-basierter Prime-and-Probe-Angriff implementiert und die Portierung eines nativen Angriffs auf die RSA-Primzahlgenerierung \cite{RSAKeyGeneration2} in OpenSSL hin zum einem Browser-basierten Angriff auf Mozilla NSS untersucht.
+In dieser Arbeit wird ein Browser-basierter Prime-and-Probe-Angriff implementiert und die Portierung eines nativen Angriffs auf die RSA-Primzahlgenerierung \cite{RSAKeyGeneration2} in OpenSSL hin zu einem Browser-basierten Angriff auf Mozilla NSS untersucht.
 Zusätzlich werden neue Leakages in der RSA-Primzahlgenerierung von Mozilla NSS und OpenPGP.js beschrieben und analysiert.
-Des Weiteren wird ein Verhalten von Intel-Prozessoren ausgenutzt um einen neuen Algorithmus zum Finden von Eviction-Sets zu implementieren, der die in der Praxis wichtige Initalisierungsphase eines Angriffs beschleunigt. 
+Des Weiteren wird ein Verhalten von Intel-Prozessoren ausgenutzt, um einen neuen Algorithmus zum Finden von Eviction-Sets zu implementieren, der die in der Praxis wichtige Initalisierungsphase eines Angriffs beschleunigt. 
 
 %(Hier fehlt ein 2. Satzteil wie etwa: "und damit den Zugriff auf die Opferdateien sicher ermöglicht.") 
