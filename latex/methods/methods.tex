@@ -421,7 +421,7 @@ Hierbei werden die Einträge des Eviction-Sets analog zu einer verketten List ge
 \section{Verbesserte Eviction-Set Suche mittels Store-to-load-forwarding}
 \label{StoreFor}
 
-Die Forscher Saad Islam und Ahmad Moghimi \cite{TODO} sind auf ein Verhalten bei Intel-Prozessoren gestoßen, das das Auffinden von Adressen ermöglicht, deren 20 letzten physischen Bits gleich sind, ohne auf Techniken wie Huge-Pages zugreifen zu müssen.
+Die Forscher Saad Islam und Ahmad Moghimi des Worcester Polytechnic Institute sind auf ein Verhalten bei Intel-Prozessoren gestoßen, das das Auffinden von Adressen ermöglicht, deren 20 letzten physischen Bits gleich sind, ohne auf Techniken wie Huge-Pages zugreifen zu müssen.
 Solche Adressen seien nachfolgend \textit{colliding-addresses} genannt.
 Die Idee hierbei ist, den Store-Buffer in einer Schleife mit einer Vielzahl von Schreibbefehlen zu fluten und direkt danach eine Zeitmessung für das Lesen einer Adresse $x$ auszuführen.
 

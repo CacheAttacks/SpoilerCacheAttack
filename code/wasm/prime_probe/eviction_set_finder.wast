@@ -18492,7 +18492,7 @@
   )
   (i32.store
    (get_local $$17)
-   (i32.const 9437184)
+   (i32.const 11534336)
   )
   (set_global $STACKTOP
    (get_local $sp)

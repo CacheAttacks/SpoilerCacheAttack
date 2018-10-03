@@ -34,7 +34,7 @@ Die Zuordnung der Prozesse zu den virtuellen Kernen im Browser kann nicht beeinf
 Allerdings sollten hier auch die Kosten gegen gerechnet werden, die für die Erkennung der veränderten Timerauflösung entstehen.
 
 Aufgrund der beschrieben Probleme und der Auswirkungen der Abmilderungen ebendieser ist es besser, auf mindestens drei physische Kerne zurückzugreifen.
-Sobald die Browserhersteller die Auflösung von $performance.now()$ wieder in den Nanosekundenbereich hieven, wären auch zwei physische Kerne ausreichend. 
+Sobald die Browserhersteller die Auflösung von $performance.now()$ wieder in den Nanosekundenbereich erhöhen, wären auch zwei physische Kerne ausreichend. 
 
 Wenn das angegriffene Endgerät $n$ virtuelle Kerne besitzt, können also $n-3$ für die Verlangsamung des Opferprogramms eingesetzt werden.
 
@@ -271,7 +271,7 @@ So verlangsamt die Kombination eines Memory-Locking-Threads mit einem Prime-Spam
 Wenn der Memory-Locking-Thread zusammen mit zwei Prime-Spam-Threads auf die Cache-Lines $V1_1$ und $V2_4$ (eine der besten Kombinationen nach Abschnitt \ref{MoreIsBetter}) genutzt wird, verlangsamt sich die Shift-Operation im Mittel auf 1337 Taktzyklen.
 Dies ist besser als alle Ergebnisse, die mit einem Memory-Locking-Thread und drei Prime-Spam-Threads sowie mit ausschließlich drei Prime-Spam-Threads (siehe Abschnitt \ref{MoreIsBetter}) erzielt werden konnten.
 Zusätzlich ist zu bemerken, dass durch den Memory-Locking-Angriff die Ausführungszeit der Shift-Operation sehr stark schwankt.
-So sind bei im Mittel 1337 Taktzyklen einige Operationen mit \~3000 Taktzyklen zu beobachten.
+So sind bei im Mittel 1337 Taktzyklen einige Operationen mit $\sim$3000 Taktzyklen zu beobachten.
 Diese entstehen, wenn Codeteile der Shift-Operation gerade durch den Prime-Spam-Thread aus dem Cache verdrängt wurden und der Ladevorgang des Codes aus dem Hauptspeicher mit der atomaren Operation zusammenfällt.
 
 Somit kann festgehalten werden, dass eine Kombination von Prime-Spam und Memory-Locking im Mittel besser bremst als eine der beiden Techniken allein.
@@ -491,6 +491,7 @@ Auch Spectre
 %-Benchmarks von Mozilla NSS und OpenPGPjs ohne Divisionstests
 
 \section{Javacript vs. Webassembly}
+\label{JavascriptVSWasm}
 
 Wie in Kapitel \ref{chapter:preparation} beschrieben, ist der Prime-and-Probe-Angriff in Webassembly geschrieben.
 Der Ablauf einer solchen Prime-and-Probe-Operation wird in Pseudocode \ref{alg:WasmPrimeAndProbe} beschrieben.
@@ -520,7 +521,7 @@ So dauert eine Prime-and-Probe-Operation in Webassembly bei keiner Aktivität au
 
 In der Javascript-Implementation und erhöht sich die Zeit bei keiner Aktivität auf dem Cache-Set um etwa 20 ns auf etwa 210 ns, wobei die benötigte Zeit bei einem aktiven Cache-Set um etwa 40 ns auf 400 ns sinkt.
 
-Somit lässt sich mit der Umsetzung der Prime-and-Operation in Javascript ein \~ 10\% schneller Prime-and-Probe-Vorgang realisieren.
+Somit lässt sich mit der Umsetzung der Prime-and-Operation in Javascript ein $\sim$ 10\% schneller Prime-and-Probe-Vorgang realisieren.
 Jedoch neigen die gemessenen Zugriffswerte in Javascript phasenweise zu starkem Rauschen, so sind auch bei keiner Aktivität auf dem Cache-Set reproduzierbar mehr als hundert Mal hintereinander Zugriffszeiten von über 400 zu beobachten.
 Diese verrauschten Phasen erklären die längere mittlere Dauer von 210 ns bei keiner Aktivität auf dem Cache-Set.
 
