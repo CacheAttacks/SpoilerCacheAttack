@@ -137,18 +137,18 @@ Das Ziel ist es, die Zahl \textit{random_num} oder Teile davon zu rekonstruieren
 Der Siebvorgang sticht hier besonders hervor, da dort unabhängig von \textit{random_num} genau 6541 - das ist Anzahl der Primzahlen von 3 bis $2^{16}$ - Modulo-Operationen mit vorher bekannten Primzahlen auf \textit{random_num} ausgeführt werden.
 
 Typische RSA-Schlüssel besitzen heute eine Länge von 2048 Bit, sodass \textit{random_num} etwa eine Länge von 1024 Bit besitzt.
-Deswegen dauert die Berechnung von $\text{\textit{random_num}} \mod \text{\textit{small\_prime}}$ im Schnitt TODO Taktzyklen.
-Somit ist bekannt, dass auf das \textit{primes_tab}-Array nur jede TODO Taktzyklen einmal zugegriffen wird.
+Die Berechnung von $\text{\textit{random_num}} \mod \text{\textit{small\_prime}}$ dauert dann im Schnitt 4800 Taktzyklen.
+Somit ist bekannt, dass auf das \textit{primes_tab}-Array nur etwa jede 4800 Taktzyklen einmal zugegriffen wird.
 
 Das \textit{primes_tab}-Array ist vom Datentyp mp_digit, der bei einer Linux x64-Kompilierung gleichbedeutend mit einem 8 Byte Integer ist.
 Somit hat das \textit{primes_tab}-Array eine Gesamtgröße von $8 \cdot 6541 = 52328$ Bytes und liegt in $\lceil 52328 / 64 \rceil = 818$ verschiedenen Cache-Lines beziehungsweise $\lceil 52328 / 4096 \rceil = 13$ Pages.
 
-Angenommen, die zu \text{\textit{primes_tab}}[0-7] gehörige Cache-Line wird mittels Prime-and-Probe überwacht, dann können nach Start des Siebvorgangs 8 Zugriffe mit jeweils etwa TODO Taktzyklen Abstand gemessen werden.
+Angenommen, die zu \text{\textit{primes_tab}}[0-7] gehörige Cache-Line wird mittels Prime-and-Probe überwacht, dann können nach Start des Siebvorgangs 8 Zugriffe mit jeweils etwa 4800 Taktzyklen (mittlere Dauer einer Iteration von \textit{mpp_sieve} bei RSA 2048) Abstand gemessen werden.
 %(besser?)
 Nach dem 8. Zugriff wird auf die Cache-Line \text{\textit{primes\_tab}}[8-15] gewechselt, um dort die nächsten 8 Zugriffe zu messen und so weiter.
 
 Um die notwendigen Cache-Sets zu finden, muss nur jeweils ein Cache-Set pro 4-KiB Page identifiziert werden, da wie bereits oben erwähnt die Adressen innerhalb einer Page identisch sind.
-Das Zugriffsmuster auf jeder Cache-Line des \textit{primes_tab}-Array entspricht immer 8 Zugriffen mit jeweils TODO Taktzyklen Pause. Außerdem liegt das \textit{primes_tab}-Array immer an derselben Adresse im Speicher.
+Das Zugriffsmuster auf jeder Cache-Line des \textit{primes_tab}-Array entspricht immer 8 Zugriffen mit jeweils etwa 4800 Taktzyklen Pause. Außerdem liegt das \textit{primes_tab}-Array immer an derselben Adresse im Speicher.
 Die Angreiferin kann selber Schlüsselgenerierungen anstoßen, sodass es ihr möglich ist, die passenden Eviction-Sets für das \textit{primes_tab}-Array zu finden.
 
 Der Schreibzugriff auf das \textit{sieve}-Array in der For-Schleife (siehe \ref{alg:sievePrimeGenerationNSS} Zeile 9-11) ist mit einer Laufzeit von etwa 100 Taktzyklen zu schnell, um einzelne Zugriffe unterscheiden zu können.
@@ -174,7 +174,7 @@ Angenommen die Bits 6 bis 11 der Adressen eines Eviction-Sets sind alle 0.
 Nun wird Bit 6 aller Adressen auf 1 gesetzt, womit die Adressen ein neues benachbartes Eviction-Set bilden.
 
 Das \textit{sieve}-Array ist in 512 Cache-Lines aufgeteilt, auf die wie oben beschrieben nacheinander zugegriffen wird.
-Durch die Berechnung von $\text{\textit{random_num}} \mod \text{\textit{small_prime}}$ entsteht zwischen den Zugriffen auf das \textit{sieve}-Array ist eine Pause von TODO Taktzyklen.
+Durch die Berechnung von $\text{\textit{random_num}} \mod \text{\textit{small_prime}}$ entsteht zwischen den Zugriffen auf das \textit{sieve}-Array eine Pause von etwa 4800 Taktzyklen.
 Dagegen ist die eigentliche Aktivität auf dem \textit{sieve}-Array (Zeile 9-11) mit unter 100 Taktzyklen pro Iteration vergleichsweise kurz.
 Daher muss die Angreiferin nach dem Zugriff auf das \textit{primes_tab}-Array eine Reihe von Eviction-Sets primen, warten, bis auf das \textit{primes_tab}-Array erneut zugegriffen wird, und dann proben.
 
@@ -350,8 +350,8 @@ Die Differenz von $\text{\textit{random_num}}_k$ und $\text{\textit{random_num}}
 Somit könnten aus den Beobachtungen Gleichungen folgender Form aufgestellt werden:
 
 \begin{align*}
-    (\text{\textit{random_num}} + b) \mod \text{\textit{small_prime}}_j \not\equiv 0 &\text{ mit } b \in [k\twodot$S1_6$k] \text{ und } j < i\\
-    (\text{\textit{random_num}} + b) \mod \text{\textit{small_prime}}_i \equiv 0 &\text{ mit } b \in [k\twodot$S1_6$k]
+    (\text{\textit{random_num}} + b) \mod \text{\textit{small_prime}}_j \not\equiv 0 &\text{ mit } b \in [k\twodots 6k] \text{ und } j < i\\
+    (\text{\textit{random_num}} + b) \mod \text{\textit{small_prime}}_i \equiv 0 &\text{ mit } b \in [k\twodots 6k]
 \end{align*}
 
 Es steht die Frage im Raum, wie viele Gleichungen für die vollständige Rekonstruktion einer Primzahl benötigt werden.
@@ -363,7 +363,7 @@ zeigt die zu erwartenden Werte für verschiedene Primzahlbitlängen.
 Angenommen $\text{\textit{small_prime}}_i$ hat im Mittel eine Bitlänge von $l$, dann liefert die zweite Gleichung $l$ Bit an Information über $(\text{\textit{random\_num}} + b)$.
 Allerdings erhöht sich durch $b$ die Anzahl der möglichen Lösungen mit jeder Gleichung um den Faktor 6.
 Analog zu den Betrachtungen im Abschnitt \ref{leakageMozillaNSS} kann jedoch die Zusatzinformation $2^{bits} < \text{\textit{random_num}} < 2^{bits+1}$ herangezogen werden, um den Lösungsraum einzuschränken.
-Somit gibt es bei $t$-Gleichungen $6^t$ mögliche Lösungen, welche sich auf das Intervall $[0 \twodot$S1_2$^{l\cdot t}]$ verteilen, wobei nur Lösungen im Intervall $[2^{bits} \twodots 2^{bits+1}]$ valide sind.
+Somit gibt es bei $t$-Gleichungen $6^t$ mögliche Lösungen, welche sich auf das Intervall $[0 \twodots 2^{l\cdot t}]$ verteilen, wobei nur Lösungen im Intervall $[2^{bits} \twodots 2^{bits+1}]$ valide sind.
 Wenn $t > \lceil bits/10 \rceil$ gilt, dann ist $6^t/2^{l \cdot t} \cdot 2^{bits}$ eine Abschätzung, wie viele der möglichen Lösungen im Mittel im validen Intervall $[2^{bits} \twodots 2^{bits+1}]$ zu finden sind.
 
 Es bleibt zu klären, wie viele der Gleichungen des 2. Typs erwartet werden können, oder anders ausgedrückt, wie viele Zahlen im Mittel getestet werden müssen, bis eine davon die Primzahltests besteht. 
@@ -569,7 +569,6 @@ Dies erschwert die richtige Bestimmung der hinteren $Z_i$, wobei diese mit dem o
 Wie im vorherigen Abschnitt beschrieben, muss die Angreiferin die Werte $Z_i$ bestimmen.
 Hierzu bietet es sich an, die Codefragmente zu überwachen, welche die Shift- beziehungsweise Subtraktionsfunktionen ausführen.
 
-\label{fig:covert_channel}
 \begin{figure}[h]
 \centering
 \begin{scaletikzpicturetowidth}{\textwidth}
@@ -593,10 +592,11 @@ Hierzu bietet es sich an, die Codefragmente zu überwachen, welche die Shift- be
 \end{tikzpicture}
 \end{scaletikzpicturetowidth}
 \caption{Zeigt die Funktionen welche beim Ausführen der Shift- und Subtraktions-Operation in Mozilla NSS aufgerufen werden.}
+\label{fig:GCDcallstack}
 \end{figure}
 
 In Mozilla NSS wird die Shift-Operation durch die Funktion \textit{s_mp_div_2} umgesetzt.
-Diese ist wiederum nur ein Wrapper und ruft intern die \textit{s_mp_div_2d}-Funktion mit dem Parameter 1 auf, welches dem Teilen durch 2 entspricht.
+Diese ist wiederum nur ein Wrapper und ruft intern die \textit{s_mp_div_2d}-Funktion mit dem Parameter 1 auf, welches dem Teilen durch 2 entspricht (siehe auch Abbildung \ref{fig:GCDcallstack}).
 Die \textit{s_mp_div_2d}-Funktion setzt die Division mittels der \textit{s_mp_rshd}-Funktion (Rechtsshift) um. 
 Am Ende der \textit{s_mp_div_2d}-Funktion erfolgt ein Funktionsaufruf an \textit{s_mp_clamp}, um die entstandenen führenden Nullen zu entfernen.
 Welche Adressen die Funktionen im Assemblercode haben, ist in Tabelle \ref{tbl:assOffsetShift} ersichtlich. 
@@ -814,7 +814,7 @@ In den obigen Tabellen wurde jeweils nur eine Cache-Line gebremst.
 Tabelle \ref{tbl:PerformanceDegMultiple} zeigt, lässt sich der Bremseffekt verbessern, wenn statt einer mehrere Cache-Lines gebremst werden.
 
 \begin{table}[h]
-\caption{RSA-2048 Performance-Degradation-Attack mittels Prime-Spam auf mehrere Cache-Lines. Für die Auflösung der Cache-Line Ids siehe Tabelle \ref{tbl:PerformanceDegShift}. Die 2. Spalte gibt der Übersicht halber nur die Funktionen innerhalb der Cache-Lines (1. Spalte) an, welche bei der Berechnung der Shift-Operation relevant sind. So wird etwa die Funktion $s\_mp\_free$ in der ersten Zeile nicht aufgeführt, obwohl die Cache-Line $V1_1$ Teile des Codes von $s\_mp\_free$ enthält. Aus Platzgründen wurde die Funktionsnamen gekürzt, wobei für den vollen Funktionsnamen $*$ mit $s_mp_$  zu substituieren ist.}
+\caption{RSA-2048 Performance-Degradation-Attack mittels Prime-Spam auf mehrere Cache-Lines. Für die Auflösung der Cache-Line Ids siehe Tabelle \ref{tbl:PerformanceDegShift}. Die 2. Spalte gibt der Übersicht halber nur die Funktionen innerhalb der Cache-Lines (1. Spalte) an, welche bei der Berechnung der Shift-Operation relevant sind. So wird etwa die Funktion \textit{s_mp_free} in der ersten Zeile nicht aufgeführt, obwohl die Cache-Line $V1_1$ Teile des Codes von \textit{s_mp_free} enthält. Aus Platzgründen wurde die Funktionsnamen gekürzt, wobei für den vollen Funktionsnamen $*$ mit \textit{s_mp_}  zu substituieren ist.}
 \label{tbl:PerformanceDegMultiple}
 \begin{tabular}{llccc}
 Cache-Line IDs   & \begin{tabular}[c]{@{}l@{}}Relevante Funktion(en) \\ innerhalb der Cache-Line\end{tabular} & Shift & Sub & mp\_gcd \\

@@ -46,11 +46,16 @@ Eine offene Frage ist daher, ob im Webkontext bessere Optionen zum Bremsen von P
 Da in Zukunft vermutlich kein eigener Count-Thread mehr nötig ist (siehe Abschnitt \ref{GooglePageIsolation}), sinkt der Ressourcenbedarf des Angriffs um einen Thread.
 So kann ein Angriff entweder mit einem Thread weniger auskommen oder der frei gewordene Thread wird zum Bremsen des Codes verwendet.
 
-In Abschnitt \ref{relatedWorkHyperthreading} wurde beschrieben, dass erweiterte Angriffsmöglichkeiten bestehen, wenn der Prozess auf demselben physischen Kern wie dem des Opferprozesses läuft und im Browser der ausführende Kern nicht festgelegt werden kann.
+Wenn der Angriffsprozess auf demselben physischen Kern wie der Opferprozesses läuft, ergeben sich weitergehende Angriffsmöglichkeiten.
+So kann beispielsweise eine erhöhte räumliche Auflösung ermöglicht werden, welche über die übliche 64 Byte Cache-Line-Auflösung hinausgeht \cite{MemJam}.
+Ein weiterer im Juli 2018 veröffentlichter Angriff \cite{TLBleed} nutzt konkurrierende Zugriffe auf den Translation lookaside buffer(TLB) aus, welcher zwischen zwei Hyperthreads eines selben physischen Kerns geteilt ist.
+Im Zuge der Veröffentlichung wurde im Betriebssystem OpenBSD Hyperthreading auf allen Intel-Prozessoren standardmäßig deaktiviert \cite{OpenBSDHyperthreading}.
+
+Wie schon in vorherigen Abschnitten erwähnt wurde, kann im Browser nicht ohne Weiteres ein Kern festgelegt werden, auf dem der Angriffscode ausgeführt wird.
 Als mögliche Lösung könnte die Angreiferin $n-1$ Instanzen ihres Angriffs starten, wobei $n$ der Anzahl der virtuellen Kerne entspricht. 
 Somit würde durchgehend eine Instanz auf demselben physischen Kern wie dem des Opferprogramms laufen.
 Allerdings ist der ausführende Kern nicht während der gesamten Ausführungszeit fix, sodass verschiedene Instanzen zu unterschiedlichen Zeiten den Angriff ausführen müssten.
-Somit ist die Auslotung eines solche Angriffs und die Suche nach Möglichkeiten, die Wahl des ausführenden Kerns zu beeinflussen, lohnenswert, da eine Klasse von nativen Angriffen (siehe Abschnitt \ref{relatedWorkHyperthreading}) im Browser realisierbar würde.
+Somit ist die Auslotung eines solche Angriffs und die Suche nach Möglichkeiten, die Wahl des ausführenden Kerns zu beeinflussen, lohnenswert, da eine neue Klasse von nativen Angriffen im Browser realisierbar würde.
 
 
 %Kann man den Angriff auf andere Hardware umschreiben und ist das sinnvoll?

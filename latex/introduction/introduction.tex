@@ -1,8 +1,6 @@
 \chapter{Einführung}
 \label{chapter:introduction}
 
-%\todo{Sollen in die Einleitung Quellen?}
-
 %(Es fehlt mir ein einleitender Satz wie etwa "Im Bereich der IT-Sicherheit gewinnt der externe Zugriff auf Daten anderer (wer sind diese anderen genau?) zunehmende Bedeutung (gute Einleitung, aber warum und für wen sind diese Angriffe interessant?).") 
 Seitenkanalangriffe sind ein mächtiger Angriff, da sie es unter anderem erlauben, geheime Informationen wie den kryptografischen Schlüssel aus einem Gerät wie einer Chipkarte zu extrahieren.
 Hierfür wird beispielsweise der Stromverbrauch oder die Berechnungsdauer verschiedener Ein- und Ausgaben gemessen.
@@ -99,7 +97,6 @@ Es wurden sowohl die Schlüsselgenerierung von Mozilla NSS als auch von OpenPGP.
 Sowohl in der Primzahlgenerierung von Mozilla NSS als auch OpenPGP.js wurden Leakages entdeckt, welche die verwendeten Primzahlen in einem Gleichungssystem beschreiben.
 Es konnte noch nicht abschließend geklärt werden, ob diese Gleichungssysteme bei praktischen Instanzen wie RSA-2048 in annehmbarer Zeit gelöst werden können.
 
-%\todo{Soll in diesem Absatz klarer stehen, dass der Angriff nicht praktisch funktioniert?}
 Des Weiteren wurde ein bekannter Cache-Angriff auf die RSA-Schlüsselgenerierung in OpenSSL nach Mozilla NSS portiert.
 Der ursprüngliche Angriff setzte die Ausführung nativen Codes voraus, wobei in dieser Arbeit eine Umsetzung im Browser geprüft wurde.
 Dabei konnten mehrere Probleme identifiziert werden, welche Portierungen von nativen Cache-Angriffen hin zu Implementierungen im Browser erschweren. 
@@ -108,10 +105,7 @@ Diese werden in Kapitel \ref{chapter:results} und \ref{chapter:discussion} genau
 \section{Forschungsstand/Verwandte Arbeiten}
 \label{related_work}
 
-Hier soll ein Überblick bereits getätigter Forschungsarbeiten im Rahmen der für die Arbeit relevanten Themenbereiche %Cache-Angriffe 
-%\todo{würde ich rausnehmen, cache-Angriffe sind ein zu großes Feld hier}, 
-Drive-by-Attacks 
-und Angriffe auf die RSA Schlüsselgenerierung gegeben werden. Zudem soll eine Abgrenzung gegenüber verwandten, aber für diese Arbeit nicht relevanten Themenbereichen stattfinden.
+Hier soll ein Überblick bereits getätigter Forschungsarbeiten im Rahmen der für die Arbeit relevanten Themenbereiche Drive-by-Attacks und Angriffe auf die RSA Schlüsselgenerierung gegeben werden. Zudem soll eine Abgrenzung gegenüber verwandten, aber für diese Arbeit nicht relevanten Themenbereichen stattfinden.
 
 %\subsection{Cache-Angriffe}
 

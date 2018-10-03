@@ -18,23 +18,24 @@ Problematisch ist dies beispielsweise in der Expand-Phase, da dann wegen der fal
 
 Somit ist es essenziell zu erkennen, wann der Timer-Thread einen Kern für sich alleine beansprucht.
 Es könnte zusätzlich zur Laufzeit wiederholt - nach einer festen Zeitspanne - die Timergenauigkeit überprüft werden.
-Den Wert der Funktion $performance.now()$ als konstanten Zeitgeber heranzuziehen, wie im Kapitel 2 geschehen, wäre aufgrund der geringen Auflösung (Chrome etwa 0,1ms) sehr zeitaufwendig.
-TODO auf nuc testen.
+Den Wert der Funktion \textit{performance.now} als konstanten Zeitgeber heranzuziehen, wie im Kapitel 2 geschehen, wäre aufgrund der geringen Auflösung (Chrome etwa 0,1ms) sehr zeitaufwendig.
+%TODO auf nuc testen.
 Als Alternative bietet sich etwa das Messen der Laufzeit einer Prime-and-Probe Operation auf einem wenig aktiven Cache-Set als Referenzwert an.
 Hierbei ist zu beachten, dass die Prüfung im Thread des Angriffscodes läuft und dieser sich eventuell ebenfalls einen physischen Kern teilen muss.
 
 Ein weiteres Problem ist die Wahl der Zeitspanne, da eine kleine viel Overhead erzeugen und eine große zu langsam reagieren würde, sodass in der Zwischenzeit bereits Timer-Werte falsch interpretiert würden.
 
 Wie erwähnt steht der Thread des Angriffscodes vor dem gleichen Problem, sodass sich die Dauer einer Prime-and-Probe Iteration im schlimmsten Fall verdoppeln könnte.
-Folglich sollte ein Angriff auch mit halber Geschwindigkeit der Prime-and-Probe Operation erfolgreich sein, da ansonsten Cache-Aktivitäten in bestimmten Zeitabschnitten verloren gehen.
+Folglich sollte ein Angriff auch mit halber Geschwindigkeit der Prime-and-Probe Operation erfolgreich sein, da ansonsten Cache-Aktivitäten in bestimmten Zeitabschnitten nicht regestriert werden.
 
 Andersherum wird es im Laufe des Angriffs passieren, dass sich Opferprogramm und Timer einen physischen Kern teilen.
 Sofern das Problem der halbierten Timerauflösung bewältigt wird, kann sich die Auflösung des Prime-and-Probe-Angriffs effektiv verdoppeln, da auch das Opferprogramm mit halber Geschwindigkeit läuft.
-Die Zuordnung der Prozesse zu den virtuellen Kernen im Browser kann nicht beeinflusst werden und erfolgt somit aus Sicht der Angreiferin willkürlich.Deshalb werden nur zufällige Zeitabschnitte besser aufgelöst.
-Allerdings sollten hier auch die Kosten gegen gerechnet werden, die für die Erkennung der veränderten Timerauflösung entstehen.
+Die Zuordnung der Prozesse zu den virtuellen Kernen im Browser kann nicht beeinflusst werden und erfolgt somit aus Sicht der Angreiferin willkürlich. 
+Deshalb werden nur zufällige Zeitabschnitte besser aufgelöst.
+Allerdings sollten auch die Kosten gegen gerechnet werden, die für die Erkennung der veränderten Timerauflösung entstehen.
 
 Aufgrund der beschrieben Probleme und der Auswirkungen der Abmilderungen ebendieser ist es besser, auf mindestens drei physische Kerne zurückzugreifen.
-Sobald die Browserhersteller die Auflösung von $performance.now()$ wieder in den Nanosekundenbereich erhöhen, wären auch zwei physische Kerne ausreichend. 
+Sobald die Browserhersteller die Auflösung von \textit{performance.now} wieder in den Nanosekundenbereich erhöhen, wären auch zwei physische Kerne ausreichend. 
 
 Wenn das angegriffene Endgerät $n$ virtuelle Kerne besitzt, können also $n-3$ für die Verlangsamung des Opferprogramms eingesetzt werden.
 
@@ -53,7 +54,7 @@ Daher werden die Laufzeitmessungen über mehrere Sekunden durchgeführt und ansc
 %Der Bremseffekt sollte somit ab 3 Bremsthreads nachlassen, da sich die Bremsthreads dann zeitweise die Kerne mit einem anderen Thread teilen müssen.
 
 %Somit tritt ab 3 Bremsthreads eine zusätzliche Verlangsamung durch die mangelnde Anzahl an physischen Kernen ein.
-Um den Effekt, der allein durch die Last der zusätzlichen Threads entsteht, einschätzen zu können, wird ein Test mit Bremsthreads durchgeführt, die keine Codezeilen der Shift- oder Subtraktions-Operation bremsen.
+Um den Effekt, der allein durch die Last der zusätzlichen Threads entsteht, einschätzen zu können, wird ein Test mit Bremsthreads durchgeführt, die beliebige Codezeilen bremsen, welche nicht Teil der Shift- oder Subtraktions-Operation sind.
 Tabelle \ref{tbl:PrimeSpamMultithreadRef} zeigt, dass ab 4 Bremsthreads ein signifikanter Performancerückgang messbar ist, welcher bei den folgenden Ergebnissen mit einberechnet werden muss.
 
 \begin{table}[h]
@@ -77,7 +78,7 @@ Weiterhin werden nur ausgewählte Ergebnisse gezeigt, die die mit dem besten gem
 Tabelle \ref{tbl:PerformanceDegShiftMultithreadTwo} zeigt die Ergenisse mit zwei Prime-Spam-Threads.
 
 \begin{table}[h]
-\caption{Zeigt das Bremsverhalten mit zwei Prime-Spam-Threads. Die \% in der 1. Spalte trennen die Threads, so werden etwa zwei Threads, bei denen der 1. Thread die Cache-Lines $V1_1$ sowie $V2_4$ und der 2.Thread die Cache-Lines $V1_1$ sowie $V4_3$ bremsen als $V1_1$,$V2_4$ \& $V1_1$,$V4_3$ beschrieben. Spalte „Shift“, „Sub“ und „$mp\_gcd$“: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen. Für eine Beschreibung der Cache-Line IDs siehe Tabelle \ref{tbl:PerformanceDegShift}}
+\caption{Zeigt das Bremsverhalten mit zwei Prime-Spam-Threads. Die \& in der 1. Spalte trennen die Threads, so werden etwa zwei Threads, bei denen der 1. Thread die Cache-Lines $V1_1$ sowie $V2_4$ und der 2.Thread die Cache-Lines $V1_1$ sowie $V4_3$ bremsen, als $V1_1$,$V2_4$ \& $V1_1$,$V4_3$ beschrieben. Spalte „Shift“, „Sub“ und „$mp\_gcd$“: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen. Für eine Beschreibung der Cache-Line IDs siehe Tabelle \ref{tbl:PerformanceDegShift}}
 \label{tbl:PerformanceDegShiftMultithreadTwo}
 \begin{tabular}{lccc}
 Aufteilung der Cache-Lines auf die Threads & Shift & Sub & mp\_gcd \\
@@ -183,16 +184,16 @@ Auf dem Testrechner konnte keine weitere Verlangsamung durch drei Bremsthreads f
 
 %TODO multithread bench
 
-\section{Unterschiede in OpenPGP.js}
+%\section{Unterschiede in OpenPGP.js}
 
-Montgomery Implementation von gcd beschreiben
+%Montgomery Implementation von gcd beschreiben
 
-OpenPGPjs gcd(p-1,e) im Gegensatz zu Mozilla NSS schon bei Primzahlgenerierung
+%OpenPGPjs gcd(p-1,e) im Gegensatz zu Mozilla NSS schon bei Primzahlgenerierung
 
-https://github.com/openpgpjs/openpgpjs/blob/master/src/crypto/public_key/rsa.js
+%https://github.com/openpgpjs/openpgpjs/blob/master/src/crypto/public_key/rsa.js
 
-pow (Zeile 3332) scheinbar fixed window implementation:\\
-https://github.com/indutny/bn.js/blob/e69c617b3297b99aca429f30842e27979ef9beb5/lib/bn.js
+%pow (Zeile 3332) scheinbar fixed window implementation:\\
+%https://github.com/indutny/bn.js/blob/e69c617b3297b99aca429f30842e27979ef9beb5/lib/bn.js
 
 \section{Memory-Locking}
 \label{MemoryLocking}
@@ -427,7 +428,7 @@ Wenn man unter diesen Bedingungen den Abstand der ersten 10 Speicherblöcke, wel
 654, 938, 1438, 224, 372, 543, 464, 84, 38, 134\\
 170, 236, 573, 66, 452, 124, 206, 228, 1026, 62
 \end{align*}
-Diese scheinen auch nach näherer Betrachtung rein willkürlich um den Erwartungswert 256 zu schwanken.
+Diese schwanken auch nach näherer Betrachtung rein willkürlich um den Erwartungswert 256.
 
 Interessant werden die Folgen, wenn der Testrechner neu gestartet wird und der physische Adressbereich somit wenig fragmentiert ist.
 Dann können Abstandsfolgen wie 

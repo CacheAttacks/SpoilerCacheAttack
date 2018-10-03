@@ -1,13 +1,32 @@
-Fragen:
-
-
-basics
-Hier sollte mehr stehen als ein Satz, ergibt sich vielleicht später. Hier gehört die Erklärung des Themas hin sowie eine Bestimmung der Rewlevanz des Themas für die Forschung.} 
-
-
-
 results:
 \todo{schreib bitte in die Bildunterschrift mit rein, was man hier sieht. Das gilt für alle Abbildungen, wo du das noch nicht tust}
+
+TODOs:
+Seite 3, messen wie schnell slot time von c code am besten unter last, nutze victim
+Seite 3, Peroframnce von StoreFor vs Standard schreieben
+Seite 13, Differenz von Cache-Hit vs Miss auf Testsystem messen
+Eventuell 4800 Taktzyklen (mittlere Dauer einer Iteration von \textit{mpp_sieve} bei RSA 2048) prüfen
+Eventuell Die Berechnung von $\text{\textit{random_num}} \mod \text{\textit{small\_prime}}$ dauert dann im Schnitt 4800 Taktzyklen. prüfen
+Eventuell Somit ist bekannt, dass auf das \textit{primes_tab}-Array nur etwa jede 4800 Taktzyklen einmal zugegriffen wird.
+Eventuell Das Zugriffsmuster auf jeder Cache-Line des \textit{primes_tab}-Array entspricht immer 8 Zugriffen mit jeweils etwa 4800 Taktzyklen Pause
+Eventuell Durch die Berechnung von $\text{\textit{random_num}} \mod \text{\textit{small_prime}}$ entsteht zwischen den Zugriffen auf das \textit{sieve}-Array eine Pause von etwa 4800 Taktzyklen.
+
+
+Seite 46:
+Es steht die Frage im Raum, wie viele Gleichungen für die vollständige Rekonstruktion einer Primzahl benötigt werden.
+Für den Informationsgehalt der zweiten Gleichung ist die mittlere Größe von $\text{\textit{small_prime}}_i$ ausschlaggebend.
+Tabelle %\ref{} TODO
+zeigt die zu erwartenden Werte für verschiedene Primzahlbitlängen. 
+\todo{prüfen wie sich verhalten mit unterschiedlichen bitlängen verändert}
+
+Seite 48: MEssen wie viele Primzahl in Openpgp.js durchprobiert werden
+Erschwerend ist außerdem, dass die Schleife in den Zeilen 7 bis 14 im Mittel nur TODO mal ausgeführt wird und somit die Zugriffe auf das \textit{adds}-Array nach oben begrenzt sind.
+
+Seite 59: TODO auf nuc testen.
+
+
+
+
 
 
 
@@ -15,8 +34,7 @@ results:
 
 
 
-Prüfen: Initialisierungsdauer linear mit der Anzahl der Angriffsinstanzen
-Ist Abschnitt Spekulative Ausführung ... in verwandte Arbeiten notwendig?
+Prüfen: Initialisierungsdauer linear mit der Anzahl der Angriffsinstanzen nope
 
 %(fixen)
 Aufgrund des Fehlens eines Beweises für die NP-Schwere oder eines effizienten Lösungsalgorithmus' ist dem Autor die Komplexität dieses Problems bewusst.
@@ -43,11 +61,6 @@ Vervollständigung von Details der realen Implment
 Vervollständigung von StoreForward
 
 Kapitel Identifikation von Angriffszielen:
-Funktionsnamen besser kenntlich machen
-
-
-
-\todo{schreib bitte in die Bildunterschrift mit rein, was man hier sieht. Das gilt für alle Abbildungen, wo du das noch nicht tust}
 
 
 Diskussion:
