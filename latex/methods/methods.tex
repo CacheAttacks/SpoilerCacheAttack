@@ -7,15 +7,15 @@ Das folgende Kapitel beschreibt, mit Hilfe welcher Softwaretools der Cache-Angri
 
 In dem in dieser Arbeit verwendeten praxisnahen Angriffsmodell reicht für den Start eines Angriffs der Besuch des Opfers auf einer vorher präparierten Website, auch Drive-By-Angriff genannt, aus. 
 Dafür genügt bereits eine eingebundene JavaScript-Werbeanzeige, die von der Angreiferin kontrolliert wird. 
-Gegenüber Angriffen die ein Ausführen von nativen Code auf dem Endgerät des Opfers verlangen, ist mit diesen Voraussetzungen ein deutlich größerer Angriffsvektor gegeben.
-Da Aufgrund des Angriffsmodells nur Webtechnologien verfügbar sind, liegt komplette Angriffscode in JavaScript und Webassembly vor. 
+Gegenüber Angriffen, die ein Ausführen von nativen Code auf dem Endgerät des Opfers verlangen, ist mit diesen Voraussetzungen ein deutlich größerer Angriffsvektor gegeben.
+Da Aufgrund des Angriffsmodells nur Webtechnologien verfügbar sind, liegt der komplette Angriffscode in JavaScript und Webassembly vor. 
 Frühere Implementierungen von Cache-Angriffen im Browser \cite{TheSpyInTheSandbox} hatten noch keine Möglichkeit, Webassembly zu verwenden, weshalb deren kompletter Angriffscode in JavaScript geschrieben war. 
 Webassembly ermöglicht hardwarenähere Programmierung und den Vorteil, dass der Code anders als in JavaScript nicht während der Laufzeit optimiert werden muss. 
-Des Weiteren steht mit dem Emscripten-Compiler ein Tool bereit, welches die Übersetzung von C-Code in Webassembly anbietet. Somit kann ein bestehender Angriffscode in C, in diesem Fall von Mastik, als Grundlage verwendet werden, und eine komplette fehleranfällige Neuimplementierung in JavaScript entfällt.
+Des Weiteren steht mit dem Emscripten-Compiler ein Tool bereit, welches die Übersetzung von C-Code in Webassembly anbietet. Somit kann ein bestehender Angriffscode in C, in diesem Fall von Mastik \cite{Mastik}, als Grundlage verwendet werden, und eine komplette fehleranfällige Neuimplementierung in JavaScript entfällt.
 
 \section{Timer in JavaScript}
 
-Der hier ausgeführte Cache-Angriff benötigt wie in beschrieben präzise Timer, welche eine Auflösung von unter 30 ns bereitstellen sollten. Dennoch könnte die Suche nach \textit{Eviction-Sets} auch mit schlechteren Timerauflösungen bewerkstelligt werden, indem Operationen mehrfach ausgeführt werden und die Differenz der aufsummierten Zeiten zur Bewertung herangezogen wird.
+Der hier ausgeführte Cache-Angriff benötigt, wie im Grundlagenkapitel beschrieben, präzise Timer, welche eine Auflösung von unter 30 ns bereitstellen sollten. Dennoch könnte die Suche nach \textit{Eviction-Sets} auch mit schlechteren Timerauflösungen bewerkstelligt werden, indem Operationen mehrfach ausgeführt werden und die Differenz der aufsummierten Zeiten zur Bewertung herangezogen wird.
 Im \textit{Eviction-Set}-Algorithmus könnte etwa die Funktion $checkevict$ wie in Algorithmus \ref{alg:checkevict_low_resolution} angepasst werden, wobei der Parameter $repeatIterations$ abhängig von der Timerauflösung gewählt wird. 
 Es besteht jedoch das Problem, schwache Aktivitäten im Cache-Set während des eigentlichen Angriffs aufzudecken, da im Worst-Case nur ein Eintrag aus dem beobachteten Cache-Set verdrängt wird und somit lediglich die Zugriffszeit zwischen einem Hit und einem Miss ausschlaggebend ist. 
 In diesem Fall könnte die Dauer mehrerer Prime-and-Probe-Iterationen gesamtheitlich gemessen werden, und zwar unter der Vermutung, dass auf die für die Verdrängung verantwortliche Adresse über die Zeit mehrfach zugegriffen wird. %\todo{Ich verstehe den nächsten Satz nicht. Satz redesignt}
@@ -38,7 +38,7 @@ Die direkten Auswirkungen eines niedrig aufgelösten Timers sind also eine gerin
 
 \end{algorithm}
 
-Der W3C hat die High-Resolution-Time-API spezifiziert, welche die Methode performance.now() beinhaltet, die einen aktuellen Timestamp zurückgibt. Im Firefox hatte die Methode in früheren Versionen eine hinreichend genaue Auflösung im Nanosekundenbereich, wobei in Reaktion auf die Sicherheitslücken Meltdown und Spectre die Auflösung schrittweise auf 2 ms im aktuellen Firefox 60 abgesenkt wurde. 
+Der W3C hat die High-Resolution-Time-API spezifiziert, welche die Methode performance.now beinhaltet, die einen aktuellen Timestamp zurückgibt. Im Firefox hatte die Methode in früheren Versionen eine hinreichend genaue Auflösung im Nanosekundenbereich, wobei in Reaktion auf die Sicherheitslücken Meltdown und Spectre die Auflösung schrittweise auf 2 ms im aktuellen Firefox 60 abgesenkt wurde. 
 Auch in den Browsern Edge und Chrome wurden im Zuge der Veröffentlichung von Meltdown und Spectre die Auflösung von perfomance.now() verringert.
 Darüber hinaus wird bei beiden Browsern auf den zurückgegebenen Timestamp ein Timerjitter addiert.
 
@@ -72,7 +72,7 @@ function measureTime(func){
 \end{lstlisting}
 \end{figure}
 
-Die Zählvariable soll hier eine Größe von 32 Bit haben, weshalb abschließend ein Uint32 Array definiert wird, dessen Inhalt auf den SharedArrayBuffer referenziert. 
+Die Zählvariable soll hier eine Größe von 32 Bit haben, weshalb abschließend ein \lstinline{Uint32Array} definiert wird, dessen Inhalt auf den SharedArrayBuffer referenziert. 
 Ein Zählvariable kann nun durch Lesen des ersten Eintrags des Arrays erhalten werden. 
 Problematisch ist jedoch, dass auf die Zählvariable sowohl lesend vom Mainthread als auch schreibend vom Webworker zugegriffen wird. 
 Dadurch können die im Mainthread gelesenen Werte veraltet sein, da der SharedArrayBuffer noch nicht zwischen beiden Threads synchronisiert wurde. 
@@ -80,13 +80,13 @@ Abhilfe schafft hier die von Javascript bereitgestellte Atomics-Library, welche 
 
 Der Webworker iteriert nun in einem eigenen Thread die Zählvariable in einer Endlosschleife (siehe auch Pseudocode \ref{alg_list:sharedArrayBufferWorker}). 
 Zuerst wird dazu dem Webworker via message die Referenz auf einen im Mainthread erstellten SharedArrayBuffer übergeben.
-Anschließend wird im Webworker ein \textit{Uint32Array} angelegt, welches mit dem übergebenen SharedArrayBuffer verknüpft ist. 
+Anschließend wird im Webworker ein \lstinline{Uint32Array} angelegt, welches mit dem übergebenen SharedArrayBuffer verknüpft ist. 
 Zum Schluss geht der Webworker in die Endlosschleife über, in welcher die Zählvariable \textit{sharedArray[0]} durchgehend iteriert.
 
 \begin{figure}[h]
 \begin{lstlisting}[caption=counterWebworker.js: Webworker welcher die Zählvariable in einer Endlosschleife iteriert,label=alg_list:sharedArrayBufferWorker]
 self.addEventListener('message', (m) => {
-  // Create an Int32Array on top of the shared memory array 
+  // Create an Uint32Array on top of the shared memory array 
   const sharedArray = new Uint32Array(m.data);
   while{true}{
     sharedArray[0]++;
@@ -100,22 +100,22 @@ Die Auflösung dieser Methode hängt also von der Geschwindigkeit der Iteration 
 
 In Versuchen mit verschiedenen Webbrowsern und Hardwarekonfigurationen zeigte sich, dass die Auflösung mindestens im einstelligen Nanosekundenbreich liegt und somit ausreichend genau ist, um den Unterschied zwischen einem Cache-Miss und Hit festzustellen \ref{tbl:times_res}.
 
-Um die Auflösung zu bestimmen wird die Javascriptfunktion $performance.now()$ zur Hilfe genommen \ref{alg_list:getResolutionNS}. Die Funktion wait_edge() ruft zuerst performance.now() für den Startwert auf und wartet anschließend in einer Endlosschleife bis performance.now() einen höheren Wert als den Startwert zurückgibt. 
+Um die Auflösung zu bestimmen wird die Javascriptfunktion performance.now zur Hilfe genommen (siehe Listing \ref{alg_list:getResolutionNS}). Die Funktion \lstinline{wait_edge} ruft zuerst performance.now für den Startwert auf und wartet anschließend in einer Endlosschleife bis performance.now einen höheren Wert als den Startwert zurückgibt. 
 Dieser höhere Wert wird ebenso wie der aktuelle Stand der Zählvariable gespeichert. 
-Dann folgt ein erneuter Aufruf von wait_edge(), wobei bei zurückkehren wieder der letzte performance.now()-Wert sowie der Wert der Zählvariable gespeichert wird.
-Für die performance.now()-Funktion ist die Auflösung bekannt, weshalb aus den Differenzen der performance.now()-Werte und der Werte der Zählvariable eine Auflösung für den Timer errechnet werden kann.
-Wie oben beschrieben addiert Chrome auf den performance.now()-Wert einen Timerjitter, weswegen diese Prozedur 20000 mal durchgeführt wurde um valide Mittelwerte zu erhalten.
+Dann folgt ein erneuter Aufruf von \lstinline{wait_edge}, wobei bei zurückkehren wieder der letzte performance.now-Wert sowie der Wert der Zählvariable gespeichert wird.
+Für die performance.now-Funktion ist die Auflösung bekannt, weshalb aus den Differenzen der performance.now-Werte und der Werte der Zählvariable eine Auflösung für den Timer errechnet werden kann.
+Wie oben beschrieben addiert Chrome auf den performance.now-Wert einen Timerjitter, weswegen diese Prozedur 20000 mal durchgeführt wurde um valide Mittelwerte zu erhalten.
 
-Die Zählvariable besitzt den Datentyp Uint32 und in Javascript ergibt eine Iteration des Wertes $2^{32}-1$ wieder 0. 
+Die Zählvariable besitzt den Datentyp \lstinline{Uint32} und in Javascript ergibt eine Iteration des Wertes $2^{32}-1$ wieder 0. 
 Daher ist es naheliegend den gesamten Wertebereich von 0 bis $2^{32}-1$ auszuschöpfen und bei Messwerten über $2^{31}$ anzunehmen, dass in diesem Zeitraum ein Overflow stattfand.
 Beim Testen mit Firefox zeigte sich jedoch, dass die Iteration der Zählvariable ab dem Wert $2^{31}$ signifikant langsamer wird, wobei dieses Phänomen mit Chrome nicht zu beobachten war.
-Als Workaround wurde eine Abfrage hinzugefügt, die bei einem überschreiten von $2^{31}$ die Zählvariable auf 0 zurücksetzt.
+Als Workaround wurde eine Abfrage hinzugefügt, die bei einem Überschreiten von $2^{31}$ die Zählvariable auf 0 zurücksetzt.
 Die Ergebnisse zeigen, dass dieser Workaround die Auflösung in Chrome nur minimal verschlechtert, dafür aber in Firefox signifikant verbessert.
-Ohne diese Änderungen sorgt der Timer in Firefox für Probleme in der Zeitmessung, da ein Zeitintervall beim überschreiten des Wertes $2^{31}$ wegen der verringerten Iterationsgeschwindigkeit als deutlich verkürzt wahrgenommen wird.
+Ohne diese Änderungen sorgt der Timer in Firefox für Probleme in der Zeitmessung, da ein Zeitintervall beim Überschreiten des Wertes $2^{31}$ wegen der verringerten Iterationsgeschwindigkeit als deutlich verkürzt wahrgenommen wird.
 
 \label{tbl:times_res}
 \begin{table}[h]
-\caption{Zeitauflösung des SharedArrayBuffer-Zählers mit verschiedenen Browsern auf Ubuntu 16.04.5 LTS (GNU/Linux 4.4.0-131-generic x86_64) mit einem i7-4770. Wertebereich der Uint32 Zählvariable wird in der linken Spalte ausgeschöpft, in der rechten hingegen wird nur bis $2^{31}$ gezählt.}
+\caption{Zeitauflösung des SharedArrayBuffer-Zählers mit verschiedenen Browsern auf Ubuntu 16.04.5 LTS (GNU/Linux 4.4.0-131-generic x86_64) mit einem i7-4770. Wertebereich der \lstinline{Uint32} Zählvariable wird in der linken Spalte ausgeschöpft, in der rechten hingegen wird nur bis $2^{31}$ gezählt.}
 \begin{tabular}{lllll}
                            & Zählen bis $2^{32}$ & Zählen bis $2^{31}-1$ &  &  \\[10pt]
 Chromium 68.0.3440.106     & $\sim$2,7ns                      & $\sim$3ns                        &  &  \\
@@ -166,7 +166,16 @@ Webassembly 4KiB-große Blöcke, die zur Übereinstimmung der 12 letzten Bits de
 
 Um aus dieser Eigenschaft Kapital zu schlagen, wird ein Array mindestens entsprechend der Größe des L3-Caches in Webassembly angelegt. Im Folgenden soll der Intel i7-4770 mit 8 MiB großem L3-Cache erneut als Basis dienen. In diesem Array sind nun $x$ Blöcke der Größe 4 KiB, deren letzten 12 Adressbits mit der physischen Adresse übereinstimmen. Im sogenannten Adresspool seien nun die Adressen des Arrays, bei denen die letzten 12 Bits gleich sind, also insgesamt $x$ Stück.
 
-Der i7-4770 besitzt 8192 Cache-Sets, die auf 4 Slices aufgeteilt sind, wobei für das Mapping der 2048 Cache-Sets innerhalb eines Slices nur die untersten 18 Bits der physischen Adresse relevant sind. Dabei bestimmen die Bits 6 bis 17 eindeutig das Cache-Set und die Bits 0 bis 5 das Offset innerhalb der Cache-Line.
+Der i7-4770 besitzt 8192 Cache-Sets, die auf 4 Slices aufgeteilt sind, wobei für das Mapping der 2048 Cache-Sets innerhalb eines Slices nur die untersten 17 Bits der physischen Adresse relevant sind (siehe auch Abbildung \ref{fig:address_layout}. Dabei bestimmen die Bits 6 bis 17 eindeutig das Cache-Set und die Bits 0 bis 5 das Offset innerhalb der Cache-Line.
+
+\label{fig:address_layout}
+\begin{figure}[h]
+\centering
+\begin{scaletikzpicturetowidth}{\textwidth}
+\input{methods/address_layout.tex}
+\end{scaletikzpicturetowidth}
+\caption{Physischer, virtueller und Webassembly's Adressraum auf dem Intel i7-4770 mit vier Slices und insgesamt 8192 Cache-Sets im Vergleich \cite{DriveByPaper}. Die letzten 12 Bits einer Adresse stimmen in allen drei Adressräumen überein.}
+\end{figure}
 
 In welchem der 4 Slices die Daten landen, wird anhand der Adressbits 18 bis 63 bestimmt.
 Durch die Kenntnis der untersten 12 Bits der physischen Adresse sind gleichzeitig 6 Bits (6 bis 11) bekannt, welche für die Zuordnung zu den Cache-Sets verantwortlich sind.
@@ -183,18 +192,19 @@ Es bleiben noch 7 Bits an Unsicherheit, die durch Kenntnis der restlichen Adress
 
 Um die Anzahl der Blöcke beziehungsweise die Arraygröße in Webassembly sinnvoll zu bestimmen, kann zuerst die vereinfachte Annahme getroffen werden, dass die physischen Adressbits 12 bis 63 der 4-KiB-Blöcke zufällig gewählt sind. 
 Die unbekannte Cache-Mapping-Funktion nimmt nun die zufälligen Bits 12 bis 63 und die auf 0 gesetzten Bits 0 bis 11 entgegen und gibt eines von 128 möglichen Cache-Sets zurück.
-Ziel ist es, mit einer Poolgröße $x$ und einer hohen Wahrscheinlichkeit für jedes Cache-Sets 16 Zuordnungen beziehungsweise ein Eviction-Set zu finden.
-Gesucht ist die Wahrscheinlichkeit, bei einer Poolgröße $x$ mindestens 16 Zuordnungen zu einem fixen Cache-Set $cs$ bei 128 Möglichkeiten zu finden.
-Hierfür eignet sich das Urnenmodell für Ziehungen mit Zurücklegen ohne Berücksichtigung der Reihenfolge, wobei die $x$ Adressen im Pool die Kugeln und die Cache-Sets die Farben der Kugeln repräsentieren. Sei $P(count(cs)>=16)$ die Wahrscheinlichkeit dafür, dass in der gezogenen Folge mindestens 16 mal das Cache-Set $cs$ auftaucht, unter der Bedingung, dass die Poolgröße $\#add = x$.
+Ziel ist es, mit einer Poolgröße $x$ und einer hohen Wahrscheinlichkeit für jedes Cache-Sets 17 Zuordnungen beziehungsweise ein Eviction-Set zu finden.
+Für ein Eviction-Set werden wegen L3-Cache-Assoziativität 16 Adressen gebraucht, wobei die weitere Adresse für den Anfangskandidaten benötigt wird, welcher zum selben Cache-Set zugeordnet werden muss.  
+Gesucht ist somit die Wahrscheinlichkeit, bei einer Poolgröße $x$ mindestens 17 Zuordnungen zu einem fixen Cache-Set $cs$ bei 128 Möglichkeiten zu finden.
+Hierfür eignet sich das Urnenmodell für Ziehungen mit Zurücklegen ohne Berücksichtigung der Reihenfolge, wobei die $x$ Adressen im Pool die Ziehungen und die Cache-Sets die 128 verschiedenfarbigen Kugeln repräsentieren. Sei $P(count(cs)>=17)$ die Wahrscheinlichkeit dafür, dass in der gezogenen Folge mindestens 17 mal das Cache-Set $cs$ auftaucht, unter der Bedingung, dass die Poolgröße $\#add = x$.
 Leichter ist es in diesem Fall, die Gegenwahrscheinlichkeit zu berechnen, die mit
 \begin{align*}
-P(count(cs)<16|\#add = x) &=
-\left( \sum\limits_{i=0}^{15}P(count(cs)=i|\#add = x) \right) \\&=
-\left( \sum\limits_{i=0}^{15} {x \choose i} \frac{127}{128}^{x-i} \cdot \frac{1}{128}^i  \right)
+P(count(cs)<17|\#add = x) &=
+\left( \sum\limits_{i=0}^{16}P(count(cs)=i|\#add = x) \right) \\&=
+\left( \sum\limits_{i=0}^{16} {x \choose i} \frac{127}{128}^{x-i} \cdot \frac{1}{128}^i  \right)
 \end{align*}
 beschrieben ist.
 
-Die Wahrscheinlichkeit des $P(count(cs)>=16)$ ist etwa bedeutend im ersten Szenario:
+Die Wahrscheinlichkeit des $P(count(cs)>=17)$ ist etwa bedeutend im ersten Szenario:
 Angenommen, die Angreiferin hat es auf eine bestimmte Adresse abgesehen und möchte ein korrelierendes Eviction-Set finden. 
 Wie wahrscheinlich ist ein erfolgreicher Angriff beziehungsweise wie hoch ist die Wahrscheinlichkeit, ein korrelierendes Eviction-Set zu finden? 
 Das Diagramm \ref{fig:combined_es_prob} zeigt die Erfolgswahrscheinlichkeiten für verschiedene $x$-Werte. 
@@ -204,9 +214,9 @@ Das Diagramm \ref{fig:combined_es_prob} zeigt die Erfolgswahrscheinlichkeiten f�
 Im zweiten Szenario möchte die Angreiferin in einem komplexen Angriff eine Vielzahl von Adressen in unterschiedlichen Cache-Sets überwachen. 
 Sie interessiert sich nun dafür, wie wahrscheinlich es ist, alle 8192 Cache-Sets zu finden und somit auch die für sie relevanten. 
 
-Die Wahrscheinlichkeit, für alle 128 möglichen Cache-Sets jeweils 16 Zuordnungen und damit gleichbedeutend alle 8192 möglichen Eviction Sets konstruieren zu können, ist approximativ mit
+Die Wahrscheinlichkeit, für alle 128 möglichen Cache-Sets jeweils 17 Zuordnungen und damit gleichbedeutend alle 8192 möglichen Eviction Sets konstruieren zu können, ist approximativ mit
 \begin{align*}
-P(count(cs)>=16|\#add = x)^{128} = (1-P(count(cs)<16|\#add = x))^{128}
+P(count(cs)>=17|\#add = x)^{128} = (1-P(count(cs)<17|\#add = x))^{128}
 \end{align*}
 beschrieben.
 Die Ereignisse sind nicht unabhängig, weshalb diese Vereinfachung zu Ungenauigkeiten führt.
@@ -243,25 +253,25 @@ Dieser Algorithmus ist in der Lage, Adressen Cache-Sets zuzuordnen, ohne Nähere
 Der Algorithmus basiert auf den von \cite{DriveByPaper} und \cite{PrimeAndAbort} beschriebenen Algorithmen zum finden von Eviction-Sets, wobei einige Optimierungen und Modifikationen implementiert und getestet wurden.
 
 Der Eviction-Set-Konstruktionsalgorithmus besteht aus drei Hauptphasen, der Expand-, Contract- und Collect-Phase. 
-Zu Anfang wird zufällig eine Zeugenadresse aus dem Adresspool ausgewählt, für welche danach ein Eviction-Set gefunden werden soll.
+Zu Anfang wird zufällig eine Zeugenadresse aus dem Adresspool ausgewählt.
 Die Annahme in der Expand-Phase ist, dass eine bestimmte Teilmenge der Adressen aus dem Pool, genannt Candidate-Set, ein Eviction-Set für die Zeugenadresse bildet, sofern der Pool groß genug ist. 
 Um ein Candidate-Set zu testen, wird zuerst auf die Zeugenadresse zugegriffen, um sicherzustellen, dass diese im Cache landet.
 Danach wird auf alle Adressen aus dem Candidate-Set zugegriffen und abschließend die Zugriffszeit auf die Zeugenadresse gemessen. 
-Sofern das Candidate-Set ein Eviction-Set für die Zeugenadresse ist, werden die Daten der Zeugenadresse aus dem Cache verdrängt, wobei dieses Vorgehen bei einer erneuten Messung der Zeugenadresse zu einer erhöhten Zugriffszeit führt.
+Sofern das Candidate-Set ein Eviction-Set für die Zeugenadresse ist, werden die Daten der Zeugenadresse aus dem Cache verdrängt, womit bei einer erneuten Messung der Zeugenadresse eine erhöhte Zugriffszeit gemessen wird.
 Dieser Vorgang wird mehrmals wiederholt, um den Einfluss des Timer- und System-Rauschens zu vermindern.
 
-In der Expand-Phase wird dem Addresspool iterativ eine zufällige Adresse entnommen und dem anfangs leeren Candidate-Set hinzugefügt (siehe auch Pseudocode \ref{alg:evictionSetExpand}), wobei die Zeugenadresse niemals Teil des Candidate-Set wird.
-Nach jeder Iteration wird das Candidate-Set auf die eben beschriebene Weise getestet.
-Falls das Candidate-Set ein Eviction-Set für die Zeugenadresse ist, wird zur nächsten Phase übergegangen, andernfalls wird die Iteration fortgesetzt.
+In der Expand-Phase wird dem Addresspool iterativ eine zufällige Adresse entnommen, welche in dieser Iteration die Zeugenadresse ist (siehe auch Pseudocode \ref{alg:evictionSetExpand}).
+Nach jeder Iteration wird, wie eben beschrieben, getestet ob das Candidate-Set ein Eviction-Set für die Zeugenadresse ist.
+Falls dies zutrifft, wird zur nächsten Phase übergegangen, andernfalls wird die Zeugenadresse dem Candidate-Set hinzugefügt und mit der nächsten Iteration fortgefahren.
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
 \caption{Pseudo-Code für Expand-Phase des Eviction-Set Algorithmus}
 \label{alg:evictionSetExpand}
 
-\Fn{$Expand(evictionSet, memoryBlocks)$}{
-	\While{size(candidateSet) > 0}{
-		witnesss = SelectRandomItem(candidateSet)\;
+\Fn{$Expand(evictionSet, addressPool)$}{
+	\While{size(addressPool) > 0}{
+		witnesss = SelectRandomItem(addressPool)\;
 		\If{checkevict(evictionSet, witnesss)}{
 			\Return witnesss
 		}
@@ -273,7 +283,7 @@ Falls das Candidate-Set ein Eviction-Set für die Zeugenadresse ist, wird zur n�
 
 Im Allgemeinen beinhaltet das Candidate-Set nach der Expand-Phase mehrere hundert Einträge, von denen eine Teilmenge der Größe 16 bereits ein Eviction-Set für die Zeugenadresse bilden würde. 
 Der überwiegende Teil der Einträge gehört nicht zum gleichen Cache-Set wie die Zeugenadresse.
-Diese überflüssigen Einträge würden den Prime-and-Probe- Vorgang erheblich verlangsamen. Deshalb wird in der Contract-Phase versucht, das Candidate-Set auf die Größe 16 einzudampfen (siehe auch Pseudocode \ref{alg:evictionSetContract}).
+Diese überflüssigen Einträge würden den Prime-and-Probe-Vorgang erheblich verlangsamen. Deshalb wird in der Contract-Phase versucht, das Candidate-Set auf die Größe 16 zu reduzieren (siehe auch Pseudocode \ref{alg:evictionSetContract}).
 Hierzu wird ein Element aus dem Candidate-Set entfernt und dann erneut getestet, ob dieses reduzierte Candidate-Set noch ein Eviction-Set für die Zeugenadresse ist.
 Falls ja, wird dieses Element wieder dem Adresspool hinzugefügt, andernfalls verbleibt es im Candidate-Set, da es notwendiger Bestandteil des Eviction-Sets ist.
 Dieser Vorgang wird für jedes Element im Candidate-Set einmal durchgeführt, so dass im fehlerfreien Fall schlussendlich 16 Elemente im Candidate-Set verbleiben.
@@ -285,12 +295,14 @@ Die zweite und dritte Wiederholung sind weit weniger kostenintensiv, da das Cand
 \DontPrintSemicolon
 \caption{Pseudo-Code für Contract-Phase des Eviction-Set Algorithmus}
 \label{alg:evictionSetContract}
-\Fn{$Contract(evictionSet, memoryBlocks, witness)$}{
+\Fn{$Contract(evictionSet, addressPool, witness)$}{
 	\ForEach{candidate in evictionSet}{
+	    evictionSet.remove(candidate)\;
 		\If{checkevict(evictionSet, witness)}{
-			mermoryBlocks.add(candidate)\;
-			evictionSet.add(candidate)\;	
-		}		
+			addressPool.add(candidate)\;
+		}\Else{
+		    evictionSet.add(candidate)\;
+		}	
 	}
 }
 \end{algorithm}
@@ -298,7 +310,7 @@ Die zweite und dritte Wiederholung sind weit weniger kostenintensiv, da das Cand
 Wenn im Anschluss sofort wieder eine neue Zeugenadresse aus dem Pool gewählt wird, könnte eine Adresse gewählt werden, welche auf dasselbe Cache-Set wie die vorherige Zeugenadresse abgebildet wird.
 Deshalb folgt im Anschluss an eine erfolgreiche Contract-Phase die Collect-Phase.
 In dieser werden alle Adressen aus dem Pool entfernt, welche ebenfalls von dem in der Contract-Phase gefundenen Eviction-Set aus dem Cache verdrängt wurden (siehe auch Pseudocode \ref{alg:evictionSetCollect}).
-Durch diesen Schritt wird also vermieden, dass die spätere Menge von Eviction-Sets dahingehend überprüft werden müsste, ob Eviction-Sets paarweise dasselbe zugrundeliegende Cache-Set besitzen. 
+Durch diesen Schritt wird vermieden, dass die spätere Menge von Eviction-Sets dahingehend überprüft werden müsste, ob Eviction-Sets paarweise dasselbe zugrundeliegende Cache-Set besitzen. 
 Zudem beschleunigt die Collect-Phase die nächsten Iterationen, da weniger Adressen im Pool zur Verfügung stehen.
 Hierzu wird eine Adresse aus dem Pool durch einen Zugriff in den Cache geladen und anschließend auf alle Einträge im Eviction-Set zugegriffen.
 Daraufhin wird die Zugriffszeit auf die Adresse gemessen und bei einer erhöhten Zeit aus dem Pool entfernt, da dann die Adresse auf dasselbe Cache-Set wie die Einträge des Eviction-Set beziehungsweise die letzte Zeugenadresse abgebildet wird.
@@ -308,38 +320,39 @@ Daraufhin wird die Zugriffszeit auf die Adresse gemessen und bei einer erhöhten
 \caption{Pseudo-Code für Collect-Phase des Eviction-Set Algorithmus}
 \label{alg:evictionSetCollect}
 
-\Fn{$Collect(evictionSet, memoryBlocks)$}{
-	witnessSet = empty\;
-	\ForEach{candidate in mermoryBlocks}{
+\Fn{$Collect(evictionSet, addressPool)$}{
+	%witnessSet = empty\;
+	\ForEach{candidate in addressPool}{
 		\If{checkevict(evictionSet, candidate)}{
-			memoryBlocks.delete(candidate)\;
-			witnessSet.add(candidate)\;
+			addressPool.delete(candidate)\;
+			%witnessSet.add(candidate)\;
 		}
 	}
-	\Return witnessSet;
+	%\Return witnessSet;
 }
 \end{algorithm}
 
 Zusammenfassend wird in der Expand-Phase das Candidate-Set soweit vergrößert, bis es ein Eviction-Set bildet, danach wird es in der Contract-Phase auf die Größe 16 verkleinert und anschließend in der Collect-Phase werden alle auf dasselbe Cache-Set abgebildeten Adressen aus dem Pool entfernt (siehe auch Pseudocode \ref{alg:evictionSetOverview}).
-Das gefundene Eviction-Set wird gespeichert und der Vorgang solange wiederholt, bis die Anzahl der Pooladressen kleiner als 16 ist oder aufgrund von Fehlern in einer Phase mehrmals kein Eviction-Set gefunden wurde.
+Das gefundene Eviction-Set wird gespeichert und der Vorgang solange wiederholt, bis der Pool der Adressen erschöpft ist oder aufgrund von Fehlern in einer Phase mehrmals kein Eviction-Set gefunden wurde.
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
 \caption{Pseudo-Code für Eviction-Set Algorithmus}
 \label{alg:evictionSetOverview}
 
-\Fn{$EvictionSetFinder(memoryBlocks)$}{
-    groups $\leftarrow$ empty\;
-    \While{size(memoryBlocks > 0}{
+\Fn{$EvictionSetFinder(addressPool)$}{
+    evictionSets $\leftarrow$ empty\;
+    \While{size(addressPool) > 0}{
         evictionSet $\leftarrow$ empty\;
-		witness $\leftarrow$ expand(evictionSet, memoryBlocks)\;
+		witness $\leftarrow$ expand(evictionSet, addressPool)\;
 		
 		\If{witness != failed}{
-    		contract(evictionSet, memoryBlocks, witness)\;
-    		witnessSet $\leftarrow$ collect(evictionSet, memoryBlocks, witnessSet)\;
-    		groups.add(union(evictionSet, witness, witnessSet))\;
+    		contract(evictionSet, addressPool, witness)\;
+    		collect(evictionSet, addressPool)\;
+    		evictionSets.add(evictionSet)\;
 		}
     }
+    \Return evictionSets
 }
 \end{algorithm}
 
@@ -363,18 +376,25 @@ TODO probleme mit Contract Phase beschreiben
 
 \subsection{Details der realen Implementierung}
 
-Wie weiter oben beschrieben, wird insbesondere der Test, ob ein Set ein Eviction-Set für eine bestimmte Adresse darstellt, mehrfach wiederholt, um Fehler auszuschließen. 
+Wie weiter oben beschrieben, wird insbesondere der Test, ob ein Set ein Eviction-Set für eine bestimmte Adresse darstellt, bei positivem Ergebnis mehrfach wiederholt, um false-positive Fehler auszuschließen. 
 Problematisch ist dies vor allem in der Expand-Phase, da das Candidate-Set eine Größe von mehreren hundert Einträgen annimmt und nach jeder Iteration gegen die Zeugenadresse getestet wird. 
 Eine einzige erhöhte Zugriffszeitmessung würde das Candidate-Set fälschlicherweise als Eviction-Set für die Zeugenadresse einordnen. 
 Es wurde festgestellt, dass erhöhte Zugriffszeiten mehrmals hintereinander auftreten können. Deshalb wird eine erhöhte Messung in der Expand-Phase 20 mal erneut überprüft. 
-Die Überprüfung ab sobald eine der Messungen eine widersprüchliche Aussage zulässt.
-
+Die Überprüfung bricht ab sobald eine der Messungen eine widersprüchliche Aussage zulässt.
 Trotz der hohen Anzahl von 20 Wiederholungen sind die Kosten hierfür gering, da im fehlerfreien Optimalfall nur zusätzlich 20 Prüfungen anfallen und in den meisten Fehlerfällen nur einzelne zusätzliche Überprüfungen durchgeführt werden. 
 Demgegenüber steht der Vorteil, nicht fälschlicherweise in die Contract-Phase zu wechseln und dort erst spät zu merken, dass das Candidate-Set kein Eviction-Set ist.
 
-Wenn nun das Candidate-Set kein Eviction-Set für die Zeugenadresse ist, würde in der naiven Implementierung der Contract-Phase über alle Einträge des Candidate-Sets iteriert werden, aber kein Eintrag gelöscht.
-Denn die Zugriffszeit auf die Zeugenadresse wird immer niedrig bleiben, was den Algorithmus zur fälschlichen Annahme verleitet, alle Einträge seien für das Eviction-Set notwendig.
-Wir wissen jedoch, dass die Größe des Eviction-Sets der Assoziativität des L3-Caches entsprechen muss und können die Contract-Phase abbrechen, sobald eine mehr als der Assoziativität entsprechende Anzahl von Einträgen des Candidate-Sets als notwendig eingestuft wurden, da dann ein Fehler vorliegt.
+Ein false-negative bedeutet, dass ein Candidate-Set ein Eviction-Set für eine Zeugenadresse ist, aber nicht erkannt wird.
+Dieser Fehler kann nur auftreten, wenn der Counter-Thread unterbrochen oder gestört wird, sodass der die Zählvariable gar nicht oder sehr langsam erhöht wird.
+Dieser Fehler ist in der Expand-Phase unerheblich, da ausschließlich zusätzliche Einträge hinzugefügt werden, welche aber in der Contract-Phase wieder in den Adresspool verschoben werden.
+In der Contract-Phase würden bei einem false-negative Einträge erhalten bleiben, die für das Eviction-Set nicht notwendig sind. Somit würde die Contract-Phase fehlschlagen, da das Eviction-Set nicht auf eine Größe von 16 reduziert werden kann.
+Ein false-negative in der Collect-Phase würde Adressen die zum Eviction-Set gehören nicht aussortieren, sondern im Pool belassen.
+Wenn ein false-negatives Fehler mindestens 17 Mal in der Collect-Phase auftritt, sind genug Adressen für ein weiteres Eviction-Set des selben Cache-Sets im Pool vorhanden. Das heißt in der nächsten Iteration könnte ein Eviction-Set für das selbe Cache-Set gebildet werden.
+Ein false-negative tritt allerdings sehr selten auf, sodass so ein Szenario unrealistisch ist.
+
+%Wenn nun das Candidate-Set kein Eviction-Set für die Zeugenadresse ist, würde in der naiven Implementierung der Contract-Phase über alle Einträge des Candidate-Sets iteriert werden, aber kein Eintrag gelöscht.
+%Denn die Zugriffszeit auf die Zeugenadresse wird immer niedrig bleiben, was den Algorithmus zur fälschlichen Annahme verleitet, alle Einträge seien für das Eviction-Set notwendig.
+%Wir wissen jedoch, dass die Größe des Eviction-Sets der Assoziativität des L3-Caches entsprechen muss und können die Contract-Phase abbrechen, sobald eine mehr als der Assoziativität entsprechende Anzahl von Einträgen des Candidate-Sets als notwendig eingestuft wurden, da dann ein Fehler vorliegt.
 
 Ein Problem in der Praxis ist der Hardware-Prefetcher, welcher Daten in den Cache lädt bevor sie benötigt werden.
 Angenommen es soll eine Prime-and-Probe-Operation ausgeführt werden und auf alle Einträge des Eviction-Sets wird mittels einer For-Schleife zugegriffen.

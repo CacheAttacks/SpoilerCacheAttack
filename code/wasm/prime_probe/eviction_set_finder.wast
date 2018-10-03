@@ -500,7 +500,7 @@
   )
   (i32.store
    (get_local $$34)
-   (i32.const 34)
+   (i32.const 31)
   )
   ;;@ c/eviction_set_finder.c:127:0
   (drop
@@ -18492,7 +18492,7 @@
   )
   (i32.store
    (get_local $$17)
-   (i32.const 16777216)
+   (i32.const 9437184)
   )
   (set_global $STACKTOP
    (get_local $sp)
