@@ -213,7 +213,7 @@ static void fillL3Info(l3pp_t l3) {
   //l3->l3info.bufsize = l3->l3info.associativity * l3->l3info.slices *
   //                     l3->l3info.setsperslice * L3_CACHELINE *
   //                     CACHE_SIZE_MULTI;
-  l3->l3info.bufsize = (3072+512)*4096;
+  l3->l3info.bufsize = (4096)*4096;
 
   // bufsize = cachesize * factor
 
@@ -608,7 +608,9 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
     int d_l1 = vl_len(lines);
 #endif // DEBUG
     if (fail > FAIL_MAX) {
-      printf_ex("to many failed atemps, es search canceled!\n");
+      //if(!storefor_mode) {
+        //printf_ex("too many failed atemps, es search canceled!\n");
+      //}
       break;
     }
 
@@ -631,8 +633,8 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
       while (vl_len(es))
         vl_push(lines, vl_del(es, 0));
 #ifdef DEBUG
-      printf_ex("set %3d: lines: %4d expanded: %4d c=NULL\n", vl_len(groups), d_l1,
-             d_l2);
+      //printf_ex("set %3d: lines: %4d expanded: %4d c=NULL\n", vl_len(groups), d_l1,
+      //       d_l2);
 #endif // DEBUG
       fail += 50;
       //readjustTimerThreshold();
@@ -746,12 +748,12 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
 
       vl_push(lines, c);
 #ifdef DEBUG
-      printf_ex("set %3d: lines: %4d expanded: %4d contracted: %2d ",
-             vl_len(groups), d_l1, d_l2, d_l3);
-      if (test_failed)
-        printf_ex("test failed\n");
-      else
-        printf_ex("contract failed\n");
+      // printf_ex("set %3d: lines: %4d expanded: %4d contracted: %2d ",
+      //        vl_len(groups), d_l1, d_l2, d_l3);
+      // if (test_failed)
+      //   printf_ex("test failed\n");
+      // else
+      //   printf_ex("contract failed\n");
 #endif // DEBUG
       fail++;
       if(fail % 3 == 0){

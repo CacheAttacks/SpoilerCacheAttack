@@ -369,8 +369,10 @@ static inline void *walk_through(void *volatile p)
     return 0;
 
   void *old_p = p;
+  //void *q = p;
   do
   {
+    //q = *((void **)q);
     p = *((void **)p);
   } while (p != old_p);
 

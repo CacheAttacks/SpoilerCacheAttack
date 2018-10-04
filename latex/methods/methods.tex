@@ -18,8 +18,8 @@ Des Weiteren steht mit dem Emscripten-Compiler ein Tool bereit, welches die Übe
 Der hier ausgeführte Cache-Angriff benötigt, wie im Grundlagenkapitel beschrieben, präzise Timer, welche eine Auflösung von unter 30 ns bereitstellen sollten. Dennoch könnte die Suche nach \textit{Eviction-Sets} auch mit schlechteren Timerauflösungen bewerkstelligt werden, indem Operationen mehrfach ausgeführt werden und die Differenz der aufsummierten Zeiten zur Bewertung herangezogen wird.
 Im \textit{Eviction-Set}-Algorithmus könnte etwa die Funktion $checkevict$ wie in Algorithmus \ref{alg:checkevict_low_resolution} angepasst werden, wobei der Parameter $repeatIterations$ abhängig von der Timerauflösung gewählt wird. 
 Es besteht jedoch das Problem, auch schwache Aktivitäten im Cache-Set während des eigentlichen Angriffs aufzudecken, da im Worst-Case nur ein Eintrag aus dem beobachteten Cache-Set verdrängt wird und somit lediglich die Zugriffszeit zwischen einem Hit und einem Miss ausschlaggebend ist. 
-In diesem Fall könnte die Dauer mehrerer Prime-and-Probe-Iterationen gesamtheitlich gemessen werden, und zwar unter der Vermutung, dass auf die für die Verdrängung verantwortliche Adresse über die Zeit mehrfach zugegriffen wird. %\todo{Ich verstehe den nächsten Satz nicht. Satz redesignt}
-Die direkten Auswirkungen eines niedrig aufgelösten Timers sind also eine geringere zeitliche Auflösung von Cache-Aktivitäten oder die Nichtregestrierung von schwachen. (Diesen Satz verstehe ich ebenfalls nicht.)
+In diesem Fall könnte die Dauer mehrerer Prime-and-Probe-Iterationen gesamtheitlich gemessen werden, und zwar unter der Vermutung, dass auf die für die Verdrängung verantwortliche Adresse über die Zeit mehrfach zugegriffen wird.
+Aus einem niedrig aufgelösten Timer folgt also eine geringere zeitliche Auflösung von Cache-Aktivitäten oder die Nichtregistrierung von schwachen Cache-Aktivitäten.
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
@@ -102,7 +102,7 @@ In Versuchen mit verschiedenen Webbrowsern und Hardwarekonfigurationen zeigte si
 
 Um die Auflösung zu bestimmen, wird die Javascriptfunktion performance.now zur Hilfe genommen (siehe Listing \ref{alg_list:getResolutionNS}). Die Funktion \lstinline{wait_edge} ruft zuerst performance.now für den Startwert auf und wartet anschließend in einer Endlosschleife, bis performance.now einen höheren Wert als den Startwert zurückgibt. 
 Dieser höhere Wert wird ebenso wie der aktuelle Stand der Zählvariable gespeichert. 
-Dann folgt ein erneuter Aufruf von \lstinline{wait_edge}, wobei bei zurückkehren (???) wieder der letzte performance.now-Wert sowie der Wert der Zählvariable gespeichert wird.
+Dann folgt ein erneuter Aufruf von \lstinline{wait_edge}, wobei beim Zurückkehren wieder der letzte performance.now-Wert sowie der Wert der Zählvariable gespeichert wird.
 Für die performance.now-Funktion ist die Auflösung bekannt, sodass aus den Differenzen der performance.now-Werte und der Werte der Zählvariable eine Auflösung für den Timer errechnet werden kann.
 Wie oben beschrieben addiert Chrome auf den performance.now-Wert einen Timerjitter, und deshalb wurde diese Prozedur 20000 mal durchgeführt, um valide Mittelwerte zu erhalten.
 
@@ -141,7 +141,7 @@ function wait_edge() {
 \end{lstlisting}
 \end{figure}
 
-Diese Methode geht allerdings mit dem Nachteil einher, dass der Webworker-Thread in der Messphase einen CPU-Kern komplett auslastet. Das heißt, dass im Angriffsszenario das Opferprogramm, der Javascript-Mainthread und der Webworker gleichzeitig rechnen, sodass mindestens 3 CPU- Kerne benötigt werden. 
+Diese Methode geht allerdings mit dem Nachteil einher, dass der Webworker-Thread in der Messphase einen CPU-Kern komplett auslastet. Das heißt, dass im Angriffsszenario das Opferprogramm, der Javascript-Mainthread und der Webworker gleichzeitig rechnen, sodass mindestens 3 CPU-Kerne benötigt werden. 
 Sofern sich der Webworker einen physischen Kern mit einen anderen aktiven Prozess teilt, können die gemessen Zeiten einer stärkeren Volatilität durch die erhöhte Iterationsdauer unterliegen.
 Folglich reduziert sich die Auflösung des Zeitgebers, wobei eine ausreichende Genauigkeit dennoch gegeben ist, da beide Prozesse in etwa die gleiche Rechenzeit zugesprochen bekommen.
 
@@ -186,64 +186,6 @@ Dann kann erwartet werden, dass im Mittel jede 128.
 Adresse auf das gleiche Cache-Set gemappt wird. Es gibt 8192 Möglichkeiten, eine Adresse einem Cache-Set zuzuordnen, also 13 Bits an Unsicherheit.
 Durch die Kenntnis der untersten 12 Bits der Adresse sind davon 6 Bits bekannt, welche für eine eindeutige Zuordnung sorgen. 
 Es bleiben noch 7 Bits an Unsicherheit, die durch Kenntnis der restlichen Adressbits beseitigt werden könnten.
-
-\subsection{Wahl der Adresspoolgröße}
-\label{addressPoolSize}
-
-Um die Anzahl der Blöcke beziehungsweise die Arraygröße in Webassembly sinnvoll zu bestimmen, kann zuerst die vereinfachte Annahme getroffen werden, dass die physischen Adressbits 12 bis 63 der 4-KiB-Blöcke zufällig gewählt sind. 
-Die unbekannte Cache-Mapping-Funktion nimmt nun die zufälligen Bits 12 bis 63 und die auf 0 gesetzten Bits 0 bis 11 entgegen und gibt eines von 128 möglichen Cache-Sets zurück.
-Ziel ist es, mit einer Poolgröße $x$ und einer hohen Wahrscheinlichkeit für jedes Cache-Set 17 Zuordnungen beziehungsweise ein Eviction-Set zu finden.
-Für ein Eviction-Set werden wegen der L3-Cache-Assoziativität 16 Adressen gebraucht, wobei die weitere Adresse für den Anfangskandidaten benötigt wird, welcher zum selben Cache-Set zugeordnet werden muss.  
-Gesucht ist somit die Wahrscheinlichkeit, bei einer Poolgröße $x$ mindestens 17 Zuordnungen zu einem fixen Cache-Set $cs$ bei 128 Möglichkeiten zu finden.
-Hierfür eignet sich das Urnenmodell für Ziehungen mit Zurücklegen ohne Berücksichtigung der Reihenfolge, wobei die $x$ Adressen im Pool die Ziehungen und die Cache-Sets die 128 verschiedenfarbigen Kugeln repräsentieren. Sei $P(count(cs)>=17)$ die Wahrscheinlichkeit dafür, dass in der gezogenen Folge mindestens 17 mal das Cache-Set $cs$ auftaucht, unter der Bedingung, dass die Poolgröße $\#add = x$.
-Leichter ist es in diesem Fall, die Gegenwahrscheinlichkeit zu berechnen, die mit
-\begin{align*}
-P(count(cs)<17|\#add = x) &=
-\left( \sum\limits_{i=0}^{16}P(count(cs)=i|\#add = x) \right) \\&=
-\left( \sum\limits_{i=0}^{16} {x \choose i} \frac{127}{128}^{x-i} \cdot \frac{1}{128}^i  \right)
-\end{align*}
-beschrieben ist.
-
-Die Wahrscheinlichkeit des $P(count(cs)>=17)$ ist etwa bedeutend im ersten Szenario.
-Angenommen, die Angreiferin hat es auf eine bestimmte Adresse abgesehen und möchte ein korrelierendes Eviction-Set finden. 
-Wie wahrscheinlich ist ein erfolgreicher Angriff beziehungsweise wie hoch ist die Wahrscheinlichkeit, ein korrelierendes Eviction-Set zu finden? 
-Das Diagramm \ref{fig:combined_es_prob} zeigt die Erfolgswahrscheinlichkeiten für verschiedene $x$-Werte. 
-
-%\todo{Die Linie muss dünner. Die Bildunterschrift muss die cache-sets und die assoziativität beeinhalten. Das Bild soll mit der Unterschrift verständlich sein, ohne den restlichen text lesen zu müssen. Schriftgröße für Bildunterschriften und beschriftungen gern kleiner.}
-
-Im zweiten Szenario möchte die Angreiferin in einem komplexen Angriff eine Vielzahl von Adressen in unterschiedlichen Cache-Sets überwachen. 
-Sie interessiert sich nun dafür, wie wahrscheinlich es ist, alle 8192 Cache-Sets zu finden und somit auch die für sie relevanten. 
-
-Die Wahrscheinlichkeit, für alle 128 möglichen Cache-Sets jeweils 17 Zuordnungen und damit gleichbedeutend alle 8192 möglichen Eviction Sets konstruieren zu können, ist approximativ mit
-\begin{align*}
-P(count(cs)>=17|\#add = x)^{128} = (1-P(count(cs)<17|\#add = x))^{128}
-\end{align*}
-beschrieben.
-Die Ereignisse sind nicht unabhängig, weshalb diese Vereinfachung zu Ungenauigkeiten führt.
-Diese sind aber im zur Veranschaulichung gezeigten Bereich unter 0,3 Prozentpunkten und damit visuell nicht identifizierbar.
-
-Die durchgezogene Linie im Diagramm \ref{fig:combined_es_prob} gibt die Erfolgswahrscheinlichkeiten für verschiedene $x$-Werte im zweiten Szenario an. 
-
-%\todo{siehe oben. Du hast drei mal den gleichen graphen! vielleicht kann man die in ein Diagramm zeichnen? Wie viel Mehrwert bieten sie?}
-
-\label{fig:combined_es_prob}
-\begin{figure}[h]
-\centering
-\begin{scaletikzpicturetowidth}{\textwidth}
-\input{methods/plot_combined_es_prob.tex}
-\end{scaletikzpicturetowidth}
-\caption{Die gestrichelte Kurve (Y-Achse) veranschaulicht die Wahrscheinlichkeit, ein fixes Eviction-Set mit einer bestimmten Anzahl an Pooladressen (X-Achse) bei einer Assoziativität von 16 zu finden. Die einzelnen Punkte Werte dar, die mit dem Eviction-Set-Suchalgorithmus in der Praxis ermittelt wurden.
-Die durchgezogene Linie stellt die Wahrscheinlichkeit dar, alle 8192 Eviction-Sets zu finden.}
-\end{figure}
-
-Häufig wird in Benchmarks angegeben, wie viele Eviction-Sets überhaupt gefunden wurden.
-Diese Fragestellung ist identisch mit dem ersten Szenario.
-Denn wenn ein fixes Eviction-Set mit einer Wahrscheinlichkeit von $x$ Prozent gefunden wird und die Zuordnung wie hier zufällig ist, dann werden insgesamt im Mittel $x/100 \cdot 128$ Eviction-Sets gefunden.
-
-TODO In Abb. 3 Mehr reale Daten einfügen
-TODO Benchmark Zeit einfügen, beschreiben das teilweise hohe Aussschläge von 5+ Min
-
-%\todo{ja, das finde ich auch. dringend.}
 
 \subsection{Eviction-Set-Suchalgorithmus}
 \label{evictionSetSearchAlgo}
@@ -356,10 +298,99 @@ Das gefundene Eviction-Set wird gespeichert und der Vorgang solange wiederholt, 
 }
 \end{algorithm}
 
+\subsection{Wahl der Adresspoolgröße}
+\label{addressPoolSize}
+
+Um die Anzahl der Blöcke beziehungsweise die Arraygröße in Webassembly sinnvoll zu bestimmen, kann zuerst die vereinfachte Annahme getroffen werden, dass die physischen Adressbits 12 bis 63 der 4-KiB-Blöcke zufällig gewählt sind. 
+Die unbekannte Cache-Mapping-Funktion nimmt nun die zufälligen Bits 12 bis 63 und die auf 0 gesetzten Bits 0 bis 11 entgegen und gibt eines von 128 möglichen Cache-Sets zurück.
+Ziel ist es, mit einer Poolgröße $x$ und einer hohen Wahrscheinlichkeit für jedes Cache-Set 17 Zuordnungen beziehungsweise ein Eviction-Set zu finden.
+Für ein Eviction-Set werden wegen der L3-Cache-Assoziativität 16 Adressen gebraucht, wobei die weitere Adresse für den Anfangskandidaten benötigt wird, welcher zum selben Cache-Set zugeordnet werden muss.  
+Gesucht ist somit die Wahrscheinlichkeit, bei einer Poolgröße $x$ mindestens 17 Zuordnungen zu einem fixen Cache-Set $cs$ bei 128 Möglichkeiten zu finden.
+Hierfür eignet sich das Urnenmodell für Ziehungen mit Zurücklegen ohne Berücksichtigung der Reihenfolge, wobei die $x$ Adressen im Pool die Ziehungen und die Cache-Sets die 128 verschiedenfarbigen Kugeln repräsentieren. Sei $P(count(cs)>=17)$ die Wahrscheinlichkeit dafür, dass in der gezogenen Folge mindestens 17 mal das Cache-Set $cs$ auftaucht, unter der Bedingung, dass die Poolgröße $\#add = x$.
+Leichter ist es in diesem Fall, die Gegenwahrscheinlichkeit zu berechnen, die mit
+\begin{align*}
+P(count(cs)<17|\#add = x) &=
+\left( \sum\limits_{i=0}^{16}P(count(cs)=i|\#add = x) \right) \\&=
+\left( \sum\limits_{i=0}^{16} {x \choose i} \frac{127}{128}^{x-i} \cdot \frac{1}{128}^i  \right)
+\end{align*}
+beschrieben ist.
+
+Die Wahrscheinlichkeit des $P(count(cs)>=17)$ ist etwa bedeutend im ersten Szenario.
+Angenommen, die Angreiferin hat es auf eine bestimmte Adresse abgesehen und möchte ein korrelierendes Eviction-Set finden. 
+Wie wahrscheinlich ist ein erfolgreicher Angriff beziehungsweise wie hoch ist die Wahrscheinlichkeit, ein korrelierendes Eviction-Set zu finden? 
+Das Diagramm \ref{fig:combined_es_prob} zeigt die Erfolgswahrscheinlichkeiten für verschiedene $x$-Werte. 
+
+%\todo{Die Linie muss dünner. Die Bildunterschrift muss die cache-sets und die assoziativität beeinhalten. Das Bild soll mit der Unterschrift verständlich sein, ohne den restlichen text lesen zu müssen. Schriftgröße für Bildunterschriften und beschriftungen gern kleiner.}
+
+Im zweiten Szenario möchte die Angreiferin in einem komplexen Angriff eine Vielzahl von Adressen in unterschiedlichen Cache-Sets überwachen. 
+Sie interessiert sich nun dafür, wie wahrscheinlich es ist, alle 8192 Cache-Sets zu finden und somit auch die für sie relevanten. 
+
+Die Wahrscheinlichkeit, für alle 128 möglichen Cache-Sets jeweils 17 Zuordnungen und damit gleichbedeutend alle 8192 möglichen Eviction Sets konstruieren zu können, ist approximativ mit
+\begin{align*}
+P(count(cs)>=17|\#add = x)^{128} = (1-P(count(cs)<17|\#add = x))^{128}
+\end{align*}
+beschrieben.
+Die Ereignisse sind nicht unabhängig, weshalb diese Vereinfachung zu Ungenauigkeiten führt.
+Diese sind aber im zur Veranschaulichung gezeigten Bereich unter 0,3 Prozentpunkten und damit visuell nicht identifizierbar.
+
+Die durchgezogene Linie im Diagramm \ref{fig:combined_es_prob} gibt die Erfolgswahrscheinlichkeiten für verschiedene $x$-Werte im zweiten Szenario an. 
+
+%\todo{siehe oben. Du hast drei mal den gleichen graphen! vielleicht kann man die in ein Diagramm zeichnen? Wie viel Mehrwert bieten sie?}
+
+\label{fig:combined_es_prob}
+\begin{figure}[h]
+\centering
+\begin{scaletikzpicturetowidth}{\textwidth}
+\input{methods/plot_combined_es_prob.tex}
+\end{scaletikzpicturetowidth}
+\caption{Die gestrichelte Kurve (Y-Achse) veranschaulicht die Wahrscheinlichkeit, ein fixes Eviction-Set mit einer bestimmten Anzahl an Pooladressen (X-Achse) bei einer Assoziativität von 16 zu finden. Die einzelnen Punkte Werte dar, die mit dem Eviction-Set-Suchalgorithmus in der Praxis ermittelt wurden.
+Die durchgezogene Linie stellt die Wahrscheinlichkeit dar, alle 8192 Eviction-Sets zu finden.}
+\end{figure}
+
+Häufig wird in Benchmarks angegeben, wie viele Eviction-Sets überhaupt gefunden wurden.
+Diese Fragestellung ist identisch mit dem ersten Szenario.
+Denn wenn ein fixes Eviction-Set mit einer Wahrscheinlichkeit von $x$ Prozent gefunden wird und die Zuordnung wie hier zufällig ist, dann werden insgesamt im Mittel $x/100 \cdot 128$ Eviction-Sets gefunden.
+
+Ein weiteres wesentliches Kriterium ist die Dauer der Eviction-Set-Suche, wobei Tabelle \ref{tbl:performanceESSearchDifferentPoolSize} Performancewerte für verschiedene Poolgrößen angibt.
+
+\begin{table}[h]
+\caption{Performancewerte des Eviction-Set-Suchalgorithmus, wobei pro Poolgröße 120 Läufe durchgeführt wurden. Angegeben sind die Median-Werte, um sporadisch auftretende sehr lange Läufe nicht zu stark zu berücksichtigen. Alle Werte beziehen sich auf einen Lauf. Spalte „Dauer“ beschreibt die Gesamtlaufzeit der Suche. Spalte „Fehlgeschlagene Iterationen“ beschreibt wie viele Iterationen aufgrund von Fehlern in der Expand- oder Contract-Phase abgebrochen wurden. Die letzten drei Spalten beschreiben den Anteil, den die Expand-, Contract- und Collect-Phasen an der Gesamtlaufzeit haben.}
+\label{tbl:performanceESSearchDifferentPoolSize}
+\begin{tabular}{cccccc}
+Poolgröße & Dauer & \begin{tabular}[c]{@{}c@{}}Fehlgeschlagene\\ Iterationen\end{tabular} & \begin{tabular}[c]{@{}c@{}}Expand\\ Anteil\end{tabular} & \begin{tabular}[c]{@{}c@{}}Contract\\ Anteil\end{tabular} & \begin{tabular}[c]{@{}c@{}}Collect\\ Anteil\end{tabular} \\
+3072      & 76s   & 126                                                                   & 32\%                                                    & 64\%                                                      & 4,4\%                                                    \\
+3584      & 75s   & 244                                                                   & 27\%                                                    & 68\%                                                      & 5,1\%                                                    \\
+4096      & 57s   & 145                                                                   & 23\%                                                    & 69\%                                                      & 7,7\%                                                    \\
+5120      & 91s   & 311                                                                   & 14\%                                                    & 79\%                                                      & 6,1\%                                                   
+\end{tabular}
+\end{table}
+
+Um Abweichungen zu minimieren wurde jede Poolgröße 120 Mal getestet.
+Es fällt auf, dass die Poolgröße 4096 signifikant schneller als die kleineren Poolgrößen ist. 
+Da die Anzahl der nötigen Operationen mit der Poolgröße steigt, scheint dies Ergebnis widersprüchlich, jedoch konnte es auch bei zusätzlichen Tests verifiziert werden.
+
+Ein Problem bei den Tests stellt die Contract-Phase dar, da es Abschnitte gibt in den Läuf
+
+Die Dauer der Collect-Phase, wird signifikant von der Poolgröße beeinflusst, da sie am Ende einer Iteration alle restlichen Adressen des Pools darauf testen muss, ob diese auf das Cache-Set gemappt werden für das in der Iteration ein Eviction-Set gefunden wurde.
+Daher nimmt die absolute Zeit für den Anteil der Collect-Phase mit der Poolgröße zu, jedoch ist der Anteil bei diesen Poolgrößen mit unter 10s bzw. unter 10\% der Gesamtlaufzeit unbedeutend.
+
+%Da in der Expand-Phase zufällig Adressen aus dem Pool gezogen werden und mit jeder Iteration alle unnötigen Adressen des in der Expand-Phase gefundenen Eviction-Sets mittels der Collect-Phase entfernt werden, hat die Größe des Adresspools wenig Einfluss auf die Expand-Phase, sofern das Finden aller Eviction-Sets angestrebt wird.
+%Insbesondere die Aufstockung einer Poolgröße die im Mittel über 95\% aller Eviction-Sets findet etwa 4096 hin zu etwa 5120, erhöht die Berechnungszeit der Expand-Operation weniger als 5\%.
+%Anders ist dies bei der Poolgröße 2048, die mit im Mittel 45\% weit weniger als die Hälfte aller Eviction-Sets findet.
+%Wenn die Poolgröße von 2048 auf 4096 aufgestockt wird, erhöht sich die Berechnungszeit der Expand-Phase um $\sim$36\%, aber es werden im Mittel auch ungefähr doppelt so viele Eviction-Sets gefunden.
+
+%Die gleichen Überlegungen ergeben sich für Contract-Phase, denn diese arbeitet auf dem mit unnötigen Einträgen gefüllten Eviction-Set, welches von der Expand-Phase erzeugt wurde.
+
+
+
+%Problematisch hat sich bei den Tests die Contract-Phase herausgestellt, welche in praktischen Tests über 50\% der gesamten Rechenzeit beanspruchte.
+
+
+%TODO Benchmark Zeit einfügen, beschreiben das teilweise hohe Aussschläge von 5+ Min
+
 %\subsection{Umgang mit der adaptiven Eviction-Policy}
 
 %Bei Testen des Eviction-Set-Algorithmus fiel auf, dass es Zeiträume gab in der die Contract-Phase das Eviction-Set trotz mehrerer Durchläufe kaum verkleinern konnte. Im Extremfällen konnte es über eine Minute dauern bis wieder ein Eviction-Set gefunden wurde.
-
 
 \subsection{Optimierung der Phasen}
 
@@ -380,11 +411,12 @@ TODO probleme mit Contract Phase beschreiben
 
 \subsection{Details der realen Implementierung}
 
-Wie weiter oben beschrieben, wird insbesondere der Test, ob ein Set ein Eviction-Set für eine bestimmte Adresse darstellt, bei positivem Ergebnis mehrfach wiederholt, um false-positive (???) Fehler auszuschließen. 
+Ein false-positive bedeutet, dass ein Candidate-Set kein Eviction-Set für eine Zeugenadresse ist, aber fälschlicherweise als solches erkannt wird.
+Wie weiter oben beschrieben, wird insbesondere der Test, ob ein Set ein Eviction-Set für eine bestimmte Adresse darstellt, bei positivem Ergebnis mehrfach wiederholt, um false-positive Fehler auszuschließen. 
 Problematisch ist dies vor allem in der Expand-Phase, da das Candidate-Set eine Größe von mehreren hundert Einträgen annimmt und nach jeder Iteration gegen die Zeugenadresse getestet wird. 
 Eine einzige erhöhte Zugriffszeitmessung würde das Candidate-Set fälschlicherweise als Eviction-Set für die Zeugenadresse einordnen. 
 Es wurde festgestellt, dass erhöhte Zugriffszeiten mehrmals hintereinander auftreten können. Deshalb wird eine erhöhte Messung in der Expand-Phase 20 mal erneut überprüft. 
-Die Überprüfung bricht ab; sobald eine der Messungen eine widersprüchliche Aussage zulässt.
+Die Überprüfung bricht ab, sobald eine der Messungen eine widersprüchliche Aussage zulässt.
 Trotz der hohen Anzahl von 20 Wiederholungen sind die Kosten hierfür gering, da im fehlerfreien Optimalfall nur zusätzlich 20 Prüfungen anfallen und in den meisten Fehlerfällen nur einzelne zusätzliche Überprüfungen durchgeführt werden. 
 Demgegenüber steht der Vorteil, nicht fälschlicherweise in die Contract-Phase zu wechseln und dort erst spät zu merken, dass das Candidate-Set kein Eviction-Set ist.
 
@@ -392,8 +424,8 @@ Ein false-negative bedeutet, dass ein Candidate-Set ein Eviction-Set für eine Z
 Dieser Fehler kann nur auftreten, wenn der Counter-Thread unterbrochen oder gestört wird, sodass der die Zählvariable gar nicht oder sehr langsam erhöht wird.
 Dieser Fehler ist in der Expand-Phase unerheblich, da ausschließlich zusätzliche Einträge hinzugefügt werden, welche aber in der Contract-Phase wieder in den Adresspool verschoben werden.
 In der Contract-Phase würden bei einem false-negative Einträge erhalten bleiben, die für das Eviction-Set nicht notwendig sind. Somit würde die Contract-Phase fehlschlagen, da das Eviction-Set nicht auf eine Größe von 16 reduziert werden kann.
-Ein false-negative in der Collect-Phase würde Adressen; die zum Eviction-Set gehören; nicht aussortieren, sondern im Pool belassen.
-Wenn ein false-negatives Fehler mindestens 17 Mal in der Collect-Phase auftritt, sind genug Adressen für ein weiteres Eviction-Set des selben Cache-Sets im Pool vorhanden. Das heißt; dass in der nächsten Iteration ein Eviction-Set für das selbe Cache-Set gebildet werden könnte.
+Ein false-negative in der Collect-Phase würde Adressen, die zum Eviction-Set gehören, nicht aussortieren, sondern im Pool belassen.
+Wenn ein false-negatives Fehler mindestens 17 Mal in der Collect-Phase auftritt, sind genug Adressen für ein weiteres Eviction-Set des selben Cache-Sets im Pool vorhanden. Das heißt, dass in der nächsten Iteration ein Eviction-Set für das selbe Cache-Set gebildet werden könnte.
 Ein false-negative tritt allerdings sehr selten auf, sodass ein solches Szenario unrealistisch ist.
 
 %Wenn nun das Candidate-Set kein Eviction-Set für die Zeugenadresse ist, würde in der naiven Implementierung der Contract-Phase über alle Einträge des Candidate-Sets iteriert werden, aber kein Eintrag gelöscht.
@@ -425,7 +457,7 @@ Hierbei werden die Einträge des Eviction-Sets analog zu einer verketteten List 
 \section{Verbesserte Eviction-Set-Suche mittels Store-to-load-forwarding}
 \label{StoreFor}
 
-Die Forscher Saad Islam und Ahmad Moghimi des Worcester Polytechnic Institute sind auf ein Verhalten bei Intel-Prozessoren gestoßen, das das Auffinden von Adressen ermöglicht, deren 20 letzten physischen Bits identisch sind, ohne auf Techniken wie Huge-Pages zugreifen zu müssen.
+Die Forscher Saad Islam und Ahmad Moghimi des Worcester Polytechnic Institute sind auf ein noch nicht veröffentlichtes Verhalten bei Intel-Prozessoren gestoßen, das das Auffinden von Adressen ermöglicht, deren 20 letzten physischen Bits identisch sind, ohne auf Techniken wie Huge-Pages zugreifen zu müssen.
 Solche Adressen seien nachfolgend \textit{colliding-addresses} genannt.
 Die Idee hierbei ist, den Store-Buffer in einer Schleife mit einer Vielzahl von Schreibbefehlen zu fluten und direkt danach eine Zeitmessung für das Lesen einer Adresse $x$ auszuführen.
 
@@ -479,7 +511,7 @@ Grafik \ref{fig:colliding_addresses_js_measurement} zeigt die typische Verteilun
 \caption{Erkennung von colliding-addresses unter Javascript. Punkte geben die Latenz für eine Leseoperation auf eine fixe Adresse an, nachdem Schreiboperationen auf jeden der 64 Blöcke im aktuellen Fenster durchgeführt wurden. Die drei dickeren Punkte stellen vom Algorithmus identifizierte colliding-addresses dar. Es wurde verifiziert, dass diese drei Adressen Teil eines späteren Eviction-Sets geworden sind und somit die Identifikation seitens des Algorithmus korrekt war.}
 \end{figure}
 
-Tests (welche Tests?) haben ergeben, dass mit $WINDOW=64$ colliding-addresses zuverlässig durch Peaks bei der Zeitmessung der Leseoperation für $x$ hervorstechen.
+Eigene Tests haben ergeben, dass mit $WINDOW=64$ colliding-addresses zuverlässig durch Peaks bei der Zeitmessung der Leseoperation für $x$ hervorstechen.
 Ein höherer Wert für $WINDOW$ bringt keine Vorteile bei der Identifizierung der colliding addressses, erhöht allerdings die Laufzeit der Suche.
 Andersherum verringern kleinere Werte für $WINDOW$ die Suchlaufzeit, sorgen aber auch für kleinere Peaks der colliding-addresses bei der Zeitmessung, sodass eine Identifikation schwieriger wird.
 %Da die Identifizierung unter Javascript bereits gegenüber C erschwert ist, existiert kein Spielraum, um den Wert von $WINDOW$ abzusenken. 
@@ -491,16 +523,33 @@ Die Anzahl der möglichen Cache-Sets ist gleichbedeutend mit der Anzahl der Slic
 Wenn nun $x$ groß genug gewählt ist, können aus dem colliding-address-Pool 4 Eviction-Sets gebildet werden, wobei die untersten 12 Bits aller Adressen im Pool auf 0 gesetzt sind. Daher können aus jedem der 4 Eviction-Sets wiederum 63 neue Eviction-Sets gebildet werden, indem die Bits 6 bis 11 der bestehenden Eviction-Sets nach und nach inkrementiert werden.
 
 Somit muss insgesamt 32 Mal (32*4*64=8192) ein colliding-address-Pool aufgebaut werden, um alle Eviction-Sets zu bestimmen.
-Dabei ist sicherzustellen, dass die letzten 20 Bits der Adresse des Blocks, zu dem die colliding-addresses gesucht werden, (Hier fehlt ein Verb!) 
+%Dabei ist sicherzustellen, dass die letzten 20 Bits der Adresse des Blocks, zu dem die colliding-addresses gesucht werden, (Hier fehlt ein Verb!) 
+
+Die Ergenisse in Tabelle \ref{} zeigen eine deutliche Verbesserung der Laufzeit gegenüber dem alten Algorithmus.
 
 Das Finden einer ausreichend großen Menge an colliding-addresses ist schnell TODO benchmark, weshalb sich die Berechnungszeit vor allem auf die Suche nach den 4 Eviction-Sets in den colliding-address-Pools beschränkt.
 In Tests hat sich eine Pool-Größe von 115 als geeignet herausgestellt.
 Häufig sind weit weniger Adressen ausreichend, jedoch zieht eine gescheiterte Eviction-Set-Suche eine erneute Suche mit etwas vergrößertem Pool nach sich, wobei die Kosten im Verhältnis zum Suchen der colliding-addresses hoch sind.
 Deshalb ist es günstiger, bereits am Anfang mehr colliding-addresses zu suchen, um den Fall einer gescheiterten Eviction-Set-Suche zu vermeiden.
 
-Diese Methode ist schneller als der Standardalgorithmus zum Finden von Eviction-Sets, da bei diesem 128 Evicton-Sets in einer Pool-Größe von etwa 4000 (siehe Abschnitt \ref{addressPoolSize}) gefunden werden müssen, wohingegen bei der neuen Methode das 32-malige Finden von 4 Eviction-Sets bei einer Pool-Größe von 115 ausreicht.
+Diese Methode ist schneller als der Standardalgorithmus zum Finden von Eviction-Sets, da bei diesem 128 Eviction-Sets in einer Pool-Größe von etwa 4000 (siehe Abschnitt \ref{addressPoolSize}) gefunden werden müssen, wohingegen bei der neuen Methode das 32-malige Finden von 4 Eviction-Sets bei einer Pool-Größe von 115 ausreicht.
+
+
 
 Des Weiteren kann die Suche nach dem colliding-address-Pool
+
+Um eine weitere Beschleunigung zu erzielen, könnte die Suche nach den colliding addresses und die eigentliche Suche nach den Eviction-Sets im colliding-address-Pool parallelisiert werden. Wie in Tabelle \ref{TODO} zu sehen ist beim Optimum mit einem Thread die Suche nach den colliding-addresses schneller als die Suche nach den Eviction-Sets.
+
+Bei der Parallelisierung könnten die Parameter für weniger Fehler sicherer gewählt werden, sodass beiden Teile des Algorithmus in etwa gleich schnell sind.
+Somit würde nicht nur die Performance ansteigen, sondern der Algorithmus auch weniger Fehler produzieren.
+Zurzeit bietet Webassembly kein Multithreading \cite{WebassemblyThreads} und da die gesamte Eviction-Set-Suche in Webassembly implementiert ist, lässt sich dieser Ansatz zurzeit nicht testen.
+Im Gegensatz dazu 
+
+windowSize min 50 auch mehr Runden bringen nichts
+
+windows size min 60 sonst zu viele Fehler
+115 scheint gut
+20 runden scheinen auszureichen
 
 TODO Benchmarks als Grafik einfügen, gegen alte Variante vergleichen
 

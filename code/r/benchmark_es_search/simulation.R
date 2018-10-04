@@ -26,18 +26,20 @@ simulate_es <- function(pool_size = 2048, max_cache_sets = 128,
     index_vec <- integer(max_cache_sets)
     
     #choose candidate
-    rand_index <- sample(1:length(pool),1)
-    candidate <- pool[rand_index]
-    pool <- pool[-rand_index]
+    #rand_index <- sample(1:length(pool),1)
+    #candidate <- pool[rand_index]
+    #pool <- pool[-rand_index]
     stats["expand_rounds"] <- stats["expand_rounds"] + 1
       
     while(length(pool) > 0){
       #expand
       rand_index <- sample(1:length(pool),1)
-      rand_value <- pool[rand_index]
+      candidate <- pool[rand_index]
       pool <- pool[-rand_index]
       
-      index_vec[rand_value] <- index_vec[rand_value] + 1
+      #if(length(pool) < 1){
+      #  print(length(pool))
+      #}
       
       #false detection
       #if(prob_oracle(false_high_acces)){
@@ -49,6 +51,10 @@ simulate_es <- function(pool_size = 2048, max_cache_sets = 128,
         stats["expand_ops"] <- stats["expand_ops"] + sum(index_vec) - 16
         expand_successful <- TRUE
         break
+      }
+      
+      if(length(pool) > 0){
+        index_vec[candidate] <- index_vec[candidate] + 1
       }
     }
     if(expand_successful){
@@ -82,5 +88,51 @@ simulate_es <- function(pool_size = 2048, max_cache_sets = 128,
   return(stats)
 }
 
-simulate_es(pool_size = 4096, max_cache_sets = 128)
-storeFor <- simulate_es(pool_size = 100, max_cache_sets = 4)
+#simulate_es(pool_size = 4096, max_cache_sets = 128)
+
+
+
+
+#storeFor <- simulate_es(pool_size = 100, max_cache_sets = 4)
+
+#bla <- function(){
+tbl <- NULL
+res <- NULL
+df <- data.frame(pool_size=numeric(),expand_ops=numeric(),contract_ops=numeric(),
+                 collect_ops=numeric(),es_count =numeric(),expand_rounds=numeric())
+for(pool_size in seq(2048,6144,128)){
+  index <- (pool_size-2048)/128+1
+  runs <- 10
+  for(i in 1:runs){
+    df[nrow(df)+1,] <- c("pool_size"=pool_size, simulate_es(pool_size = pool_size, max_cache_sets = 128))
+  }
+  #a <- lapply(1:runs, function(x) simulate_es(pool_size = pool_size, max_cache_sets = 128))
+  #mean <- sum(sapply(a, function(x)x[3]))/runs
+  #print(paste0("pool_size:", pool_size, sum(sapply(a, function(x)x[3]))/runs))
+  #res[index] <- mean
+  #df[nrow(df),] <- a
+}
+#}
+
+#save(df, file ="time_data.RData")
+
+
+
+setwd("~/MA_2/master-moritz_krebbel-drive_by_cache_attacks/code/r/benchmark_es_search")
+load("time_data.RData")
+
+df_mean <- aggregate(df[, -1], list(df$pool_size), mean)
+names(df_mean)[2:4] <- c("Expand-Phase", "Contract-Phase", "Collect-Phase")
+
+m <- reshape::melt(df_mean[,1:4], id="Group.1")
+
+ggplot2::ggplot() + 
+  ggplot2::geom_line(data=m, ggplot2::aes(Group.1, value, color=variable, linetype=variable)) +
+  ggplot2::scale_y_continuous(name="Wahrscheinlichkeit (\\%)", 
+                            limits=c(0, 300000),
+                            breaks=seq(0,300000,60000)) +
+  ggplot2::scale_x_continuous(name="Anzahl an Adressen im Pool (x)", 
+                              limits=c(2048, 6144), 
+                              breaks=c(seq(2048,6144,412)))+
+  ggplot2::theme(legend.position = c(0.1, 0.83), legend.title=ggplot2::element_blank())
+  

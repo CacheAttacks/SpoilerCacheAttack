@@ -25,11 +25,13 @@ if (typeof mergeInto !== 'undefined')
 
 if (typeof mergeInto !== 'undefined')
   mergeInto(LibraryManager.library, {
-    store_for_js: function(uint8ptrBuffer, bufferSize, uint8ptrAddressArr, addressArrSize, uint8ptrCandidate) {
-      var rounds = 100;
+    store_for_js: function(uint8ptrBuffer, bufferSize, uint8ptrAddressArr, addressArrSize, uint8ptrCandidate, threadholdSearchForEs, windowSize, rounds) {
+      var startTime = Module['sharedArrayCounter'][0];
+
+      //var rounds = 100;
       var pageSize = 4096;
       var pageCount = bufferSize / pageSize;
-      var windowSize = 64;
+      //var windowSize = 64;
       var movingWindowSize = 10;
 
       var uint32wasmMem = new Uint32Array(Module['wasmMemory'].buffer);
@@ -70,7 +72,7 @@ if (typeof mergeInto !== 'undefined')
       }
       //var savedp = 0;
 
-      console.log(uint8ptrBuffer);
+      //console.log(uint8ptrBuffer);
 
       for (var p = windowSize; p < pageCount; p++) {
         var total = 0;
@@ -110,13 +112,13 @@ if (typeof mergeInto !== 'undefined')
           uint32wasmMem[uint32ptrAdressArr + numberOfStoreForAdd] = uint8ptrStoreForAdd;
           numberOfStoreForAdd++;
 
-          if(numberOfStoreForAdd >= 115){ //try to create es
+          if(numberOfStoreForAdd >= threadholdSearchForEs){ //try to create es
             //console.log(bufferedOutput);
-            if(Module['asm']._try_to_create_es(uint8ptrAddressArr, numberOfStoreForAdd) != 0){
+            if(Module['asm']._try_to_create_es(uint8ptrAddressArr, numberOfStoreForAdd, startTime, Module['sharedArrayCounter'][0]) != 0){
               //console.log(output);
               return true;
             }
-              
+            startTime = Module['sharedArrayCounter'][0];
           }
           //size of AddressArr is limited
           if(numberOfStoreForAdd == addressArrSize){

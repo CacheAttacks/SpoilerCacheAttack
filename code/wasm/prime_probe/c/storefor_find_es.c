@@ -163,6 +163,8 @@ void storefor_write_SAB(){
   store_for_js_SAB(buffer_size);
 }
 
+uint64_t time_sum_js = 0, time_sum_wasm = 0;
+
 void storefor_write(int benchmarkruns){
   //test if allocated buffer is continous physical memory (speed eviction set search by a factor of 2^8)
 	
@@ -183,18 +185,31 @@ void storefor_write(int benchmarkruns){
     uint8_t * storefor_add_arr = (uint8_t*) malloc(sizeof(uint32_t) * storefor_add_arr_size);
     memset(storefor_add_arr, 0, sizeof(uint32_t) * storefor_add_arr_size);	
 
-    #define WINDOW_SIZE 64
+    int WINDOW_SIZE = 60;
+    int rounds = 20;
+    int threadholdSearchForEs = 115;
 
     l3 = l3_create_only(31, 5, buffer_size);
 
     //printf_ex("target_add:%p\n", buffer);
     //measurement_funct(buffer, WINDOW_SIZE, buffer);
     for(int i=0; i<32; i++){
-    store_for_js((uint32_t)buffer, buffer_size, (uint32_t)storefor_add_arr, storefor_add_arr_size, (uint32_t)(buffer+i*PAGE_SIZE));
+    store_for_js((uint32_t)buffer, buffer_size, (uint32_t)storefor_add_arr, storefor_add_arr_size, (uint32_t)(buffer+i*PAGE_SIZE), threadholdSearchForEs, WINDOW_SIZE, rounds);
     }
 
     uint32_t timer_after = get_time_in_ms();
+
+    uint64_t time_sum = time_sum_js + time_sum_wasm;
+    
+    printf_ex("rounds:%i\n", rounds);
+    printf_ex("windowSize:%i\n", WINDOW_SIZE);
+    printf_ex("threadholdSearchForEs:%i\n", threadholdSearchForEs);
     printf_ex("time StoreFor:%u\n", (timer_after - timer_before) / 1000);
+    printf_ex("time sum js:%f\n", (double)time_sum_js / time_sum);
+    printf_ex("time sum wasm:%f\n", (double)time_sum_wasm / time_sum);
+
+    time_sum_wasm = 0;
+    time_sum_js = 0;
 
     if(benchmarkruns){
       munmap(buffer, buffer_size);
@@ -211,27 +226,29 @@ void storefor_write(int benchmarkruns){
 	// measurement_funct(evictionBuffer, WINDOW_SIZE, evictionBuffer+PAGE_SIZE);
 }
 
-int try_to_create_es(uint32_t *address_arr, uint32_t number_of_storefor_add){
+int try_to_create_es(uint32_t *address_arr, uint32_t number_of_storefor_add, uint32_t startTime, uint32_t endTime){
+  time_sum_js += (uint64_t)get_diff(startTime, endTime);
   
+  uint32_t startTimeWasm = rdtscp();
   vlist_t lines = vl_new();
   int opt_counter = 0, max_opt=0, opt_sum =0;
   for(int i=0; i<number_of_storefor_add; i++){
-    if(i>1){
-      printf_ex("%i ", (address_arr[i]-address_arr[i-1])/4096);
-      if((address_arr[i]-address_arr[i-1])/4096 == 256){
-        opt_counter++;
-        opt_sum++;
-      }
-      else { 
-        if(opt_counter > max_opt){
-          max_opt = opt_counter;
-        }
-        opt_counter = 0;
-      }
-    }
+    // if(i>1){
+    //   printf_ex("%i ", (address_arr[i]-address_arr[i-1])/4096);
+    //   if((address_arr[i]-address_arr[i-1])/4096 == 256){
+    //     opt_counter++;
+    //     opt_sum++;
+    //   }
+    //   else { 
+    //     if(opt_counter > max_opt){
+    //       max_opt = opt_counter;
+    //     }
+    //     opt_counter = 0;
+    //   }
+    // }
     vl_push(lines, (void*)(address_arr[i]+2048));
   }
-  printf_ex("max_opt:%i, opt_sum:%i", max_opt, opt_sum);
+  //printf_ex("max_opt:%i, opt_sum:%i", max_opt, opt_sum);
   //printf_ex("\n");
   //vl_free(lines);
 
@@ -240,6 +257,9 @@ int try_to_create_es(uint32_t *address_arr, uint32_t number_of_storefor_add){
   //groups = map(l3, lines);
   //groups = map(l3, lines);
   //groups = map(l3, lines);
+
+  time_sum_wasm += (uint64_t)get_diff(startTimeWasm, rdtscp());
+
   if(vl_len(groups) == 4){
     vlist_t es = vl_get(groups, 0);
     for(int i=0; i<vl_len(es); i++){
