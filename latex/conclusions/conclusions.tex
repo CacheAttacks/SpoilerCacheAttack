@@ -46,6 +46,11 @@ Eine offene Frage ist daher, ob im Webkontext bessere Optionen zum Bremsen von P
 Da in Zukunft vermutlich kein eigener Count-Thread mehr nötig ist (siehe Abschnitt \ref{GooglePageIsolation}), sinkt der Ressourcenbedarf des Angriffs um einen Thread.
 So kann ein Angriff entweder mit einem Thread weniger auskommen oder der frei gewordene Thread wird zum Bremsen des Codes verwendet.
 
+Zudem könnte der neue Eviction-Set-Suchalgorithmus weiter beschleunigt werden, indem die Suche nach den colliding-addresses und die Eviction-Set-Suche im Pool der colliding-addresses nebenläufig abgearbeitet werden.
+Javascript kann Multithreading durch Webworker umsetzen, wobei eine komplette Reimplementierung der Eviction-Set-Suche in Javascript nötig wäre.
+Außerdem müsste evaluiert werden, ob diese Nachteile gegenüber der Implementierung in Webassembly mit sich bringt. 
+Andererseits wird zurzeit an der Umsetzung von Multithreading in Webassembly gearbeitet \cite{WebassemblyThreads}, womit der vorhandene Code in Zukunft um den Parallelisierungansatz erweitert werden könnte.
+
 Wenn der Angriffsprozess auf demselben physischen Kern wie der Opferprozesses läuft, ergeben sich weitergehende Angriffsmöglichkeiten.
 So kann beispielsweise eine erhöhte räumliche Auflösung ermöglicht werden, welche über die übliche 64 Byte Cache-Line-Auflösung hinausgeht \cite{MemJam}.
 Ein weiterer im Juli 2018 veröffentlichter Angriff \cite{TLBleed} nutzt konkurrierende Zugriffe auf den Translation lookaside buffer(TLB) aus, welcher zwischen zwei Hyperthreads eines selben physischen Kerns geteilt ist.

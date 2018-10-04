@@ -3,8 +3,10 @@ results:
 
 TODOs:
 Seite 3, messen wie schnell slot time von c code am besten unter last, nutze victim
-Seite 3, Peroframnce von StoreFor vs Standard schreieben
+
 Seite 13, Differenz von Cache-Hit vs Miss auf Testsystem messen
+Auf dem Testsystem mit einem Intel i7-4770 und DDR3-1600 RAM konnten etwa Differenzen von TODO gemessen werden.
+
 Eventuell 4800 Taktzyklen (mittlere Dauer einer Iteration von \textit{mpp_sieve} bei RSA 2048) prüfen
 Eventuell Die Berechnung von $\text{\textit{random_num}} \mod \text{\textit{small\_prime}}$ dauert dann im Schnitt 4800 Taktzyklen. prüfen
 Eventuell Somit ist bekannt, dass auf das \textit{primes_tab}-Array nur etwa jede 4800 Taktzyklen einmal zugegriffen wird.
@@ -13,20 +15,39 @@ Eventuell Durch die Berechnung von $\text{\textit{random_num}} \mod \text{\texti
 
 
 Seite 46:
-Es steht die Frage im Raum, wie viele Gleichungen für die vollständige Rekonstruktion einer Primzahl benötigt werden.
-Für den Informationsgehalt der zweiten Gleichung ist die mittlere Größe von $\text{\textit{small_prime}}_i$ ausschlaggebend.
-Tabelle %\ref{} TODO
-zeigt die zu erwartenden Werte für verschiedene Primzahlbitlängen. 
-\todo{prüfen wie sich verhalten mit unterschiedlichen bitlängen verändert}
+Prüfe Tabelle 4.1 Differenzen zu praktischen Ergebnissen (praktisch doppelt so viele versuche!)
 
-Seite 48: MEssen wie viele Primzahl in Openpgp.js durchprobiert werden
-Erschwerend ist außerdem, dass die Schleife in den Zeilen 7 bis 14 im Mittel nur TODO mal ausgeführt wird und somit die Zugriffe auf das \textit{adds}-Array nach oben begrenzt sind.
+rounds do while	early break	small_prime mean bitlen		bitlen
+240	174	5,17		1024
+226	175	5,46		
+583	426	5,33		
+195	146	5,35		
+430	326	5,47		
+333	251	5,45		
+56	44	5,62		
+14	11	5,39		
+15	10	4,69		
+1032	784	5,42		
+312,4	234,7	5,335		
+	0,7512804097			
+237	175	5,24		2048
+322	236	5,32		
+568	429	5,43		
+311	224	5,27		
+266	191	5,3		
+722	550	5,4		
+425	319	5,47		
+76	59	5,38		
+1813	1379	5,45		
+95	76	5,41		
+483,5	363,8	5,367		
+	0,7524301965			
 
 Seite 59: TODO auf nuc testen.
 
 
 
-
+geschwindigkeit von parallelen prime probe
 
 
 
@@ -38,11 +59,6 @@ Prüfen: Initialisierungsdauer linear mit der Anzahl der Angriffsinstanzen nope
 
 %(fixen)
 Aufgrund des Fehlens eines Beweises für die NP-Schwere oder eines effizienten Lösungsalgorithmus' ist dem Autor die Komplexität dieses Problems bewusst.
-
-
-Algorithmus zu Pseudocode umbenennen
-
-Auf dem Testsystem mit einem Intel i7-4770 und DDR3-1600 RAM konnten etwa Differenzen von TODO gemessen werden.
 
 
 eventuell fälle in identifikation von angriffszielen leakage analyse mit grafik siehe korrektur seite 42

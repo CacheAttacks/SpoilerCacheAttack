@@ -84,7 +84,7 @@ Um einen realistischen Angriff zu erhalten, ist eine kurze Initialisierungsphase
 Der in vielen Papers beschriebene Eviction-Set-Suchalgorithmus \cite{PrimeAndAbort, LiuPrimeAndProbe, DriveByPaper} wurde in vielerlei Hinsicht optimiert und die Ergebnisse anschließend mit der ursprünglichen Variante verglichen. 
 Des Weiteren wurde eine neue noch unveröffentlichte Technik im Kontext der Eviction-Set-Suche im Browser erprobt.
 Diese nutzt spezifische Eigenschaften der Store-Queue in Intel-Prozessoren aus.
-Damit kann die Suche gegenüber dem optimierten Standardalgorithmus um \todo{Benchmarks für StoreFor vorantreiben} TODO \% beschleunigt werden.
+Damit kann die Suche gegenüber dem optimierten Standardalgorithmus um etwa den Faktor 4 beschleunigt werden.
 
 %Wenn mehr als eine Cache-Line überwacht werden soll, ist es für die zeitliche Auflösung von Vorteil, mehrere Angriffsinstanzen zu starten.
 %Diese müssen jedoch die Eviction-Set-Suche nacheinander durchführen, da sie sich ansonsten gegenseitig beeinflussen würden.

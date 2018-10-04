@@ -65,12 +65,12 @@ for(file in files){
 cut_data_df <- data_df[data_df[,3]<20000,]
 cut_data_df <- data_df
 mean_data_df <- aggregate(cut_data_df[, -c(2:4)], 
-                          list(cut_data_df$threadholdSearchForEs,cut_data_df$windowSize), 
+                          list(cut_data_df$threadholdSearchForEs,cut_data_df$windowSize,cut_data_df$rounds), 
                           mean)
 colnames(mean_data_df)[1:2] <- c("threadholdSearchForEs","windowSize")
 
 median_data_df <- aggregate(cut_data_df[, -c(2:4)], 
-                            list(cut_data_df$threadholdSearchForEs,cut_data_df$windowSize), 
+                            list(cut_data_df$threadholdSearchForEs,cut_data_df$windowSize,cut_data_df$rounds), 
                             median)
 
 

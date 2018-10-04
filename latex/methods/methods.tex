@@ -525,25 +525,10 @@ Wenn nun $x$ groß genug gewählt ist, können aus dem colliding-address-Pool 4 
 Somit muss insgesamt 32 Mal (32*4*64=8192) ein colliding-address-Pool aufgebaut werden, um alle Eviction-Sets zu bestimmen.
 %Dabei ist sicherzustellen, dass die letzten 20 Bits der Adresse des Blocks, zu dem die colliding-addresses gesucht werden, (Hier fehlt ein Verb!) 
 
-Die Ergenisse in Tabelle \ref{} zeigen eine deutliche Verbesserung der Laufzeit gegenüber dem alten Algorithmus.
-
-Das Finden einer ausreichend großen Menge an colliding-addresses ist schnell TODO benchmark, weshalb sich die Berechnungszeit vor allem auf die Suche nach den 4 Eviction-Sets in den colliding-address-Pools beschränkt.
-In Tests hat sich eine Pool-Größe von 115 als geeignet herausgestellt.
-Häufig sind weit weniger Adressen ausreichend, jedoch zieht eine gescheiterte Eviction-Set-Suche eine erneute Suche mit etwas vergrößertem Pool nach sich, wobei die Kosten im Verhältnis zum Suchen der colliding-addresses hoch sind.
-Deshalb ist es günstiger, bereits am Anfang mehr colliding-addresses zu suchen, um den Fall einer gescheiterten Eviction-Set-Suche zu vermeiden.
-
-Diese Methode ist schneller als der Standardalgorithmus zum Finden von Eviction-Sets, da bei diesem 128 Eviction-Sets in einer Pool-Größe von etwa 4000 (siehe Abschnitt \ref{addressPoolSize}) gefunden werden müssen, wohingegen bei der neuen Methode das 32-malige Finden von 4 Eviction-Sets bei einer Pool-Größe von 115 ausreicht.
 
 
-
-Des Weiteren kann die Suche nach dem colliding-address-Pool
-
-Um eine weitere Beschleunigung zu erzielen, könnte die Suche nach den colliding addresses und die eigentliche Suche nach den Eviction-Sets im colliding-address-Pool parallelisiert werden. Wie in Tabelle \ref{TODO} zu sehen ist beim Optimum mit einem Thread die Suche nach den colliding-addresses schneller als die Suche nach den Eviction-Sets.
-
-Bei der Parallelisierung könnten die Parameter für weniger Fehler sicherer gewählt werden, sodass beiden Teile des Algorithmus in etwa gleich schnell sind.
-Somit würde nicht nur die Performance ansteigen, sondern der Algorithmus auch weniger Fehler produzieren.
-Zurzeit bietet Webassembly kein Multithreading \cite{WebassemblyThreads} und da die gesamte Eviction-Set-Suche in Webassembly implementiert ist, lässt sich dieser Ansatz zurzeit nicht testen.
-Im Gegensatz dazu 
+Die Ergenisse in Tabelle \ref{} zeigen eine deutliche Verbesserung der Laufzeit gegenüber dem Standard-Algorithmus.
+Der Standard-Algorithmus performant laut den Tests in Abschnitt \ref{} am besten mit einer Poolgröße von 4096, aber auch in dieser Einstellung ist der neue Algorithmus etwa 4 Mal schneller. 
 
 windowSize min 50 auch mehr Runden bringen nichts
 
@@ -551,7 +536,34 @@ windows size min 60 sonst zu viele Fehler
 115 scheint gut
 20 runden scheinen auszureichen
 
-TODO Benchmarks als Grafik einfügen, gegen alte Variante vergleichen
+Die Tabelle zeigt außerdem, dass die Größe eines colliding-address-Pool von 115 am besten performt.
+Häufig sind weniger Adressen ausreichend, um daraus 4 Eviction-Sets zu bilden, jedoch zieht eine gescheiterte Eviction-Set-Suche eine erneute Suche mit vergrößertem Pool nach sich, wobei die Kosten dafür im Verhältnis zum Suchen zusätzlicher colliding-addresses hoch sind.
+Deshalb ist es günstiger, bereits am Anfang mehr colliding-addresses zu suchen, um den Fall einer gescheiterten Eviction-Set-Suche zu vermeiden.
+%Eventuell mathematische begründung anführen
+
+%Das Finden einer ausreichend großen Menge an colliding-addresses ist schnell , weshalb sich die Berechnungszeit vor allem auf die Suche nach den 4 Eviction-Sets in den colliding-address-Pools beschränkt.
+
+Diese Methode ist schneller als der Standardalgorithmus zum Finden von Eviction-Sets, da bei diesem 128 Eviction-Sets in einer Pool-Größe von 4096 gefunden werden müssen, wohingegen bei der neuen Methode das 32-malige Finden von 4 Eviction-Sets bei einer Pool-Größe von 115 ausreicht.
+
+Um eine weitere Beschleunigung zu erzielen, könnte die Suche nach den colliding addresses und die eigentliche Suche nach den Eviction-Sets im colliding-address-Pool parallelisiert werden. Wie in Tabelle \ref{TODO} zu sehen ist beim Optimum mit einem Thread die Suche nach den colliding-addresses schneller als die Suche nach den Eviction-Sets.
+
+Bei der Parallelisierung könnten die Parameter für weniger Fehler sicherer gewählt werden, sodass beiden Teile des Algorithmus in etwa gleich schnell sind.
+Somit würde nicht nur die Performance ansteigen, sondern der Algorithmus auch weniger fehleranfällig werden.
+Die gesamte Eviction-Set-Suche ist in Webassembly implementiert und zurzeit bietet Webassembly kein Multithreading-Unterstützung \cite{WebassemblyThreads}, womit sich dieser Ansatz zurzeit nicht testen lässt.
+Es wird aber im Moment daran gearbeitet Webassembly mit Multithreadunterstützung umzusetzen, das heißt der verwendete Code könnte in Zukunft leicht um diesen Parallelisierungsansatz erweitert werden.
+
+
+\begin{table}[]
+\begin{tabular}{cccccc}
+\begin{tabular}[c]{@{}c@{}}Initiale\\ Pool-Größe\end{tabular} & Window size & rounds & \begin{tabular}[c]{@{}c@{}}Anteil Suche\\ colliding-address\end{tabular} & \begin{tabular}[c]{@{}c@{}}Anteil Suche\\ Eviction-Sets\end{tabular} & \begin{tabular}[c]{@{}c@{}}Mittlere\\ Zeit\end{tabular} \\
+100                                                           & 60          & 20     & 29\%                                                                     & 71\%                                                                 & 15s                                                     \\
+                                                              &             &        &                                                                          &                                                                      &                                                         \\
+                                                              &             &        &                                                                          &                                                                      &                                                         \\
+                                                              &             &        &                                                                          &                                                                      &                                                        
+\end{tabular}
+\end{table}
+
+%TODO Benchmarks als Grafik einfügen, gegen alte Variante vergleichen
 
 
 

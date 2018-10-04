@@ -5281,6 +5281,7 @@ function copyTempDouble(ptr) {
           }
           lock--;
         }
+        return false;
         console.log("end");
   
   

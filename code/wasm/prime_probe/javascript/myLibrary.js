@@ -130,6 +130,7 @@ if (typeof mergeInto !== 'undefined')
         }
         lock--;
       }
+      return false;
       console.log("end");
 
 
