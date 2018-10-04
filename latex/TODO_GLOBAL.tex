@@ -7,11 +7,23 @@ Seite 3, messen wie schnell slot time von c code am besten unter last, nutze vic
 Seite 13, Differenz von Cache-Hit vs Miss auf Testsystem messen
 Auf dem Testsystem mit einem Intel i7-4770 und DDR3-1600 RAM konnten etwa Differenzen von TODO gemessen werden.
 
-Eventuell 4800 Taktzyklen (mittlere Dauer einer Iteration von \textit{mpp_sieve} bei RSA 2048) prüfen
-Eventuell Die Berechnung von $\text{\textit{random_num}} \mod \text{\textit{small\_prime}}$ dauert dann im Schnitt 4800 Taktzyklen. prüfen
-Eventuell Somit ist bekannt, dass auf das \textit{primes_tab}-Array nur etwa jede 4800 Taktzyklen einmal zugegriffen wird.
-Eventuell Das Zugriffsmuster auf jeder Cache-Line des \textit{primes_tab}-Array entspricht immer 8 Zugriffen mit jeweils etwa 4800 Taktzyklen Pause
-Eventuell Durch die Berechnung von $\text{\textit{random_num}} \mod \text{\textit{small_prime}}$ entsteht zwischen den Zugriffen auf das \textit{sieve}-Array eine Pause von etwa 4800 Taktzyklen.
+Seite 59: TODO auf nuc testen.
+
+Kapitel Implementation:
+Benchmark zu Eviction-Set Suche vervollständigen
+Probleme mit Timer evaluieren
+Vervollständigung von Optimierung der Phasen (Contract init value) Optimierung der Phasen mehr stuff
+Vervollständigung von Details der realen Implment
+Vervollständigung von StoreForward
+
+Diskussion:
+
+Schätze ab wann ein Angriff auf mp_gcd möglich wäre (evaluerien mit delay parameter)\\
+
+
+Eventuell TODOS : 
+(Wo kommen die Antworten auf die vier Eingangsfragen? Struktur der Arbeit inkl. Fazit ist mir nicht ganz klar; vielleicht rekurrierst du auf die Fragen im Fazit direkt, wenn es strukturell Sinn ergibt?)
+
 
 
 Seite 46:
@@ -41,57 +53,22 @@ rounds do while	early break	small_prime mean bitlen		bitlen
 1813	1379	5,45		
 95	76	5,41		
 483,5	363,8	5,367		
-	0,7524301965			
-
-Seite 59: TODO auf nuc testen.
-
-
-
-geschwindigkeit von parallelen prime probe
-
-
-
-(Wo kommen die Antworten auf die vier Eingangsfragen? Struktur der Arbeit inkl. Fazit ist mir nicht ganz klar; vielleicht rekurrierst du auf die Fragen im Fazit direkt, wenn es strukturell Sinn ergibt?)
-
-
-
-Prüfen: Initialisierungsdauer linear mit der Anzahl der Angriffsinstanzen nope
-
-%(fixen)
-Aufgrund des Fehlens eines Beweises für die NP-Schwere oder eines effizienten Lösungsalgorithmus' ist dem Autor die Komplexität dieses Problems bewusst.
-
-
+	0,7524301965
+	
 eventuell fälle in identifikation von angriffszielen leakage analyse mit grafik siehe korrektur seite 42
 
 "Aufgrund des Fehlens eines Beweises für die NP-Schwere oder eines effizienten Lösungsalgorithmus' ist dem Autor die Problemkomplexität unbekannt."
 eventuell umformulieren
 
-Optimierung der Phasen mehr stuff
+Eventuell 4800 Taktzyklen (mittlere Dauer einer Iteration von \textit{mpp_sieve} bei RSA 2048) prüfen
+Eventuell Die Berechnung von $\text{\textit{random_num}} \mod \text{\textit{small\_prime}}$ dauert dann im Schnitt 4800 Taktzyklen. prüfen
+Eventuell Somit ist bekannt, dass auf das \textit{primes_tab}-Array nur etwa jede 4800 Taktzyklen einmal zugegriffen wird.
+Eventuell Das Zugriffsmuster auf jeder Cache-Line des \textit{primes_tab}-Array entspricht immer 8 Zugriffen mit jeweils etwa 4800 Taktzyklen Pause
+Eventuell Durch die Berechnung von $\text{\textit{random_num}} \mod \text{\textit{small_prime}}$ entsteht zwischen den Zugriffen auf das \textit{sieve}-Array eine Pause von etwa 4800 Taktzyklen.
 
+---------------------------------------------------------------------------------------------------
 
-Kapitel Implementation:
-Benchmark zu Eviction-Set Suche vervollständigen
-Probleme mit Timer evaluieren
-Vervollständigung von Optimierung der Phasen (Contract init value)
-Vervollständigung von Details der realen Implment
-Vervollständigung von StoreForward
-
-Kapitel Identifikation von Angriffszielen:
-
-
-Diskussion:
-
-
-Schätze ab wann ein Angriff auf mp_gcd möglich wäre (evaluerien mit delay parameter)\\
-
-
-
-
-anführungszeichen fixen „Sub“
-
-
-
-
+%anführungszeichen fixen „Sub“
 
 check: 01.10: Prime and Probe überall zu Prime-and-Probe geändert
 01.10 : colliding address zu colliding-address

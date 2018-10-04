@@ -117,10 +117,13 @@ Ohne diese Änderungen sorgt der Timer in Firefox für Probleme bei der Zeitmess
 \begin{table}[h]
 \caption{Zeitauflösung des SharedArrayBuffer-Zählers mit verschiedenen Browsern auf Ubuntu 16.04.5 LTS (GNU/Linux 4.4.0-131-generic x86_64) mit einem i7-4770. Wertebereich der \lstinline{Uint32} Zählvariable wird in der linken Spalte ausgeschöpft, in der rechten hingegen wird nur bis $2^{31}$ gezählt.}
 \begin{tabular}{lllll}
-                           & Zählen bis $2^{32}$ & Zählen bis $2^{31}-1$ &  &  \\[10pt]
+\toprule
+                           & Zählen bis $2^{32}$ & Zählen bis $2^{31}-1$ &  &  \\
+                           \midrule
 Chromium 68.0.3440.106     & $\sim$2,7ns                      & $\sim$3ns                        &  &  \\
 Google Chrome 69.0.3497.81 & $\sim$2,7ns                      & $\sim$3ns                        &  &  \\
-Firefox 63.0b4             & $\sim$5,1ns                      & $\sim$2,2ns                      &  & 
+Firefox 63.0b4             & $\sim$5,1ns                      & $\sim$2,2ns                      &  &  \\
+\bottomrule
 \end{tabular}
 \end{table}
 
@@ -357,11 +360,14 @@ Ein weiteres wesentliches Kriterium ist die Dauer der Eviction-Set-Suche, wobei 
 \caption{Performancewerte des Eviction-Set-Suchalgorithmus, wobei pro Poolgröße 120 Läufe durchgeführt wurden. Angegeben sind die Median-Werte, um sporadisch auftretende sehr lange Läufe nicht zu stark zu berücksichtigen. Alle Werte beziehen sich auf einen Lauf. Spalte „Dauer“ beschreibt die Gesamtlaufzeit der Suche. Spalte „Fehlgeschlagene Iterationen“ beschreibt wie viele Iterationen aufgrund von Fehlern in der Expand- oder Contract-Phase abgebrochen wurden. Die letzten drei Spalten beschreiben den Anteil, den die Expand-, Contract- und Collect-Phasen an der Gesamtlaufzeit haben.}
 \label{tbl:performanceESSearchDifferentPoolSize}
 \begin{tabular}{cccccc}
+\toprule
 Poolgröße & Dauer & \begin{tabular}[c]{@{}c@{}}Fehlgeschlagene\\ Iterationen\end{tabular} & \begin{tabular}[c]{@{}c@{}}Expand\\ Anteil\end{tabular} & \begin{tabular}[c]{@{}c@{}}Contract\\ Anteil\end{tabular} & \begin{tabular}[c]{@{}c@{}}Collect\\ Anteil\end{tabular} \\
+\midrule
 3072      & 76s   & 126                                                                   & 32\%                                                    & 64\%                                                      & 4,4\%                                                    \\
 3584      & 75s   & 244                                                                   & 27\%                                                    & 68\%                                                      & 5,1\%                                                    \\
 4096      & 57s   & 145                                                                   & 23\%                                                    & 69\%                                                      & 7,7\%                                                    \\
-5120      & 91s   & 311                                                                   & 14\%                                                    & 79\%                                                      & 6,1\%                                                   
+5120      & 91s   & 311                                                                   & 14\%                                                    & 79\%                                                      & 6,1\%      \\
+\bottomrule
 \end{tabular}
 \end{table}
 
@@ -555,11 +561,14 @@ Es wird aber im Moment daran gearbeitet Webassembly mit Multithreadunterstützun
 
 \begin{table}[]
 \begin{tabular}{cccccc}
+\toprule
 \begin{tabular}[c]{@{}c@{}}Initiale\\ Pool-Größe\end{tabular} & Window size & rounds & \begin{tabular}[c]{@{}c@{}}Anteil Suche\\ colliding-address\end{tabular} & \begin{tabular}[c]{@{}c@{}}Anteil Suche\\ Eviction-Sets\end{tabular} & \begin{tabular}[c]{@{}c@{}}Mittlere\\ Zeit\end{tabular} \\
+\midrule 
 100                                                           & 60          & 20     & 29\%                                                                     & 71\%                                                                 & 15s                                                     \\
                                                               &             &        &                                                                          &                                                                      &                                                         \\
                                                               &             &        &                                                                          &                                                                      &                                                         \\
                                                               &             &        &                                                                          &                                                                      &                                                        
+%\bottomrule
 \end{tabular}
 \end{table}
 

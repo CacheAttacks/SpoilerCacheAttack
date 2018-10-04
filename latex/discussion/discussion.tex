@@ -61,14 +61,17 @@ Tabelle \ref{tbl:PrimeSpamMultithreadRef} zeigt, dass ab 4 Bremsthreads ein sign
 \caption{Zeigt die Ausführungsgeschwindigkeit bei unterschiedlichen Anzahlen an Bremsthreads, welche nicht die Shift- oder Subtraktions-Funktion bremsen. Spalte „Shift“, „Sub“ und „$mp\_gcd$“: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen.}
 \label{tbl:PrimeSpamMultithreadRef}
 \begin{tabular}{cccc}
+\toprule
 Anzahl der Bremsthreads & Shift & Sub & mp\_gcd \\
+\midrule
 0                      & 340   & 475 & 430k    \\
 1                      & 347   & 477 & 443k    \\
 2                      & 361   & 516 & 467k    \\
 3                      & 373   & 505 & 467k    \\
 4                      & 435   & 558 & 546k    \\
 5                      & 448   & 574 & 556k    \\
-6                      & 474   & 601 & 598k   
+6                      & 474   & 601 & 598k    \\
+\bottomrule
 \end{tabular}
 \end{table}
 
@@ -81,7 +84,9 @@ Tabelle \ref{tbl:PerformanceDegShiftMultithreadTwo} zeigt die Ergenisse mit zwei
 \caption{Zeigt das Bremsverhalten mit zwei Prime-Spam-Threads. Die \& in der 1. Spalte trennen die Threads, so werden etwa zwei Threads, bei denen der 1. Thread die Cache-Lines $V1_1$ sowie $V2_4$ und der 2.Thread die Cache-Lines $V1_1$ sowie $V4_3$ bremsen, als $V1_1$,$V2_4$ \& $V1_1$,$V4_3$ beschrieben. Spalte „Shift“, „Sub“ und „$mp\_gcd$“: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen. Für eine Beschreibung der Cache-Line IDs siehe Tabelle \ref{tbl:PerformanceDegShift}}
 \label{tbl:PerformanceDegShiftMultithreadTwo}
 \begin{tabular}{lccc}
+\toprule
 Aufteilung der Cache-Lines auf die Threads & Shift & Sub & mp\_gcd \\
+\midrule
 $V1_1$,$V1_2$,$V2_4$ \& $V1_1$,$V1_2$,$V2_4$                       & 730   & 532 & 610k    \\
 $V1_1$,$V1_2$,$V2_4$ \& $V2_5 3_1$,$V4_3$                         & 795   & 559 & 602k    \\
 $V1_1$,$V2_4$,$V4_3$ \& $V1_2$,$V2_3$,$V4_4$                     & 563   & 561 & 530k    \\
@@ -96,6 +101,7 @@ $V1_2$ \& $V4_3$                                  & 928   & 548 & 788k    \\
 $V1_1$ \& $V4_4$                                  & 672   & 521 & 731k    \\
 $V1_1$ \& $V2_4$                                   & 959   & 619 & 807k    \\
 $V1_1$ \& $V2_5 3_1$                                   & 752   & 533 & 667k    \\
+\bottomrule
 \end{tabular}
 \end{table}
 
@@ -108,12 +114,16 @@ Tabelle \ref{tbl:PerformanceDegShiftMultithreadTwo} zeigt die Ergenisse mit mehr
 \caption{Zeigt das Bremsverhalten mit mehr als (hier fehlt eine Zahl!) Prime-Spam-Threads. Beschreibung analog zu Tabelle \ref{tbl:PerformanceDegShiftMultithreadTwo}. Zu beachten ist hier, dass die hohe Anzahl der Threads an sich zu der Verlangsamung der Ausführung beiträgt (siehe Tabelle \ref{tbl:PrimeSpamMultithreadRef}).}
 \label{tbl:PerformanceDegShiftMultithreadThreePlus}
 \begin{tabular}{lccc}
+\toprule
+Aufteilung der Cache-Lines auf die Threads & Shift & Sub & mp\_gcd \\
+\midrule
 $V1_1$ \& $V2_4$ \& $V4_1$                             & 1017  & 652 & 903k    \\
 $V1_1$ \& $V2_4$ \& $V4_3$                            & 900   & 618 & 927k    \\
 $V1_1$ \& $V1_2$ \& $V2_4$                             & 717   & 553 & 709k    \\
 $V1_1$ \& $V1_2$ \& $V2_4$ \& $V4_3$                      & 913   & 755 & 944k    \\
 $V1_1$ \& $V1_2$ \& $V2_4$ \& $V4_3$ \& $V4_4$               & 1026  & 809 & 1106k   \\
-$V1_1$ \& $V1_2$ \& $V2_4$ \& $V4_1$ \& $V4_3$ \& $V4_4$         & 1109  & 915 & 1354k  
+$V1_1$ \& $V1_2$ \& $V2_4$ \& $V4_1$ \& $V4_3$ \& $V4_4$         & 1109  & 915 & 1354k  \\
+\bottomrule
 \end{tabular}
 \end{table}
 
@@ -251,7 +261,9 @@ Ein erster Test mit ausschließlich einem oder zwei laufenden Memory-Locking-Thr
 \caption{Performance-degradation-attack mittels Prime-Spam und Memory-Locking. 1. Spalte: Anzahl der Threads, die für das Memory-Locking eingesetzt wurden, 2. Spalte: Cache-Lines in der Shift-Operation, die mittels Prime-Spam gebremst wurden (siehe \ref{tbl:PerformanceDegShift} für Id-Zuordnung), Spalte „Shift“, „Sub“ und „$mp\_gcd$“: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen.}
 \label{tbl:MemoryLockingResults}
 \begin{tabular}{ccccc}
+\toprule
 ML-Threads & Cache-Line IDs     & Shift & Sub & mp\_gcd \\
+\midrule
 0                   & -               & 341   & 480 & 432k    \\
 1                   & -               & 370   & 510 & 469k    \\
 2                   & -               & 361   & 506 & 455k    \\
@@ -261,7 +273,8 @@ ML-Threads & Cache-Line IDs     & Shift & Sub & mp\_gcd \\
 0                   & $V1_1$ \& $V2_4$        & 964   & 587 & 865k    \\
 1                   & $V1_1$ \& $V2_4$        & 1337  & 596 & 743k    \\
 2                   & $V1_1$ \& $V2_4$        & 1262  & 575 & 701k    \\
-1                   & $V1_1$ \& $V2_4$ \& $V4_3$ & 1312  & 680 & 803k   
+1                   & $V1_1$ \& $V2_4$ \& $V4_3$ & 1312  & 680 & 803k   \\
+\bottomrule
 \end{tabular}
 \end{table}
 
@@ -393,10 +406,13 @@ Tabelle \ref{tbl:ArtificialBreaksMeanExecutionTime} gibt die erzielte mittlere A
 \caption{Gibt die mittleren Ausführungenzeiten für die Shift- und Subtraktions-Operation sowie die $mp\_gcd$-Funktion auf RSA-2048 bei verschiedenen künstlichen Pausen zwischen den Shift- und Subtraktions-Operationen an. Alle Werte sind in Taktzyklen angegeben.}
 \label{tbl:ArtificialBreaksMeanExecutionTime}
 \begin{tabular}{cccc}
+\toprule
 Pausenzeit & Shift & Sub & mp\_gcd \\
+\midrule
 1000       &       &     &         \\
 2000       &       &     &         \\
-3000       &       &     &        
+3000       &       &     &         \\
+\bottomrule
 \end{tabular}
 \end{table}
 

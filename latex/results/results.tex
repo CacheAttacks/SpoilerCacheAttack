@@ -393,9 +393,15 @@ Die im Mittel benötigte Anzahl skaliert linear mit der Bitlänge, die Übersich
 \begin{table}[h]
 \caption{Veranschaulicht den linearen Zusammenhang zwischen dem Erwartungswert für die Anzahl der Iterationen in Funktion randomProbablePrime (siehe Pseudocode \ref{alg:randomProbablePrimeOpenPGPjs}) bei verschiedenen Primzahlbitlängen.}
 \label{tbl:bitLengthNumberOfIterations}
-\begin{tabular}{c|cccc}
-Bitlänge Primzahl     & 1024 & 1536 & 2048 & 4096 \\
-E(Anzahl Iterationen) & 95   & 142  & 189  & 379 
+\begin{tabular}{cc}
+\toprule
+Bitlänge Primzahl          & E(Anzahl Iterationen) \\
+\midrule
+1024                       & 95                    \\
+1536                       & 142                   \\
+2048                       & 189                   \\
+4096                       & 379                   \\
+\bottomrule
 \end{tabular}
 \end{table}
 
@@ -616,7 +622,9 @@ Welche Adressen die Funktionen im Assemblercode haben, ist in Tabelle \ref{tbl:a
 \caption{Größe, Start- und Endadresse der für die Shift-Operation relevanten Funktionen (fett hervorgehoben) sowie deren direkten Nachbarn im Assemblercode.}
 \label{tbl:assOffsetShift}
 \begin{tabular}{cccc}
-Funktion       & Startadresse & Endadresse & \multicolumn{1}{c}{\begin{tabular}[c]{@{}c@{}}Differenz\\(Größe der Funktion)\end{tabular}} \\[10pt]
+\toprule
+Funktion       & Startadresse & Endadresse & \multicolumn{1}{c}{\begin{tabular}[c]{@{}c@{}}Differenz\\(Größe der Funktion)\end{tabular}} \\
+\midrule
 s\_mp\_alloc   & b7d0$_{16}$        & b7f4$_{16}$      & 25$_{16}$   \\
 s\_mp\_free    & b7f5$_{16}$        & b815$_{16}$      & 21$_{16}$   \\
 \textit{s\_mp\_clamp}   & b816$_{16}$        & b85e$_{16}$      & 49$_{16}$   \\
@@ -629,7 +637,8 @@ s\_mp\_mul\_2  & bc7f$_{16}$        & bd58$_{16}$      & da$_{16}$   \\
 $\vdots$               &  $\vdots$             &    $\vdots$         &     $\vdots$   \\
 s\_mp\_mod\_2d & bd59$_{16}$        & be16$_{16}$      & be$_{16}$   \\
 \textit{s\_mp\_div\_2d} & be17$_{16}$        & bf1d$_{16}$      & 107$_{16}$  \\
-s\_mp\_norm    & bf1e$_{16}$        & bfde$_{16}$      & c1$_{16}$  
+s\_mp\_norm    & bf1e$_{16}$        & bfde$_{16}$      & c1$_{16}$  \\
+\bottomrule
 \end{tabular}
 \end{table}
 
@@ -666,8 +675,10 @@ Welche Adressen die Funktionen im Assemblercode haben, ist in Tabelle \ref{tbl:a
 \caption{Größe, Start- und Endadresse der für die Subtraktions-Operation relevanten Funktionen (fett hervorgehoben) sowie deren direkten Nachbarn im Assemblercode.}
 \label{tbl:assOffsetSub}
 \begin{tabular}{cccc}
-\rowcolor[HTML]{708090} 
-Funktion         & Startadresse & Endadresse & \multicolumn{1}{c}{\begin{tabular}[c]{@{}c@{}}Differenz\\(Größe der Funktion)\end{tabular}} \\[10pt]
+%\rowcolor[HTML]{708090} 
+\toprule
+Funktion         & Startadresse & Endadresse & \multicolumn{1}{c}{\begin{tabular}[c]{@{}c@{}}Differenz\\(Größe der Funktion)\end{tabular}} \\
+\midrule
 mp\_add & 8377$_{16}$ & 846f$_{16}$ & f8$_{16}$\\
 \textit{mp\_sub} & 8470$_{16}$ & 85c3$_{16}$ & 153$_{16}$ \\
 mp\_mul & 85c4$_{16}$ & 894b$_{16}$ & 387$_{16}$ \\
@@ -675,7 +686,8 @@ mp\_mul & 85c4$_{16}$ & 894b$_{16}$ & 387$_{16}$ \\
 $\vdots$               &  $\vdots$             &    $\vdots$         &     $\vdots$   \\
 s\_mp\_sub       & c914$_{16}$         & ca6a$_{16}$       & 157$_{16}$   \\
 \textit{s\_mp\_sub\_3arg} & ca6b$_{16}$         & cc01$_{16}$       & 197$_{16}$   \\
-s\_mp\_mul       & cc02$_{16}$         & cc2a$_{16}$       & 29$_{16}$   
+s\_mp\_mul       & cc02$_{16}$         & cc2a$_{16}$       & 29$_{16}$   \\
+\bottomrule
 \end{tabular}
 \end{table}
 
@@ -694,11 +706,14 @@ Die Dauer der Shift- sowie Subtraktionoperation hängt linear von der Schlüssel
 \begin{table}[h]
 \caption{Darstellung des linearen Zusammenhangs der Taktzyklendauer einer Shift- und Subtraktionsfunktion zu der Bitlänge. Als Vergleich die Dauer der gesamten GCD-Funktion ohne linearen Zusammenhang zu der Bitlänge.}
 \label{tbl:ShiftSubCycles}
-\begin{tabular}{c|ccc}
-Bitlänge    & 2048 & 4096 & 8192 \\
-Shift       & 340  & 577  & 9597 \\
-Subtraktion & 477  & 718  & 1223 \\
-\textit{mp_gcd}    & 424K & 1,2M & 3,73M
+\begin{tabular}{cccc}
+\toprule
+Bitlänge & Shift & Subtraktion & \textit{mp_gcd} \\
+\midrule
+2048     & 340   & 477         & 424K                              \\
+4096     & 577   & 718         & 1,2M                              \\
+8192     & 9597  & 1223        & 3,73M                             \\
+\bottomrule
 \end{tabular}
 \end{table}
 
@@ -743,7 +758,9 @@ Funktionen sind nicht auf Cache-Line-Grenzen aligned
 \caption{RSA-2048 performance-degradation-attack mittels Prime-Spam auf Cache-Lines, welche Code der Shift-Operation beinhalten. 1. Spalte: ID für die Cache-Line für übersichtlichere Bezeichnung, 2. Spalte: Adressbereich der durch den Angriff verdrängten Cache-Line, 3. Spalte: Funktionen deren Code innerhalb des Adressbereichs der Cache-Line liegt, Spalte „Shift“, „Sub“ und „\textit{mp_gcd}“: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise \textit{mp_gcd}-Operation in Taktzyklen bei einem aktiven Angriff auf die in Spalte 2 spezifizierte Cache-Line. Die erste Zeile gibt die Referenzzeiten ohne aktiven Angriff an. Die horizontalen Linien innerhalb der Tabelle zeigen Sprünge zwischen Adressen der Cache-Lines an.}
 \label{tbl:PerformanceDegShift}
 \begin{tabular}{cclccc}
-ID & Cache-Line  & Funktion(en) innerhalb der Cache-Line                                  & Shift & Sub & mp\_gcd \\[10pt]
+\toprule
+ID & Cache-Line  & Funktion(en) innerhalb der Cache-Line                                  & Shift & Sub & mp\_gcd \\
+\midrule
 \multicolumn{3}{c}{Referenzzeiten ohne Prime-Spam}                      & 340   & 477         & 424k    \\
 $V1_1$ & b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 541   & 608         & 549k    \\
 $V1_2$ & b840$_{16}$ - b87f$_{16}$ & $s\_mp\_clamp, s\_mp\_exch$                 & 538   & 605         & 553k    \\ \hline
@@ -756,7 +773,8 @@ $V4_1$ & be00$_{16}$ - be3f$_{16}$ & $s\_mp\_mod\_2d, s\_mp\_div\_2d$           
 $V4_2$ & be40$_{16}$ - be7f$_{16}$ & \textit{s_mp_div_2d}                            & 503   & 549         & 536k    \\
 $V4_3$ & be80$_{16}$ - bebf$_{16}$ & \textit{s_mp_div_2d}                            & 539   & 557         & 551k    \\
 $V4_4$ & bec0$_{16}$ - beff$_{16}$ & \textit{s_mp_div_2d}                            & 537   & 547         & 552k    \\
-$V4_5$ & bf00$_{16}$ - bf3f$_{16}$ & $s\_mp\_div\_2d, s\_mp\_norm$               & 470   & 506         & 485k   
+$V4_5$ & bf00$_{16}$ - bf3f$_{16}$ & $s\_mp\_div\_2d, s\_mp\_norm$               & 470   & 506         & 485k\\
+\bottomrule
 \end{tabular}
 \end{table}
 
@@ -771,7 +789,9 @@ Anders als bei der Shift-Operation bremsen bei der Subtraktions-Operation die Ca
 Spalteninhalte analog zu Tabelle \ref{tbl:PerformanceDegShift}}
 \label{tbl:PerformanceDegSub}
 \begin{tabular}{cclccc}
-ID &Cache-Line & Funktion                     & Shift & Sub & mp\_gcd \\[10pt]
+\toprule
+ID &Cache-Line & Funktion                     & Shift & Sub & mp\_gcd \\
+\midrule
 \multicolumn{3}{c}{Referenzzeiten ohne Prime-Spam}        & 340   & 477         & 424k    \\
 $S1_1$ & 8440$_{16}$-847f$_{16}$  & $mp\_add, mp\_sub$             & 357   & 643         & 487k    \\
 $S1_2$ & 8480$_{16}$-84bf$_{16}$  & \textit{mp_sub}                      & 359   & 684         & 538k    \\
@@ -779,7 +799,8 @@ $S1_3$ & 84c0$_{16}$-84ff$_{16}$  & \textit{mp_sub}                      & 362  
 $S1_4$ & 8500$_{16}$-853f$_{16}$  & \textit{mp_sub}                      & 357   & 700         & 538k    \\
 $S1_5$ & 8540$_{16}$-857f$_{16}$  & \textit{mp_sub}                      & 362   & 683         & 534k    \\
 $S1_6$ & 8580$_{16}$-85cf$_{16}$  & \textit{mp_sub}                      & 358   & 732         & 534k    \\
-$S1_7$ & 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 359   & 766         & 531k    \\ \hline
+$S1_7$ & 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 359   & 766         & 531k    \\
+\midrule
 $S2_1$ & ca40$_{16}$-ca7f$_{16}$  & $s\_mp\_sub, s\_mp\_sub\_3arg$ & 357   & 643         & 490k    \\
 $S2_2$ & ca80$_{16}$-cabf$_{16}$  & \textit{s_mp_sub_3arg}             & 359   & 644         & 494k    \\
 $S2_3$ & cac0$_{16}$-caff$_{16}$  & \textit{s_mp_sub_3arg}             & 357   & 675         & 534k    \\
@@ -787,7 +808,8 @@ $S2_4$ & cb00$_{16}$-cb3f$_{16}$  & \textit{s_mp_sub_3arg}            & 358   & 
 $S2_5$ & cb40$_{16}$-cb7f$_{16}$  & \textit{s_mp_sub_3arg}             & 357   & 663         & 533k    \\
 $S2_6$ & cb80$_{16}$-cbbf$_{16}$  & \textit{s_mp_sub_3arg}             & 359   & 676         & 546k    \\
 $S2_7$ & cbc0$_{16}$-cbff$_{16}$  & \textit{s_mp_sub_3arg}             & 356   & 663         & 535k    \\
-$S2_8$ & cc00$_{16}$-cc3f$_{16}$  & $s\_mp\_sub\_3arg, s\_mp\_mul$ & 352   & 571         & 483k   
+$S2_8$ & cc00$_{16}$-cc3f$_{16}$  & $s\_mp\_sub\_3arg, s\_mp\_mul$ & 352   & 571         & 483k   \\
+\bottomrule
 \end{tabular}
 \end{table}
 
@@ -803,16 +825,21 @@ Als Cache-Lines wurden diejenigen verwendet, welche sich am effektivsten in RSA-
 Spalteninhalte analog zu Tabelle \ref{tbl:PerformanceDegShift}}
 \label{tbl:PerformanceDegR$S2_6$ifferentBitlength}
 \begin{tabular}{ccclccc}
-RSA-Bitlänge & ID & Cache-Line & Funktion & Shift & Subt & mp\_gcd \\[10pt]
+\toprule
+RSA-Bitlänge & ID & Cache-Line & Funktion & Shift & Subt & mp\_gcd \\
+\midrule
 2048         &\multicolumn{3}{c}{Referenzzeiten ohne Prime-Spam}                                         & 340   & 477         & 424k    \\
 2048         & $V1_1$& b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 541   & 608         & 549k    \\
 2048         & $S1_7$& 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 359   & 766         & 531k    \\
+\midrule
 4096         & \multicolumn{3}{c}{Referenzzeiten ohne Prime-Spam}                                         & 543   & 723         & 1,19M    \\
 4096         & $V1_1$& b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 700   & 770         & 1,64M    \\
 4096         & $S1_7$& 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 609   & 1057         & 1,51M    \\
+\midrule
 8192         & \multicolumn{3}{c}{Referenzzeiten ohne Prime-Spam}                                         & 982   & 1223         & 3,71M    \\
 8192         & $V1_1$& b800$_{16}$ - b83f$_{16}$ & $s\_mp\_free, s\_mp\_clamp$                 & 1125   & 1553         & 4,83M    \\
 8192         & $S1_7$& 85c0$_{16}$-85ff$_{16}$  & $mp\_sub, mp\_mul$            & 1046   & 1679         & 4,64M    \\
+\bottomrule
 \end{tabular}
 \end{table}
 
@@ -828,7 +855,9 @@ Tabelle \ref{tbl:PerformanceDegMultiple} zeigt, lässt sich der Bremseffekt verb
 \caption{RSA-2048 Performance-Degradation-Attack mittels Prime-Spam auf mehrere Cache-Lines. Für die Auflösung der Cache-Line Ids siehe Tabelle \ref{tbl:PerformanceDegShift}. Die 2. Spalte gibt der Übersicht halber nur die Funktionen innerhalb der Cache-Lines (1. Spalte) an, welche bei der Berechnung der Shift-Operation relevant sind. So wird etwa die Funktion \textit{s_mp_free} in der ersten Zeile nicht aufgeführt, obwohl die Cache-Line $V1_1$ Teile des Codes von \textit{s_mp_free} enthält. Aus Platzgründen wurde die Funktionsnamen gekürzt, wobei für den vollen Funktionsnamen $*$ mit \textit{s_mp_}  zu substituieren ist.}
 \label{tbl:PerformanceDegMultiple}
 \begin{tabular}{llccc}
+\toprule
 Cache-Line IDs   & \begin{tabular}[c]{@{}l@{}}Relevante Funktion(en) \\ innerhalb der Cache-Line\end{tabular} & Shift & Sub & mp\_gcd \\
+\midrule
 $V1_1$,$V1_2$            & $*clamp$                                                        & 542   & 557 & 528k    \\
 $V4_3$,$V4_4$          & $*div\_2d$                                                      & 533   & 533 & 572k    \\
 $V2_4$,$V2_5 3_1$            & $*rshd,*div\_2$                                           & 526   & 563 & 551k    \\
@@ -840,7 +869,8 @@ $V1_1$,$V1_2$,$V2_4$,$V4_3$     & $*clamp,*rshd,*div\_2d$                       
 $V1_1$,$V1_2$,$V2_4$,$V4_3$,$V4_4$ & $*clamp,*rshd,*div\_2d$                             & 669   & 563 & 563k    \\
 $V1_1$,$V1_2$,$V2_4$,$V4_1$-$V4_4$  & $*clamp,*rshd,*div\_2d$                             & 665   & 575 & 574k    \\
 $V1_1$,$V1_2$,$V2_4$-$V4_4$     & $*clamp,*rshd,*div\_2,*div\_2d$               & 622   & 574 & 562k    \\
-$V1_1$-$V4_5$           & $*clamp,*rshd,*div\_2,*div\_2d$               & 622   & 574 & 562k 
+$V1_1$-$V4_5$           & $*clamp,*rshd,*div\_2,*div\_2d$               & 622   & 574 & 562k \\
+\bottomrule
 \end{tabular}
 \end{table}
 
