@@ -181,13 +181,13 @@ void storefor_write(int benchmarkruns){
     uint8_t* buffer = mmap(NULL, buffer_size, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE,
                     -1, 0);
 
-    uint32_t storefor_add_arr_size = 120;
-    uint8_t * storefor_add_arr = (uint8_t*) malloc(sizeof(uint32_t) * storefor_add_arr_size);
-    memset(storefor_add_arr, 0, sizeof(uint32_t) * storefor_add_arr_size);	
+    uint32_t storefor_add_arr_size = 116;
+    uint8_t * storefor_add_arr = (uint8_t*) calloc(sizeof(uint32_t), storefor_add_arr_size);
+    //memset(storefor_add_arr, 0, sizeof(uint32_t) * storefor_add_arr_size);	
 
-    int WINDOW_SIZE = 50;
+    int WINDOW_SIZE = 60;
     int rounds = 20;
-    int threadholdSearchForEs = 115;
+    int threadholdSearchForEs = 105;
 
     l3 = l3_create_only(31, 5, buffer_size);
     int failed = 0;
@@ -195,12 +195,13 @@ void storefor_write(int benchmarkruns){
     //printf_ex("target_add:%p\n", buffer);
     //measurement_funct(buffer, WINDOW_SIZE, buffer);
     for(int i=0; i<32; i++){
-      for(int j=0; j<3; j++){
+      for(int j=0; j<10; j++){
         if(store_for_js((uint32_t)buffer, buffer_size, (uint32_t)storefor_add_arr, storefor_add_arr_size, (uint32_t)(buffer+i*PAGE_SIZE), threadholdSearchForEs, WINDOW_SIZE, rounds)){
+          //printf_ex("success!\n");
+          failed = 0;
           break;
         }
         failed = 1;
-        printf_ex("failed\n");
       }
       if(failed){
         break;
@@ -212,12 +213,18 @@ void storefor_write(int benchmarkruns){
     uint64_t time_sum = time_sum_js + time_sum_wasm;
     
     if(!failed){
+      printf_ex("half increments\n");
       printf_ex("rounds:%i\n", rounds);
       printf_ex("windowSize:%i\n", WINDOW_SIZE);
       printf_ex("threadholdSearchForEs:%i\n", threadholdSearchForEs);
       printf_ex("time StoreFor:%u\n", (timer_after - timer_before) / 1000);
       printf_ex("time sum js:%f\n", (double)time_sum_js / time_sum);
       printf_ex("time sum wasm:%f\n", (double)time_sum_wasm / time_sum);
+      printf_ex("max additional colliding addresses:%f\n", storefor_add_arr_size-threadholdSearchForEs);
+    } else {
+      printf_ex("----------------------------------------\n");
+      printf_ex("---------------FAILED-------------------\n");
+      printf_ex("----------------------------------------\n");
     }
 
     time_sum_wasm = 0;

@@ -324,8 +324,8 @@ int build_es_ex(void *app_state_ptr, int max_es, int benchmarkmode,
 
   if (benchmarkmode)
   {
-    uint32_t *timer_array = calloc(BENCHMARKRUNS, sizeof(uint32_t));
-    for (int i = 0; i < BENCHMARKRUNS; i++)
+    uint32_t *timer_array = calloc(benchmarkruns, sizeof(uint32_t));
+    for (int i = 0; i < benchmarkruns; i++)
     {
       uint32_t timer_before = get_time_in_ms();
       this_app_state->l3 =
@@ -337,7 +337,7 @@ int build_es_ex(void *app_state_ptr, int max_es, int benchmarkmode,
       l3_release(this_app_state->l3);
       timer_array[i] = timer_after - timer_before;
     }
-    for (int i = 0; i < BENCHMARKRUNS; i++)
+    for (int i = 0; i < benchmarkruns; i++)
     {
       printf_ex("%u ", timer_array[i]);
     }

@@ -747,13 +747,6 @@ Wie oben beschrieben, erstreckt sich der relevante Code für die Shift- und Subt
 Jeder dieser Cache-Lines ist ein potenzielles Ziel für die Performancereduktion.
 Da ein Prime-Spam auf eine Cache-Line einen kompletten physischen Kern auslastet, sollte das Ziel sorgfältig gewählt sein.
 
-Um die Auswirkung vom Prime-Spam auf unterschiedliche Cache-Lines zu bewerten, wird die \textit{mp_gcd}-Funktion mit den Parametern $e=65535$ und $p-1$ ausgeführt.
-$p$ ist eine zufällige aber über den gesamten Benchmarkzeitraum feste Pseudoprimzahl, wobei RSA-2048 als Parameter gewählt wurde.
-Tabelle \ref{tbl:PerformanceDegShift} betrachtet alle Cache-Lines, welche Code für die Shift-Operation beinhalten, wobei die Funktion \textit{s_mp_clamp} wie oben erwähnt auch in der Subtraktionsoperation verwendet wird.
-Funktionen sind nicht auf Cache-Line-Grenzen aligned
-%(???) Fachausdruck für Speicherausrichtung
-, weshalb die erste und letzte Cache-Line eines Funktionscodes auch Code für andere Funktionen beinhaltet.
-
 \begin{table}[h]
 \caption{RSA-2048 performance-degradation-attack mittels Prime-Spam auf Cache-Lines, welche Code der Shift-Operation beinhalten. 1. Spalte: ID für die Cache-Line für übersichtlichere Bezeichnung, 2. Spalte: Adressbereich der durch den Angriff verdrängten Cache-Line, 3. Spalte: Funktionen deren Code innerhalb des Adressbereichs der Cache-Line liegt, Spalte „Shift“, „Sub“ und „\textit{mp_gcd}“: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise \textit{mp_gcd}-Operation in Taktzyklen bei einem aktiven Angriff auf die in Spalte 2 spezifizierte Cache-Line. Die erste Zeile gibt die Referenzzeiten ohne aktiven Angriff an. Die horizontalen Linien innerhalb der Tabelle zeigen Sprünge zwischen Adressen der Cache-Lines an.}
 \label{tbl:PerformanceDegShift}
@@ -777,6 +770,13 @@ $V4_5$ & bf00$_{16}$ - bf3f$_{16}$ & $s\_mp\_div\_2d, s\_mp\_norm$              
 \bottomrule
 \end{tabular}
 \end{table}
+
+Um die Auswirkung vom Prime-Spam auf unterschiedliche Cache-Lines zu bewerten, wird die \textit{mp_gcd}-Funktion mit den Parametern $e=65535$ und $p-1$ ausgeführt.
+$p$ ist eine zufällige aber über den gesamten Benchmarkzeitraum feste Pseudoprimzahl, wobei RSA-2048 als Parameter gewählt wurde.
+Tabelle \ref{tbl:PerformanceDegShift} betrachtet alle Cache-Lines, welche Code für die Shift-Operation beinhalten, wobei die Funktion \textit{s_mp_clamp} wie oben erwähnt auch in der Subtraktionsoperation verwendet wird.
+Funktionen sind nicht auf Cache-Line-Grenzen aligned
+%(???) Fachausdruck für Speicherausrichtung
+, weshalb die erste und letzte Cache-Line eines Funktionscodes auch Code für andere Funktionen beinhaltet.
 
 Die Referenzwerte stammen aus der Tabelle \ref{tbl:ShiftSubCycles}, wobei diese Werte unter demselben Parameter $p-1$ entstanden sind.
 Am besten geeignet sind die beiden Cache-Lines der \textit{s_mp_clamp}-Funktion, da sie nicht nur Spitze in der Verlangsamung der Shift-Operation sind, sondern zusätzlich noch die Subtraktionsoperation besser als alle anderen bremsen.

@@ -188,7 +188,12 @@ So ist aber in der Regel das Mapping der virtuellen und physischen Adressen bei 
 \subsection{Timer}
 
 Beide eben beschrieben Angriffsmethoden setzen voraus, dass die Angreiferin Laufzeitunterschiede zwischen dem Ladevorgang aus dem Cache und dem Hauptspeicher zuverlässig unterscheiden kann. Beim AIDA64-Benchmark mit einem aktuellen Intel i7-8700K ist die L3-Cache-Latenz im Mittel bei 12 ns, wobei gepaart mit DDR4-3200 CL16 RAM die Hauptspeicherlatenz im Mittel 49 ns beträgt \cite{i78700kLatency}. Somit ist eine Timer-Auflösung von unter 30 ns Voraussetzung für ein erfolgreichen Angriff. Anschaulich ist dies auch im Diagramm \ref{fig:RAMCacheLatency} zu sehen. Die Autoren verwendeten ein i7-4960HQ und haben Zugriffszeitdifferenzen für Cache-Miss und Hit von etwa 70 ns festgestellt. 
-Auf dem Testsystem mit einem Intel i7-4770 und DDR3-1600 RAM konnten etwa Differenzen von TODO gemessen werden.
+Auf dem Testsystem mit einem Intel i7-4770 und DDR3-1600 RAM konnten mittels \textit{rdtscp} durchschnittliche Zugriffswerte bei einen Hit von 66 und bei einen Miss von 248 Taktzyklen festgestellt werden.
+
+Im Folgenden wird Zeit oft in Taktzyklen gemessen, wobei sich damit immer auf die \textit{rdtscp}-Instruktion bezogen wird.
+Zu beachten ist hierbei, dass der im Testsystem verbaute i7-4770 je nach Kern und Gegebenheiten wie Last, Temperatur usw. von seinem 3,4 GHz Basistakt abweicht.
+Der Takt des \textit{rdtscp}-Timers ist jedoch immer auf den gleichen Takt \cite{IntelManualRDTSCP}, im Fall des Testsystems auf 3,4 GHz, fixiert.
+Somit ergibt die Differenz von 182 Taktzyklen zwischen einem Hit und Miss auf dem Testsystem einen Zeitunterschied von 54 ns.
 
 \label{fig:RAMCacheLatency}
 \begin{figure}[h]

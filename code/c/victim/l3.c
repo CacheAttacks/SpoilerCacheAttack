@@ -39,8 +39,8 @@
 #include "probe.h"
 
 #define CHECKTIMES 16
-#define FACTORDEBUG 20
-#define FACTORPRINT 10
+#define FACTORDEBUG 1
+#define FACTORPRINT 1
 #ifdef WASM
   #define FACTORNORMAL 3
 #else

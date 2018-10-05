@@ -81,10 +81,10 @@ Anhand eines Angriffs auf die RSA-Schlüsselgenerierung wird gezeigt, dass die P
 \par \medskip  
 
 Um einen realistischen Angriff zu erhalten, ist eine kurze Initialisierungsphase Voraussetzung.
-Der in vielen Papers beschriebene Eviction-Set-Suchalgorithmus \cite{PrimeAndAbort, LiuPrimeAndProbe, DriveByPaper} wurde in vielerlei Hinsicht optimiert und die Ergebnisse anschließend mit der ursprünglichen Variante verglichen. 
+Optimierungen des in vielen Papers beschriebenen Eviction-Set-Suchalgorithmus \cite{PrimeAndAbort, LiuPrimeAndProbe, DriveByPaper} wurden untersucht und die Ergebnisse anschließend mit der ursprünglichen Variante verglichen. 
 Des Weiteren wurde eine neue noch unveröffentlichte Technik im Kontext der Eviction-Set-Suche im Browser erprobt.
 Diese nutzt spezifische Eigenschaften der Store-Queue in Intel-Prozessoren aus.
-Damit kann die Suche gegenüber dem optimierten Standardalgorithmus um etwa den Faktor 4 beschleunigt werden.
+Damit kann die Suche gegenüber dem optimierten Standardalgorithmus um etwa den Faktor 3 beschleunigt werden.
 
 %Wenn mehr als eine Cache-Line überwacht werden soll, ist es für die zeitliche Auflösung von Vorteil, mehrere Angriffsinstanzen zu starten.
 %Diese müssen jedoch die Eviction-Set-Suche nacheinander durchführen, da sie sich ansonsten gegenseitig beeinflussen würden.
@@ -193,7 +193,7 @@ Abschließend wird die Speicher-Disambiguierung erklärt, deren Verständnis fü
 Mit der realen Implementierung des Angriffs in Javascript beziehungsweise Webassembly beschäftigt sich Kapitel \ref{chapter:preparation}.
 Es wird beschrieben, wie die Voraussetzungen für einen Angriff im Webkontext trotz begrenzter Möglichkeiten geschaffen werden können.
 Außerdem wird die Umsetzung des Eviction-Set-Suchalgorithmus im Webkontext beschrieben und dessen Leistung theoretisch analysiert.
-Zudem wird die Performance des Eviction-Set-Suchalgorithmus sowie diverse Optimierungen desselben in der Praxis evaluiert.
+Zudem wird die Performance des Eviction-Set-Suchalgorithmus sowie Optimierungen desselben in der Praxis evaluiert.
 Ein spezifisches Verhalten von Intel-Prozessoren im Bezug auf die Speicher-Disambiguierung, welches neue Möglichkeiten in der Eviction-Set-Suche eröffnet, wird erläutert.
 Erstmals wird beschrieben, wie damit ein verbesserter Eviction-Set-Suchalgorthmius im Webkontext umsetzbar ist und wie dieser im Vergleich zur Standardversion performt.
 Als Beispiel wird ein verdeckter Kanal vom Browser zu einem nativ laufenden Programm aufgebaut.

@@ -1,4 +1,14 @@
-setwd("~/MA_2/data/new_benchs/")
+setwd("~/MA_2/data/new_benchs_factor_1/contract_break/")
+
+setwd("~/MA_2/data/new_benchs_factor_1/reuse_contract/")
+
+setwd("~/MA_2/data/new_benchs_factor_1/contract_break_and_reuse_contract/")
+
+setwd("~/MA_2/data/new_benchs_factor_1/bip_ep_avoid/")
+
+setwd("~/MA_2/data/new_benchs_factor_1/normal")
+
+
 files <- list.files()
 block_count <- sapply(files, function(x) as.integer(substr(x, 1, 4)))
 
@@ -11,18 +21,18 @@ filter_data_from_file <- function(file_name){
   file_attributes <- sapply(1:length(important_attributes),function(x)list())
   names(file_attributes) <- names(important_attributes)
   file_data <- readLines(file_name)
-  phaseCounter <- 0
-  phaseCounterFailed <- 0
-  between <- FALSE
+  #phaseCounter <- 0
+  #phaseCounterFailed <- 0
+  #between <- FALSE
   #get attributes
   for(i in 1:length(file_data)){
     line <- file_data[i]
-    if(between){
-      if(is.na(as.numeric(substr(line,nchar(line),nchar(line))))){
-        phaseCounterFailed <- phaseCounterFailed + 1
-      }
-      phaseCounter <- phaseCounter + 1
-    }
+    #if(between){
+    #  if(is.na(as.numeric(substr(line,nchar(line),nchar(line))))){
+    #    phaseCounterFailed <- phaseCounterFailed + 1
+    #  }
+    #  phaseCounter <- phaseCounter + 1
+    #}
     
     for(important_attribute in names(important_attributes)){
       if(grepl(important_attribute, line, fixed=TRUE)){
@@ -35,16 +45,23 @@ filter_data_from_file <- function(file_name){
       }
     }
     
-    if(grepl("INFO END", line, fixed=TRUE)){
-      between <- TRUE
-      phaseCounter <- 0
-      phaseCounterFailed <- 0
+    if(grepl("iterations:", line, fixed=TRUE)){
+      file_attributes[["iteration_count"]][[length(file_attributes[["iteration_count"]])+1]] <- as.numeric(stringr::str_extract(line,"[0-9]+$"))
     }
-    if(grepl("es search canceled!", line, fixed=TRUE)){
-      between <- FALSE
-      file_attributes[["iteration_count"]][[length(file_attributes[["iteration_count"]])+1]] <- phaseCounter
-      file_attributes[["iteration_count_failed"]][[length(file_attributes[["iteration_count_failed"]])+1]] <- phaseCounterFailed
+    if(grepl("iterations contract failed", line, fixed=TRUE)){
+      file_attributes[["iteration_count_failed"]][[length(file_attributes[["iteration_count_failed"]])+1]] <- as.numeric(stringr::str_extract(line,"[0-9]+$"))
     }
+    
+    #if(grepl("INFO END", line, fixed=TRUE)){
+      #between <- TRUE
+      #phaseCounter <- 0
+      #phaseCounterFailed <- 0
+    #}
+    #if(grepl("es search canceled!", line, fixed=TRUE)){
+      #between <- FALSE
+      #file_attributes[["iteration_count"]][[length(file_attributes[["iteration_count"]])+1]] <- phaseCounter
+      #file_attributes[["iteration_count_failed"]][[length(file_attributes[["iteration_count_failed"]])+1]] <- phaseCounterFailed
+    #}
   }
   df <- data.frame(matrix(unlist(file_attributes), nrow=20), stringsAsFactors = F)
   df[,1] <- as.numeric(df[,1])
@@ -85,6 +102,20 @@ mean_data_df <- aggregate(cut_data_df[, 2:13], list(cut_data_df$memBlocks), mean
 colnames(mean_data_df) <- c("blocks","mean_es","mean_time", colnames(data_df_time)[4:13])
 
 median_data_df <- aggregate(cut_data_df[, 2:13], list(cut_data_df$memBlocks), median)
+
+median_data_df[,"expand"] <- sapply(median_data_df[,"expand"], function(x) paste0(round(x*100), "\\%"))
+median_data_df[,"contract"] <- sapply(median_data_df[,"contract"], function(x) paste0(round(x*100), "\\%"))
+median_data_df[,"collect"] <- sapply(median_data_df[,"collect"], function(x) paste0(round(x*100,1), "\\%"))
+median_data_df[,"Time"] <- sapply(median_data_df[,"Time"], function(x) paste0(round(x), "s"))
+median_data_df[,"IterationCountFailed"] <- round(median_data_df[,"IterationCountFailed"])
+
+print_latex_table <- function(table){
+  cat(Reduce(function(x,y){paste0(x, "\\\\", y)}, 
+         apply(table, 1 , function(x) 
+           Reduce(function(x,y){paste0(x, " & ", y)}, x[-1], init = x[1]))))
+}
+
+print_latex_table(median_data_df[,c("Group.1","Time", "IterationCountFailed", "expand", "contract", "collect")])
 
 
 ggplot2::ggplot(mean_data_df, ggplot2::aes(blocks, mean_es))+

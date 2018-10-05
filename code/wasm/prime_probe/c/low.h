@@ -370,6 +370,8 @@ static inline void *walk_through(void *volatile p)
 
   void *old_p = p;
   //void *q = p;
+  //double pointer chasing to avoid BIP eviction policy
+  //has no effect
   do
   {
     //q = *((void **)q);

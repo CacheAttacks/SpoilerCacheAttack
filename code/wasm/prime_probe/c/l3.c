@@ -44,7 +44,7 @@
 #define FACTORDEBUG 20
 #define FACTORPRINT 10
 #ifdef WASM
-#define FACTORNORMAL 3
+#define FACTORNORMAL 1
 #else
 #define FACTORNORMAL 1
 #endif
@@ -120,6 +120,8 @@ int L3_THRESHOLD_OFFSET = 0;
 // ifdef => test correctness of conctract phase, test es without one member for
 // each member
 #define ONEOUTTEST
+
+//#define REUSE_CONTRACT_ENTRIES
 
 // print debug stuff for one out test and after contract test
 #define DEBUG_TEST_PRINT 0
@@ -582,9 +584,15 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
            time_datahandling = 0;
   uint32_t before = 0;
   vlist_t groups = vl_new();
+  
+#ifdef REUSE_CONTRACT_ENTRIES
+  vlist_t es_next_it = vl_new();
+#endif
   vlist_t es = vl_new();
+  
   int nlines = vl_len(lines);
   int fail = 0, too_big = 0, too_small = 0;
+  int iterations = 0, iterations_contract_failed = 0;
   while (vl_len(lines)) {
 
     if (too_big > TOO_BIG_TRIGGER_VALUE ||
@@ -606,6 +614,9 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
     assert(vl_len(es) == 0);
 #ifdef DEBUG
     int d_l1 = vl_len(lines);
+#ifdef REUSE_CONTRACT_ENTRIES
+        d_l1+= vl_len(es_next_it);
+#endif
 #endif // DEBUG
     if (fail > FAIL_MAX) {
       //if(!storefor_mode) {
@@ -613,6 +624,13 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
       //}
       break;
     }
+    iterations++;
+
+#ifdef REUSE_CONTRACT_ENTRIES
+  vl_free(es);
+  es = es_next_it;
+  es_next_it = vl_new();
+#endif
 
     before = rdtscp();
     void *c;
@@ -657,7 +675,11 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
 #endif
       before = rdtscp();
       //contract_advanced(es, lines, c, l3->l3info.associativity);
+#ifdef REUSE_CONTRACT_ENTRIES
+      contract(es, es_next_it, c);
+#else
       contract(es, lines, c);
+#endif
       uint64_t time_last_contract = (uint64_t)get_diff(before, rdtscp());
 #ifdef BENCHMARKCONTRACT
       vl_push(l3->contract_time, (void *)((uint32_t)time_last_contract));
@@ -671,14 +693,14 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
         printf_ex("after first contract call => vl_len(es) >= %i => break\n",
                MAX_SIZE_AFTER_FIRST_CONTRACT);
 #endif
-        break;
+        //break;
       }
       if (i == 1 && vl_len(es) >= MAX_SIZE_AFTER_SECOND_CONTRACT) {
 #ifdef DEBUG_CONTRACT
         printf_ex("after first contract call => vl_len(es) >= %i => break\n",
                MAX_SIZE_AFTER_SECOND_CONTRACT);
 #endif
-        break;
+        //break;
       }
       size_old = vl_len(es);
     }
@@ -743,8 +765,24 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
         too_small++;
       }
 
+
+      
+#ifdef REUSE_CONTRACT_ENTRIES
+      //if(too_big > 0){
+            //reset after 3 failed contracts in a row
+            //printf_ex("reset es_next_it\n");
+            while (vl_len(es_next_it))
+              vl_push(lines, vl_del(es_next_it, 0));
+            while (vl_len(es))
+              vl_push(lines, vl_del(es, 0));
+      // } else {
+      //       while (vl_len(es))
+      //         vl_push(es_next_it, vl_del(es, 0));
+      // }
+#else
       while (vl_len(es))
         vl_push(lines, vl_del(es, 0));
+#endif
 
       vl_push(lines, c);
 #ifdef DEBUG
@@ -754,6 +792,9 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
       //   printf_ex("test failed\n");
       // else
       //   printf_ex("contract failed\n");
+      if(!test_failed){
+        iterations_contract_failed++;
+      }
 #endif // DEBUG
       fail++;
       if(fail % 3 == 0){
@@ -809,6 +850,11 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
       (double)time_expand / time_sum, (double)time_contract / time_sum,
       (double)time_collect / time_sum, (double)time_datahandling / time_sum,
       time_datahandling);
+  printf_ex("iterations: %i\n", iterations);
+  printf_ex("iterations contract failed: %i\n", iterations_contract_failed);
+#ifdef REUSE_CONTRACT_ENTRIES
+  printf("reuse contract entries for next expand\n");
+#endif
   return groups;
 }
 
