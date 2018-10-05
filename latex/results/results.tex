@@ -487,6 +487,7 @@ Relevant für diese Arbeit sind im Wesentlichen die Zeilen 4 und 5, in denen die
 Aus Performancegründen wird der Exponent $e$, anders als ursprünglich im RSA-Algorithmus beschrieben, auf den Wert 65537 fixiert.
 
 \subsection{Theoretische Leakage-Analyse}
+\label{TheoLeakageAna}
 
 Interessant ist die Funktion \textit{mp_gcd}, welche den größten gemeinsamen Teiler nach dem binären Verfahren von Josef Strein \cite{SteinBinaryGCD} berechnet. 
 Dieser Algorithmus (siehe Pseudocode \ref{alg:mp_gcd}) verwendet zum Berechnen des ggT ausschließlich Rechts-Shift-Operationen (Teilen durch 2) und Subtraktionen, wodurch dieser besonders für die in diesem Kontext verwendeten großen Zahlen interessant ist.

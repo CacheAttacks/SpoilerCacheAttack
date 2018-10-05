@@ -371,7 +371,9 @@ Poolgröße & Dauer & \begin{tabular}[c]{@{}c@{}}Fehlgeschlagene\\ Contract-Phas
 
 Um Abweichungen zu minimieren wurde jede Poolgröße 60 Mal getestet. Angegeben sind die Median-Werte, da Ausreißer existierten deren Laufzeit über 5 Minuten beträgt. In der Praxis würde bei einer Poolgröße von 4096 und ein Laufzeit von über 100 Sekunden die Suche abgebrochen und erneut gestartet werden, um unverhältnismäßig lange Suchzeiten zu vermeiden.
 Es fällt auf, dass die Poolgröße 4096 ähnlich schnell wie die kleineren Poolgrößen ist. 
-Da die Anzahl der nötigen Operationen mit der Poolgröße steigt, scheint dies Ergebnis widersprüchlich, jedoch konnte es auch bei zusätzlichen Tests verifiziert werden.
+Auffällig ist der hohe Anteil der Expand-Phase an der Berechnungszeit bei der Poolgröße 3072 gegenüber 4096, welcher für den Gleichstand in der Gesamtzeit sorgt.
+Grund dafür ist, dass mit einer Poolgröße von 3072 im Mittel nur 94\% der Eviction-Sets gefunden werden und somit die Adressen welche keinem Eviction-Set zugeordnet werden können, bis zum Ende im Adresspool verbleiben.
+Somit ist die Anzahl der Adressen im Pool gegen Ende der Suche größer, womit die Berechnungszeit der Expand-Phasen im Vergleich zu einer initialen Poolgröße von 4096 länger dauert.
 
 Die Contract-Phase nutzt den größten Anteil der Berchnungszeit, da es Abschnitte in den Läufen gibt in denen das Eviction-Set in der Contract-Phase mehrmals hintereinander nicht ausreichend minimiert werden kann.
 Dieses Problem existiert auch bei der nativen Implementierung, so wird die Contract-Phase in dem Toolkit Mastik standardmäßig dreimal hintereinander ausgeführt, um das Eviction-Set ausreichend zu reduzieren.

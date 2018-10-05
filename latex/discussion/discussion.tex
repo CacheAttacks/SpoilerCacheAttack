@@ -39,7 +39,7 @@ Sobald die Browserhersteller die Auflösung von \textit{performance.now} wieder 
 
 Wenn das angegriffene Endgerät $n$ virtuelle Kerne besitzt, können also $n-3$ für die Verlangsamung des Opferprogramms eingesetzt werden.
 
-\section{Multithread Prime-Spam: Wie stark kann der Angriff gebremst werden?}
+\section{Multithread Prime-Spam}
 \label{MoreIsBetter}
 
 Nach den Überlegungen des vorherigen Kapitels sind $n-1-k$ Kerne für die Bremsung nutzbar, wobei $k \geq 1$ die Anzahl der Kerne für die eigentliche Überwachung ist. 
@@ -62,7 +62,7 @@ Tabelle \ref{tbl:PrimeSpamMultithreadRef} zeigt, dass ab 4 Bremsthreads ein sign
 \label{tbl:PrimeSpamMultithreadRef}
 \begin{tabular}{cccc}
 \toprule
-Anzahl der Bremsthreads & Shift & Sub & mp\_gcd \\
+\begin{tabular}[c]{@{}l@{}}Anzahl der \\ Bremsthreads\end{tabular} & Shift & Sub & mp\_gcd \\
 \midrule
 0                      & 340   & 475 & 430k    \\
 1                      & 347   & 477 & 443k    \\
@@ -393,28 +393,29 @@ Dies wird hier durch die Prime-Spam-Methode forciert, welche ebenfalls durch den
 %https://www.usenix.org/system/files/conference/usenixsecurity12/sec12-final97.pdf
 
 
-\section{Wie viel mehr muss der Angriff gebremst werden?}
+\section{Benchmarks mit künstlicher Bremsung}
 \label{Howfast}
 
 Abschnitt \ref{MoreIsBetter} und \ref{MemoryLocking} haben gezeigt, dass Prim-Spam und Memory-Locking auch mit mehreren Threads nicht ausreichen, um einen Teil der Primzahlen zu rekonstruieren.
 
-Im Folgenden soll daher untersucht werden, wie viel mehr gebremst werden muss, um eine Rekonstruktion zu ermöglichen.
+Im Folgenden soll daher untersucht werden, wie viel mehr gebremst werden muss, um eine Rekonstruktion der Primzahlen zu ermöglichen.
 Dazu wird nach jeder Shift- und Subtraktions-Operation eine künstliche Pause von $x$-Taktzyklen eingefügt.
-Tabelle \ref{tbl:ArtificialBreaksMeanExecutionTime} gibt die erzielte mittlere Ausführungszeit der Shift- und Subtraktions-Operation bei verschiedenen Pausenzeiten an.
+%Tabelle \ref{tbl:ArtificialBreaksMeanExecutionTime} gibt die erzielte mittlere Ausführungszeit der Shift- und Subtraktions-Operation bei verschiedenen Pausenzeiten an.
 
-\begin{table}[h]
-\caption{Gibt die mittleren Ausführungenzeiten für die Shift- und Subtraktions-Operation sowie die $mp\_gcd$-Funktion auf RSA-2048 bei verschiedenen künstlichen Pausen zwischen den Shift- und Subtraktions-Operationen an. Alle Werte sind in Taktzyklen angegeben.}
-\label{tbl:ArtificialBreaksMeanExecutionTime}
-\begin{tabular}{cccc}
-\toprule
-Pausenzeit & Shift & Sub & mp\_gcd \\
-\midrule
-1000       &       &     &         \\
-2000       &       &     &         \\
-3000       &       &     &         \\
-\bottomrule
-\end{tabular}
-\end{table}
+%\begin{table}[h]
+%\caption{Gibt die mittleren Ausführungenzeiten für die Shift- und Subtraktions-Operation sowie die $mp\_gcd$-Funktion auf RSA-2048 bei verschiedenen künstlichen Pausen zwischen den Shift- und Subtraktions-Operationen an. Alle Werte sind in Taktzyklen angegeben.}
+%\label{tbl:ArtificialBreaksMeanExecutionTime}
+%\begin{tabular}{cccc}
+%\toprule
+%Pausenzeit & Shift & Sub & mp\_gcd \\
+%\midrule
+%0          &  340  & 477 &         \\
+%1000       &  1442     & 1605     &         \\
+%2000       &  3516     & 3705     &         \\
+%3000       &       &     &         \\
+%\bottomrule
+%\end{tabular}
+%\end{table}
 
 Diese Methode sorgt im Gegensatz zu den Bremsverfahren mittels Prim-Spam und Memory-Locking für gleichmäßig erhöhte Ausführungszeiten der Shift-Operation.
 In der Praxis können die angegebenen Ausführungszeiten daher als untere Schranke für einen erfolgreichen Angriff angenommen werden.
@@ -424,14 +425,13 @@ In Grafik \ref{fig:ObserveShiftDifferentBreaks} wird die Überwachung einer Folg
 \begin{figure}[h]
 \centering
 \begin{scaletikzpicturetowidth}{\textwidth}
-%\input{discussion/plot_observe_shift_different_breaks.tex}
+\input{discussion/plot_observe_shift_different_breaks.tex}
 \end{scaletikzpicturetowidth}
-\caption{Zu sehen ist die Überwachung einer Shift-Operationsfolge bei verschiedenen Pausenzeiten zwischen den Shift-Operationen und ohne zusätzliche Bremsungen.}
+\caption{Zu sehen ist die Überwachung der Shift-Folge $Z_1=4,Z_2=2,Z_3=1,Z_4=5,Z_6=2,Z_7=1$ mit $Z_i$ als Anzahl der Rechts-Shift-Operationen in Iteration $i$ (siehe auch Abschnitt \ref{TheoLeakageAna}). Die Zahlen in der Kopfzeile geben die Pausen in Taktzyklen an, welche nach den Shift- und Subtraktions-Operationen durchgeführt wurden. Für den Messvorgang wurde ein Thread verwendet.}
 \end{figure}
 
-Somit ist etwa eine mittlere Shift-Operationsdauer von etwa TODO Taktzyklen notwendig, um einzelne Shift-Operationen voneinander trennen zu können und so eine Rekonstruktion der Primzahlen zu ermöglichen.
-
-%Beschreiben bei wie vielen Taktzyklen Pausen mp_gcd ausgelesen werden kann.
+Die Ergenisse zeigen, dass eine mittlere Shift-Operationsdauer von etwa 3000 Taktzyklen notwendig, um einzelne Shift-Operationen voneinander trennen zu können und so eine Rekonstruktion der Primzahlen zu ermöglichen.
+Durch die Verwendung eines weiteren Threads für die Messung kann die benötige Zeit etwa halbiert werden, jedoch steht dann auf dem Testsystem kein physischer Kern mehr zum Bremsen zur Verfügung.
 
 \section{Speicherallokation}
 
@@ -463,10 +463,14 @@ Ein weiteres Indiz dafür liefert die erfolgreiche Verifikation, dass der Speich
 Die längste ununterbrochene Folge mit dem optimalen Abstand 256 war bei allen Tests immer auf den Wert 10 beschränkt, wobei etwa 60-80\% aller Abstände den optimalen Wert 256 aufweisen.
 Somit scheint die Größe zusammenhängender physischer Speicherbereiche aus dem Autor nicht bekannten Gründen begrenzt zu sein.
 
-Mit dieser Beobachtung lässt sich (???)
+Wenn der Speicher wenig fragmentiert ist, kann diese Eigenschaft ausgenutzt werden um die Suche nach colliding-addresses zu beschleunigen.
+Dies würde den neuen Eviction-Set-Suchalgorithmus weiter verbessern, da bei optimaler Parameterwahl der Anteil der colliding-address-Suche 75\% der gesamten Berechnungszeit beträgt (siehe letzte Zeile der Tabelle \ref{tbl:performanceStoreForESSearch}).
+So würde die Suche nach einer colliding-address zuerst für Blöcke im Abstand von 256 ausprobiert werden und im Fehlerfall alle dazwischen liegenden Blöcke untersucht.
 
-Bermerkungen Mem-Alloc von Firefox/Chrome: https://www.cs.vu.nl/~giuffrida/papers/anc-ndss-2017.pdf
-\cite{ASLROnTheLine}
+%Mit dieser Beobachtung lässt sich (???)
+
+%Bermerkungen Mem-Alloc von Firefox/Chrome: %https://www.cs.vu.nl/~giuffrida/papers/anc-ndss-2017.pdf
+%\cite{ASLROnTheLine}
 
 \section{Warum Google präzise Timer im Browser reaktiviert}
 \label{GooglePageIsolation}
@@ -533,19 +537,20 @@ Stattdessen muss der Wert der Zählvariable über Javascript abgerufen werden.
 Um Javascript aus Webassembly aufzurufen, existieren mehrere Möglichkeiten \cite{CallJavaScriptFromWasm}, wobei sich die Implementierung einer C API in JavaScript am performantesten herausgestellt hat.
 
 Alternativ kann auch die gesamte Prime-and-Probe-Operation in Javascript implementiert werden, wobei der Wert der Zählvariable ohne Umwege abgefragt werden kann.
-Um die Performance der beiden Implementationen zu vergleichen, wird die mittlere Dauer einer Prime-and-Probe-Operation durch die Ausfürhung von einer Million Operationen approxmiert.
-So dauert eine Prime-and-Probe-Operation in Webassembly bei keiner Aktivität auf dem Cache-Set etwa 190 ns, wobei diese Zeit auf 440 ns ansteigt, wenn die Cache-Line $V2_5 3_1$ während der Ausführung der $mp\_gcd$-Funktion überwacht wird.
+Um die Performance der beiden Implementationen zu vergleichen, wird die mittlere Dauer einer Prime-and-Probe-Operation durch die Ausführung von 10 Millionen Operationen approximiert, wobei dies einem Messvorgang von ein wenigen Sekunden entspricht.
+So dauert eine Prime-and-Probe-Operation in Webassembly bei keiner Aktivität auf dem Cache-Set etwa 190 ns, wobei diese Zeit auf 460 ns ansteigt, wenn die Cache-Line $V2_5 3_1$ während der Ausführung der $mp\_gcd$-Funktion überwacht wird.
 
-In der Javascript-Implementation und erhöht sich die Zeit bei keiner Aktivität auf dem Cache-Set um etwa 20 ns auf etwa 210 ns, wobei die benötigte Zeit bei einem aktiven Cache-Set um etwa 40 ns auf 400 ns sinkt.
+In der Javascript-Implementation und verringert sich die Zeit bei keiner Aktivität auf dem Cache-Set um etwa 50 ns auf etwa 140 ns, wobei die benötigte Zeit bei einem aktiven Cache-Set um etwa 90 ns auf 370 ns gegenüber der Webassembly-Implementierung sinkt.
 
-Somit lässt sich mit der Umsetzung der Prime-and-Operation in Javascript ein $\sim$ 10\% schneller Prime-and-Probe-Vorgang realisieren.
-Jedoch neigen die gemessenen Zugriffswerte in Javascript phasenweise zu starkem Rauschen, so sind auch bei keiner Aktivität auf dem Cache-Set reproduzierbar mehr als hundert Mal hintereinander Zugriffszeiten von über 400 zu beobachten.
-Diese verrauschten Phasen erklären die längere mittlere Dauer von 210 ns bei keiner Aktivität auf dem Cache-Set.
+Somit lassen sich mit der Umsetzung der Prime-and-Operation in Javascript $\sim$ 24\% mehr Prime-and-Probe-Operationen in der gleichen Zeit realisieren.
+Die ersten ca. 2000 gemessenen Zugriffswerte in Javascript neigen zu starkem Rauschen, so sind auch bei keiner Aktivität auf dem Cache-Set reproduzierbar mehr als hundert Mal hintereinander Zugriffszeiten von über 400 zu beobachten.
+Ein mögliche Begründung für diese Beobachtung wäre, dass der Browser in dieser Phase versucht den Javascript-Code zu optimieren \cite{GoogleTurboFan}, da er wegen der häufigen wiederholten Ausführung als wichtig erkannt wurde.
+Dieses anfängliche Rauschen der Javascript-Implementierung ist in der Praxis aber zu vernachlässigen, da die Messphasen in der Regel deutlich länger als 2000 Prime-and-Probe-Operationen andauern und somit die anfänglichen verrauschten Werte verworfen werden können.
 
-Zusammenfassend lässt sich sagen, dass die verrauschten Ergebnisse schwerer wiegen als der Performancevorteil, sodass die Implementierung in Webassembly die bessere Wahl darstellt.
-Da die Umsetzung von Multithread in Webassembly geplant ist \cite{WebassemblyThreads}, kann bei dieser Implementierung in Zukunft mit einem Performancegewinn gerechnet werden, weil dann die Javascript-Funktionsaufrufe entfallen.
+Zusammenfassend betrachtet, bringt die Implementierung in Javascript einen Performance-Vorteil von ca. 24\%.
+Da die Umsetzung von Multithreading in Webassembly geplant ist \cite{WebassemblyThreads}, kann bei dieser Implementierung in Zukunft mit einem Performancegewinn gerechnet werden, da dann die Javascript-Funktionsaufrufe entfallen.
 
-\section{Verschiedene Varianten von Prime and Probe}
+\section{Verschiedene Varianten von Prime-and-Probe}
 
 Die Standardimplementation verwendet die Point-Chasing-Methode (siehe Pseudocode \ref{alg:pointerChasing}). 
 In dieser wird einer Kette von 16 Einträgen gefolgt, wobei der Prozessor immer erst die Adresse des vorherigen Eintrags bestimmen muss, um die den nächsten Eintrag zu laden.
