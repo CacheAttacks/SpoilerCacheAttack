@@ -357,7 +357,7 @@ Denn wenn ein fixes Eviction-Set mit einer Wahrscheinlichkeit von $x$ Prozent ge
 Ein weiteres wesentliches Kriterium ist die Dauer der Eviction-Set-Suche, wobei Tabelle \ref{tbl:performanceESSearchDifferentPoolSize} Performancewerte für verschiedene Poolgrößen angibt.
 
 \begin{table}[h]
-\caption{Performancewerte des Eviction-Set-Suchalgorithmus, wobei pro Poolgröße 60 Läufe durchgeführt wurden. Angegeben sind die Median-Werte, um den Einfluss langer sporadisch auftretender Läufe zu senken. Alle Werte beziehen sich auf einen Lauf. Spalte „Dauer“ beschreibt die Gesamtlaufzeit der Suche. Spalte „Fehlgeschlagene Iterationen“ beschreibt wie viele Iterationen aufgrund von Fehlern in der Expand- oder Contract-Phase abgebrochen wurden. Die letzten drei Spalten beschreiben den Anteil, den die Expand-, Contract- und Collect-Phasen an der Gesamtlaufzeit haben.}
+\caption{Performancewerte des Eviction-Set-Suchalgorithmus, wobei pro Poolgröße 60 Läufe durchgeführt wurden. Angegeben sind die Median-Werte, um den Einfluss langer sporadisch auftretender Läufe zu senken. Alle Werte beziehen sich auf einen Lauf. Spalte „Dauer“ beschreibt die Gesamtlaufzeit der Eviction-Set-Suche. Spalte „Fehlgeschlagene Contract-Phasen“ beschreibt wie viele Iterationen aufgrund von Fehlern in der Contract-Phase abgebrochen wurden. Die letzten drei Spalten beschreiben den Anteil, den die Expand-, Contract- und Collect-Phasen an der Gesamtlaufzeit haben.}
 \label{tbl:performanceESSearchDifferentPoolSize}
 \begin{tabular}{cccccc}
 \toprule
@@ -369,18 +369,18 @@ Poolgröße & Dauer & \begin{tabular}[c]{@{}c@{}}Fehlgeschlagene\\ Contract-Phas
 \end{tabular}
 \end{table}
 
-Um Abweichungen zu minimieren wurde jede Poolgröße 60 Mal getestet.
+Um Abweichungen zu minimieren wurde jede Poolgröße 60 Mal getestet. Angegeben sind die Median-Werte, da Ausreißer existierten deren Laufzeit über 5 Minuten beträgt. In der Praxis würde bei einer Poolgröße von 4096 und ein Laufzeit von über 100 Sekunden die Suche abgebrochen und erneut gestartet werden, um unverhältnismäßig lange Suchzeiten zu vermeiden.
 Es fällt auf, dass die Poolgröße 4096 ähnlich schnell wie die kleineren Poolgrößen ist. 
 Da die Anzahl der nötigen Operationen mit der Poolgröße steigt, scheint dies Ergebnis widersprüchlich, jedoch konnte es auch bei zusätzlichen Tests verifiziert werden.
 
 Die Contract-Phase nutzt den größten Anteil der Berchnungszeit, da es Abschnitte in den Läufen gibt in denen das Eviction-Set in der Contract-Phase mehrmals hintereinander nicht ausreichend minimiert werden kann.
-Dieses Problem existiert auch bei der nativen Implementierung, so wird die Contract-Phase in dem Toolkit Mastik standardmäßig dreimal hintereinander ausgeführt, um das das Eviction-Set weit genug zu reduzieren.
-Daher ist diese Problematik zusammen mit dem Lösungsansatz die Contract-Phase mehrmals auszuführen dafür verantwortlich, dass die Contract-Phase einen hohen Anteil an der Gesamtlaufzeit hat.
+Dieses Problem existiert auch bei der nativen Implementierung, so wird die Contract-Phase in dem Toolkit Mastik standardmäßig dreimal hintereinander ausgeführt, um das Eviction-Set ausreichend zu reduzieren.
+Daher ist diese Problematik, zusammen mit dem Lösungsansatz die Contract-Phase mehrmals auszuführen, dafür verantwortlich, dass die Contract-Phase einen hohen Anteil an der Gesamtlaufzeit hat.
 
-Die Dauer der Collect-Phase, wird signifikant von der Poolgröße beeinflusst, da sie am Ende einer Iteration alle restlichen Adressen des Pools darauf testen muss, ob diese auf das Cache-Set gemappt werden für welches in der Iteration ein Eviction-Set gefunden wurde.
-Daher nimmt die absolute Zeit für den Anteil der Collect-Phase mit der Poolgröße zu, jedoch ist der Anteil bei diesen Poolgrößen mit unter 3s bzw. unter 4\% der Gesamtlaufzeit von wenig Bedeutung.
+Die Dauer der Collect-Phase wird signifikant von der Poolgröße beeinflusst, da sie am Ende einer Iteration alle restlichen Adressen des Pools darauf testen muss, ob diese auf das Cache-Set gemappt werden für welches in der Iteration ein Eviction-Set gefunden wurde.
+Daher nimmt die absolute Zeit für den Anteil der Collect-Phase mit der Poolgröße annähernd quadratisch zu, jedoch ist der Anteil bei diesen Poolgrößen mit unter 3s bzw. unter 4\% der Gesamtlaufzeit von wenig Bedeutung.
 
-Zusammenfassend stellt eine Poolgröße von 4096 den besten Kompromiss dar, da damit einerseits mit über 80\% Wahrscheinlichkeit alle Eviction-Sets gefunden werden (siehe Abbildung \ref{fig:combined_es_prob}) und andererseits das beste Laufzeitverhalten aufweist.
+Zusammenfassend stellt eine Poolgröße von 4096 den besten Kompromiss dar, da damit einerseits mit über 80\% Wahrscheinlichkeit alle Eviction-Sets gefunden werden (siehe Abbildung \ref{fig:combined_es_prob}) und andererseits ein schnelle Laufzeit gewährleistet wird.
 
 %Da in der Expand-Phase zufällig Adressen aus dem Pool gezogen werden und mit jeder Iteration alle unnötigen Adressen des in der Expand-Phase gefundenen Eviction-Sets mittels der Collect-Phase entfernt werden, hat die Größe des Adresspools wenig Einfluss auf die Expand-Phase, sofern das Finden aller Eviction-Sets angestrebt wird.
 %Insbesondere die Aufstockung einer Poolgröße die im Mittel über 95\% aller Eviction-Sets findet etwa 4096 hin zu etwa 5120, erhöht die Berechnungszeit der Expand-Operation weniger als 5\%.
@@ -410,7 +410,7 @@ Die Idee ist folglich, bei einem noch kleinen Candidate-Set in jeder Iteration m
 Dies muss jedoch in Abhängigkeit der schon gefundenen Eviction-Sets geschehen, da in den späteren Iterationen ein durch Expand-Phase entstandenes Eviction-Set deutlich kleiner als in den ersten Iterationen ist.
 
 \begin{table}[h]
-\caption{Performancewerte für Optimierungen des Eviction-Set-Suchalgorithmus, wobei jede Zeile durch 60 Läufe einstanden ist. Angegeben sind die Median-Werte, um den Einfluss langer sporadisch auftretender Läufe zu senken. Die restlichen Spalten sind analog zu Tabelle \ref{tbl:performanceESSearchDifferentPoolSize}. Die erste Zeile beschreibt den Ansatz die in der Contract-Phase aussortierten Einträge in dem Candidate-Set für die nächste Expand-Phase zu sammeln. Zeile 2 zeigt die Performance wenn die Contract-Phase vorzeitig aufgrund zu wenig entfernter Einträge aus dem Eviction-Set abgeborchen wird.}
+\caption{Performancewerte für Optimierungen des Eviction-Set-Suchalgorithmus, wobei jede Zeile durch 60 Läufe entstanden ist. Angegeben sind die Median-Werte, um den Einfluss langer sporadisch auftretender Läufe zu senken. Alle Tests wurden mit einer Poolgröße von 4096 durchgeführt. Die restlichen Spalten sind analog zu Tabelle \ref{tbl:performanceESSearchDifferentPoolSize}. Die erste Zeile beschreibt den Ansatz die in der Contract-Phase aussortierten Einträge in dem Candidate-Set für die nächste Expand-Phase zu sammeln. Zeile 2 zeigt die Performance wenn die Contract-Phase vorzeitig aufgrund zu wenig entfernter Einträge aus dem Eviction-Set abgeborchen wird.}
 \label{tbl:performanceESSearchOpt}
 \begin{tabular}{cccccc}
 \toprule
@@ -424,22 +424,22 @@ Beschreibung & Dauer & \begin{tabular}[c]{@{}c@{}}Fehlgeschlagene\\ Contract-Pha
 \end{tabular}
 \end{table}
 
-Die Idee die Expand-Phase, durch das gleichzeitige Hinzufügen von mehreren Adressen, zu verkürzen, lässt sich mit folgenden Ansatz noch verbessern.
-Die in der Contract-Phase aussortierten Adressen werden wieder dem Adresspool hinzugefügt und die neue Iteration mit einem leeren Candidate-Set gestartet.
-Ein anderer Ansatz wäre es, die in der Contract-Phase aussortierten Adressen direkt als neues Candidate-Set verwendet werden, womit ein Großteil der nächsten Expand-Phase entfällt.
+Die Idee der Expand-Phase, durch das gleichzeitige Hinzufügen von mehreren Adressen, die Laufzeit zu verkürzen, lässt sich mit folgenden Ansatz noch verbessern.
+Der Standardalgorithmus fügt die in der Contract-Phase aussortierten Adressen wieder dem Adresspool hinzu, worauf die neue Iteration mit einem leeren Candidate-Set gestartet wird.
+Ein anderer Ansatz wäre es, die in der Contract-Phase aussortierten Adressen direkt als neues Candidate-Set verwendet werden, womit ein Großteil der Laufzeit der nächsten Expand-Phase entfällt.
 Die Benchmarks mit einer Adresspoolgröße von 4096 zeigen, dass dieser Ansatz die Eviction-Set-Suche nicht beschleunigen kann (siehe Zeile 1 von Tabelle \ref{tbl:performanceESSearchOpt}).
-Er senkt zwar den Anteil der Expand-Phase, dafür schlägt die Contract-Phase aber mit größeren Eviction-Sets fehl und nimmt die damit die gewonnene Berechnungszeit in Anspruch, sodass letztendlich kein Zeitvorteil entsteht.
+Er senkt zwar den Anteil der Expand-Phase, dafür schlägt die Contract-Phase aber mit größeren Eviction-Sets fehl und nimmt damit die in der Expand-Phase gewonnene Berechnungszeit in Anspruch, sodass letztendlich kein Zeitvorteil entsteht.
 Es hat sich gezeigt, dass es besser ist alle Adressen des Candidate-Sets zurück in den Adresspool zu schieben, sofern eine Contract-Phase fehlschlägt.
-Teile des Eviction-Sets oder die in der Contract-Phase bis dahin aussortierten Adressen in die nächste Expand-Phase mitzunehmen, hat sich als nachteilig erwiesen.
+Das heißt Teile des Eviction-Sets oder die in der Contract-Phase bis dahin aussortierten Adressen in die nächste Expand-Phase mitzunehmen, hat sich als nachteilig erwiesen.
 
 %Außerdem können in der Contract-Phase mehrere Adressen auf einmal entfernt werden, da besonders am Beginn der Contract-Phase das Eviction-Set mehrere hundert unnötige Einträge enthält.
 
 Wie oben erwähnt, können in einem Durchlauf der Contract-Phase meist nicht alle unnötigen Eintrage des Eviction-Sets identifiziert werden, sodass diese dreimal ausgeführt wird.
-Bei Beobachtungen der Contract-Phase mit Poolgrößen von etwa 4000 hat sich gezeigt, dass sofern am Ende der drei Contract-Phasen das Eviction-Set auf die gewünschte Größe 16 reduziert werden konnte, die Größe des Eviction-Sets nach dem ersten Lauf der Contract-Phase kleiner als 900 und nach dem zweiten kleiner als 100 war.
-Diese Beobachtung kann genutzt werden, um die Iteration abzubrechen, wenn nach dem ersten Durchlauf der Contract-Phase noch mehr als 900 Einträge beziehungsweise nach dem zweiten Durchlauf noch mehr als 100 im Eviction-Set sind (siehe Zeile 2 von Tabelle \ref{tbl:performanceESSearchOpt}).
+Bei Beobachtungen der Contract-Phase mit Poolgrößen von etwa 4000 hat sich gezeigt, dass sofern am Ende der drei Contract-Phasen das Eviction-Set auf die gewünschte Größe von 16 reduziert werden konnte, die Größe des Eviction-Sets nach dem ersten Lauf der Contract-Phase kleiner als 900 und nach dem zweiten kleiner als 100 war.
+Diese Beobachtung kann genutzt werden, um die Iteration abzubrechen, wenn nach dem ersten Durchlauf der Contract-Phase noch mehr als 900 beziehungsweise nach dem zweiten Durchlauf noch mehr als 100 Einträge im Eviction-Set sind (siehe Zeile 2 von Tabelle \ref{tbl:performanceESSearchOpt}).
 
 Die Ergebnisse zeigen, dass der Berechnungsanteil der Contract-Phase gesenkt werden kann, wobei im Gegenzug aber die Anzahl der fehlgeschlagenen Contract-Phasen erhöht wird.
-Somit steigt auch die Anzahl der Expand-Phasen beziehungsweise dessen Berechnungsanteil, sodass auch dieser Ansatz keine Verbesserung bringt.
+Somit steigt auch die Anzahl der Expand-Phasen beziehungsweise dessen Berechnungsanteil, sodass auch dieser Ansatz in der Summe keine Verbesserung bringt.
 
 Wenn die Ergebnisse der beiden eben betrachten Ansätze vergleichen werden, so zeigt sich, dass der eine den Expand-Anteil verringert und den Contract-Anteil erhöht (Zeile 1) und der andere den Expand Anteil erhöht und den Contract-Anteil verringert (Zeile 2).
 Wie Zeile 3 der Tabelle \ref{tbl:performanceESSearchOpt} zeigt, ergänzen sich die beiden Ansätze, womit eine Senkung der Dauer von 46s auf 35s erzielt werden kann.
@@ -475,7 +475,7 @@ Ein false-negative tritt allerdings selten auf, sodass dieses Szenario zu vernac
 
 Auch die Messung ob ein Set für eine bestimmte Adresse ein Eviction-Set ist, wird mehrfach wiederholt.
 Die Autoren von Mastik schlagen eine 16-fache Wiederholung des Tests vor und bilden den Median über die Zugriffswerte, um zu bestimmen ob das Set ein Eviction-Set ist.
-Eigene Tests haben ergeben, dass ein höher Wert keine Vorteile bringt, sondern ausschließlich die Laufzeit erhöht und sich ein niedrigerer Wert wegen der daraus resultierenden Fehler ebenfalls negativ auf die Laufzeit auswirkt.
+Eigene Tests haben ergeben, dass ein höherer Wert keine Vorteile bringt, sondern ausschließlich die Laufzeit erhöht und ein niedrigerer Wert mehr Fehler und damit abgebrochene Phasen verursacht, sodass sich dieser ebenfalls negativ auf die Laufzeit auswirkt.
 
 Ein Problem in der Praxis ist der Hardware-Prefetcher, welcher Daten in den Cache lädt, bevor sie benötigt werden.
 Angenommen es soll eine Prime-and-Probe-Operation ausgeführt werden, und auf alle Einträge des Eviction-Sets wird mittels einer For-Schleife zugegriffen.
@@ -573,8 +573,7 @@ Somit muss insgesamt 32 Mal (32*4*64=8192) ein colliding-address-Pool aufgebaut 
 Die Ergenisse in Tabelle \ref{tbl:performanceStoreForESSearch} zeigen eine deutliche Verbesserung der Laufzeit gegenüber dem Standard-Algorithmus.
 
 \begin{table}[h]
-\caption{Performancewerte des neuen Eviction-Set-Suchalgorithmus, wobei pro Parametersatz also einer Zeile 60 Läufe durchgeführt wurden. Angegeben sind die Mittelwerte, wobei sich alle Werte auf einen Lauf beziehen. Spalte „Initiale Poolgröße“ gibt die Poolgröße der colliding-addresses an, ab der eine Eviction-Set-Suche gestartet wird. Die Spalten „\textit{WINDOW_SIZE}“ und „\textit{Rounds}“ sind die Parameter aus Pseudocode \ref{alg:storeForward}.
- Spalte „Anteil colliding-addr Suche“ und „Anteil Eviction-Set Suche“ beschreiben den Anteil, welchen die beiden Phasen an der Gesamtlaufzeit haben. Die letzte Zeile beschreibt wie viele der 60 Läufe erfolgreich alle 8192 Eviction-Sets bilden konnten.}
+\caption{Performancewerte des neuen Eviction-Set-Suchalgorithmus, wobei pro Parametersatz also einer Zeile 60 Läufe durchgeführt wurden. Angegeben sind die Mittelwerte, wobei sich alle Werte auf einen Lauf beziehen. Spalte „Initiale Poolgröße“ gibt die Poolgröße der colliding-addresses an, ab der eine Eviction-Set-Suche gestartet wird. Die Spalten „\textit{WINDOW_SIZE}“ und „\textit{Rounds}“ sind die Parameter aus Pseudocode \ref{alg:storeForward}. Spalte „Anteil colliding-addr Suche“ und „Anteil Eviction-Set Suche“ beschreiben den Anteil, welchen die beiden Phasen an der Gesamtlaufzeit haben. Die letzte Zeile beschreibt wie viele der 60 Läufe erfolgreich alle 8192 Eviction-Sets bilden konnten.}
 \label{tbl:performanceStoreForESSearch}
 \begin{tabular}{ccccccc}
 \toprule
@@ -586,16 +585,16 @@ Die Ergenisse in Tabelle \ref{tbl:performanceStoreForESSearch} zeigen eine deutl
 \end{tabular}
 \end{table}
 
-Der optimierte Standard-Algorithmus (siehe Tabelle \ref{optESSearch}) ist mehr als 3 Mal langsamer als der neue Algorithmus.
-Aufgrund Außreißern sind in Tabelle \ref{optESSearch} Median-Werte angeben, wohingegen der neue Algorithmus nicht mit diesen Problemen zu kämpfen hat.
-So liegt die Durchschnittsdauer des neuen Algorithmus in 60 Läufen bei 12 Sekunden, wobei der längste Lauf 37 Sekunden dauerte.
-Der optimierte Standard-Algorithmus benötigte im Durchschnitt 74 Sekunden und der längste von 60 ausgeführten Läufen dauerte 275 Sekunden.
+Der optimierte Standard-Algorithmus (siehe Tabelle \ref{tbl:performanceESSearchOpt}) ist mehr als 3 Mal so langsam wie der neue Algorithmus.
+Aufgrund von Ausreißern sind in der Tabelle \ref{tbl:performanceESSearchOpt} Median-Werte angeben, wohingegen der neue Algorithmus nicht mit Ausreißern zu kämpfen hat.
+So liegt die durchschnittliche Dauer des neuen Algorithmus in 60 Läufen bei 12 Sekunden, wobei der längste Lauf 37 Sekunden dauerte.
+Der optimierte Standard-Algorithmus aus Abschnitt \ref{optESSearch} benötigte im Durchschnitt 74 Sekunden und der längste von 60 ausgeführten Läufen dauerte 275 Sekunden.
 
-Dieser Performancevorteil ergibt sich dadurch, dass beim Standardalgorithmus 128 Eviction-Sets in einem Pool von 4096 Adressen gefunden werden müssen, wohingegen bei der neuen Methode das 32-malige Finden von 4 Eviction-Sets bei einer Poolgröße von etwa 100 ausreicht.
+Dieser Performancevorteil ergibt sich dadurch, dass beim optimierten Standardalgorithmus 128 Eviction-Sets in einem Pool von 4096 Adressen gefunden werden müssen, wohingegen bei der neuen Methode das 32-malige Finden von 4 Eviction-Sets bei einer Poolgröße von etwa 100 ausreicht.
 
-Wie sich in Tabelle zeigt \ref{tbl:performanceStoreForESSearch}, führt eine $\text{\textit{WINDOW_SIZE}} < 60$ zu häufigen Fehlern bei der colliding-address-Suche, sodass eine anschließende Eviction-Set-Suche selten erfolgreich ist.
+Wie sich in Tabelle zeigt \ref{tbl:performanceStoreForESSearch}, führt eine $\text{\textit{WINDOW_SIZE}} < 60$ zu häufigen Fehlern bei der colliding-address-Suche, sodass eine anschließende Eviction-Set-Suche selten erfolgreich ist. Dies ist unabhängig davon wie der Parameter \textit{Rounds} gewählt wird.
 
-Ein ähnliches Verhalten zeigt der Parameter \textit{Rounds} für den sich in den Test der Optimalwert 20 herausgestellt hat. Geringe Werte führen zu mehr Fehlern in der colliding-address-Suche und verlängern somit die Gesamtlaufzeit oder verringern die Anzahl der erfolgreichen Läufe.
+Ein ähnliches Verhalten zeigt der Parameter \textit{Rounds} für den sich in dem Test der Optimalwert 20 herausgestellt hat. Geringe Werte führen zu mehr Fehlern in der colliding-address-Suche und verlängern somit die Gesamtlaufzeit oder verringern die Anzahl der erfolgreichen Läufe.
 
 %windowSize min 50 auch mehr Runden bringen nichts
 %windows size min 60 sonst zu viele Fehler
@@ -607,14 +606,16 @@ Häufig sind weniger Adressen ausreichend, um daraus 4 Eviction-Sets zu bilden, 
 Deshalb ist es günstiger, bereits am Anfang mehr colliding-addresses zu suchen, um den Fall einer gescheiterten Eviction-Set-Suche zu vermeiden.
 %Eventuell mathematische begründung anführen
 
+Somit stellt sich eine Initiale Poolgröße von 115, eine \textit{WINDOW_SIZE} von 60 und ein Wert von 20 für den Parameter \textit{Rounds} als guter Kompromiss heraus, da so das Finden aller 8192 Eviction-Set mit hoher Wahrscheinlichkeit gewährleistet ist und die Laufzeit gegenüber verschärften Parametern im Mittel höchstens um 2 Sekunden ansteigt.
+
 %Das Finden einer ausreichend großen Menge an colliding-addresses ist schnell , weshalb sich die Berechnungszeit vor allem auf die Suche nach den 4 Eviction-Sets in den colliding-address-Pools beschränkt.
 
-Um eine weitere Beschleunigung zu erzielen, könnte die Suche nach den colliding addresses und die eigentliche Suche nach den Eviction-Sets im colliding-address-Pool parallelisiert werden. Wie in Tabelle \ref{tbl:performanceStoreForESSearch} zu sehen ist beim Optimum mit einem Thread die Suche nach den colliding-addresses schneller als die Suche nach den Eviction-Sets.
+Um eine weitere Beschleunigung zu erzielen, könnte die Suche nach den colliding addresses und die eigentliche Suche nach den Eviction-Sets im colliding-address-Pool parallelisiert werden. Wie in der letzten Zeile der Tabelle \ref{tbl:performanceStoreForESSearch} zu sehen, ist die Suche nach den colliding-addresses langsamer als die Suche nach den Eviction-Sets.
 
-Bei der Parallelisierung könnten die Parameter für weniger Fehler sicherer gewählt werden, sodass beiden Teile des Algorithmus in etwa gleich schnell sind.
+Bei der Parallelisierung könnten die Parameter für den langsameren der Teile sicherer gewählt werden, sodass beiden Teile des Algorithmus in etwa gleich schnell sind.
 Somit würde nicht nur die Performance ansteigen, sondern der Algorithmus auch weniger fehleranfällig werden.
-Die gesamte Eviction-Set-Suche ist in Webassembly implementiert und zurzeit bietet Webassembly kein Multithreading-Unterstützung \cite{WebassemblyThreads}, womit sich dieser Ansatz zurzeit nicht testen lässt.
-Es wird aber im Moment daran gearbeitet Webassembly mit Multithreadunterstützung umzusetzen, das heißt der verwendete Code könnte in Zukunft leicht um diesen Parallelisierungsansatz erweitert werden.
+Die gesamte Eviction-Set-Suche ist in Webassembly implementiert und da Webassembly zurzeit keine Multithreading-Unterstützung \cite{WebassemblyThreads} bietet, lässt sich dieser Ansatz nicht testen.
+An der Multithreadunterstützung in Webassembly wird aber gearbeitet, das heißt der verwendete Code könnte in Zukunft leicht um diesen Parallelisierungsansatz erweitert werden.
 
 \section{Verdeckter Kanal}
 

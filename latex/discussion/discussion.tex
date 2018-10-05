@@ -544,3 +544,10 @@ Diese verrauschten Phasen erklären die längere mittlere Dauer von 210 ns bei k
 
 Zusammenfassend lässt sich sagen, dass die verrauschten Ergebnisse schwerer wiegen als der Performancevorteil, sodass die Implementierung in Webassembly die bessere Wahl darstellt.
 Da die Umsetzung von Multithread in Webassembly geplant ist \cite{WebassemblyThreads}, kann bei dieser Implementierung in Zukunft mit einem Performancegewinn gerechnet werden, weil dann die Javascript-Funktionsaufrufe entfallen.
+
+\section{Verschiedene Varianten von Prime and Probe}
+
+Die Standardimplementation verwendet die Point-Chasing-Methode (siehe Pseudocode \ref{alg:pointerChasing}). 
+In dieser wird einer Kette von 16 Einträgen gefolgt, wobei der Prozessor immer erst die Adresse des vorherigen Eintrags bestimmen muss, um die den nächsten Eintrag zu laden.
+Um eine Prime-and-Probe Operation zu beschleunigen wären zwei Ketten mit jeweils 8 Einträgen beziehungsweise 4 Ketten mit jeweils 4 Einträgen denkbar.
+Wie sich dies auf die Performance und die Messgenauigkeit auswirkt wird anhand des verdeckten Kanals beschrieben werden (siehe ).

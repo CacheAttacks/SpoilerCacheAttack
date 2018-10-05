@@ -224,11 +224,11 @@ Im oberen Beispiel gilt etwa $|A_i| = 128$ und $\{128,130,132,...,254\} \subsetn
 Mit dieser Beobachtung kann für \textit{random_num} folgendes Gleichungssystem definiert werden:
 \begin{align*}
     \text{\textit{random_num}} \mod \text{\textit{small_prime}}_i &\equiv a_i &\text{ mit } a_i \in A_i\\
-    \text{\textit{random_num}} \mod \prod_i \text{\textit{small_prime}}_i &< 2^{bits+1} \\
-    \text{\textit{random_num}} \mod \prod_i \text{\textit{small_prime}}_i &> 2^{bits}
+    \text{\textit{random_num}} \mod \prod_i \text{\textit{small_prime}}_i & < 2^{bits}-1 \\
+    \text{\textit{random_num}} \mod \prod_i \text{\textit{small_prime}}_i & > 2^{bits-1}
 \end{align*}
 $A_i$ ist hier analog zu oben die Menge der möglichen Werte für $\text{\textit{random\_num}} \mod \text{\textit{small_prime}}_i$, die durch die Leakage bekannt werden.
-Um den Lösungsraum dieses Gleichungssystems einzuschränken, wird die Tatsache genutzt, dass $2^{bits} < \text{\textit{random_num}} < 2^{bits+1}$.
+Um den Lösungsraum dieses Gleichungssystems einzuschränken, wird die Tatsache genutzt, dass $2^{bits-1} < \text{\textit{random_num}} < 2^{bits}-1$.
 
 Angenommen jedes $a_i$ wäre eindeutig, das heißt $|A_i|=1$, dann existiert gemäß dem chinesischen Restsatz \ref{chinese_remainder} genau eine Lösung im Bereich von $0$ bis $\prod_i \text{\textit{small_prime_i}}$.
 Weiter sei $bitlen(\text{\textit{small_prime}}_i) > 10 \: \forall i$, dann würden $bitlen(\text{\textit{random_num}})/10$ Gleichungen ausreichen, um \textit{random_num} eindeutig zu bestimmen.
@@ -236,14 +236,14 @@ Jede Gleichung bringt also in etwa 10 Bit an Information über \textit{random_nu
 
 Im Fall der oben beschrieben Leakage bringt eine Gleichung aber 7 Bit oder 128 mögliche Werte als Unsicherheit mit.
 Angenommen es existieren 1000 Gleichungen mit $bitlen(\text{\textit{small_prime}}_i) > 10 \: \forall i$, sodass es $2^{7000}$ mögliche Lösungen gibt und diese im Bereich 0 und $2^{10000}$ liegen.
-Da $2^{bits} < \text{\textit{random_num}} < 2^{bits+1}$ gilt und die möglichen Lösungen über den gesamten Lösungsraum verstreut sind, ist die Wahrscheinlichkeit hoch, eine eindeutige Lösung für \textit{random_num} zu finden.
+Da $2^{bits-1} < \text{\textit{random_num}} < 2^{bits}-1$ gilt und die möglichen Lösungen über den gesamten Lösungsraum verstreut sind, ist die Wahrscheinlichkeit hoch, eine eindeutige Lösung für \textit{random_num} zu finden.
 
 Sofern erlaubt ist, dass die Moduli $\text{\textit{small_prime}}_i$ beliebige Werte annehmen könnten, ist das Problem beweisbar NP-schwer \cite{FuzzyCRTProof}.
 Eine wesentliche Voraussetzung für die Beweisidee sind hier die beliebigen Werte für die Moduli, sodass eine Adaption der Beweisidee an das ursprüngliche Problem nicht möglich scheint.
 
 Auch wenn das Problem NP-schwer sein sollte, schließt dies nicht automatisch eine schnelle Lösung für bestimme Instanzen des Problems aus.
 So lässt sich das Problem etwa als Integer Programming Problem (ILP) formulieren:
-Ein Constraint ist die Einschränkung von \textit{random_num} in den Bereich von $2^{bits}$ bis $2^{bits+1}$.
+Ein Constraint ist die Einschränkung von \textit{random_num} in den Bereich von $2^{bits-1}$ bis $2^{bits}-1$.
 Und jede Modulo-Gleichung $x \equiv a \mod m$ wird zu $x + f \cdot m = a$ übersetzt.
 
 Typische ILP-Solver wie etwa LP-Solve \cite{lpsolve} arbeiten nicht mit großen Ganzzahlen über $2^{64}$, sodass diese als Lösung wegfallen.
@@ -373,20 +373,20 @@ Die restlichen 25\% werden durch den Fermat- und Miller-Rabin-Test aussortiert.
 
 Angenommen $\text{\textit{small_prime}}_i$ hat im Mittel eine Bitlänge von $l$, dann liefert die zweite Gleichung $l$ Bit an Information über $(\text{\textit{random\_num}} + b)$.
 Allerdings erhöht sich durch $b$ die Anzahl der möglichen Lösungen mit jeder Gleichung um den Faktor 6.
-Analog zu den Betrachtungen im Abschnitt \ref{leakageMozillaNSS} kann jedoch die Zusatzinformation $2^{bits} < \text{\textit{random_num}} < 2^{bits+1}$ herangezogen werden, um den Lösungsraum einzuschränken.
-Somit gibt es bei $t$-Gleichungen $6^t$ mögliche Lösungen, welche sich auf das Intervall $[0 \twodots 2^{l\cdot t}]$ verteilen, wobei nur Lösungen im Intervall $[2^{bits} \twodots 2^{bits+1}]$ valide sind.
-Wenn $t > \lceil bits/10 \rceil$ gilt, dann ist $6^t/2^{l \cdot t} \cdot 2^{bits}$ eine Abschätzung, wie viele der möglichen Lösungen im Mittel im validen Intervall $[2^{bits} \twodots 2^{bits+1}]$ zu finden sind.
+Analog zu den Betrachtungen im Abschnitt \ref{leakageMozillaNSS} kann jedoch die Zusatzinformation $2^{bits-1} < \text{\textit{random_num}} < 2^{bits}$ herangezogen werden, um den Lösungsraum einzuschränken.
+Somit gibt es bei $t$-Gleichungen $6^t$ mögliche Lösungen, welche sich auf das Intervall $[0 \twodots 2^{l\cdot t}]$ verteilen, wobei nur Lösungen im Intervall $[2^{bits-1} \twodots 2^{bits}-1]$ valide sind.
+Wenn $t > \lceil bits/10 \rceil$ gilt, dann ist $6^t/2^{l \cdot t} \cdot 2^{bits}$ eine Abschätzung, wie viele der möglichen Lösungen im Mittel im validen Intervall $[2^{bits-1} \twodots 2^{bits}-1]$ zu finden sind.
 
 Es bleibt zu klären, wie viele der Gleichungen des 2. Typs erwartet werden können, oder anders ausgedrückt, wie viele Zahlen im Mittel getestet werden müssen, bis eine davon die Primzahltests besteht. 
 Für eine Abschätzung der zu erwartenden Anzahl sei angenommen, dass die Funktion ausschließlich Primzahlen zurückgibt, sodass der Primzahlsatz herangezogen werden kann, um die Anzahl der Primzahlen abzuschätzen.
-Ist beispielsweise eine 1024 Bit Primzahl gewünscht, so wird aus dem Intervall $[2^{bits}\twodots 2^{bits+1}-1]$ eine der \begin{align}
-\pi(2^{1025}-1) - \pi(2^{1024}) = \frac{(2^{1025}-1)}{\ln(2^{1025}-1)} - \frac{2^{1024}}{ln(2^{1024})} \approx 2^{1014,53}
+Ist beispielsweise eine 1024 Bit Primzahl gewünscht, so wird aus dem Intervall $[2^{1023}\twodots 2^{1024}-1]$ eine der \begin{align}
+\pi(2^{1024}-1) - \pi(2^{1023}) = \frac{(2^{1024}-1)}{\ln(2^{1024}-1)} - \frac{2^{1023}}{ln(2^{1023})} \approx 2^{1013,53}
 \end{align}
 möglichen Primzahlen gewählt.
-Somit ist im Intervall $[2^{1024}\twodots 2^{1024+1}-1]$ etwa eine von $2^{1024}/2^{1014,53} \approx 711$ Zahlen eine Primzahl.
+Somit ist im Intervall $[2^{1023}\twodots 2^{1024}-1]$ etwa eine von $2^{1023}/2^{1013,53} \approx \approx 710$ Zahlen eine Primzahl.
 Da durch 2,3 und 5 teilbare Zahlen nicht getestet werden, entfallen 22 von 30 aller natürlicher Zahlen als Testkandidaten, wie anhand des \textit{adds}-Arrays zu sehen ist.
 %\todo{das kann man kürzen. Oder sollte offensichtlich sein, wie du auf diese Zahl kommst? Ist es meiner Ansicht nach nicht} 
-Folglich ist bei einer Bitlänge von 1024 jede $711 \cdot 8/30 \approx 190$ getestete Zahl eine Primzahl, sodass ausgehend von einer zufälligen Zahl im Intervall $[2^{1024}\twodots 2^{1024+1}-1]$ im Mittel etwa 95 Iterationen zum Fund einer Primzahl ausreichen.
+Folglich ist bei einer Bitlänge von 1024 jede $710 \cdot 8/30 \approx 189$ getestete Zahl eine Primzahl, sodass ausgehend von einer zufälligen Zahl im Intervall $[2^{1023}\twodots 2^{1024}-1]$ im Mittel etwa 95 Iterationen zum Fund einer Primzahl ausreichen.
 
 Die im Mittel benötigte Anzahl skaliert linear mit der Bitlänge, die Übersichtstabelle \ref{tbl:bitLengthNumberOfIterations} gibt den Erwartungswert für verschiedene Bitlängen an.
 
