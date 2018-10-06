@@ -8,6 +8,7 @@ In diesem Kapitel sollen die Ergebnisse der durchgeführten und beschriebenen An
 %beschrieben, unterliegen die Laufzeiten der Eviction sind
 
 \section{Anzahl der benötigten Kerne}
+\label{numberCores}
 
 Ein Cache-Angriff im Browser ist wie in den letzten Kapiteln gezeigt möglich, sofern präzise Timer vorhanden sind. Da präzise Timer zurzeit mittels eines Shared-Array-Buffer erzeugt werden müssen, benötigt die Angreiferin mindestens drei virtuelle Kerne, um einen Angriff auszuführen. Einen Kern für die Iteration der Timer-Variable, einen für den Prime-and-Probe- Angriffscode und einen, auf dem das Opferprogramm läuft.
 
@@ -19,7 +20,6 @@ Problematisch ist dies beispielsweise in der Expand-Phase, da dann wegen der fal
 Somit ist es essenziell zu erkennen, wann der Timer-Thread einen Kern für sich alleine beansprucht.
 Es könnte zusätzlich zur Laufzeit wiederholt - nach einer festen Zeitspanne - die Timergenauigkeit überprüft werden.
 Den Wert der Funktion \textit{performance.now} als konstanten Zeitgeber heranzuziehen, wie im Kapitel 2 geschehen, wäre aufgrund der geringen Auflösung (Chrome etwa 0,1ms) sehr zeitaufwendig.
-%TODO auf nuc testen.
 Als Alternative bietet sich etwa das Messen der Laufzeit einer Prime-and-Probe Operation auf einem wenig aktiven Cache-Set als Referenzwert an.
 Hierbei ist zu beachten, dass die Prüfung im Thread des Angriffscodes läuft und dieser sich eventuell ebenfalls einen physischen Kern teilen muss.
 
@@ -143,7 +143,7 @@ Auf dem Testrechner konnte keine weitere Verlangsamung durch drei Bremsthreads f
 
 
 
-%TODO Benchmarkergebnisse ausformulieren. Betonen, dass nicht mehrere Cache-Line pro Thread genutzt werden sollten (Überraschend, da beim Bremsthread mehrere Cache-Lines besser). 
+
 
 %$V1_1$: 1: 's_mp_clamp_0', //s_mp_clamp>: 541,608,549k
 %$V1_2$: 2:  33: 's_mp_clamp_1', //538,605,553k
@@ -192,7 +192,7 @@ Auf dem Testrechner konnte keine weitere Verlangsamung durch drei Bremsthreads f
 %4:362,494,454k
 %5:454,582,567k
 
-%TODO multithread bench
+
 
 %\section{Unterschiede in OpenPGP.js}
 
@@ -314,8 +314,6 @@ Ursächlich dafür ist der Einfluss auf den Messvorgang, welcher in gleichen Abs
 Zudem verlangsamt der Angriff die Shift-Operation nur, wenn deren Code aus dem Cache verdrängt wurde.
 Dies wird hier durch die Prime-Spam-Methode forciert, welche ebenfalls durch den Memory-Locking-Angriff gebremst wird.
 
-%TODO Übersichtstabelle
-%TODO Beschreiben warum nicht geeignet und Benchmarkergenisse ausformulieren
 
 %perf deg in c ohne zusätze:
 %ref:341, 480, 432k
@@ -383,7 +381,7 @@ Dies wird hier durch die Prime-Spam-Methode forciert, welche ebenfalls durch den
 
 
 
-%TODO benchmarks einfügen
+
 
 %Risenpart:
 %http://pages.cs.wisc.edu/~venkatv/pvstudy-usenixsecurity15.pdf
@@ -430,8 +428,17 @@ In Grafik \ref{fig:ObserveShiftDifferentBreaks} wird die Überwachung einer Folg
 \caption{Zu sehen ist die Überwachung der Shift-Folge $Z_1=4,Z_2=2,Z_3=1,Z_4=5,Z_6=2,Z_7=1$ mit $Z_i$ als Anzahl der Rechts-Shift-Operationen in Iteration $i$ (siehe auch Abschnitt \ref{TheoLeakageAna}). Die Zahlen in der Kopfzeile geben die Pausen in Taktzyklen an, welche nach den Shift- und Subtraktions-Operationen durchgeführt wurden. Für den Messvorgang wurde ein Thread verwendet. Für die Messungen für die Prime-and-Probe-Methode wurde „Wasm Split“ genutzt, bei der zwei Pointer-Ketten mit jeweils acht Einträgen anstatt einer mit 16 verwendet werden (siehe Abschnitt \ref{SplitProbeType}).}
 \end{figure}
 
-Die Ergebnisse zeigen, dass eine mittlere Shift-Operationsdauer von etwa 3000 bis 4000 Taktzyklen notwendig, um einzelne Shift-Operationen voneinander trennen zu können und so eine Rekonstruktion der Primzahlen zu ermöglichen.
-Durch die Verwendung eines weiteren Threads für die Messung kann die benötige Zeit etwa halbiert werden, jedoch steht dann auf dem Testsystem kein physischer Kern mehr zum Bremsen zur Verfügung.
+Ganz links ist die Messung ohne Bremsung zu sehen, wobei keine einzelnen Shift-Operationen ausgemacht werden können. Auch lange Shift-Operationsfolgen wie $Z_1 = 4$ sind schwer identifizierbar, da sie zusammen mit anderen Shift-Operationen in einem Sample abgebildet werden.
+
+Mit 1000 Taktzyklen Bremszeit sind hingegen lange Operationsfolgen von kurzen gut unterscheidbar, wie Sample 1-4 ($Z_1 = 4$) und Sample 10-13 ($Z_4 = 5$) gegenüber Sample 5-9 ($Z_2 = 2, Z_3 = 1$) zeigen.
+Diese künstliche Bremsung mit 1000 Taktzyklen ist besser, als die ungebremste Version mit allen erdenklichen Varianten, welche in dieser Arbeit vorgestellt werden. Das schließt eine Messung mit 2 Threads statt einem, zusätzliche Prime-Spam-Bremsthreads, einem zusätzlichen Memory-Locking-Angriff und eine verbesserte Prime-and-Probe-Operation mit ein.
+
+Ab 3000 Taktzyklen Bremszeit können einzelne Shift-Operationen ausgemacht werden, wobei insbesondere der Abstand zwischen den Subtraktions-Operationen viel über die Anzahl der dazwischen liegenden Shift-Operationen verrät. Jedoch ist dies fehleranfällig, da etwa der Unterschied in den Shift-Operationen bei $Z_1 = 4$ in Sample 1 bis 9 und $Z_4 = 5$ in Sample 20 bis 27 nicht auszumachen ist.
+
+Bei einer Bremszeit von 5000 Taktzyklen können die einzelnen Shift-Operationen gut unterschieden werden, wobei bei langen Shift-Folgen die Länge nicht immer exakt bestimmt werden kann, wie $Z_4 = 5$ in Sample 35 bis 51 veranschaulicht.
+
+Die Ergebnisse zeigen, dass eine mittlere Shift-Operationsdauer von etwa 3000 bis 4000 Taktzyklen notwendig ist, um einzelne Shift-Operationen voneinander trennen zu können und so eine Bestimmung der $Z_i$ für eine Rekonstruktion der Primzahlen zu ermöglichen.
+Durch die Verwendung eines weiteren Threads für die Messung kann die benötigte Zeit etwa halbiert werden, jedoch steht dann auf dem Testsystem kein physischer Kern mehr zum Bremsen zur Verfügung (siehe Abschnitt \ref{numberCores}).
 
 \section{Speicherallokation}
 
@@ -518,7 +525,7 @@ In diesem Abschnitt sollen mögliche Optimierungen der Prime-and-Probe-Operation
 \subsection{Javascript vs. Webassembly}
 \label{JavascriptVSWasm}
 
-Wie in Kapitel \ref{chapter:preparation} beschrieben, ist der Prime-and-Probe-Angriff in Webassembly geschrieben.
+Wie in Kapitel \ref{chapter:preparation} beschrieben, ist die Prime-and-Probe-Operation in Webassembly geschrieben.
 Der Ablauf einer solchen Prime-and-Probe-Operation wird in Pseudocode \ref{alg:WasmPrimeAndProbe} beschrieben.
 
 \begin{algorithm}[h]
@@ -536,18 +543,18 @@ Der Ablauf einer solchen Prime-and-Probe-Operation wird in Pseudocode \ref{alg:W
 }
 \end{algorithm}
 
-Zurzeit ist Webassembly nicht Multithreadingfähig \cite{WebassemblyThreads}, das heißt aus dem Webassembly-Kontext kann nicht direkt auf die Zählvariable des SharedArrayBuffers zugegriffen werden.
-Stattdessen muss der Wert der Zählvariable über Javascript abgerufen werden.
-Um Javascript aus Webassembly aufzurufen, existieren mehrere Möglichkeiten \cite{CallJavaScriptFromWasm}, wobei sich die Implementierung einer C API in JavaScript am performantesten herausgestellt hat.
-
+Zurzeit ist Webassembly nicht multithreadingfähig \cite{WebassemblyThreads}, das heißt, aus dem Webassembly-Kontext kann nicht direkt auf die Zählvariable des SharedArrayBuffers zugegriffen werden.
+In Folge dessen muss der Wert der Zählvariable über Javascript abgerufen werden.
+Um Javascript-Code aus Webassembly aufzurufen, existieren mehrere Möglichkeiten \cite{CallJavaScriptFromWasm}, wobei sich die Implementierung einer C API in JavaScript am performantesten herausgestellt hat.
 Alternativ kann auch die gesamte Prime-and-Probe-Operation in Javascript implementiert werden, wobei der Wert der Zählvariable ohne Umwege abgefragt werden kann.
-Um die Performance der beiden Implementationen zu vergleichen, wird die mittlere Dauer einer Prime-and-Probe-Operation durch die Ausführung von 10 Millionen Operationen approximiert, wobei dies einem Messvorgang von ein wenigen Sekunden entspricht.
+
+Um die Performance der beiden Implementierungen zu vergleichen, wird die mittlere Dauer einer Prime-and-Probe-Operation durch die Ausführung von 10 Millionen Operationen approximiert, wobei dies einem Messvorgang von wenigen Sekunden entspricht.
 So dauert eine Prime-and-Probe-Operation in Webassembly bei keiner Aktivität auf dem Cache-Set etwa 190 ns, wobei diese Zeit auf 440 ns ansteigt, wenn die Cache-Line $V2_5 3_1$ (siehe Tabelle \ref{tbl:PerformanceDegShift}) während der Ausführung der $mp\_gcd$-Funktion überwacht wird.
 
-In der Javascript-Implementation und verringert sich die Zeit bei keiner Aktivität auf dem Cache-Set um etwa 20 ns auf etwa 170 ns, wobei die benötigte Zeit bei einem aktiven Cache-Set um etwa 90 ns auf 400 ns gegenüber der Webassembly-Implementierung sinkt (siehe auch Abbildung \ref{fig:ObserveShiftDifferentProbeTypes}).
+In der Javascript-Implementierung verringert sich die Zeit bei keiner Aktivität auf dem Cache-Set um etwa 20 ns auf etwa 170 ns, wobei die benötigte Zeit bei einem aktiven Cache-Set um etwa 40 ns auf 400 ns gegenüber der Webassembly-Implementierung sinkt (siehe auch Abbildung \ref{fig:ObserveShiftDifferentProbeTypes}).
 
 \label{fig:ObserveShiftDifferentProbeTypes}
-\begin{figure}[h]
+\begin{figure}[h]s
 \centering
 \begin{scaletikzpicturetowidth}{\textwidth}
 \input{discussion/plot_different_probe_types.tex}
@@ -556,24 +563,32 @@ In der Javascript-Implementation und verringert sich die Zeit bei keiner Aktivit
 }
 \end{figure}
 
-Somit lassen sich mit der Umsetzung der Prime-and-Operation in Javascript $\sim$ 10\% mehr Prime-and-Probe-Operationen in der gleichen Zeit realisieren.
-Die ersten ca. 2000 gemessenen Zugriffswerte in Javascript neigen zu starkem Rauschen, so sind auch bei keiner Aktivität auf dem Cache-Set reproduzierbar mehr als hundert Mal hintereinander Zugriffszeiten von über 400 zu beobachten.
-Ein mögliche Begründung für diese Beobachtung wäre, dass der Browser in dieser Phase versucht den Javascript-Code zu optimieren \cite{GoogleTurboFan}, da er wegen der häufigen wiederholten Ausführung als wichtig erkannt wurde.
-Dieses anfängliche Rauschen der Javascript-Implementierung ist in der Praxis aber zu vernachlässigen, da die Messphasen in der Regel deutlich länger als 2000 Prime-and-Probe-Operationen andauern und somit die anfänglichen verrauschten Werte verworfen werden können.
+Somit lassen sich mit der Umsetzung der Prime-and-Probe-Operation in Javascript $\sim$ 10\% mehr Prime-and-Probe-Operationen in der gleichen Zeit realisieren.
+Die ersten ca. 2000 gemessenen Zugriffswerte in Javascript neigen zu starkem Rauschen, so sind auch bei keiner Aktivität auf dem Cache-Set reproduzierbar mehr als hundert mal hintereinander Zugriffszeiten von über 400 Zeiteinheiten zu beobachten.
+Eine mögliche Begründung für diese Beobachtung wäre, dass der Browser in dieser Phase versucht den Javascript-Code zu optimieren \cite{GoogleTurboFan}, da er wegen der häufigen wiederholten Ausführung als wichtig erkannt wurde.
+Dieses anfängliche Rauschen der Javascript-Implementierung ist in der Praxis jedoch vernachlässigbar, da die Messphasen in der Regel deutlich länger als 2000 Prime-and-Probe-Operationen andauern und somit die anfänglichen verrauschten Werte verworfen werden können.
 
-Zusammenfassend betrachtet, bringt die Implementierung in Javascript einen Performance-Vorteil von ca. 10\%.
-Da die Umsetzung von Multithreading in Webassembly geplant ist \cite{WebassemblyThreads}, kann bei dieser Implementierung in Zukunft mit einem Performancegewinn gerechnet werden, da dann die Javascript-Funktionsaufrufe entfallen.
+Zusammenfassend betrachtet, bringt die Implementierung in Javascript einen Performance-Vorteil von ca. 10\% ohne in der Praxis relevante Nachteile zu bieten.
+Da die Umsetzung von Multithreading in Webassembly geplant ist \cite{WebassemblyThreads}, kann bei dieser Implementierung in Zukunft mit einem Performancegewinn gerechnet werden, da dann die Javascript-Funktionsaufrufe bezüglich der Zählvariable entfallen.
 
 \subsection{Verschiedene Varianten von Prime-and-Probe}
 \label{SplitProbeType}
 
-Die Standardimplementierung für den Prime-and-Probe verwendet die Point-Chasing-Methode (siehe Pseudocode \ref{alg:pointerChasing}). 
-In dieser wird einer Kette von 16 Einträgen gefolgt, wobei der Prozessor immer erst die Adresse des vorherigen Eintrags bestimmen muss, um die den nächsten Eintrag zu laden.
-Um eine Prime-and-Probe Operation zu beschleunigen wären zwei Ketten mit jeweils acht Einträgen beziehungsweise vier Ketten mit jeweils vier Einträgen denkbar.
-Dadurch würde Parallelisierung auf Instruktionsebene möglich und der Prozessor könnte weiterhin keine Folgeadressen innerhalb der Ketten im Voraus laden.
+Die Standardimplementierung für die Prime-and-Probe-Operation verwendet die Point-Chasing-Methode (siehe Pseudocode \ref{alg:pointerChasing}). 
+In dieser wird einer Kette von 16 Einträgen gefolgt, wobei der Prozessor immer erst die Adresse des vorherigen Eintrags bestimmen muss, um die des nächsten Eintrags laden zu können.
+Um eine Prime-and-Probe Operation zu beschleunigen wären zwei Ketten mit jeweils acht Einträgen, beziehungsweise vier Ketten mit jeweils vier Einträgen denkbar.
+Dadurch würde eine Parallelisierung auf Instruktionsebene möglich und der Prozessor könnte weiterhin keine Folgeadressen innerhalb der Ketten im Voraus laden.
 
-Wie Abbildung \ref{fig:ObserveShiftDifferentProbeTypes} zeigt, ergibt sich durch die Aufspaltung in zwei Ketten mit jeweils acht Einträgen ein Performancevorteil von etwa 50\%.
+Anhand der unterschiedlichen Sampleanzahl für die gleiche Shift-Folge in Abbildung \ref{fig:ObserveShiftDifferentProbeTypes} ist erkennbar, dass sich durch die Aufspaltung in zwei Ketten mit jeweils acht Einträgen ein Performancevorteil von etwa 50\% ergibt.
 Mit einer Aufteilung auf vier Ketten mit jeweils vier Einträgen konnten hingegen keine erfolgreichen Messungen durchgeführt werden.
+
+Die Aufteilung in zwei Ketten kann auch bei der Prime-Spam-Bremsmethode eingesetzt werden, um dort die Bremsleistung zu erhöhen. 
+Wenn die Cache-Lines $V1_1$ und $V2_4$ (siehe Tabelle \ref{tbl:PerformanceDegShift}) mittels Prime-Spam in einem Thread und der Prime-and-Probe-Operation mit einer Kette gebremst wurden, konnte die Shift-Operation von ca. 350 auf 420 Taktzyklen verlangsamt werden. 
+Unter den gleichen Bedingungen, aber einer Prime-and-Probe-Operation mit zwei Ketten, konnte die Shift-Operation auf etwa 565 Taktzyklen gebremst werden. 
+Damit kann bei der Prime-Spam-Methode ein Performance-Vorteil von ca. 35\% erzielt werden.
+Angemerkt sei, dass der Code um die Bremsfunktionen in diesen Tests nicht optimiert war, weswegen die absoluten Werte nicht mit den Bremsergebnissen aus Abschnitt \ref{PerformanceDegSingleThread} und \ref{MoreIsBetter} verglichen werden können.
+
+Hiermit steigert die Aufteilung in zwei Ketten die Performance der Prime-and-Probe-Operation merklich und ist der Implementierung mit einer Kette vorzuziehen.
 
 %Somit ist die
 

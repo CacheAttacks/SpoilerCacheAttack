@@ -19451,7 +19451,7 @@
       (get_local $$12)
      )
     )
-    (call $_probe_only
+    (call $_probe_only_split_2
      (get_local $$13)
     )
     ;;@ c/l3.c:1123:0
@@ -19800,7 +19800,7 @@
     (set_local $$16
      (get_local $$15)
     )
-    (call $_probe_only
+    (call $_probe_only_split_2
      (get_local $$16)
     )
     ;;@ c/l3.c:1136:0
@@ -21596,14 +21596,14 @@
     (set_local $$29
      (get_local $$6)
     )
-    (call $_probe_only
+    (call $_probe_only_split_2
      (get_local $$29)
     )
     ;;@ c/l3.c:1313:0
     (set_local $$30
      (get_local $$7)
     )
-    (call $_probe_only
+    (call $_probe_only_split_2
      (get_local $$30)
     )
     ;;@ c/l3.c:1303:0
@@ -25337,9 +25337,16 @@
    )
   )
  )
- (func $_probe_only (; 136 ;) (param $$0 i32)
+ (func $_probe_only_split_2 (; 136 ;) (param $$0 i32)
   (local $$1 i32)
   (local $$10 i32)
+  (local $$11 i32)
+  (local $$12 i32)
+  (local $$13 i32)
+  (local $$14 i32)
+  (local $$15 i32)
+  (local $$16 i32)
+  (local $$17 i32)
   (local $$2 i32)
   (local $$3 i32)
   (local $$4 i32)
@@ -25371,65 +25378,102 @@
   (set_local $$1
    (get_local $$0)
   )
-  ;;@ c/probe.c:562:0
-  (set_local $$3
+  ;;@ c/probe.c:704:0
+  (set_local $$4
    (get_local $$1)
   )
-  (set_local $$4
+  (set_local $$5
    (i32.eq
-    (get_local $$3)
+    (get_local $$4)
     (i32.const 0)
    )
   )
   (if
-   (get_local $$4)
+   (get_local $$5)
    (block
     (set_global $STACKTOP
      (get_local $sp)
     )
-    ;;@ c/probe.c:569:0
+    ;;@ c/probe.c:714:0
     (return)
    )
   )
-  ;;@ c/probe.c:564:0
-  (set_local $$5
+  ;;@ c/probe.c:707:0
+  (set_local $$6
    (get_local $$1)
   )
+  (set_local $$7
+   (get_local $$6)
+  )
+  (set_local $$8
+   (i32.add
+    (get_local $$7)
+    (i32.const 4)
+   )
+  )
+  (set_local $$9
+   (get_local $$8)
+  )
   (set_local $$2
-   (get_local $$5)
+   (get_local $$9)
+  )
+  ;;@ c/probe.c:709:0
+  (set_local $$3
+   (i32.const 0)
   )
   (loop $while-in
    (block $while-out
-    ;;@ c/probe.c:567:0
-    (set_local $$6
-     (get_local $$2)
-    )
-    (set_local $$7
-     (i32.load
-      (get_local $$6)
-     )
-    )
-    (set_local $$2
-     (get_local $$7)
-    )
-    ;;@ c/probe.c:568:0
-    (set_local $$8
-     (get_local $$2)
-    )
-    (set_local $$9
-     (get_local $$1)
-    )
     (set_local $$10
-     (i32.ne
-      (get_local $$8)
-      (get_local $$9)
+     (get_local $$3)
+    )
+    (set_local $$11
+     (i32.lt_s
+      (get_local $$10)
+      (i32.const 8)
      )
     )
     (if
      (i32.eqz
-      (get_local $$10)
+      (get_local $$11)
      )
      (br $while-out)
+    )
+    ;;@ c/probe.c:711:0
+    (set_local $$12
+     (get_local $$1)
+    )
+    (set_local $$13
+     (i32.load
+      (get_local $$12)
+     )
+    )
+    (set_local $$1
+     (get_local $$13)
+    )
+    ;;@ c/probe.c:712:0
+    (set_local $$14
+     (get_local $$2)
+    )
+    (set_local $$15
+     (i32.load
+      (get_local $$14)
+     )
+    )
+    (set_local $$2
+     (get_local $$15)
+    )
+    ;;@ c/probe.c:709:0
+    (set_local $$16
+     (get_local $$3)
+    )
+    (set_local $$17
+     (i32.add
+      (get_local $$16)
+      (i32.const 1)
+     )
+    )
+    (set_local $$3
+     (get_local $$17)
     )
     (br $while-in)
    )
@@ -25437,7 +25481,7 @@
   (set_global $STACKTOP
    (get_local $sp)
   )
-  ;;@ c/probe.c:569:0
+  ;;@ c/probe.c:714:0
   (return)
  )
  (func $_try_to_create_es (; 137 ;) (param $$0 i32) (param $$1 i32) (param $$2 i32) (param $$3 i32) (result i32)

@@ -402,8 +402,8 @@ void prime_spam_es(void *app_state_ptr, int duration_sec)
     } 
     else 
     {
-      // l3_repeatedprobe(this_app_state->l3, number_of_samples, this_app_state->res,
-      //                 0, this_app_state->type);
+       //l3_repeatedprobe(this_app_state->l3, number_of_samples, this_app_state->res,
+                       //0, this_app_state->type);
       l3_repeatedprobe_spam(this_app_state->l3, number_of_samples);
     }
   }

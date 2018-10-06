@@ -1121,7 +1121,7 @@ void l3_randomise(l3pp_t l3) {
 
 void l3_probe_spam(l3pp_t l3) {
   for (int i = 0; i < l3->nmonitored; i++) {
-    probe_only(l3->monitoredhead[i]);
+    probe_only_split_2(l3->monitoredhead[i]);
   }
 }
 
@@ -1134,7 +1134,7 @@ void l3_probe(l3pp_t l3, RES_TYPE *results, uint32_t (*probetime)(void *pp)) {
 
 void l3_bprobe_spam(l3pp_t l3) {
   for (int i = 0; i < l3->nmonitored; i++) {
-    probe_only(NEXTPTR(l3->monitoredhead[i]));
+    probe_only_split_2(NEXTPTR(l3->monitoredhead[i]));
   }
 }
 
@@ -1304,13 +1304,13 @@ int l3_repeatedprobe_spam_fast(l3pp_t l3, int nrecords) {
     //if (even) {
       // for (int i = 0; i < len; i++) {
       // results[++i] = (RES_TYPE)probetime(monitoredes1);
-      probe_only(monitoredes1);
+      probe_only_split_2(monitoredes1);
       //results[++i] = (RES_TYPE)(*probetime)(monitoredes1);
       //}
     //} else {
       // for (int i = 0; i < len; i++) {
       // results[++i] = (RES_TYPE)probetime(NEXTPTR(monitoredes1));
-      probe_only(monitoredes1b);
+      probe_only_split_2(monitoredes1b);
       //results[++i] = (RES_TYPE)(*probetime)(monitoredes1b);
       //}
     //}

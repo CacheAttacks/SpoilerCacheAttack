@@ -559,13 +559,23 @@ __attribute__((optimize("O0")))
 void
 probe_only(void *pp)
 {
+  // if (pp == NULL)
+  //   return;
+  // void *p = (void *)pp;
+  // do
+  // {
+  //   p = LNEXT(p);
+  // } while (p != (void *)pp);
   if (pp == NULL)
     return;
-  void *p = (void *)pp;
-  do
+  // void *p = (void *)pp;
+  void *bp = NEXTPTR((void *)pp);
+
+  for (int i = 0; i < 8; i++)
   {
-    p = LNEXT(p);
-  } while (p != (void *)pp);
+    pp = LNEXT(pp);
+    bp = LNEXT(bp);
+  }
 }
 
 #ifdef WASM
