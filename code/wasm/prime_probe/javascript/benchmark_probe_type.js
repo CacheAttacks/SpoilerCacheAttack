@@ -31,7 +31,7 @@ if (typeof Module['noisy_start_cache_set'] !== 'undefined') {
     // console.log("bench" + type);
     Module['asm']._change_type(Module['appStatePtr'], probe_types[type]);
 
-    sampleEsWrapper(2000000, 0, 0);
+    sampleEsWrapper(10000000, 0, 0);
 
     var offset = Module['res'] / Module['byteFactor'];
     var length = Module['nrow'] * Module['ncol'];

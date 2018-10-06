@@ -33,7 +33,7 @@ Aus einem niedrig aufgelösten Timer folgt also eine geringere zeitliche Auflös
         accessMemory(witness)\;
     }
 	timestampAfter <- getTimestamp()\;
-	\Return timestampAfter - timestampBefore > threshold;
+	\Return timestampAfter - timestampBefore > threshold
 }
 
 \end{algorithm}
@@ -57,7 +57,7 @@ Der Speicherbereich eines Webworkers und des Mainthreads sind strikt getrennt, s
 Gemäß Code-Listing \ref{alg_list:sharedArrayBufferWorkerMain} wird im Mainthread zuerst ein SharedArrayBuffer von 4 Bytes angelegt. Anschließend wird der als Zeitgeber fungierende Webworker gestartet und ihm eine Referenz auf den eben angelegten SharedArrayBuffer übersandt. 
 
 \begin{figure}[h]
-\begin{lstlisting}[caption=main.js: Code welcher den counterWorker für Zeitmessungen verwendet,label=alg_list:sharedArrayBufferWorkerMain]
+\begin{lstlisting}[caption=main.js: Code für Zeitmessungen mittels counterWorker,label=alg_list:sharedArrayBufferWorkerMain]
 var sharedArrayBuffer = new SharedArrayBuffer(4);
 var counterWorker = new Webworker('counterWebworker.js');
 counterWorker.postMessage(sharedArrayBuffer);
@@ -84,7 +84,7 @@ Anschließend wird im Webworker ein \lstinline{Uint32Array} angelegt, welches mi
 Zum Schluss geht der Webworker in die Endlosschleife über, in welcher die Zählvariable \textit{sharedArray[0]} durchgehend iteriert.
 
 \begin{figure}[h]
-\begin{lstlisting}[caption=counterWebworker.js: Webworker welcher die Zählvariable in einer Endlosschleife iteriert,label=alg_list:sharedArrayBufferWorker]
+\begin{lstlisting}[caption=counterWebworker.js: Iterieren der Zählvariable in einer Endlosschleife mittels Webworker,label=alg_list:sharedArrayBufferWorker]
 self.addEventListener('message', (m) => {
   // Create an Uint32Array on top of the shared memory array 
   const sharedArray = new Uint32Array(m.data);
@@ -98,7 +98,7 @@ self.addEventListener('message', (m) => {
 Das Iterieren einer Variable benötigt nur wenige Taktzyklen, wodurch der aktuelle Wert der Zählvariable als Zeitstempel interpretiert werden kann. 
 Die Auflösung dieser Methode hängt also von der Geschwindigkeit der Iteration sowie der Speichersynchronisation des SharedArrayBuffers zwischen Mainthread und Webworker ab.
 
-In Versuchen mit verschiedenen Webbrowsern und Hardwarekonfigurationen zeigte sich, dass die Auflösung mindestens im einstelligen Nanosekundenbreich liegt und somit ausreichend genau ist, um den Unterschied zwischen einem Cache-Miss und Hit festzustellen \ref{tbl:times_res}.
+In Versuchen mit verschiedenen Webbrowsern und Hardwarekonfigurationen zeigte sich, dass die Auflösung mindestens im einstelligen Nanosekundenbreich liegt und somit ausreichend genau ist, um den Unterschied zwischen einem Cache-Miss und Hit festzustellen (siehe Tabelle \ref{tbl:times_res}).
 
 Um die Auflösung zu bestimmen, wird die Javascriptfunktion performance.now zur Hilfe genommen (siehe Listing \ref{alg_list:getResolutionNS}). Die Funktion \lstinline{wait_edge} ruft zuerst performance.now für den Startwert auf und wartet anschließend in einer Endlosschleife, bis performance.now einen höheren Wert als den Startwert zurückgibt. 
 Dieser höhere Wert wird ebenso wie der aktuelle Stand der Zählvariable gespeichert. 
@@ -113,9 +113,9 @@ Als Workaround wurde eine Abfrage hinzugefügt, die bei einem Überschreiten von
 Die Ergebnisse zeigen, dass dieser Workaround die Auflösung in Chrome nur minimal verschlechtert, dafür aber in Firefox signifikant verbessert.
 Ohne diese Änderungen sorgt der Timer in Firefox für Probleme bei der Zeitmessung, da ein Zeitintervall beim Überschreiten des Wertes $2^{31}$ wegen der verringerten Iterationsgeschwindigkeit als deutlich verkürzt wahrgenommen wird.
 
-\label{tbl:times_res}
 \begin{table}[h]
 \caption{Zeitauflösung des SharedArrayBuffer-Zählers mit verschiedenen Browsern auf Ubuntu 16.04.5 LTS (GNU/Linux 4.4.0-131-generic x86_64) mit einem i7-4770. Wertebereich der \lstinline{Uint32} Zählvariable wird in der linken Spalte ausgeschöpft, in der rechten hingegen wird nur bis $2^{31}$ gezählt.}
+\label{tbl:times_res}
 \begin{tabular}{lllll}
 \toprule
                            & Zählen bis $2^{32}$ & Zählen bis $2^{31}-1$ &  &  \\
@@ -129,7 +129,7 @@ Firefox 63.0b4             & $\sim$5,1ns                      & $\sim$2,2ns     
 
 
 \begin{figure}[h]
-\begin{lstlisting}[caption=main.js: Code welcher die Timerauflösung bestimmt,label=alg_list:getResolutionNS]
+\begin{lstlisting}[caption=main.js: Code zur Bestimmung der Timerauflösung,label=alg_list:getResolutionNS]
 var start = wait_edge();
 var start_count = Atomics.load(Module['sharedArrayCounter'], 0);
 var end = wait_edge();
@@ -216,13 +216,13 @@ Falls dies zutrifft, wird zur nächsten Phase übergegangen, andernfalls wird di
 
 \Fn{$Expand(evictionSet, addressPool)$}{
 	\While{size(addressPool) > 0}{
-		witnesss = SelectRandomItem(addressPool)\;
-		\If{checkevict(evictionSet, witnesss)}{
-			\Return witnesss
+		witness = SelectRandomItem(addressPool)\;
+		\If{checkevict(evictionSet, witness)}{
+			\Return witness
 		}
-		evictionSet.add(witnesss)\;
+		evictionSet.add(witness)\;
 	}
-	\Return failed;
+	\Return failed
 }
 \end{algorithm}
 
@@ -346,7 +346,7 @@ Die durchgezogene Linie im Diagramm \ref{fig:combined_es_prob} gibt die Erfolgsw
 \begin{scaletikzpicturetowidth}{\textwidth}
 \input{methods/plot_combined_es_prob.tex}
 \end{scaletikzpicturetowidth}
-\caption{Die gestrichelte Kurve (Y-Achse) veranschaulicht die Wahrscheinlichkeit, ein fixes Eviction-Set mit einer bestimmten Anzahl an Pooladressen (X-Achse) bei einer Assoziativität von 16 zu finden. Die einzelnen Punkte Werte dar, die mit dem Eviction-Set-Suchalgorithmus in der Praxis ermittelt wurden.
+\caption{Die gestrichelte Kurve (Y-Achse) veranschaulicht die Wahrscheinlichkeit, ein fixes Eviction-Set mit einer bestimmten Anzahl an Pooladressen (X-Achse) bei einer Assoziativität von 16 zu finden. Die einzelnen Punkte stellen Werte dar, die mit dem Eviction-Set-Suchalgorithmus in der Praxis ermittelt wurden.
 Die durchgezogene Linie stellt die Wahrscheinlichkeit dar, alle 8192 Eviction-Sets zu finden.}
 \end{figure}
 
@@ -363,7 +363,7 @@ Ein weiteres wesentliches Kriterium ist die Dauer der Eviction-Set-Suche, wobei 
 \toprule
 Poolgröße & Dauer & \begin{tabular}[c]{@{}c@{}}Fehlgeschlagene\\ Contract-Phasen\end{tabular} & \begin{tabular}[c]{@{}c@{}}Expand\\ Anteil\end{tabular} & \begin{tabular}[c]{@{}c@{}}Contract\\ Anteil\end{tabular} & \begin{tabular}[c]{@{}c@{}}Collect\\ Anteil\end{tabular} \\
 \midrule
-3072 & 45s & 191 & 25\% & 72\% & 2.9\%\\3584 & 49s & 127 & 20\% & 76\% & 3.1\%\\4096 & 46s & 392 & 14\% & 84\% & 3\%\\4608 & 54s & 256 & 12\% & 84\% & 3.8\%                              
+3072 & 45s & 191 & 25\% & 72\% & 2.9\%\\3584 & 49s & 127 & 20\% & 76\% & 3.1\%\\4096 & 46s & 392 & 14\% & 84\% & 3.0\%\\4608 & 54s & 256 & 12\% & 84\% & 3.8\%                              
 \\
 \bottomrule
 \end{tabular}
@@ -412,7 +412,7 @@ Die Idee ist folglich, bei einem noch kleinen Candidate-Set in jeder Iteration m
 Dies muss jedoch in Abhängigkeit der schon gefundenen Eviction-Sets geschehen, da in den späteren Iterationen ein durch Expand-Phase entstandenes Eviction-Set deutlich kleiner als in den ersten Iterationen ist.
 
 \begin{table}[h]
-\caption{Performancewerte für Optimierungen des Eviction-Set-Suchalgorithmus, wobei jede Zeile durch 60 Läufe entstanden ist. Angegeben sind die Median-Werte, um den Einfluss langer sporadisch auftretender Läufe zu senken. Alle Tests wurden mit einer Poolgröße von 4096 durchgeführt. Die restlichen Spalten sind analog zu Tabelle \ref{tbl:performanceESSearchDifferentPoolSize}. Die erste Zeile beschreibt den Ansatz die in der Contract-Phase aussortierten Einträge in dem Candidate-Set für die nächste Expand-Phase zu sammeln. Zeile 2 zeigt die Performance wenn die Contract-Phase vorzeitig aufgrund zu wenig entfernter Einträge aus dem Eviction-Set abgeborchen wird.}
+\caption{Performancewerte für Optimierungen des Eviction-Set-Suchalgorithmus, wobei jede Zeile durch 60 Läufe entstanden ist. Angegeben sind die Median-Werte, um den Einfluss langer sporadisch auftretender Läufe zu senken. Alle Tests wurden mit einer Poolgröße von 4096 durchgeführt. Die restlichen Spalten sind analog zu Tabelle \ref{tbl:performanceESSearchDifferentPoolSize}. Die erste Zeile beschreibt den Ansatz die in der Contract-Phase aussortierten Einträge in dem Candidate-Set für die nächste Expand-Phase zu sammeln. Zeile 2 zeigt die Performance wenn die Contract-Phase vorzeitig aufgrund zu wenig entfernter Einträge aus dem Eviction-Set abgebrochen wird.}
 \label{tbl:performanceESSearchOpt}
 \begin{tabular}{cccccc}
 \toprule
@@ -555,7 +555,7 @@ Grafik \ref{fig:colliding_addresses_js_measurement} zeigt die typische Verteilun
 \begin{scaletikzpicturetowidth}{\textwidth}
 \input{methods/storeForward_all_valid.tex}
 \end{scaletikzpicturetowidth}
-\caption{Erkennung von colliding-addresses unter Javascript. Punkte geben die Latenz für eine Leseoperation auf eine fixe Adresse an, nachdem Schreiboperationen auf jeden der 64 Blöcke im aktuellen Fenster durchgeführt wurden. Die drei dickeren Punkte stellen vom Algorithmus identifizierte colliding-addresses dar. Es wurde verifiziert, dass diese drei Adressen Teil eines späteren Eviction-Sets geworden sind und somit die Identifikation seitens des Algorithmus korrekt war.}
+\caption{Erkennung von colliding-addresses unter Javascript. Punkte geben die Latenz für eine Leseoperation auf einer fixen Adresse an, nachdem Schreiboperationen auf jeden der 64 Blöcke im aktuellen Fenster durchgeführt wurden. Die drei umkreisten Punkte stellen vom Algorithmus identifizierte colliding-addresses dar. Es wurde verifiziert, dass diese drei Adressen Teil eines späteren Eviction-Sets geworden sind und somit die Identifikation seitens des Algorithmus korrekt war.}
 \end{figure}
 
 Eigene Tests haben ergeben, dass mit \textit{WINDOW_SIZE=60} colliding-addresses zuverlässig durch Peaks bei der Zeitmessung der Leseoperation für $x$ hervorstechen.
@@ -575,7 +575,7 @@ Somit muss insgesamt 32 Mal (32*4*64=8192) ein colliding-address-Pool aufgebaut 
 Die Ergenisse in Tabelle \ref{tbl:performanceStoreForESSearch} zeigen eine deutliche Verbesserung der Laufzeit gegenüber dem Standard-Algorithmus.
 
 \begin{table}[h]
-\caption{Performancewerte des neuen Eviction-Set-Suchalgorithmus, wobei pro Parametersatz also einer Zeile 60 Läufe durchgeführt wurden. Angegeben sind die Mittelwerte, wobei sich alle Werte auf einen Lauf beziehen. Spalte „Initiale Poolgröße“ gibt die Poolgröße der colliding-addresses an, ab der eine Eviction-Set-Suche gestartet wird. Die Spalten „\textit{WINDOW_SIZE}“ und „\textit{Rounds}“ sind die Parameter aus Pseudocode \ref{alg:storeForward}. Spalte „Anteil colliding-addr Suche“ und „Anteil Eviction-Set Suche“ beschreiben den Anteil, welchen die beiden Phasen an der Gesamtlaufzeit haben. Die letzte Zeile beschreibt wie viele der 60 Läufe erfolgreich alle 8192 Eviction-Sets bilden konnten.}
+\caption{Performancewerte des neuen Eviction-Set-Suchalgorithmus, wobei pro Parametersatz (die ersten drei Spalten) 60 Läufe durchgeführt wurden. Angegeben sind die Mittelwerte, wobei sich alle Werte auf einen Lauf beziehen. Die Spalte „Initiale Poolgröße“ gibt die Poolgröße der colliding-addresses an, ab der eine Eviction-Set-Suche gestartet wird. Die Spalten „\textit{WINDOW_SIZE}“ und „\textit{Rounds}“ sind die Parameter aus Pseudocode \ref{alg:storeForward}. Die Spalten „Anteil colliding-addr Suche“ und „Anteil Eviction-Set Suche“ beschreiben den Anteil, welchen die beiden Phasen an der Gesamtlaufzeit haben. Die letzte Spalte beschreibt wie viele der 60 Läufe erfolgreich alle 8192 Eviction-Sets bilden konnten.}
 \label{tbl:performanceStoreForESSearch}
 \begin{tabular}{ccccccc}
 \toprule

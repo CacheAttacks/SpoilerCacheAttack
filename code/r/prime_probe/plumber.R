@@ -174,7 +174,7 @@ a <- Sys.time()
   #  tbl <- tbl[,es_vec, drop=F]
   
   #tbl <- tbl[-(1:15000),]
-  tbl <- tbl[-(1:50),]
+  tbl <- tbl[-(1:100000),]
   
   if(es_vec != "none")
     tbl <- tbl[es_vec,]
@@ -193,7 +193,11 @@ a <- Sys.time()
   
   plot <- ggplot2::ggplot(tbl_melt, ggplot2::aes(x=sample,y=es)) + 
     ggplot2::geom_tile(ggplot2::aes(fill = value)) +
-    ggplot2::scale_fill_gradientn(colours = RColorBrewer::brewer.pal( 6, "Blues"), limits = c(100, NA), na.value = "white")
+    ggplot2::scale_fill_gradientn(colours = RColorBrewer::brewer.pal( 6, "Blues"), limits = c(100, NA), na.value = "white")+
+    ggplot2::scale_x_continuous(name="Sample (x)", 
+                              limits=c(0, nrow(tbl)), 
+                              breaks=c(seq(0,nrow(tbl),nrow(tbl)/50)))+
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90))
   c <- Sys.time()
   print(c-b)
   e <- print(plot)

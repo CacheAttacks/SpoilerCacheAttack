@@ -70,7 +70,7 @@ Dies wird passieren, sobald Maßnahmen gegen Meltdown und Spectre implementiert 
 %\todo{das hier finde ich albern. Du kannst dir gern den Absatz umdefinieren, sodass du bei jedem Absatz einen medskip hast. Aber hier plötzlich damit anfangen finde ich komisch.}
 %\todo{Sollte nur hier als Stilmittel verwendet werden, damit die Absätze den obigen Fragen besser zugeordnet werden können.}
 
-Beim Prime-and-Probe-Angriff steht die Browserimplementierung einer nativen Implementierung in nichts nach. Allerdings ist neben den Kosten für den Counter-Thread die zeitliche Auflösung des Angriffs um \todo{c code slot time messen} TODO \% reduziert.
+Beim Prime-and-Probe-Angriff steht die Browserimplementierung einer nativen Implementierung in nichts nach. Allerdings ist neben den Kosten für den Counter-Thread die zeitliche Auflösung des Angriffs um etwa 50\% reduziert.
 
 Der Opferprozess wird oft künstlich gebremst, da die Berechnungen auch beim Angriff mit nativem Code häufig zu schnell sind.
 Ebenso lassen sich im Browser Methoden umsetzen, um den Opferprozess zu verlangsamen. %\todo{bremsvergleich c vs wasm/js}
@@ -81,7 +81,7 @@ Anhand eines Angriffs auf die RSA-Schlüsselgenerierung wird gezeigt, dass die P
 
 Ein realistischer Angriff ist Voraussetzung für eine kurze Initialisierungsphase, daher wurden Optimierungen des in vielen Papern beschriebenen Eviction-Set-Suchalgorithmus \cite{PrimeAndAbort, LiuPrimeAndProbe, DriveByPaper} analysiert und die Ergebnisse anschließend mit der ursprünglichen Variante verglichen.
 Des Weiteren wurde eine neue noch unveröffentlichte Technik im Kontext der Eviction-Set-Suche im Browser erprobt.
-Diese nutzt spezifische Eigenschaften der Store-Queue in Intel-Prozessoren aus, womit die Suche gegenüber dem optimierten Standardalgorithmus um etwa den Faktor 3 beschleunigt werden kann.
+Diese nutzt spezifische Eigenschaften der Store-Queue in Intel-Prozessoren aus, womit die Suche gegenüber dem optimierten Standardalgorithmus um mehr als den Faktor 3 beschleunigt werden kann.
 
 %Wenn mehr als eine Cache-Line überwacht werden soll, ist es für die zeitliche Auflösung von Vorteil, mehrere Angriffsinstanzen zu starten.
 %Diese müssen jedoch die Eviction-Set-Suche nacheinander durchführen, da sie sich ansonsten gegenseitig beeinflussen würden.
@@ -195,7 +195,7 @@ Als Beispiel wird ein verdeckter Kanal vom Browser zu einem nativ laufenden Prog
 
 Im \ref{chapter:results}. Kapitel werden verschiedene Leakages in der RSA-Schlüsselgenerierung von Mozilla NSS und OpenPGP.js analysiert.
 Dabei wird erörtert, wie die Ergebnisse einer automatisierten Leakage-Erkennung mit einbezogen werden können.
-Bei der Leakage in der RSA-Primzahlgenerierung von Mozilla NSS und OpenPGP.js ist offen, ob sich diese eignet, Teile der Primzahlen \todo{Was ist damit gemeint?} effizient zu rekonstruieren.
+Bei der Leakage in der RSA-Primzahlgenerierung von Mozilla NSS und OpenPGP.js ist offen, ob sich diese eignet, Teile der Primzahlen effizient zu rekonstruieren.
 Darüber hinaus wird die Portierung eines nativen Angriffs auf OpenSSL hin zu einem Angriff im Browser auf Mozilla NSS analysiert.
 Dabei auftretende Fallstricke, wie beispielsweise der fehlende clflush-Befehl im Webkontext, werden herausgearbeitet und mögliche Lösungen diskutiert.
 
@@ -205,7 +205,7 @@ Die Ergebnisse der Arbeit werden im \ref{chapter:discussion}. Kapitel bewertet.
 So wird beschrieben, welche zusätzlichen Auswirkungen die Hardware und Software des Opfers auf die Erfolgswahrscheinlichkeit eines Angriffs haben.
 Gegenmaßnahmen werden erläutert, indem die in diesem Kontext wichtige Rolle der Browserhersteller untersucht wird.
 Des Weiteren werden Vorteile der RSA-Schlüsselgenerierung in OpenPGP.js gegenüber Mozilla NSS dargestellt.
-Zudem werden Prime-and-Probe-Implementierungen in Javascript und Webassembly verglichen.
+Zudem wird die Performance von Prime-and-Probe-Implementierungen in Javascript und Webassembly verglichen.
 
 \par \medskip  
 

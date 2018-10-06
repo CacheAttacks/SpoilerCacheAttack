@@ -15893,16 +15893,7 @@
   (local $$11 i32)
   (local $$12 i32)
   (local $$13 i32)
-  (local $$14 i32)
-  (local $$15 i32)
-  (local $$16 i32)
-  (local $$17 i32)
-  (local $$18 i32)
-  (local $$19 i32)
   (local $$2 i32)
-  (local $$20 i32)
-  (local $$21 i32)
-  (local $$22 i32)
   (local $$3 i32)
   (local $$4 i32)
   (local $$5 i32)
@@ -15934,130 +15925,93 @@
    (get_local $$0)
   )
   ;;@ c/low.h:368:0
-  (set_local $$5
+  (set_local $$4
    (get_local $$2)
   )
-  (set_local $$6
+  (set_local $$5
    (i32.eq
-    (get_local $$5)
+    (get_local $$4)
     (i32.const 0)
    )
   )
   (if
-   (get_local $$6)
+   (get_local $$5)
    (block
     ;;@ c/low.h:369:0
     (set_local $$1
      (i32.const 0)
     )
-    ;;@ c/low.h:380:0
-    (set_local $$22
+    ;;@ c/low.h:382:0
+    (set_local $$13
      (get_local $$1)
     )
     (set_global $STACKTOP
      (get_local $sp)
     )
     (return
-     (get_local $$22)
+     (get_local $$13)
     )
    )
   )
   ;;@ c/low.h:371:0
-  (set_local $$7
+  (set_local $$6
    (get_local $$2)
   )
   (set_local $$3
-   (get_local $$7)
-  )
-  ;;@ c/low.h:372:0
-  (set_local $$8
-   (get_local $$2)
-  )
-  (set_local $$4
-   (get_local $$8)
+   (get_local $$6)
   )
   (loop $while-in
    (block $while-out
-    ;;@ c/low.h:375:0
-    (set_local $$9
-     (get_local $$4)
-    )
-    (set_local $$10
-     (i32.load
-      (get_local $$9)
-     )
-    )
-    (set_local $$4
-     (get_local $$10)
-    )
-    ;;@ c/low.h:376:0
-    (set_local $$11
+    ;;@ c/low.h:378:0
+    (set_local $$7
      (get_local $$2)
     )
-    (set_local $$12
+    (set_local $$8
      (i32.load
-      (get_local $$11)
+      (get_local $$7)
      )
     )
     (set_local $$2
-     (get_local $$12)
+     (get_local $$8)
     )
-    ;;@ c/low.h:377:0
-    (set_local $$13
-     (get_local $$4)
+    ;;@ c/low.h:379:0
+    (set_local $$9
+     (get_local $$2)
     )
-    (set_local $$14
+    (set_local $$10
      (get_local $$3)
     )
-    (set_local $$15
+    (set_local $$11
      (i32.ne
-      (get_local $$13)
-      (get_local $$14)
+      (get_local $$9)
+      (get_local $$10)
      )
     )
     (if
      (i32.eqz
-      (get_local $$15)
+      (get_local $$11)
      )
      (br $while-out)
     )
     (br $while-in)
    )
   )
-  ;;@ c/low.h:379:0
-  (set_local $$16
+  ;;@ c/low.h:381:0
+  (set_local $$12
    (get_local $$2)
   )
-  (set_local $$17
-   (get_local $$16)
-  )
-  (set_local $$18
-   (get_local $$4)
-  )
-  (set_local $$19
-   (get_local $$18)
-  )
-  (set_local $$20
-   (i32.add
-    (get_local $$17)
-    (get_local $$19)
-   )
-  )
-  (set_local $$21
-   (get_local $$20)
-  )
   (set_local $$1
-   (get_local $$21)
+   (get_local $$12)
   )
-  ;;@ c/low.h:380:0
-  (set_local $$22
+  ;;@ c/low.h:382:0
+  (set_local $$13
    (get_local $$1)
   )
   (set_global $STACKTOP
    (get_local $sp)
   )
   (return
-   (get_local $$22)
+   (get_local $$13)
   )
  )
  (func $_memaccesstime_60 (; 95 ;) (param $$0 i32) (param $$1 i32) (result i32)
@@ -20891,7 +20845,7 @@
   (set_local $$2
    (get_local $$0)
   )
-  ;;@ c/low.h:483:0
+  ;;@ c/low.h:485:0
   (set_local $$3
    (call $_rdtscp64)
   )
@@ -20912,11 +20866,11 @@
   (if
    (get_local $$6)
    (block
-    ;;@ c/low.h:484:0
+    ;;@ c/low.h:486:0
     (set_local $$1
      (i32.const 1)
     )
-    ;;@ c/low.h:488:0
+    ;;@ c/low.h:490:0
     (set_local $$11
      (get_local $$1)
     )
@@ -20930,7 +20884,7 @@
   )
   (loop $while-in
    (block $while-out
-    ;;@ c/low.h:485:0
+    ;;@ c/low.h:487:0
     (set_local $$7
      (call $_rdtscp64)
     )
@@ -20957,11 +20911,11 @@
     (br $while-in)
    )
   )
-  ;;@ c/low.h:487:0
+  ;;@ c/low.h:489:0
   (set_local $$1
    (i32.const 0)
   )
-  ;;@ c/low.h:488:0
+  ;;@ c/low.h:490:0
   (set_local $$11
    (get_local $$1)
   )

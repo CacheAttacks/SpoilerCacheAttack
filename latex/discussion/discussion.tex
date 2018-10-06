@@ -1,7 +1,7 @@
 \chapter{Diskussion}
 \label{chapter:discussion}
 
-In diesem Kapitel sollen die Ergebnisse der vorherigen (besser: der durchgeführten und beschriebenen Angriffe) eingeordnet und sich daraus ergebende Fragestellungen diskutiert werden.
+In diesem Kapitel sollen die Ergebnisse der vorherigen \todo{besser oder nich?}(besser: der durchgeführten und beschriebenen Angriffe) eingeordnet und sich daraus ergebende Fragestellungen diskutiert werden.
 
 %\section{Geschwindigkeit von Eviction-Set Suche}
 %Wie in Abschnitt %\ref{} 
@@ -58,7 +58,7 @@ Um den Effekt, der allein durch die Last der zusätzlichen Threads entsteht, ein
 Tabelle \ref{tbl:PrimeSpamMultithreadRef} zeigt, dass ab 4 Bremsthreads ein signifikanter Performancerückgang messbar ist, welcher bei den folgenden Ergebnissen mit einberechnet werden muss.
 
 \begin{table}[h]
-\caption{Zeigt die Ausführungsgeschwindigkeit bei unterschiedlichen Anzahlen an Bremsthreads, welche nicht die Shift- oder Subtraktions-Funktion bremsen. Spalte „Shift“, „Sub“ und „$mp\_gcd$“: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen.}
+\caption{Zeigt die Ausführungsgeschwindigkeit bei unterschiedlichen Anzahlen an Bremsthreads, welche nicht die Shift- oder Subtraktions-Funktion bremsen. Spalten „Shift“, „Sub“ und „$mp\_gcd$“: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen.}
 \label{tbl:PrimeSpamMultithreadRef}
 \begin{tabular}{cccc}
 \toprule
@@ -81,7 +81,7 @@ Weiterhin werden nur ausgewählte Ergebnisse gezeigt, die die mit dem besten gem
 Tabelle \ref{tbl:PerformanceDegShiftMultithreadTwo} zeigt die Ergenisse mit zwei Prime-Spam-Threads.
 
 \begin{table}[h]
-\caption{Zeigt das Bremsverhalten mit zwei Prime-Spam-Threads. Die \& in der 1. Spalte trennen die Threads, so werden etwa zwei Threads, bei denen der 1. Thread die Cache-Lines $V1_1$ sowie $V2_4$ und der 2.Thread die Cache-Lines $V1_1$ sowie $V4_3$ bremsen, als $V1_1$,$V2_4$ \& $V1_1$,$V4_3$ beschrieben. Spalte „Shift“, „Sub“ und „$mp\_gcd$“: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen. Für eine Beschreibung der Cache-Line IDs siehe Tabelle \ref{tbl:PerformanceDegShift}}
+\caption{Zeigt das Bremsverhalten mit zwei Prime-Spam-Threads. Die \& in der 1. Spalte trennen die Threads, so werden etwa zwei Threads, bei denen der 1. Thread die Cache-Lines $V1_1$ sowie $V2_4$ und der 2.Thread die Cache-Lines $V1_1$ sowie $V4_3$ bremsen, als $V1_1$,$V2_4$ \& $V1_1$,$V4_3$ beschrieben. Spalten „Shift“, „Sub“ und „$mp\_gcd$“: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen. Für eine Beschreibung der Cache-Line IDs siehe Tabelle \ref{tbl:PerformanceDegShift}}
 \label{tbl:PerformanceDegShiftMultithreadTwo}
 \begin{tabular}{lccc}
 \toprule
@@ -425,12 +425,12 @@ In Grafik \ref{fig:ObserveShiftDifferentBreaks} wird die Überwachung einer Folg
 \begin{figure}[h]
 \centering
 \begin{scaletikzpicturetowidth}{\textwidth}
-\input{discussion/plot_observe_shift_different_breaks.tex}
+\input{discussion/plot_observe_shift_different_breaks_split2.tex}
 \end{scaletikzpicturetowidth}
-\caption{Zu sehen ist die Überwachung der Shift-Folge $Z_1=4,Z_2=2,Z_3=1,Z_4=5,Z_6=2,Z_7=1$ mit $Z_i$ als Anzahl der Rechts-Shift-Operationen in Iteration $i$ (siehe auch Abschnitt \ref{TheoLeakageAna}). Die Zahlen in der Kopfzeile geben die Pausen in Taktzyklen an, welche nach den Shift- und Subtraktions-Operationen durchgeführt wurden. Für den Messvorgang wurde ein Thread verwendet.}
+\caption{Zu sehen ist die Überwachung der Shift-Folge $Z_1=4,Z_2=2,Z_3=1,Z_4=5,Z_6=2,Z_7=1$ mit $Z_i$ als Anzahl der Rechts-Shift-Operationen in Iteration $i$ (siehe auch Abschnitt \ref{TheoLeakageAna}). Die Zahlen in der Kopfzeile geben die Pausen in Taktzyklen an, welche nach den Shift- und Subtraktions-Operationen durchgeführt wurden. Für den Messvorgang wurde ein Thread verwendet. Für die Messungen für die Prime-and-Probe-Methode „Wasm Split“ genutzt, bei der zwei Pointer-Ketten mit jeweils 8 Einträgen anstatt einer mit 16 verwendet werden (siehe Abschnitt \ref{SplitProbeType}).}
 \end{figure}
 
-Die Ergenisse zeigen, dass eine mittlere Shift-Operationsdauer von etwa 3000 Taktzyklen notwendig, um einzelne Shift-Operationen voneinander trennen zu können und so eine Rekonstruktion der Primzahlen zu ermöglichen.
+Die Ergenisse zeigen, dass eine mittlere Shift-Operationsdauer von etwa 3000 bis 4000 Taktzyklen notwendig, um einzelne Shift-Operationen voneinander trennen zu können und so eine Rekonstruktion der Primzahlen zu ermöglichen.
 Durch die Verwendung eines weiteren Threads für die Messung kann die benötige Zeit etwa halbiert werden, jedoch steht dann auf dem Testsystem kein physischer Kern mehr zum Bremsen zur Verfügung.
 
 \section{Speicherallokation}
@@ -511,7 +511,11 @@ Auch Spectre
 
 %-Benchmarks von Mozilla NSS und OpenPGPjs ohne Divisionstests
 
-\section{Javacript vs. Webassembly}
+\section{Prime-and-Probe Optimierungen}
+
+In diesem Abschnitt sollen mögliche Optimierungen der Prime-and-Probe-Operation vorgestellt und evaluiert werden.
+
+\subsection{Javacript vs. Webassembly}
 \label{JavascriptVSWasm}
 
 Wie in Kapitel \ref{chapter:preparation} beschrieben, ist der Prime-and-Probe-Angriff in Webassembly geschrieben.
@@ -538,21 +542,42 @@ Um Javascript aus Webassembly aufzurufen, existieren mehrere Möglichkeiten \cit
 
 Alternativ kann auch die gesamte Prime-and-Probe-Operation in Javascript implementiert werden, wobei der Wert der Zählvariable ohne Umwege abgefragt werden kann.
 Um die Performance der beiden Implementationen zu vergleichen, wird die mittlere Dauer einer Prime-and-Probe-Operation durch die Ausführung von 10 Millionen Operationen approximiert, wobei dies einem Messvorgang von ein wenigen Sekunden entspricht.
-So dauert eine Prime-and-Probe-Operation in Webassembly bei keiner Aktivität auf dem Cache-Set etwa 190 ns, wobei diese Zeit auf 460 ns ansteigt, wenn die Cache-Line $V2_5 3_1$ während der Ausführung der $mp\_gcd$-Funktion überwacht wird.
+So dauert eine Prime-and-Probe-Operation in Webassembly bei keiner Aktivität auf dem Cache-Set etwa 190 ns, wobei diese Zeit auf 440 ns ansteigt, wenn die Cache-Line $V2_5 3_1$ (siehe Tabelle \ref{tbl:PerformanceDegShift}) während der Ausführung der $mp\_gcd$-Funktion überwacht wird.
 
-In der Javascript-Implementation und verringert sich die Zeit bei keiner Aktivität auf dem Cache-Set um etwa 50 ns auf etwa 140 ns, wobei die benötigte Zeit bei einem aktiven Cache-Set um etwa 90 ns auf 370 ns gegenüber der Webassembly-Implementierung sinkt.
+In der Javascript-Implementation und verringert sich die Zeit bei keiner Aktivität auf dem Cache-Set um etwa 20 ns auf etwa 170 ns, wobei die benötigte Zeit bei einem aktiven Cache-Set um etwa 90 ns auf 400 ns gegenüber der Webassembly-Implementierung sinkt (siehe auch Abbildung \ref{fig:ObserveShiftDifferentProbeTypes}).
 
-Somit lassen sich mit der Umsetzung der Prime-and-Operation in Javascript $\sim$ 24\% mehr Prime-and-Probe-Operationen in der gleichen Zeit realisieren.
+\label{fig:ObserveShiftDifferentProbeTypes}
+\begin{figure}[h]
+\centering
+\begin{scaletikzpicturetowidth}{\textwidth}
+\input{discussion/plot_different_probe_types.tex}
+\end{scaletikzpicturetowidth}
+\caption{Zu sehen ist die Überwachung der Shift-Folge $Z_1=4,Z_2=2,Z_3=1,Z_4=5,Z_6=2,Z_7=1$ mit $Z_i$ als Anzahl der Rechts-Shift-Operationen in Iteration $i$ analog zu Abbildung \ref{fig:ObserveShiftDifferentBreaks}. Es wurde eine Pause von 10000 Taktzyklen zwischen den Shift- und Subtraktions-Operationen analog zu Abschnitt \ref{Howfast} eingefügt. „Javascript“ und „Wasm“ bilden die Performance der Javascript- beziehungsweise Webassembly-Implementierung ab (siehe Abschnitt \ref{JavascriptVSWasm}). „Wasm Split“ nutzt zwei Pointer-Ketten mit jeweils 8 Einträgen anstatt einer mit 16 (siehe Abschnitt \ref{SplitProbeType}).%Bei „Wasm Max 9“ wird das Pointer-Chasing nach 9 statt 16 Iterationen abgebrochen.
+}
+\end{figure}
+
+Somit lassen sich mit der Umsetzung der Prime-and-Operation in Javascript $\sim$ 10\% mehr Prime-and-Probe-Operationen in der gleichen Zeit realisieren.
 Die ersten ca. 2000 gemessenen Zugriffswerte in Javascript neigen zu starkem Rauschen, so sind auch bei keiner Aktivität auf dem Cache-Set reproduzierbar mehr als hundert Mal hintereinander Zugriffszeiten von über 400 zu beobachten.
 Ein mögliche Begründung für diese Beobachtung wäre, dass der Browser in dieser Phase versucht den Javascript-Code zu optimieren \cite{GoogleTurboFan}, da er wegen der häufigen wiederholten Ausführung als wichtig erkannt wurde.
 Dieses anfängliche Rauschen der Javascript-Implementierung ist in der Praxis aber zu vernachlässigen, da die Messphasen in der Regel deutlich länger als 2000 Prime-and-Probe-Operationen andauern und somit die anfänglichen verrauschten Werte verworfen werden können.
 
-Zusammenfassend betrachtet, bringt die Implementierung in Javascript einen Performance-Vorteil von ca. 24\%.
+Zusammenfassend betrachtet, bringt die Implementierung in Javascript einen Performance-Vorteil von ca. 10\%.
 Da die Umsetzung von Multithreading in Webassembly geplant ist \cite{WebassemblyThreads}, kann bei dieser Implementierung in Zukunft mit einem Performancegewinn gerechnet werden, da dann die Javascript-Funktionsaufrufe entfallen.
 
-\section{Verschiedene Varianten von Prime-and-Probe}
+\subsection{Verschiedene Varianten von Prime-and-Probe}
+\label{SplitProbeType}
 
-Die Standardimplementation verwendet die Point-Chasing-Methode (siehe Pseudocode \ref{alg:pointerChasing}). 
+Die Standardimplementierung für den Prime-and-Probe verwendet die Point-Chasing-Methode (siehe Pseudocode \ref{alg:pointerChasing}). 
 In dieser wird einer Kette von 16 Einträgen gefolgt, wobei der Prozessor immer erst die Adresse des vorherigen Eintrags bestimmen muss, um die den nächsten Eintrag zu laden.
 Um eine Prime-and-Probe Operation zu beschleunigen wären zwei Ketten mit jeweils 8 Einträgen beziehungsweise 4 Ketten mit jeweils 4 Einträgen denkbar.
-Wie sich dies auf die Performance und die Messgenauigkeit auswirkt wird anhand des verdeckten Kanals beschrieben werden (siehe ).
+Dadurch würde Parallelisierung auf Instruktionsebene möglich und der Prozessor könnte weiterhin keine Folgeadressen innerhalb der Ketten im Voraus laden.
+
+Wie Abbildung \ref{fig:ObserveShiftDifferentProbeTypes} zeigt, ergibt sich durch die Aufspaltung in zwei Ketten mit jeweils 8 Einträgen ein Performancevorteil von etwa 50\%.
+Mit einer Aufteilung auf 4 Ketten mit jeweils 4 Einträgen konnten hingegen keine erfolgreichen Messungen durchgeführt werden.
+
+%Somit ist die
+
+%Bei der Implementierung wird das Pointer-Chasing auf der Kette von 16 Einträgen abwechselnd von vorne und hinten gestartet. 
+
+
+

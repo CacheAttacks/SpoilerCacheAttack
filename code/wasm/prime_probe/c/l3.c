@@ -111,7 +111,7 @@ int L3_THRESHOLD_OFFSET = 0;
 // decrease L3_THRESHOLD_OFFSET to del less elements in the contract phase
 #define TOO_SMALL_TRIGGER_VALUE 20
 
-#define DEBUG_CHANGE_THRESHOLD
+//#define DEBUG_CHANGE_THRESHOLD
 
 #ifdef WASM
 // ifdef => test eviction set multiple times after contract phase

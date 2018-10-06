@@ -106,7 +106,7 @@ Werden auch diese Tests bestanden, wird die Zahl als Primzahl eingestuft und zur
 \DontPrintSemicolon
 \caption{Pseudo-Code für mpp_make_prime in Mozilla NSS}
 \label{alg:makePrimeGenerationNSS}
-primes_tab <- [2, 3, 5, 7, ..., 65521] // 6541 primes from 3 to 2^16\;
+primes_tab <- [3, 5, 7, ..., 65521] // 6541 primes from 3 to 2^16\;
 SIEVE_SIZE <- 32 * 1024\;
 
 \Fn{mpp\_make\_prime(random\_num)}{
@@ -122,7 +122,7 @@ SIEVE_SIZE <- 32 * 1024\;
             continue\;
         }
         \If{!mpp_pprime(probablePrime, num_tests)}{ //Miller Rabin test
-            continue;
+            continue
         }
         \Return probablePrime
     }
@@ -393,11 +393,11 @@ Die im Mittel benötigte Anzahl skaliert linear mit der Bitlänge, die Übersich
 \begin{table}[h]
 \caption{Veranschaulicht den linearen Zusammenhang zwischen dem Erwartungswert für die Anzahl der Iterationen in Funktion randomProbablePrime (siehe Pseudocode \ref{alg:randomProbablePrimeOpenPGPjs}) bei verschiedenen Primzahlbitlängen.}
 \label{tbl:bitLengthNumberOfIterations}
-\begin{tabular}{cc}
+\begin{tabular}{S[table-format=4.0]S[table-format=3.0]}
 \toprule
-Bitlänge Primzahl          & E(Anzahl Iterationen) \\
+\multicolumn{1}{c}{Bitlänge Primzahl}          & \multicolumn{1}{c}{E(Anzahl Iterationen)}  \\
 \midrule
-1024                       & 95                    \\
+1024                       &  95                   \\
 1536                       & 142                   \\
 2048                       & 189                   \\
 4096                       & 379                   \\
@@ -749,7 +749,7 @@ Jeder dieser Cache-Lines ist ein potenzielles Ziel für die Performancereduktion
 Da ein Prime-Spam auf eine Cache-Line einen kompletten physischen Kern auslastet, sollte das Ziel sorgfältig gewählt sein.
 
 \begin{table}[h]
-\caption{RSA-2048 performance-degradation-attack mittels Prime-Spam auf Cache-Lines, welche Code der Shift-Operation beinhalten. 1. Spalte: ID für die Cache-Line für übersichtlichere Bezeichnung, 2. Spalte: Adressbereich der durch den Angriff verdrängten Cache-Line, 3. Spalte: Funktionen deren Code innerhalb des Adressbereichs der Cache-Line liegt, Spalte „Shift“, „Sub“ und „\textit{mp_gcd}“: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise \textit{mp_gcd}-Operation in Taktzyklen bei einem aktiven Angriff auf die in Spalte 2 spezifizierte Cache-Line. Die erste Zeile gibt die Referenzzeiten ohne aktiven Angriff an. Die horizontalen Linien innerhalb der Tabelle zeigen Sprünge zwischen Adressen der Cache-Lines an.}
+\caption{RSA-2048 performance-degradation-attack mittels Prime-Spam auf Cache-Lines, welche Code der Shift-Operation beinhalten. 1. Spalte: ID für die Cache-Line für übersichtlichere Bezeichnung, 2. Spalte: Adressbereich der durch den Angriff verdrängten Cache-Line, 3. Spalte: Funktionen deren Code innerhalb des Adressbereichs der Cache-Line liegt, Spalten „Shift“, „Sub“ und „\textit{mp_gcd}“: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise \textit{mp_gcd}-Operation in Taktzyklen bei einem aktiven Angriff auf die in Spalte 2 spezifizierte Cache-Line. Die erste Zeile gibt die Referenzzeiten ohne aktiven Angriff an. Die horizontalen Linien innerhalb der Tabelle zeigen Sprünge zwischen Adressen der Cache-Lines an.}
 \label{tbl:PerformanceDegShift}
 \begin{tabular}{cclccc}
 \toprule
@@ -821,9 +821,9 @@ Beim Vergleich wurden ausschließlich die Cache-Lines für die Shift- beziehungs
 So wird die Shift-Operation unter RSA-4096 von 543 auf 700 ($V1_1$) Taktzyklen und unter RSA-8192 von 982 auf 1125 ($S1_7$) Taktzyklen gebremst, welches die Ausführungszeit um $\sim$29\% beziehungsweise $\sim$15\% erhöht.
 
 \begin{table}[h]
-\caption{Performance-degradation-attack mittels Prime-Spam mit verschiedene RSA-Bitlängen.
+\caption{Performance-degradation-attack mittels Prime-Spam mit verschiedenen RSA-Bitlängen.
 Als Cache-Lines wurden diejenigen verwendet, welche sich am effektivsten in RSA-2048 erwiesen haben.
-Spalteninhalte analog zu Tabelle \ref{tbl:PerformanceDegShift}}
+Sonstige Spalteninhalte analog zu Tabellen \ref{tbl:PerformanceDegShift} und \ref{tbl:PerformanceDegSub}}
 \label{tbl:PerformanceDegR$S2_6$ifferentBitlength}
 \begin{tabular}{ccclccc}
 \toprule
@@ -853,7 +853,7 @@ In den obigen Tabellen wurde jeweils nur eine Cache-Line gebremst.
 Tabelle \ref{tbl:PerformanceDegMultiple} zeigt, lässt sich der Bremseffekt verbessern, wenn statt einer mehrere Cache-Lines gebremst werden.
 
 \begin{table}[h]
-\caption{RSA-2048 Performance-Degradation-Attack mittels Prime-Spam auf mehrere Cache-Lines. Für die Auflösung der Cache-Line Ids siehe Tabelle \ref{tbl:PerformanceDegShift}. Die 2. Spalte gibt der Übersicht halber nur die Funktionen innerhalb der Cache-Lines (1. Spalte) an, welche bei der Berechnung der Shift-Operation relevant sind. So wird etwa die Funktion \textit{s_mp_free} in der ersten Zeile nicht aufgeführt, obwohl die Cache-Line $V1_1$ Teile des Codes von \textit{s_mp_free} enthält. Aus Platzgründen wurde die Funktionsnamen gekürzt, wobei für den vollen Funktionsnamen $*$ mit \textit{s_mp_}  zu substituieren ist.}
+\caption{RSA-2048 Performance-Degradation-Attack mittels Prime-Spam auf mehrere Cache-Lines. Für die Auflösung der Cache-Line IDs siehe Tabelle \ref{tbl:PerformanceDegShift}. Die 2. Spalte gibt der Übersicht halber nur die Funktionen innerhalb der Cache-Lines (1. Spalte) an, welche bei der Berechnung der Shift-Operation relevant sind. So wird etwa die Funktion \textit{s_mp_free} in der ersten Zeile nicht aufgeführt, obwohl die Cache-Line $V1_1$ Teile des Codes von \textit{s_mp_free} enthält. Aus Platzgründen wurden die Funktionsnamen gekürzt, wobei für den vollen Funktionsnamen $*$ mit \textit{s_mp_}  zu substituieren ist.}
 \label{tbl:PerformanceDegMultiple}
 \begin{tabular}{llccc}
 \toprule
