@@ -198,7 +198,9 @@ Somit ergibt die Differenz von 182 Taktzyklen zwischen einem Hit und Miss auf de
 \label{fig:RAMCacheLatency}
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.55\textwidth]{basics/i7-4790HQ_latency_plot.pdf}
+\begin{scaletikzpicturetowidth}{\textwidth}
+\input{basics/cache_hit_miss_density.tex}
+\end{scaletikzpicturetowidth}
 \caption{Wahrscheinlichkeitsverteilung der Zugriffszeiten für eine aus dem Cache verdrängte und dort vorliegende Variable \cite{TheSpyInTheSandbox}}
 \end{figure}
 

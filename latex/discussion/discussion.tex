@@ -1,7 +1,7 @@
 \chapter{Diskussion}
 \label{chapter:discussion}
 
-In diesem Kapitel sollen die Ergebnisse der vorherigen \todo{besser oder nich?}(besser: der durchgeführten und beschriebenen Angriffe) eingeordnet und sich daraus ergebende Fragestellungen diskutiert werden.
+In diesem Kapitel sollen die Ergebnisse der durchgeführten und beschriebenen Angriffe eingeordnet und sich daraus ergebende Fragestellungen diskutiert werden.
 
 %\section{Geschwindigkeit von Eviction-Set Suche}
 %Wie in Abschnitt %\ref{} 
@@ -111,7 +111,7 @@ Dieser Vorteil tritt bei mehreren Bremsthreads nicht mehr auf, sodass es besser 
 Tabelle \ref{tbl:PerformanceDegShiftMultithreadTwo} zeigt die Ergenisse mit mehr als zwei Prime-Spam-Threads, wobei hier die in Tabelle \ref{tbl:PrimeSpamMultithreadRef} beschriebenen Effekte auftreten.
 
 \begin{table}[h]
-\caption{Zeigt das Bremsverhalten mit mehr als (hier fehlt eine Zahl!) Prime-Spam-Threads. Beschreibung analog zu Tabelle \ref{tbl:PerformanceDegShiftMultithreadTwo}. Zu beachten ist hier, dass die hohe Anzahl der Threads an sich zu der Verlangsamung der Ausführung beiträgt (siehe Tabelle \ref{tbl:PrimeSpamMultithreadRef}).}
+\caption{Zeigt das Bremsverhalten bei mehr als zwei Prime-Spam-Threads. Beschreibung analog zu Tabelle \ref{tbl:PerformanceDegShiftMultithreadTwo}. Zu beachten ist hier, dass die hohe Anzahl der Threads an sich zu der Verlangsamung der Ausführung beiträgt (siehe Tabelle \ref{tbl:PrimeSpamMultithreadRef}).}
 \label{tbl:PerformanceDegShiftMultithreadThreePlus}
 \begin{tabular}{lccc}
 \toprule
@@ -234,7 +234,7 @@ Wenn eine solche Adresse gefunden wurde, wird die atomare Operation auf dieser C
 
 \begin{algorithm}[h]
 \DontPrintSemicolon
-\caption{Pseudocode für ein Memory-Locking Angriff}
+\caption{Pseudocode für einen Memory-Locking Angriff}
 \label{alg:FindSlowAtomicOperations}
 
 \Fn{$Find\_Slow\_Addresses(size)$}{
@@ -258,7 +258,7 @@ Der Angriff wird zuerst in C getestet, da hier leicht eine atomare Operation mit
 Ein erster Test mit ausschließlich einem oder zwei laufenden Memory-Locking-Threads offenbart, dass die Ausführung der Shift-Operation und Subtraktions-Funktion nicht nennenswert verlangsamt wird (siehe Tabelle \ref{tbl:MemoryLockingResults}).
 
 \begin{table}[h]
-\caption{Performance-degradation-attack mittels Prime-Spam und Memory-Locking. 1. Spalte: Anzahl der Threads, die für das Memory-Locking eingesetzt wurden, 2. Spalte: Cache-Lines in der Shift-Operation, die mittels Prime-Spam gebremst wurden (siehe \ref{tbl:PerformanceDegShift} für Id-Zuordnung), Spalte „Shift“, „Sub“ und „$mp\_gcd$“: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen.}
+\caption{Performance-degradation-attack mittels Prime-Spam und Memory-Locking. 1. Spalte: Anzahl der Threads, die für das Memory-Locking eingesetzt wurden, 2. Spalte: Cache-Lines in der Shift-Operation, die mittels Prime-Spam gebremst wurden (siehe \ref{tbl:PerformanceDegShift} für ID-Zuordnung), die Spalten „Shift“, „Sub“ und „$mp\_gcd$“: Mittlere Dauer der Shift-, Subtraktions-, beziehungsweise $mp\_gcd$-Operation in Taktzyklen.}
 \label{tbl:MemoryLockingResults}
 \begin{tabular}{ccccc}
 \toprule
@@ -427,10 +427,10 @@ In Grafik \ref{fig:ObserveShiftDifferentBreaks} wird die Überwachung einer Folg
 \begin{scaletikzpicturetowidth}{\textwidth}
 \input{discussion/plot_observe_shift_different_breaks_split2.tex}
 \end{scaletikzpicturetowidth}
-\caption{Zu sehen ist die Überwachung der Shift-Folge $Z_1=4,Z_2=2,Z_3=1,Z_4=5,Z_6=2,Z_7=1$ mit $Z_i$ als Anzahl der Rechts-Shift-Operationen in Iteration $i$ (siehe auch Abschnitt \ref{TheoLeakageAna}). Die Zahlen in der Kopfzeile geben die Pausen in Taktzyklen an, welche nach den Shift- und Subtraktions-Operationen durchgeführt wurden. Für den Messvorgang wurde ein Thread verwendet. Für die Messungen für die Prime-and-Probe-Methode „Wasm Split“ genutzt, bei der zwei Pointer-Ketten mit jeweils 8 Einträgen anstatt einer mit 16 verwendet werden (siehe Abschnitt \ref{SplitProbeType}).}
+\caption{Zu sehen ist die Überwachung der Shift-Folge $Z_1=4,Z_2=2,Z_3=1,Z_4=5,Z_6=2,Z_7=1$ mit $Z_i$ als Anzahl der Rechts-Shift-Operationen in Iteration $i$ (siehe auch Abschnitt \ref{TheoLeakageAna}). Die Zahlen in der Kopfzeile geben die Pausen in Taktzyklen an, welche nach den Shift- und Subtraktions-Operationen durchgeführt wurden. Für den Messvorgang wurde ein Thread verwendet. Für die Messungen für die Prime-and-Probe-Methode wurde „Wasm Split“ genutzt, bei der zwei Pointer-Ketten mit jeweils acht Einträgen anstatt einer mit 16 verwendet werden (siehe Abschnitt \ref{SplitProbeType}).}
 \end{figure}
 
-Die Ergenisse zeigen, dass eine mittlere Shift-Operationsdauer von etwa 3000 bis 4000 Taktzyklen notwendig, um einzelne Shift-Operationen voneinander trennen zu können und so eine Rekonstruktion der Primzahlen zu ermöglichen.
+Die Ergebnisse zeigen, dass eine mittlere Shift-Operationsdauer von etwa 3000 bis 4000 Taktzyklen notwendig, um einzelne Shift-Operationen voneinander trennen zu können und so eine Rekonstruktion der Primzahlen zu ermöglichen.
 Durch die Verwendung eines weiteren Threads für die Messung kann die benötige Zeit etwa halbiert werden, jedoch steht dann auf dem Testsystem kein physischer Kern mehr zum Bremsen zur Verfügung.
 
 \section{Speicherallokation}
@@ -513,9 +513,9 @@ Auch Spectre
 
 \section{Prime-and-Probe Optimierungen}
 
-In diesem Abschnitt sollen mögliche Optimierungen der Prime-and-Probe-Operation vorgestellt und evaluiert werden.
+In diesem Abschnitt sollen mögliche Optimierungen der Prime-and-Probe-Operation vorgestellt und evaluiert werden. Dazu wird einerseits die Implementierung der Prime-and-Probe-Operation in Webassembly mit der in Javascript verglichen und andererseits wird der Code an sich optimiert.
 
-\subsection{Javacript vs. Webassembly}
+\subsection{Javascript vs. Webassembly}
 \label{JavascriptVSWasm}
 
 Wie in Kapitel \ref{chapter:preparation} beschrieben, ist der Prime-and-Probe-Angriff in Webassembly geschrieben.
@@ -526,7 +526,7 @@ Der Ablauf einer solchen Prime-and-Probe-Operation wird in Pseudocode \ref{alg:W
 \caption{Pseudocode für die Prime-and-Probe-Operation in Webassembly}
 \label{alg:WasmPrimeAndProbe}
 
-\Fn{$Prime\_And\_Probe(ptr_eviction_set)$}{
+\Fn{$Prime\_And\_Probe(ptr\_eviction\_set$)}{
     start <- get_counter_value_via_javascript()\;
     first_entry <- ptr_eviction_set\;
     \Repeat{ptr_eviction_set $\neq$ first_entry}{
@@ -552,7 +552,7 @@ In der Javascript-Implementation und verringert sich die Zeit bei keiner Aktivit
 \begin{scaletikzpicturetowidth}{\textwidth}
 \input{discussion/plot_different_probe_types.tex}
 \end{scaletikzpicturetowidth}
-\caption{Zu sehen ist die Überwachung der Shift-Folge $Z_1=4,Z_2=2,Z_3=1,Z_4=5,Z_6=2,Z_7=1$ mit $Z_i$ als Anzahl der Rechts-Shift-Operationen in Iteration $i$ analog zu Abbildung \ref{fig:ObserveShiftDifferentBreaks}. Es wurde eine Pause von 10000 Taktzyklen zwischen den Shift- und Subtraktions-Operationen analog zu Abschnitt \ref{Howfast} eingefügt. „Javascript“ und „Wasm“ bilden die Performance der Javascript- beziehungsweise Webassembly-Implementierung ab (siehe Abschnitt \ref{JavascriptVSWasm}). „Wasm Split“ nutzt zwei Pointer-Ketten mit jeweils 8 Einträgen anstatt einer mit 16 (siehe Abschnitt \ref{SplitProbeType}).%Bei „Wasm Max 9“ wird das Pointer-Chasing nach 9 statt 16 Iterationen abgebrochen.
+\caption{Zu sehen ist die Überwachung der Shift-Folge $Z_1=4,Z_2=2,Z_3=1,Z_4=5,Z_6=2,Z_7=1$ mit $Z_i$ als Anzahl der Rechts-Shift-Operationen in Iteration $i$ analog zu Abbildung \ref{fig:ObserveShiftDifferentBreaks}. Es wurde eine Pause von 10000 Taktzyklen zwischen den Shift- und Subtraktions-Operationen analog zu Abschnitt \ref{Howfast} eingefügt. „Javascript“ und „Wasm“ bilden die Performance der Javascript- beziehungsweise Webassembly-Implementierung ab (siehe Abschnitt \ref{JavascriptVSWasm}). „Wasm Split“ nutzt zwei Pointer-Ketten mit jeweils acht Einträgen anstatt einer mit 16 (siehe Abschnitt \ref{SplitProbeType}).%Bei „Wasm Max 9“ wird das Pointer-Chasing nach 9 statt 16 Iterationen abgebrochen.
 }
 \end{figure}
 
@@ -569,11 +569,11 @@ Da die Umsetzung von Multithreading in Webassembly geplant ist \cite{Webassembly
 
 Die Standardimplementierung für den Prime-and-Probe verwendet die Point-Chasing-Methode (siehe Pseudocode \ref{alg:pointerChasing}). 
 In dieser wird einer Kette von 16 Einträgen gefolgt, wobei der Prozessor immer erst die Adresse des vorherigen Eintrags bestimmen muss, um die den nächsten Eintrag zu laden.
-Um eine Prime-and-Probe Operation zu beschleunigen wären zwei Ketten mit jeweils 8 Einträgen beziehungsweise 4 Ketten mit jeweils 4 Einträgen denkbar.
+Um eine Prime-and-Probe Operation zu beschleunigen wären zwei Ketten mit jeweils acht Einträgen beziehungsweise vier Ketten mit jeweils vier Einträgen denkbar.
 Dadurch würde Parallelisierung auf Instruktionsebene möglich und der Prozessor könnte weiterhin keine Folgeadressen innerhalb der Ketten im Voraus laden.
 
-Wie Abbildung \ref{fig:ObserveShiftDifferentProbeTypes} zeigt, ergibt sich durch die Aufspaltung in zwei Ketten mit jeweils 8 Einträgen ein Performancevorteil von etwa 50\%.
-Mit einer Aufteilung auf 4 Ketten mit jeweils 4 Einträgen konnten hingegen keine erfolgreichen Messungen durchgeführt werden.
+Wie Abbildung \ref{fig:ObserveShiftDifferentProbeTypes} zeigt, ergibt sich durch die Aufspaltung in zwei Ketten mit jeweils acht Einträgen ein Performancevorteil von etwa 50\%.
+Mit einer Aufteilung auf vier Ketten mit jeweils vier Einträgen konnten hingegen keine erfolgreichen Messungen durchgeführt werden.
 
 %Somit ist die
 
