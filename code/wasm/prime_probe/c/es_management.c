@@ -270,7 +270,7 @@ void set_monitored_es(void *app_state_ptr, int min_index, int max_index)
          (max_index - min_index + 1) * sizeof(RES_TYPE));
 }
 
-void build_es(void *app_state_ptr, int max_es)
+void build_es(void *app_state_ptr, int max_es, enum search_methods search_method)
 {
   int ngroups;
   do
@@ -281,12 +281,13 @@ void build_es(void *app_state_ptr, int max_es)
 #else
                           0, 0
 #endif
-    );
+, search_method);
   } while (ngroups < MIN_ES && (ngroups < max_es || max_es == 0));
 }
 
+//add storefor here
 int build_es_ex(void *app_state_ptr, int max_es, int benchmarkmode,
-                int benchmarkruns)
+                int benchmarkruns, enum search_methods search_method)
 {
   struct app_state *this_app_state = (struct app_state *)app_state_ptr;
 
@@ -326,16 +327,9 @@ int build_es_ex(void *app_state_ptr, int max_es, int benchmarkmode,
   {
     uint32_t *timer_array = calloc(benchmarkruns, sizeof(uint32_t));
     for (int i = 0; i < benchmarkruns; i++)
-    {
-      uint32_t timer_before = get_time_in_ms();
-      this_app_state->l3 =
-          l3_prepare(NULL, this_app_state->l3_threshold, max_es);
-      uint32_t timer_after = get_time_in_ms();
-
-      printf_ex("Eviction set total time: %u sec\n",
-             (timer_after - timer_before) / 1000);
+    {      
+      timer_array[i] = set_l3pp_t(app_state_ptr, max_es, search_method);
       l3_release(this_app_state->l3);
-      timer_array[i] = timer_after - timer_before;
     }
     for (int i = 0; i < benchmarkruns; i++)
     {
@@ -345,12 +339,7 @@ int build_es_ex(void *app_state_ptr, int max_es, int benchmarkmode,
   }
   else
   {
-    uint32_t timer_before = get_time_in_ms();
-    this_app_state->l3 = l3_prepare(NULL, this_app_state->l3_threshold, max_es);
-    uint32_t timer_after = get_time_in_ms();
-
-    printf_ex("Eviction set total time: %u sec\n",
-           (timer_after - timer_before) / 1000);
+    set_l3pp_t(app_state_ptr, max_es, search_method);
   }
   int nsets = l3_getSets(this_app_state->l3);
   int nmonitored = nsets / 64;
@@ -370,6 +359,23 @@ int build_es_ex(void *app_state_ptr, int max_es, int benchmarkmode,
   printf_ex("ncol: %i\n", this_app_state->l3->nmonitored);
 
   return this_app_state->l3->ngroups;
+}
+
+uint32_t set_l3pp_t(void *app_state_ptr, int max_es, enum search_methods search_method){
+  struct app_state *this_app_state = (struct app_state *)app_state_ptr;
+  uint32_t timer_before = get_time_in_ms();
+  this_app_state->l3 = l3_prepare(NULL, this_app_state->l3_threshold, max_es, search_method);
+  uint32_t timer_after = get_time_in_ms();
+
+  printf_ex("Eviction set total time: %u sec\n",
+          (timer_after - timer_before) / 1000);
+  return timer_after - timer_before;
+}
+
+void storefor_build_es(void *app_state_ptr, int max_es, int benchmarkruns){
+  struct app_state *this_app_state = (struct app_state *)app_state_ptr;
+
+  storefor_write(app_state_ptr, benchmarkruns);
 }
 
 void prime_spam_es(void *app_state_ptr, int duration_sec)
@@ -620,10 +626,4 @@ void find_interesting_eviction_sets(void *app_state_ptr, float threshold_factor,
     }
   }
   // putchar('\n');
-}
-
-void storefor_build_es(void *app_state_ptr, int max_es, int benchmarkruns){
-  struct app_state *this_app_state = (struct app_state *)app_state_ptr;
-
-  storefor_write(benchmarkruns);
 }

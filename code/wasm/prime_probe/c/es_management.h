@@ -42,9 +42,13 @@ void change_type(void *app_state_ptr, int type);
 void set_monitored_es_arr(void *app_state_ptr, int *indices_arr,
                           int indices_arr_size);
 void set_monitored_es(void *app_state_ptr, int min_index, int max_index);
-void build_es(void *app_state_ptr, int max_es);
+
+void build_es(void *app_state_ptr, int max_es, enum search_methods search_method);
 int build_es_ex(void *app_state_ptr, int max_es, int benchmarkmode,
-                int benchmarkruns);
+                int benchmarkruns, enum search_methods search_method);
+uint32_t set_l3pp_t(void *app_state_ptr, int max_es, enum search_methods search_method);
+void storefor_build_es(void *app_state_ptr, int max_es, int benchmarkruns);
+
 void prime_spam_es(void *app_state_ptr, int duration_sec);
 void sample_es(void *app_state_ptr, int number_of_samples, int slot_time
 #ifdef WASM
@@ -62,5 +66,3 @@ void get_idle_times(void *app_state_ptr, int min_index, int max_index,
 // called after get_idle_times, test eviction sets used in get_idle_times
 void find_interesting_eviction_sets(void *app_state_ptr, float threshold_factor,
                                     int number_of_samples);
-
-void storefor_build_es(void *app_state_ptr, int max_es, int benchmarkruns);

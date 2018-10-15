@@ -25,7 +25,7 @@ if (typeof mergeInto !== 'undefined')
 
 if (typeof mergeInto !== 'undefined')
   mergeInto(LibraryManager.library, {
-    store_for_js: function(uint8ptrBuffer, bufferSize, uint8ptrAddressArr, addressArrSize, uint8ptrCandidate, threadholdSearchForEs, windowSize, rounds) {
+    store_for_js: function(uint8ptrBuffer, bufferSize, uint8ptrAddressArr, addressArrSize, uint8ptrCandidate, threadholdSearchForEs, windowSize, rounds, ptrl3) {
       var startTime = Module['sharedArrayCounter'][0];
 
       //var rounds = 100;
@@ -114,8 +114,7 @@ if (typeof mergeInto !== 'undefined')
           numberOfStoreForAdd++;
 
           if(numberOfStoreForAdd >= threadholdSearchForEs){ //try to create es
-            //console.log(bufferedOutput);
-            if(Module['asm']._try_to_create_es(uint8ptrAddressArr, numberOfStoreForAdd, startTime, Module['sharedArrayCounter'][0]) != 0){
+            if(Module['asm']._try_to_create_es(uint8ptrAddressArr, numberOfStoreForAdd, startTime, Module['sharedArrayCounter'][0], ptrl3) != 0){
               //console.log(output);
               return true;
             }

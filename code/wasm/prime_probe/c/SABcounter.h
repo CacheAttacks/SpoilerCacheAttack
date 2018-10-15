@@ -17,6 +17,12 @@ extern uint32_t SAB_func_ptr_write_counter_value(
 extern uint32_t Performance_now(void);
 extern void test_find();
 
+
+
+void counter_consistency_test(int mean, uint32_t counts, uint32_t range);
+float get_timer_resolution();
+//void print_res(l3pp_t l3, RES_TYPE *res, int nmonitored);
+
 // input measurement function, printf resolution
 void test_resolution_SAB(uint32_t (*measure_func)(), float resolution_ns);
 
@@ -50,5 +56,5 @@ void SAB_bench_call_methods();
 
 // test results:
 // lib call is faster than EM_ASM and direct function pointers
-// direct funcion pointers and EM_ASM are nearly the same speed wise
+// direct funcion pointers and EM_ASM have nearly the same performance
 // direct call of measure_func do not improve performance

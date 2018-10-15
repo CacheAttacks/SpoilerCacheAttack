@@ -37,14 +37,14 @@ primeSpamEsWrapper =
 }
 
 buildEsWrapper =
-    function(max_es) {
+    function(max_es, search_method) {
   // Module['startTimer']();
   while (Module['sharedArrayCounter'] < 10000000) {
     if (Module['sharedArrayCounter'] > 0)
       console.log(Module['sharedArrayCounter']);
   }
   console.log('fin');
-  Module['asm']._build_es(Module['appStatePtr'], max_es);
+  Module['asm']._build_es(Module['appStatePtr'], max_es, search_method);
   // Module['stopTimer']();
 }
 

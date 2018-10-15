@@ -55,6 +55,7 @@ struct l3pp
   int ngroups;
   int groupsize;
   vlist_t *groups;
+  vlist_t collect_groups;
   void *buffer;
   uint32_t *monitoredbitmap;
   int *monitoredset;
@@ -73,11 +74,14 @@ struct l3pp
 
 typedef uint32_t (*p_probetime)(void *);
 
-l3pp_t l3_prepare(l3info_t l3info, int L3_THRESHOLD, int max_es);
+enum search_methods { DEFAULT, STOREFORWARDLEAKAGE };
+
+l3pp_t l3_prepare(l3info_t l3info, int L3_THRESHOLD, int max_es, enum search_methods search_method);
 l3pp_t l3_create_only(int l3_threshold, int max_es, uint32_t bufsize);
 void l3_release(l3pp_t l3);
 
 vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode);
+vlist_t expand_groups(vlist_t groups);
 
 // Returns the number of probed sets in the LLC
 int l3_getSets(l3pp_t l3);

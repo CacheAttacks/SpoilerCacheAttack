@@ -156,8 +156,6 @@ void measurement_funct(uint8_t * evictionBuffer, int window_size, uint8_t *targe
 
 }
 
-  l3pp_t l3 ;
-
 void storefor_write_SAB(){
   uint32_t buffer_size = PAGE_COUNT * PAGE_SIZE;
   store_for_js_SAB(buffer_size);
@@ -165,9 +163,78 @@ void storefor_write_SAB(){
 
 uint64_t time_sum_js = 0, time_sum_wasm = 0;
 
-void storefor_write(int benchmarkruns){
+
+int probemap_storeforwardleakage(l3pp_t l3){
+
+    uint32_t timer_before = get_time_in_ms();
+
+    l3->collect_groups = vl_new();
+
+    uint32_t storefor_add_arr_size = 116;
+    uint8_t * storefor_add_arr = (uint8_t*) calloc(sizeof(uint32_t), storefor_add_arr_size);	
+
+    int WINDOW_SIZE = 60;
+    int rounds = 20;
+    int threadholdSearchForEs = 115;
+    int failed = 0;
+    uint32_t buffer_size = l3->l3info.bufsize;
+
+    //printf_ex("target_add:%p\n", buffer);
+    //measurement_funct(buffer, WINDOW_SIZE, buffer);
+    for(int i=0; i<32; i++){
+      for(int j=0; j<10; j++){
+        if(store_for_js((WASMPTR)l3->buffer, buffer_size, (WASMPTR)storefor_add_arr, storefor_add_arr_size, (WASMPTR)(l3->buffer+i*PAGE_SIZE), threadholdSearchForEs, WINDOW_SIZE, rounds, (WASMPTR)l3)){
+          //printf_ex("success!\n");
+          failed = 0;
+          break;
+        }
+        failed = 1;
+      }
+      if(failed){
+        printf_ex("es serach failed!\n");
+        break;
+      }
+    }
+
+    // Store map results
+    l3->ngroups = vl_len(l3->collect_groups);
+    l3->groups = (vlist_t *)calloc(l3->ngroups, sizeof(vlist_t));
+    for (int i = 0; i < vl_len(l3->collect_groups); i++)
+      l3->groups[i] = vl_get(l3->collect_groups, i);
+
+    vl_free(l3->collect_groups);
+
+    uint32_t timer_after = get_time_in_ms();
+
+    uint64_t time_sum = time_sum_js + time_sum_wasm;
+    
+    if(!failed){
+      printf_ex("half increments\n");
+      printf_ex("rounds:%i\n", rounds);
+      printf_ex("windowSize:%i\n", WINDOW_SIZE);
+      printf_ex("threadholdSearchForEs:%i\n", threadholdSearchForEs);
+      printf_ex("time StoreFor:%u\n", (timer_after - timer_before) / 1000);
+      printf_ex("time sum js:%f\n", (double)time_sum_js / time_sum);
+      printf_ex("time sum wasm:%f\n", (double)time_sum_wasm / time_sum);
+      printf_ex("max additional colliding addresses:%f\n", storefor_add_arr_size-threadholdSearchForEs);
+    } else {
+      printf_ex("----------------------------------------\n");
+      printf_ex("---------------FAILED-------------------\n");
+      printf_ex("----------------------------------------\n");
+      return 0;
+    }
+
+    time_sum_wasm = 0;
+    time_sum_js = 0;
+
+    return 1;
+}
+
+void storefor_write(void *app_state_ptr, int benchmarkruns){
   //test if allocated buffer is continous physical memory (speed eviction set search by a factor of 2^8)
 	
+  struct app_state *this_app_state = (struct app_state *)app_state_ptr;
+
 	// 8MB Buffer
 	// uint8_t * evictionBuffer;
 	// evictionBuffer = (uint8_t*) malloc(PAGE_COUNT * PAGE_SIZE);
@@ -187,16 +254,18 @@ void storefor_write(int benchmarkruns){
 
     int WINDOW_SIZE = 60;
     int rounds = 20;
-    int threadholdSearchForEs = 105;
+    int threadholdSearchForEs = 115;
 
-    l3 = l3_create_only(31, 5, buffer_size);
+    l3pp_t l3 = l3_create_only(31, 5, buffer_size);
+    this_app_state->l3 = l3;
     int failed = 0;
+    l3->collect_groups = vl_new();
 
     //printf_ex("target_add:%p\n", buffer);
     //measurement_funct(buffer, WINDOW_SIZE, buffer);
     for(int i=0; i<32; i++){
       for(int j=0; j<10; j++){
-        if(store_for_js((uint32_t)buffer, buffer_size, (uint32_t)storefor_add_arr, storefor_add_arr_size, (uint32_t)(buffer+i*PAGE_SIZE), threadholdSearchForEs, WINDOW_SIZE, rounds)){
+        if(store_for_js((WASMPTR)buffer, buffer_size, (WASMPTR)storefor_add_arr, storefor_add_arr_size, (WASMPTR)(buffer+i*PAGE_SIZE), threadholdSearchForEs, WINDOW_SIZE, rounds, (WASMPTR)this_app_state->l3)){
           //printf_ex("success!\n");
           failed = 0;
           break;
@@ -207,6 +276,14 @@ void storefor_write(int benchmarkruns){
         break;
       }
     }
+
+    // Store map results
+    l3->ngroups = vl_len(l3->collect_groups);
+    l3->groups = (vlist_t *)calloc(l3->ngroups, sizeof(vlist_t));
+    for (int i = 0; i < vl_len(l3->collect_groups); i++)
+      l3->groups[i] = vl_get(l3->collect_groups, i);
+
+    vl_free(l3->collect_groups);
 
     uint32_t timer_after = get_time_in_ms();
 
@@ -231,9 +308,9 @@ void storefor_write(int benchmarkruns){
     time_sum_js = 0;
 
     if(benchmarkruns){
+      benchmarkruns--;
       munmap(buffer, buffer_size);
       l3_release(l3);
-      benchmarkruns--;
     }
   }
 
@@ -245,7 +322,8 @@ void storefor_write(int benchmarkruns){
 	// measurement_funct(evictionBuffer, WINDOW_SIZE, evictionBuffer+PAGE_SIZE);
 }
 
-int try_to_create_es(uint32_t *address_arr, uint32_t number_of_storefor_add, uint32_t startTime, uint32_t endTime){
+int try_to_create_es(uint32_t *address_arr, uint32_t number_of_storefor_add, uint32_t startTime, uint32_t endTime, void* ptr_l3){
+  l3pp_t l3 = (l3pp_t)ptr_l3;
   time_sum_js += (uint64_t)get_diff(startTime, endTime);
   
   uint32_t startTimeWasm = rdtscp();
@@ -270,8 +348,8 @@ int try_to_create_es(uint32_t *address_arr, uint32_t number_of_storefor_add, uin
   //printf_ex("max_opt:%i, opt_sum:%i", max_opt, opt_sum);
   //printf_ex("\n");
   //vl_free(lines);
-
   vlist_t groups = map(l3, lines, 0);
+  //vl_free(lines);
   //printf_ex("%i\n",vl_len(lines));
   //groups = map(l3, lines);
   //groups = map(l3, lines);
@@ -285,8 +363,14 @@ int try_to_create_es(uint32_t *address_arr, uint32_t number_of_storefor_add, uin
       //printf_ex("%p ",vl_get(es,i));
     }
     //printf_ex("\n");
+    vlist_t expanded_groups = expand_groups(groups);
+    vl_free(groups);
+    while(vl_len(expanded_groups) > 0){
+      vl_push(l3->collect_groups, vl_pop(expanded_groups));
+    }
+    vl_free(expanded_groups);
     return 1;
   }
-    
+  vl_free(groups);  
   return 0;
 }

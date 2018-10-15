@@ -39,6 +39,7 @@
 #include "es_management.h"
 #include "printf_wrapper.h"
 #include "l3.h"
+#include "storefor_find_es.h"
 
 #define CHECKTIMES 16
 #define FACTORDEBUG 20
@@ -921,7 +922,7 @@ int probemap(l3pp_t l3) {
   return 1;
 }
 
-l3pp_t l3_prepare(l3info_t l3info, int l3_threshold, int max_es) {
+l3pp_t l3_prepare(l3info_t l3info, int l3_threshold, int max_es, enum search_methods search_method) {
   if (ADDRESS_OFFSET == 0) {
     printf_ex("error ADDRESS_OFFSET 0 is used for TLB noise reduction");
     exit(1);
@@ -954,6 +955,9 @@ l3pp_t l3_prepare(l3info_t l3info, int l3_threshold, int max_es) {
 
   if (buffer == MAP_FAILED) {
     bufsize = l3->l3info.bufsize;
+    if(search_method == STOREFORWARDLEAKAGE){
+      bufsize = PAGE_COUNT * PAGE_SIZE;
+    }
     l3->groupsize = L3_SETS_PER_PAGE; // cause 4096/64 = 64
 
     buffer = mmap(NULL, bufsize, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE,
@@ -971,12 +975,23 @@ l3pp_t l3_prepare(l3info_t l3info, int l3_threshold, int max_es) {
   l3->contract_time = vl_new();
 #endif
 
+if(search_method == DEFAULT){
+  printf_ex("default seach method\n");
   // Create the cache map
   if (!probemap(l3)) {
     free(l3->buffer);
     free(l3);
     return NULL;
   }
+}
+else if(search_method == STOREFORWARDLEAKAGE){
+  printf_ex("STOREFORWARDLEAKAGE seach method\n");
+  if (!probemap_storeforwardleakage(l3)) {
+    free(l3->buffer);
+    free(l3);
+    return NULL;
+  }  
+}
   printf_ex("ngroups:%i\n", l3->ngroups);
 
 #ifdef BENCHMARKMODE

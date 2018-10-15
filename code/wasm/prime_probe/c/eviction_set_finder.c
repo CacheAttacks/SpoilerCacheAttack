@@ -20,78 +20,14 @@
 // called by javascript
 extern void set_app_state_ptr(uint32_t);
 
-#define LNEXT(t) (*(void **)(t))
+// #define LNEXT(t) (*(void **)(t))
 
-struct timer_info *info;
-
-
-
-void counter_consistency_test(int mean, uint32_t counts, uint32_t range)
-{
-  int sum = 0;
-  uint64_t iterations = 0;
-  for (uint32_t i = 0; i < counts; i++)
-  {
-    uint32_t a = SAB_lib_get_counter_value();
-    uint32_t b = SAB_lib_get_counter_value();
-    iterations++;
-    sum += b - a;
-    if (!mean)
-      printf_ex("%i ", b - a);
-    if (i % 1000 == 999)
-    {
-      if (!mean)
-        putchar('\n');
-    }
-    if (i % range == range - 1)
-    {
-      if (mean)
-        printf_ex("mean last %i: %i, iterations %llu, last counter tick %" PRIu32
-               "\n",
-               range, sum / range, iterations, b);
-      sum = 0;
-    }
-  }
-  SAB_terminate_counter_sub_worker();
-  exit(1);
-}
-
-float get_timer_resolution()
-{
-  float resolution_ns = 101;
-  // while(resolution_ns > 100){
-  resolution_ns = SAB_get_resolution_ns(10000);
-  //}
-  printf_ex("resolution SAB-timer: %f ns\n", resolution_ns);
-  return resolution_ns;
-}
-
-void print_res(l3pp_t l3, RES_TYPE *res, int nmonitored)
-{
-  printf_ex("size of eviction sets\n");
-  for (int i = 0; i < nmonitored; i++)
-  {
-    vlist_t list = l3->groups[l3->monitoredset[i] / l3->groupsize];
-    printf_ex("%d ", list->len);
-  }
-  printf_ex("\naccess_time for each evictionset per timeslot\n");
-  printf_ex("x-axis eviction-sets, y-axis sample\n");
-
-  for (int i = 0; i < SAMPLES; i++)
-  {
-    for (int j = 0; j < nmonitored; j++)
-    {
-      printf_ex("%d ", res[i * nmonitored + j]);
-    }
-    if (nmonitored > 0)
-      putchar('\n');
-  }
-}
+// struct timer_info *info;
 
 int main(int ac, char **av)
 {
-  char* test = malloc(1024);
-  int t = *((int*)(test+1));
+  // char* test = malloc(1024);
+  // int t = *((int*)(test+1));
   // save app state for switches between javascript and wasm
   struct app_state *this_app_state =
       (struct app_state *)calloc(sizeof(struct app_state), 1);
@@ -104,11 +40,9 @@ int main(int ac, char **av)
 
   float resolution_ns = get_timer_resolution();
 
-  int ptr = (int)resolution_ns;
-
-  uint32_t val = gcc_test_opt((void *)ptr);
-
-  printf_ex("%i", val);
+  // int ptr = (int)resolution_ns;
+  // uint32_t val = gcc_test_opt((void *)ptr);
+  // printf_ex("%i\n", val);
 
   // for (int i = 0; i < 1 * 1000 * 1000; i++)
   // {
