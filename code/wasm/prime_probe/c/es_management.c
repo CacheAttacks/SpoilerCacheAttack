@@ -15,6 +15,11 @@
 
 #define CHECK_BIT(var, pos) ((var) & (1 << (pos)))
 
+/**
+ * @brief Get the current time in ms. Use Performance.now() or clock_gettime.
+ * 
+ * @return uint64_t current timestamp in ms
+ */
 uint64_t get_time_in_ms()
 {
 #ifdef WASM
@@ -26,7 +31,16 @@ uint64_t get_time_in_ms()
 #endif
 }
 
+
 #define BLOCK_SIZE 8
+/**
+ * @brief Get mem access time for data access.
+ * 
+ * @param random random=1 => randomize access
+ * @param rounds Increase to reduce the impact of outliers
+ * @param print print=1 => print results
+ * @return int 
+ */
 int test_mem_access(int random, int rounds, int print)
 {
   int pages = 1024 * 1024 * 20;
@@ -95,6 +109,13 @@ int test_mem_access(int random, int rounds, int print)
   return sum / rounds;
 }
 
+/**
+ * @brief Get mem access time comparison for cache and uncached data.
+ * 
+ * @param rounds Increase to reduce the impact of outliers
+ * @param print print=1 => print results
+ * @return int 
+ */
 int mem_access_testing(int rounds, int print)
 {
   printf_ex("random access %i rounds\n", rounds);
@@ -120,7 +141,14 @@ int mem_access_testing(int rounds, int print)
   return threshold;
 }
 
-// use set_monitored_es beforehand to set the observed es
+
+/**
+ * @brief Measures mean access time. Use set_monitored_es beforehand to set the observed es.
+ * 
+ * @param this_app_state Ptr to global data struct
+ * @param samples Increase to reduce the impact of outliers
+ * @return double Return the mean access value
+ */
 double measure_mean_access_time(struct app_state *this_app_state, int samples)
 {
   sample_es((void *)this_app_state, samples, 0
@@ -140,6 +168,11 @@ double measure_mean_access_time(struct app_state *this_app_state, int samples)
   return access_time_mean;
 }
 
+/**
+ * @brief Monitor the lower half of all "super"-es. Each "super"-es can be expanded to 64 es. 
+ * 
+ * @param app_state_ptr Ptr to global data struct
+ */
 void set_monitored_es_lower_half(void *app_state_ptr)
 {
   struct app_state *this_app_state = (struct app_state *)app_state_ptr;
@@ -159,6 +192,12 @@ void set_monitored_es_lower_half(void *app_state_ptr)
   this_app_state->monitored_es_changed = 1;
 }
 
+/**
+ * @brief Change the prime and probe type. See probe.c for the different types
+ * 
+ * @param app_state_ptr Ptr to global data struct
+ * @param type See probe.c for more details
+ */
 void change_type(void *app_state_ptr, int type)
 {
   struct app_state *this_app_state = (struct app_state *)app_state_ptr;
@@ -175,8 +214,13 @@ void change_type(void *app_state_ptr, int type)
   }
 }
 
-// set non-cohesive es
-// could replace set_monitored_es (refactoring effort does not worth it now)
+/**
+ * @brief Set non-cohesive es as monitored. Could be merged with set_monitored_es.
+ * 
+ * @param app_state_ptr Ptr to global data struct
+ * @param indices_arr Array with es indices
+ * @param indices_arr_size Size of indices_arr (welcome to c)
+ */
 void set_monitored_es_arr(void *app_state_ptr, int *indices_arr,
                           int indices_arr_size)
 {
@@ -220,6 +264,13 @@ void set_monitored_es_arr(void *app_state_ptr, int *indices_arr,
   this_app_state->last_max_index = -2;
 }
 
+/**
+ * @brief Set es range as monitored. Could be merged with set_monitored_es_arr
+ * 
+ * @param app_state_ptr Ptr to global data struct
+ * @param min_index have to >= 0, defines lower limit of the es range
+ * @param max_index have to < numberOfEs, defines upper limit of the es range
+ */
 void set_monitored_es(void *app_state_ptr, int min_index, int max_index)
 {
   struct app_state *this_app_state = (struct app_state *)app_state_ptr;
@@ -270,6 +321,13 @@ void set_monitored_es(void *app_state_ptr, int min_index, int max_index)
          (max_index - min_index + 1) * sizeof(RES_TYPE));
 }
 
+/**
+ * @brief wrapper for build_es_ex
+ * 
+ * @param app_state_ptr Ptr to global data struct
+ * @param max_es 
+ * @param search_methods Select between DEFAULT and STOREFORWARDLEAKAGE
+ */
 void build_es(void *app_state_ptr, int max_es, enum search_methods search_method)
 {
   int ngroups;
@@ -285,7 +343,16 @@ void build_es(void *app_state_ptr, int max_es, enum search_methods search_method
   } while (ngroups < MIN_ES && (ngroups < max_es || max_es == 0));
 }
 
-//add storefor here
+/**
+ * @brief es search
+ * 
+ * @param app_state_ptr Ptr to global data struct
+ * @param max_es Break search after max_es es were found
+ * @param benchmarkmode benchmarkmode=1 => activates benchmarkmode (parameter could be merged with benchmarkruns)
+ * @param benchmarkruns Define number of runs (set benchmarkmode=1)
+ * @param search_methods Select between DEFAULT and STOREFORWARDLEAKAGE
+ * @return int Return number of es found
+ */
 int build_es_ex(void *app_state_ptr, int max_es, int benchmarkmode,
                 int benchmarkruns, enum search_methods search_method)
 {
@@ -361,6 +428,14 @@ int build_es_ex(void *app_state_ptr, int max_es, int benchmarkmode,
   return this_app_state->l3->ngroups;
 }
 
+/**
+ * @brief Sub function of build_es_ex. Calls l3_prepare for es search.
+ * 
+ * @param app_state_ptr Ptr to global data struct
+ * @param max_es Break search after max_es es were found
+ * @param search_methods Select between DEFAULT and STOREFORWARDLEAKAGE
+ * @return uint32_t Return time in ms required for es search
+ */
 uint32_t set_l3pp_t(void *app_state_ptr, int max_es, enum search_methods search_method){
   struct app_state *this_app_state = (struct app_state *)app_state_ptr;
   uint32_t timer_before = get_time_in_ms();
@@ -372,12 +447,25 @@ uint32_t set_l3pp_t(void *app_state_ptr, int max_es, enum search_methods search_
   return timer_after - timer_before;
 }
 
+/**
+ * @brief 
+ * 
+ * @param app_state_ptr Ptr to global data struct
+ * @param max_es Break search after max_es es were found
+ * @param benchmarkruns Define number of benchmarkruns 
+ */
 void storefor_build_es(void *app_state_ptr, int max_es, int benchmarkruns){
   struct app_state *this_app_state = (struct app_state *)app_state_ptr;
 
   storefor_write(app_state_ptr, benchmarkruns);
 }
 
+/**
+ * @brief Do a prime-spam. Use set_monitored_es_arr or set_monitored_es to set the es-indices.
+ * 
+ * @param app_state_ptr Ptr to global data struct
+ * @param duration_sec Duration of prime-spam in secondes
+ */
 void prime_spam_es(void *app_state_ptr, int duration_sec)
 {
   struct app_state *this_app_state = (struct app_state *)app_state_ptr;
@@ -415,6 +503,15 @@ void prime_spam_es(void *app_state_ptr, int duration_sec)
   }
 }
 
+/**
+ * @brief Do some Prime-and-Probe measurements.
+ * 
+ * @param app_state_ptr Ptr to global data struct
+ * @param number_of_samples How many Prime-and-Probe cycles?
+ * @param slot_time Pause between different samples
+ * @param plot plot=1 => plot results via R
+ * @param primeprobe_js primeprobe_js=1 => Use promeprobe_js instead of wasm. 
+ */
 void sample_es(void *app_state_ptr, int number_of_samples, int slot_time
 #ifdef WASM
                ,
@@ -498,6 +595,13 @@ void sample_es(void *app_state_ptr, int number_of_samples, int slot_time
   this_app_state->number_of_samples_old = number_of_samples;
 }
 
+/**
+ * @brief Get the mean access times for es'. Use set_monitored_es_arr or set_monitored_es to set the es-indices.
+ * 
+ * @param app_state_ptr Ptr to global data struct
+ * @param idle_mean_values Ptr to int array. Save the results here.
+ * @param number_of_samples Increase to reduce the impact of outliers
+ */
 void get_mean_evictions_sets(void *app_state_ptr, int *idle_mean_values,
                              int number_of_samples)
 {
@@ -541,6 +645,14 @@ void get_mean_evictions_sets(void *app_state_ptr, int *idle_mean_values,
   // get idle mean
 }
 
+/**
+ * @brief Get the mean access times for es'. Use an own es range. Saves the results in the global app_state_ptr struct.
+ * 
+ * @param app_state_ptr Ptr to global data struct
+ * @param min_index >= 0, defines lower limit of the es range
+ * @param max_index have to < numberOfEs, defines upper limit of the es range
+ * @param number_of_samples Increase to reduce the impact of outliers
+ */
 void get_idle_times(void *app_state_ptr, int min_index, int max_index,
                     int number_of_samples)
 {
@@ -589,8 +701,13 @@ void get_idle_times(void *app_state_ptr, int min_index, int max_index,
   set_number_of_observed_cache_sets(number_of_observed_cache_sets);
 }
 
-// threshold_factor: compare idle values with current values to get interesting
-// cache sets
+/**
+ * @brief Compare idle values with current values to get interesting cache sets
+ * 
+ * @param app_state_ptr Ptr to global data struct
+ * @param threshold_factor mean access time have to greater than threshold_factor * idle mean value
+ * @param number_of_samples Increase to reduce the impact of outliers
+ */
 void find_interesting_eviction_sets(void *app_state_ptr, float threshold_factor,
                                     int number_of_samples)
 {

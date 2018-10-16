@@ -1,6 +1,7 @@
 // much better results with 1000 instead 300
 var numberOfSamples = 1000;
 var numberOfRounds = 2;
+var refFactorThreshold = 1.7; //mean access time have to greater than refFactorThreshold * idle mean value
 var threshold = 1;
 
 var numberOfObservedCacheSets = Module['numberOfObservedCacheSets'];
@@ -21,7 +22,7 @@ for (var rounds = 0; rounds < numberOfRounds; rounds++) {
   for (var i = 0; i < numberOfObservedCacheSets; i++) {
     // console.log(wasmMemoryArray[idleArrOffset] + " " +
     // wasmMemoryArray[current_arr_offset] + " ");
-    if (wasmMemoryArray[idleArrOffset++] * 1.4<
+    if (wasmMemoryArray[idleArrOffset++] * refFactorThreshold <
         wasmMemoryArray[currentArrOffset++]) {
       arrNumberOfObservedCacheSets[i]++;
       interestingCacheSets += i + ' ';

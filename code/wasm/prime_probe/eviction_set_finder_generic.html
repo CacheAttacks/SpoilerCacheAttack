@@ -123,6 +123,14 @@
       margin-top: 30px;
       margin-right: 20px;
     }
+
+    input[type="number"] {
+      width:80px;
+    }
+
+    input[type="text"] {
+      width:100px;
+    }
   </style>
 </head>
 
@@ -225,7 +233,7 @@
   </span>
   </br></br>
   <span id='findInterestingCacheSetsTemplate'>
-    <span><input type="button" id="btnTemplateDetection" value="Template detection"></span>
+    <!--<span><input type="button" id="btnTemplateDetection" value="Template detection"></span>-->
     <span><input type="button" id="btnInterestingShift" value="Find interesting shift"></span>
     <span><input type="button" id="btnInterestingSub" value="Find interesting sub"></span>
     <span><input type="button" id="btnInterestingGcd" value="Find interesting gcd"></span>
@@ -488,6 +496,10 @@
       }
     }
 
+    //-------------------------------------------------------------------------------
+    //------------------------------BTN on click defs--------------------------------
+    //-------------------------------------------------------------------------------
+
     document.getElementById('btnPrint').onclick = function () {
       // d = new Date();
       // Module['imgElement'].src = 'http://localhost:8000/plotdata?' + d.getTime();
@@ -495,6 +507,7 @@
       imagePopup('http://localhost:8000/plotdata?range_es=' + document.getElementById('numberRangeX').value,
         'myTitle', '', '');
     }
+
     document.getElementById('btnSampleEs').onclick = function () {
       assertAppStatePtr(function () {
         var numberOfSamples = document.getElementById('numberSamples').value;
@@ -504,23 +517,39 @@
         sampleEsWrapper(numberOfSamples, slotTime, printToBrowser);
       });
     }
+
+    //replot with old data (without resampling)
     document.getElementById('btnReplot').onclick = function () {
       d = new Date();
       Module['imgElement'].src =
           'http://localhost:8000/plotdata?selected_x=' +
           document.getElementById('numberRangeX').value + '&' + d.getTime();
     }
+
+    //build es and use selectSearchMethod
+    //set numberUpperLimitEs=0 to find all es
+    //set numberUpperLimitEs>0 to limit the number
     document.getElementById('btnBuildEs').onclick = function () {
       assertAppStatePtr(function () {
         buildEsWrapper(document.getElementById('numberUpperLimitEs').value, document.getElementById('selectSearchMethod').value);
         document.getElementById('btnBuildEs').value = "Rebuild es";
       });
     }
+
+    //set the monitored es range for sampling/prime-spam operation
+    //e.g. numberLowerLimitMonitoredEs=10 and numberUpperLimitMonitoredEs=15 selects es 10,11,12,13,14,15
+    //set numberLowerLimitMonitoredEs=numberUpperLimitMonitoredEs=-1 to select all found es
+    //range goes from 0 to numberOfEs - 1
+    //could be merged with btnSetMonitoredEsArr
     document.getElementById('btnSetMonitoredEs').onclick = function () {
       assertAppStatePtr(function () {
         Module['asm']._set_monitored_es(Module['appStatePtr'], document.getElementById('numberLowerLimitMonitoredEs').value, document.getElementById('numberUpperLimitMonitoredEs').value);
       });
     }
+
+    //use to set specific es for sampling/prime-spam operation
+    //e.g. 10,12,15
+    //could be merged with btnSetMonitoredEs
     document.getElementById('btnSetMonitoredEsArr').onclick = function () {
       assertAppStatePtr(function () {  // decode listEs string
         var listEsString = document.getElementById('textListEs').value;
@@ -529,27 +558,34 @@
       });
     }
 
+    //search for covert channel check c-code from victim for details
     document.getElementById('btnSearchForCovertChannel').onclick = function () {
       assertAppStatePtr(function () {
         $.loadScript('javascript/covert_channel.js', function () { });
       });
     }
+
+    //listen on covert channel and print results via R
     document.getElementById('btnListenChannel').onclick = function () {
       assertAppStatePtr(function () {
         $.loadScript('javascript/listen_channel.js', function () { });
       });
     }
+
+    //benchmark different probe types by sampling 10000000 times with each type
     document.getElementById('btnBenchmarkType').onclick = function () {
       assertAppStatePtr(function () {
         $.loadScript('javascript/benchmark_probe_type.js', function () { });
       });
     }
+
     //change type of probing algo
     document.getElementById('btnChangeType').onclick = function () {
       assertAppStatePtr(function () {
         Module['asm']._change_type(Module['appStatePtr'], document.getElementById('selectType').value);
       });
     }
+
     //runs build es multiple times to benchmark performance
     document.getElementById('btnBenchmarkmode').onclick = function () {
       assertAppStatePtr(function () {
@@ -557,19 +593,32 @@
       });
     }
 
+    //get mean access time for each cache set
+    //use this as reference value to find interesting cache-sets during an execution
     document.getElementById('btnGetIdleTimes').onclick = function () {
       var number_of_samples = 1000;
       Module['asm']._get_idle_times(Module['appStatePtr'], document.getElementById('numberLowerLimitMonitoredEsInteresting').value, document.getElementById('numberUpperLimitMonitoredEsInteresting').value, number_of_samples);
     }
 
+    //find interesting cache-sets during an execution by increased mean access times
+    //call btnGetIdleTimes before to get some reference times
     document.getElementById('btnFindInterestingCacheSets').onclick = function () {
       $.loadScript('javascript/interesting_cache_sets.js', function () { });
     }
 
-    document.getElementById('btnTemplateDetection').onclick = function () {
-      $.loadScript('javascript/template_detection.js', function () { });
+    //execute prime spam operation for numberPrimeSpamDurationSec
+    //use btnSetMonitoredEs and btnSetMonitoredEsArr to set spammed es
+    document.getElementById('btnPrimeSpam').onclick = function () {
+      primeSpamEsWrapper(document.getElementById('numberPrimeSpamDurationSec').value);
     }
 
+    // document.getElementById('btnTemplateDetection').onclick = function () {
+    //   $.loadScript('javascript/template_detection.js', function () { });
+    // }
+
+    //-------------------------------------------------------------------------------
+    //------------------------Mozilla NSS RSA specific-------------------------------
+    //-------------------------------------------------------------------------------
     document.getElementById('btnInterestingShift').onclick = function () {
       $.loadScript('javascript/interesting_cache_sets.js', function () {
         // after loadScript
@@ -590,10 +639,7 @@
         $.loadScript('javascript/interesting_gcd.js', function () { });
       });
     }
-
-    document.getElementById('btnPrimeSpam').onclick = function () {
-      primeSpamEsWrapper(document.getElementById('numberPrimeSpamDurationSec').value);
-    }
+    //-------------------------------------------------------------------------------
   </script>
   <script type="text/javascript" src="javascript/worker_organisation.js"></script>
 </body>

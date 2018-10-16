@@ -85,15 +85,6 @@ function nextWorkerPostMessage() {
       workerWasmPostMessageSerial(['buildEs', 0, search_method]);
     }
 
-    document.getElementById('btnWorkerSampleEsMerged').onclick = function () {
-      assertAppStatePtr(function () {
-        var numberOfSamples = document.getElementById('numberSamples').value;
-        var slotTime = document.getElementById('numberSlotTime').value;
-        var primeprobe_js = document.getElementById('selectPrimeprobe').value;
-        workerWasmPostMessageSerial(['sampleEs', numberOfSamples, slotTime, primeprobe_js]);
-      });
-    }
-
     document.getElementById('btnWorkerWasmSetMonitoredEsArr').onclick = function () {
       var listEsString = document.getElementById('textWorkerWasmListEs').value;
       var listEsArr = listEsString.split(',');
@@ -131,13 +122,15 @@ function nextWorkerPostMessage() {
         workerWasmPostMessageParallel(workerIdsArr, ['primeSpam',duration]);
     }
 
-    document.getElementById('btnSampleEsMerged').onclick = function () {
+    document.getElementById('btnWorkerSampleEsMerged').onclick = function () {
       //call sample es for main thread e.g shift
       var numberOfSamples = document.getElementById('numberSamples').value;
       //console.log(numberOfSamples);
       var slotTime = document.getElementById('numberSlotTime').value;
       sampleEsWrapper(numberOfSamples, slotTime, 1);
 
+      var primeprobe_js = document.getElementById('selectPrimeprobe').value;
+
       //call sample es for webworker e.g. sub
-      workerWasmPostMessageSerial(['sampleEs', numberOfSamples, slotTime]);
+      workerWasmPostMessageSerial(['sampleEs', numberOfSamples, slotTime, primeprobe_js]);
     }    
