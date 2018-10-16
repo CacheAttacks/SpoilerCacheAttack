@@ -81,7 +81,17 @@ function nextWorkerPostMessage() {
     }
 
     document.getElementById('btnWorkerWasmBuildEs').onclick = function () {
-      workerWasmPostMessageSerial(['buildEs', 0]);
+      var search_method = document.getElementById('selectSearchMethod').value;
+      workerWasmPostMessageSerial(['buildEs', 0, search_method]);
+    }
+
+    document.getElementById('btnWorkerSampleEsMerged').onclick = function () {
+      assertAppStatePtr(function () {
+        var numberOfSamples = document.getElementById('numberSamples').value;
+        var slotTime = document.getElementById('numberSlotTime').value;
+        var primeprobe_js = document.getElementById('selectPrimeprobe').value;
+        workerWasmPostMessageSerial(['sampleEs', numberOfSamples, slotTime, primeprobe_js]);
+      });
     }
 
     document.getElementById('btnWorkerWasmSetMonitoredEsArr').onclick = function () {

@@ -40,8 +40,9 @@ onmessage = function(m) {
     // importScripts(".js");
   } else if (command === 'buildEs') {
     var max_es = m.data[1];
+    var search_method = m.data[2];
     assertAppStatePtr(function() {
-      buildEsWrapper(max_es);
+      buildEsWrapper(max_es, search_method);
     });
   } else if (command === 'setMonitoredEsArr') {
     assertAppStatePtr(function() {
@@ -54,8 +55,8 @@ onmessage = function(m) {
       var slotTime = m.data[2];
       var printToBrowser =
           0;  // always 0, cause document obj not exists in worker context
-      var transmitWorkerPlotData = 1;
-      sampleEsWrapper(numberOfSamples, slotTime, printToBrowser, transmitWorkerPlotData);
+      var primeprobe_js = m.data[3];
+      sampleEsWorkerWrapper(numberOfSamples, slotTime, printToBrowser, primeprobe_js);
     });
   } else if (command === 'getIdleTimes') {
     assertAppStatePtr(function() {

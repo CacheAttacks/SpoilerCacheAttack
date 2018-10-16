@@ -1,31 +1,37 @@
+sampleEsWorkerWrapper = 
+    function(numberOfSamples, slotTime, printToBrowser, primeprobe_js){
+    Module['asm']._sample_es(
+        Module['appStatePtr'], numberOfSamples, slotTime, printToBrowser,
+        primeprobe_js);
+
+    console.log("workerid:"+workerId);
+    if (Module['byteFactor'] != 0) {
+        var POSTstr = workerId + "#" + Module['createPOSTStr'](
+            Module['wasmMemoryArr'], Module['res'] / Module['byteFactor'],
+            Module['nrow'], Module['ncol']);
+        Module['postxhr']('http://localhost:8000/changedataworker', POSTstr);
+
+        var indexVecStartAdd =
+            Module['monitoredEsIndexVecPtr'] / Module['byteFactor'];
+        var indexVecSize = Module['monitoredEsIndexVecSize'];
+        var indexString = workerId + '#';
+        for (var i = 0; i < indexVecSize; i++) {
+        indexString +=
+            Module['wasmMemoryArr'][indexVecStartAdd + i].toString() + ',';
+        }
+
+        Module['postxhr'](
+            'http://localhost:8000/changeindexvecworker', indexString);
+    }
+}
+
 sampleEsWrapper =
     function(
-        numberOfSamples, slotTime, printToBrowser, transmitWorkerPlotData = 0) {
+        numberOfSamples, slotTime, printToBrowser) {
   // Module['startTimer']();
   Module['asm']._sample_es(
       Module['appStatePtr'], numberOfSamples, slotTime, printToBrowser,
       document.getElementById('selectPrimeprobe').value);
-
-  if (transmitWorkerPlotData) {
-    if (Module['byteFactor'] != 0) {
-      var POSTstr = Module['createPOSTStr'](
-          Module['wasmMemoryArr'], Module['res'] / Module['byteFactor'],
-          Module['nrow'], Module['ncol']);
-      Module['postxhr']('http://localhost:8000/changedataworker', POSTstr);
-
-      var indexVecStartAdd =
-          Module['monitoredEsIndexVecPtr'] / Module['byteFactor'];
-      var indexVecSize = Module['monitoredEsIndexVecSize'];
-      var indexString = '';
-      for (var i = 0; i < indexVecSize; i++) {
-        indexString +=
-            Module['wasmMemoryArr'][indexVecStartAdd + i].toString() + ',';
-      }
-
-      Module['postxhr'](
-          'http://localhost:8000/changeindexvecworker', indexString);
-    }
-  }
   // Module['stopTimer']();
 }
 

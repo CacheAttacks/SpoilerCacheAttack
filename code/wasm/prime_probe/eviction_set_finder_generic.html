@@ -258,7 +258,7 @@
     <span><input type="text" id="textWorkerWasmPrimeSpamWorkers" value="1,2,3,4" width="1"></span>
     <span><input type="number" id="numberWorkerWasmPrimeSpamDurationSec" value="5" width="1"></span>
     <span><input type="button" id="btnWorkerWasmPrimeSpam" value="Prime Spam"></span>
-  </br> <span><input type="button" id="btnSampleEsMerged" value="Sample es merged"></span>
+  </br> <span><input type="button" id="btnWorkerSampleEsMerged" value="Sample es merged"></span>
   </span>
 
 
@@ -594,11 +594,6 @@
     document.getElementById('btnPrimeSpam').onclick = function () {
       primeSpamEsWrapper(document.getElementById('numberPrimeSpamDurationSec').value);
     }
-
-    // const workerWasm1 = new Worker('worker_wasm_generic.js');
-    // workerWasm1.postMessage(["initWasmAndCounter", sharedBuffer, colorVec["1"]]);
-    // const workerWasm2 = new Worker('worker_wasm_generic.js');
-    // workerWasm1.postMessage(["initWasmAndCounter", sharedBuffer, colorVec["1"]]);
   </script>
   <script type="text/javascript" src="javascript/worker_organisation.js"></script>
 </body>

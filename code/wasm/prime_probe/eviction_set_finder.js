@@ -5177,10 +5177,8 @@ function copyTempDouble(ptr) {
   function _store_for_js(uint8ptrBuffer, bufferSize, uint8ptrAddressArr, addressArrSize, uint8ptrCandidate, threadholdSearchForEs, windowSize, rounds, ptrl3) {
         var startTime = Module['sharedArrayCounter'][0];
   
-        //var rounds = 100;
         var pageSize = 4096;
         var pageCount = bufferSize / pageSize;
-        //var windowSize = 64;
         var movingWindowSize = 10;
   
         var uint32wasmMem = new Uint32Array(Module['wasmMemory'].buffer);
@@ -5191,10 +5189,6 @@ function copyTempDouble(ptr) {
         var lock = 0;
         var numberOfStoreForAdd = 0;
   
-        var nextCollidingAdressOffset = 20;
-  
-        //var bufferedOutput = "";
-  
         function subArrayAverage(arr, start, windowSize) {
           var sum = 0;
           for (var i = 0; i < windowSize; i++) {
@@ -5203,7 +5197,7 @@ function copyTempDouble(ptr) {
           return sum / windowSize;
         }
   
-        var output = "";
+        //var output = "";
         
         function checkForStoreFor(MeasurementArr, p, movingWindowSize) {      
           var movingWindowAverage = subArrayAverage(
@@ -5213,15 +5207,12 @@ function copyTempDouble(ptr) {
             MeasurementArr[p] > movingWindowAverage + 5 &&
             MeasurementArr[p-1] > movingWindowAverage + 10 &&
             MeasurementArr[p-1] > MeasurementArr[p-2] + 10) {
-             output += "? " + MeasurementArr[p];
+             //output += "? " + MeasurementArr[p];
             return true;
           }
           //output += " " + MeasurementArr[p];
           return false;
         }
-        //var savedp = 0;
-  
-        //console.log(uint8ptrBuffer);
   
         for (var p = windowSize; p < pageCount; p++) {
           var total = 0;
@@ -5256,8 +5247,6 @@ function copyTempDouble(ptr) {
           if (p > windowSize + movingWindowSize && lock < 0 &&
             checkForStoreFor(uint16MeasurementArr, p, movingWindowSize)) {
               //console.log((p-1) + ": " + ((p-1)-savedp));
-              //bufferedOutput += ((p-1)-savedp) + " ";
-              //savedp = p-1;
             var uint8ptrStoreForAdd = (uint8ptrBuffer + (p-1) * pageSize);
             uint32wasmMem[uint32ptrAdressArr + numberOfStoreForAdd] = uint8ptrStoreForAdd;
             numberOfStoreForAdd++;
@@ -5273,20 +5262,14 @@ function copyTempDouble(ptr) {
             if(numberOfStoreForAdd == addressArrSize){
               return false;
             }
+            //do not detect colliding addresses for the next 10 blocks
             lock = 10;
           } else {
-            output += " " + uint16MeasurementArr[p];
+            //output += " " + uint16MeasurementArr[p];
           }
           lock--;
         }
         return false;
-        console.log("end");
-  
-  
-        // average = arr => arr.reduce((p, c) => p + c, 0) / arr.length;
-        // var measurementAverage = average(measurementArr);
-        // console.log('measurementAverage:' + measurementAverage);
-        // console.log(output);
       }
 FS.staticInit();__ATINIT__.unshift(function() { if (!Module["noFSInit"] && !FS.init.initialized) FS.init() });__ATMAIN__.push(function() { FS.ignorePermissions = false });__ATEXIT__.push(function() { FS.quit() });;
 __ATINIT__.unshift(function() { TTY.init() });__ATEXIT__.push(function() { TTY.shutdown() });;

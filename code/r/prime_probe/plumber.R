@@ -69,6 +69,9 @@ cors_disabled <- function(a, b){
 
 data <- ""
 dataworker <- ""
+dataworkerlist <- list()
+indexvecdataworker <- list()
+indexvecworker <- list()
 
 #* @param newdata data for the file
 #* @post /changedata
@@ -81,9 +84,18 @@ function(newdata){
 #* @param newdata data for the file
 #* @post /changedataworker
 function(newdata){
-  dataworker <<- newdata
-  mydataworker <<- newdata
-  #print(newdata)
+  #string format id#data
+  splitted <- strsplit(newdata, "#")[[1]]
+  id <- splitted[1]
+  dataworkerlist[[id]] <<- splitted[2]
+}
+
+#* @param reset data from workers
+#* @post /resetdataworker
+function(newdata){
+  #string format id#data
+  dataworkerlist <<- list()
+  indexvecdataworker <<- list()
 }
 
 #* @param newdata monitored es index vec
@@ -101,7 +113,6 @@ function(newdata){
 #* @post /changexindexvec
 function(newdata){
   changexindexvec <<- newdata
-  #print(indexvec)
   xindexvec <<- sapply(which(sapply(strsplit(changexindexvec, split=","), as.numeric) != 0)-1, as.character)
   if(length(xindexvec) == 0)
     warning("length(indexvec) == 0")
@@ -111,12 +122,13 @@ function(newdata){
 #* @param newdata monitored es index vec
 #* @post /changeindexvecworker
 function(newdata){
-  indexvecdataworker <<- newdata
-  #print(indexvec)
-  indexvec <<- sapply(which(sapply(strsplit(indexvecdataworker, split=","), as.numeric) != 0)-1, as.character)
-  if(length(indexvec) == 0)
+  splitted <- strsplit(newdata, "#")[[1]]
+  id <- splitted[1]
+  indexvecdataworker[[id]] <<- splitted[2]
+  indexvecworker[[id]] <<- sapply(which(sapply(strsplit(indexvecdataworker[[id]], split=","), as.numeric) != 0)-1, as.character)
+  if(length(indexvecworker[[id]]) == 0)
     warning("length(indexvec) == 0")
-  print(indexvec)
+  print(indexvecworker[[id]])
 }
 
 #* @param newdata data for the file
