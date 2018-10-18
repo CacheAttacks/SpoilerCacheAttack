@@ -186,7 +186,7 @@ a <- Sys.time()
   #  tbl <- tbl[,es_vec, drop=F]
   
   #tbl <- tbl[-(1:15000),]
-  tbl <- tbl[-(1:100000),]
+  tbl <- tbl[-(1:1),]
   
   if(es_vec != "none")
     tbl <- tbl[es_vec,]

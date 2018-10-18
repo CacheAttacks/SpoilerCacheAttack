@@ -18,7 +18,7 @@
  */
 
 /*
-* Extended 2018 for ITS
+* Modified 2018 for ITS
 */
 
 #include "config.h"
