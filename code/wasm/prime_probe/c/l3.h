@@ -17,6 +17,10 @@
  * along with Mastik.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+* Modified 2018 for ITS
+*/
+
 #ifndef __L3_H__
 #define __L3_H__ 1
 
@@ -25,6 +29,108 @@ struct timer_info *info;
 #define LNEXT(t) (*(void **)(t))
 #define OFFSET(p, o) ((void *)((uintptr_t)(p) + (o)))
 #define NEXTPTR(p) (OFFSET((p), sizeof(void *)))
+
+#define CHECKTIMES 16
+#define FACTORDEBUG 20
+#define FACTORPRINT 10
+#ifdef WASM
+#define FACTORNORMAL 1
+#else
+#define FACTORNORMAL 1
+#endif
+
+/*
+ * Intel documentation still mentiones one slice per core, but
+ * experience shows that at least some Skylake models have two
+ * smaller slices per core.
+ * When probing the cache, we can use the smaller size - this will
+ * increase the probe time but for huge pages, where we use
+ * the slice size, the probe is fast and the increase is not too
+ * significant.
+ * When using the PTE maps, we need to know the correct size and
+ * the correct number of slices.  This means that, currently and
+ * without user input, PTE is not guaranteed to work.
+ * So, on a practical note, L3_GROUPSIZE_FOR_HUGEPAGES is the
+ * smallest slice size we have seen; L3_SETS_PER_SLICE is the
+ * default for the more common size.  If we learn how to probe
+ * the slice size we can get rid of this mess.
+ */
+#define L3_SETS_PER_SLICE 2048
+
+// The number of cache sets in each page
+#define L3_SETS_PER_PAGE 64
+
+// offset for each address in the memory pool
+// between 0 and 4000
+#define ADDRESS_OFFSET 2048
+
+// buffer for memoryblocks is multiple of cache size
+// 2 size enough, remember virtual
+#define CACHE_SIZE_MULTI 2
+
+// size(es) <= L3_ASSOCIATIVITY * MAX_L3_ASSOCIATIVITY_DIFF
+#define MAX_L3_ASSOCIATIVITY_DIFF 0
+
+// should be MAX_INT, set lower for debugging purposes
+#define MAX_ES 1
+
+// experiments shows: valid es => after first contract => vl_len(es) < 900
+#define MAX_SIZE_AFTER_FIRST_CONTRACT 900
+
+// experiments shows: valid es => after first contract => vl_len(es) < 100
+#define MAX_SIZE_AFTER_SECOND_CONTRACT 100
+
+// experiments shows: valid es => max three contract calls
+#define MAX_CONTRACT_CALLS 3
+
+// choose percentage of availible mem blocks in the pool before first es testing
+#define EXPAND_START_VALUE_FACTOR 0.3
+
+// try to delete mulipte elements from es in contract before es testing
+// e.g. vl_len(es) = 1000 & CONTRACT_FIRST_DEL_FACTOR=0.02 => del 20 elements at
+// once
+#define CONTRACT_FIRST_DEL_FACTOR 0.02
+#define CONTRACT_SECOND_DEL_FACTOR 0.005
+
+#define FAIL_MAX 1000
+// decrease L3_THRESHOLD_OFFSET to del more elements in the contract phase
+#define TOO_BIG_TRIGGER_VALUE 20
+// decrease L3_THRESHOLD_OFFSET to del less elements in the contract phase
+#define TOO_SMALL_TRIGGER_VALUE 20
+
+//#define DEBUG_CHANGE_THRESHOLD
+
+#ifdef WASM
+// ifdef => test eviction set multiple times after contract phase
+#define AFTERCONTRACTTEST
+
+// ifdef => test correctness of conctract phase, test es without one member for
+// each member
+#define ONEOUTTEST
+
+//#define REUSE_CONTRACT_ENTRIES
+
+// print debug stuff for one out test and after contract test
+#define DEBUG_TEST_PRINT 0
+
+//repeat iterations times to reduce possible errors
+//breaks if the results lead to a contradiction
+#define EXPAND_ITERATIONS 20
+#define CONTRACT_ITERATIONS 1
+#define COLLECT_ITERATIONS 1
+#else
+#define EXPAND_ITERATIONS 1
+#define CONTRACT_ITERATIONS 1
+#define COLLECT_ITERATIONS 1
+#endif
+
+#define IS_MONITORED(monitored, setno)                                         \
+  ((monitored)[(setno) >> 5] & (1 << ((setno)&0x1f)))
+#define SET_MONITORED(monitored, setno)                                        \
+  ((monitored)[(setno) >> 5] |= (1 << ((setno)&0x1f)))
+#define UNSET_MONITORED(monitored, setno)                                      \
+  ((monitored)[(setno) >> 5] &= ~(1 << ((setno)&0x1f)))
+
 
 typedef void (*l3progressNotification_t)(int count, int est, void *data);
 struct l3info
@@ -75,6 +181,9 @@ struct l3pp
 typedef uint32_t (*p_probetime)(void *);
 
 enum search_methods { DEFAULT, STOREFORWARDLEAKAGE };
+
+int checkevict_safe(vlist_t es, void *candidate, int walk_size,
+                           int print, int proofs);
 
 l3pp_t l3_prepare(l3info_t l3info, int L3_THRESHOLD, int max_es, enum search_methods search_method);
 l3pp_t l3_create_only(int l3_threshold, int max_es, uint32_t bufsize);

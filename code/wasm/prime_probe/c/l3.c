@@ -43,170 +43,20 @@
 #include "es_management.h"
 #include "printf_wrapper.h"
 #include "l3.h"
+#include "l3_phases.h"
+#include "l3_test.h"
 #include "storefor_find_es.h"
-
-#define CHECKTIMES 16
-#define FACTORDEBUG 20
-#define FACTORPRINT 10
-#ifdef WASM
-#define FACTORNORMAL 1
-#else
-#define FACTORNORMAL 1
-#endif
 
 int L3_THRESHOLD = 10000;
 int L3_THRESHOLD_OFFSET = 0;
 
-/*
- * Intel documentation still mentiones one slice per core, but
- * experience shows that at least some Skylake models have two
- * smaller slices per core.
- * When probing the cache, we can use the smaller size - this will
- * increase the probe time but for huge pages, where we use
- * the slice size, the probe is fast and the increase is not too
- * significant.
- * When using the PTE maps, we need to know the correct size and
- * the correct number of slices.  This means that, currently and
- * without user input, PTE is not guaranteed to work.
- * So, on a practical note, L3_GROUPSIZE_FOR_HUGEPAGES is the
- * smallest slice size we have seen; L3_SETS_PER_SLICE is the
- * default for the more common size.  If we learn how to probe
- * the slice size we can get rid of this mess.
- */
-#define L3_SETS_PER_SLICE 2048
-
-// The number of cache sets in each page
-#define L3_SETS_PER_PAGE 64
-
-// offset for each address in the memory pool
-// between 0 and 4000
-#define ADDRESS_OFFSET 2048
-
-// buffer for memoryblocks is multiple of cache size
-// 2 size enough, remember virtual
-#define CACHE_SIZE_MULTI 2
-
-// size(es) <= L3_ASSOCIATIVITY * MAX_L3_ASSOCIATIVITY_DIFF
-#define MAX_L3_ASSOCIATIVITY_DIFF 0
-
-// should be MAX_INT, set lower for debugging purposes
-#define MAX_ES 1
-
-// experiments shows: valid es => after first contract => vl_len(es) < 900
-#define MAX_SIZE_AFTER_FIRST_CONTRACT 900
-
-// experiments shows: valid es => after first contract => vl_len(es) < 100
-#define MAX_SIZE_AFTER_SECOND_CONTRACT 100
-
-// experiments shows: valid es => max three contract calls
-#define MAX_CONTRACT_CALLS 3
-
-// choose percentage of availible mem blocks in the pool before first es testing
-#define EXPAND_START_VALUE_FACTOR 0.3
-
-// try to delete mulipte elements from es in contract before es testing
-// e.g. vl_len(es) = 1000 & CONTRACT_FIRST_DEL_FACTOR=0.02 => del 20 elements at
-// once
-#define CONTRACT_FIRST_DEL_FACTOR 0.02
-#define CONTRACT_SECOND_DEL_FACTOR 0.005
-
-#define FAIL_MAX 1000
-// decrease L3_THRESHOLD_OFFSET to del more elements in the contract phase
-#define TOO_BIG_TRIGGER_VALUE 20
-// decrease L3_THRESHOLD_OFFSET to del less elements in the contract phase
-#define TOO_SMALL_TRIGGER_VALUE 20
-
-//#define DEBUG_CHANGE_THRESHOLD
-
-#ifdef WASM
-// ifdef => test eviction set multiple times after contract phase
-#define AFTERCONTRACTTEST
-
-// ifdef => test correctness of conctract phase, test es without one member for
-// each member
-#define ONEOUTTEST
-
-//#define REUSE_CONTRACT_ENTRIES
-
-// print debug stuff for one out test and after contract test
-#define DEBUG_TEST_PRINT 0
-
-#define EXPAND_ITERATIONS 20
-#define CONTRACT_ITERATIONS 1
-#define COLLECT_ITERATIONS 1
-#else
-#define EXPAND_ITERATIONS 1
-#define CONTRACT_ITERATIONS 1
-#define COLLECT_ITERATIONS 1
-#endif
-
-#define IS_MONITORED(monitored, setno)                                         \
-  ((monitored)[(setno) >> 5] & (1 << ((setno)&0x1f)))
-#define SET_MONITORED(monitored, setno)                                        \
-  ((monitored)[(setno) >> 5] |= (1 << ((setno)&0x1f)))
-#define UNSET_MONITORED(monitored, setno)                                      \
-  ((monitored)[(setno) >> 5] &= ~(1 << ((setno)&0x1f)))
-
-#define SLICE_MASK_0 0x1b5f575440UL
-#define SLICE_MASK_1 0x2eb5faa880UL
-#define SLICE_MASK_2 0x3cccc93100UL
-
-// struct l3pp {
-//   struct l3info l3info;
-//   union cpuid cpuidInfo;
-
-//   // To reduce probe time we group sets in cases that we know that a group of
-//   consecutive cache lines will
-//   // always map to equivalent sets. In the absence of user input (yet to be
-//   implemented) the decision is:
-//   // Non linear mappings - 1 set per group (to be implemeneted)
-//   // Huge pages - L3_SETS_PER_SLICE sets per group (to be impolemented)
-//   // Otherwise - L3_SETS_PER_PAGE sets per group.
-//   int ngroups;
-//   int groupsize;
-//   vlist_t *groups;
-//   void *buffer;
-//   uint32_t *monitoredbitmap;
-//   int *monitoredset;
-//   int nmonitored;
-//   void **monitoredhead;
-// };
-
 struct timer_info *info;
 
-static int parity(uint64_t v) {
-  v ^= v >> 1;
-  v ^= v >> 2;
-  v = (v & 0x1111111111111111UL) * 0x1111111111111111UL;
-  return (v >> 60) & 1;
-}
-
-static int addr2slice_linear(uintptr_t addr, int slices) {
-  int bit0 = parity(addr & SLICE_MASK_0);
-  int bit1 = parity(addr & SLICE_MASK_1);
-  int bit2 = parity(addr & SLICE_MASK_2);
-  return ((bit2 << 2) | (bit1 << 1) | bit0) & (slices - 1);
-}
-
-static uintptr_t getphysaddr(void *p) {
-#ifdef __linux__
-  static int fd = -1;
-
-  if (fd < 0) {
-    fd = open("/proc/self/pagemap", O_RDONLY);
-    if (fd < 0)
-      return 0;
-  }
-  uint64_t buf;
-  memaccess(p);
-  uintptr_t intp = (uintptr_t)p;
-  int r = pread(fd, &buf, sizeof(buf), ((uintptr_t)p) / 4096 * sizeof(buf));
-
-  return (buf & ((1ULL << 54) - 1)) << 12 | ((uintptr_t)p & 0x3ff);
-#else
-  return 0;
-#endif
-}
+/**
+ * @brief Get infos about the L3-Cache. Fixed values, because there is no CPUID-instruction in the brwoser.
+ * 
+ * @param l3 Ptr to l3pp struct
+ */
 static void fillL3Info(l3pp_t l3) {
   // l3-cache i7-4770: 16-way-ass, 8192sets, 4slices =>
   // 4(ass)+13(sets)+6(line)=23bits (8MiB) l3-cache i3-5010U: 12-way-ass,
@@ -217,35 +67,21 @@ static void fillL3Info(l3pp_t l3) {
   l3->cpuidInfo.cacheInfo.sets = 8192;
   l3->l3info.slices = 4;
   l3->l3info.setsperslice = l3->cpuidInfo.cacheInfo.sets / l3->l3info.slices;
-  //l3->l3info.bufsize = l3->l3info.associativity * l3->l3info.slices *
-  //                     l3->l3info.setsperslice * L3_CACHELINE *
-  //                     CACHE_SIZE_MULTI;
-  l3->l3info.bufsize = (4096)*4096;
-
-  // bufsize = cachesize * factor
-
-  // loadL3cpuidInfo(l3);
-  // if (l3->l3info.associativity == 0)
-  //   l3->l3info.associativity = l3->cpuidInfo.cacheInfo.associativity + 1;
-  // if (l3->l3info.slices == 0) {
-  //   if (l3->l3info.setsperslice == 0)
-  //     l3->l3info.setsperslice = L3_SETS_PER_SLICE;
-  //   l3->l3info.slices = (l3->cpuidInfo.cacheInfo.sets + 1)/
-  //   l3->l3info.setsperslice;
-  // }
-  // if (l3->l3info.setsperslice == 0)
-  //   l3->l3info.setsperslice = (l3->cpuidInfo.cacheInfo.sets +
-  //   1)/l3->l3info.slices;
-  // if (l3->l3info.bufsize == 0) {
-  //   l3->l3info.bufsize = l3->l3info.associativity * l3->l3info.slices *
-  //   l3->l3info.setsperslice * L3_CACHELINE * 2; if (l3->l3info.bufsize < 10 *
-  //   1024 * 1024)
-  //     l3->l3info.bufsize = 10 * 1024 * 1024;
-  // }
+  l3->l3info.bufsize = l3->l3info.associativity * l3->l3info.slices *
+                       l3->l3info.setsperslice * L3_CACHELINE *
+                       CACHE_SIZE_MULTI;
 }
 
-// extend version: change between no bprobe and direct access to all 16 add or
-// bprobe and access to 8 add with distance 2
+
+
+/**
+ * @brief extend version: change between no bprobe and direct access to all 16 add or bprobe and access to 8 add with distance 2
+ * 
+ * @param l3 Ptr to l3pp struct
+ * @param set Used to determine the eviction set
+ * @param bprobe bprobe=1 => Add pointers for bprobe
+ * @return void* 
+ */
 void *sethead_ex(l3pp_t l3, int set,
                  int bprobe) { // vlist_t list, int count, int offset) {
   // load eviction set
@@ -257,6 +93,7 @@ void *sethead_ex(l3pp_t l3, int set,
 
   int offset = (set % l3->groupsize) * L3_CACHELINE;
 
+  // pseudocode for following code:
   // enables to cycle through memory_blocks with preferred offset
   // foreach(i in 1:size(eviction_set)){ //each memory_block is page of size
   // 4096
@@ -296,6 +133,13 @@ void *sethead_ex(l3pp_t l3, int set,
   return OFFSET(vl_get(list, 0), offset);
 }
 
+/**
+ * @brief Wrapper for sethead_ex
+ * 
+ * @param l3 Ptr to l3pp struct
+ * @param set Used to determine the eviction set
+ * @return void* 
+ */
 void *sethead(l3pp_t l3, int set) { return sethead_ex(l3, set, 1); }
 
 void prime(void *pp, int reps) { walk((void *)pp, reps); }
@@ -303,8 +147,17 @@ void prime(void *pp, int reps) { walk((void *)pp, reps); }
 #define str(x) #x
 #define xstr(x) str(x)
 
+/**
+ * @brief Tests if a Candiate-Set is an Eviction-Set for a given candidate
+ * 
+ * @param list candidate-set as ptr-chain (possible Eviction-Set for candidate)
+ * @param void candidate (maybe evicted by candidate-set)
+ * @param walk_size Max steps through candidate-set (default is size(candidate-set))
+ * @param print print=1 => Print additional debug output
+ * @return int 
+ */
 static int timedwalk(void *list, register void *candidate, int walk_size,
-                     int print, vlist_t es) {
+                     int print) {
 #ifdef DEBUG
   static int debug = 100;
   static int debugl = 1000;
@@ -339,14 +192,11 @@ static int timedwalk(void *list, register void *candidate, int walk_size,
 
     // if(print)
     //   or_flush = flush_l3(buffer,pages,block_size);
-
-    // walk(list,20); was default why???
 #ifdef WASM
 walk_through(list);
     //or_walk = walk(list, walk_size);
-    // walk_through(list);
 #else
-    or_walk = walk(list, 20);
+    or_walk = walk(list, 20); //was default why???
 #endif
     // void *p = LNEXT(c2);
 
@@ -386,21 +236,40 @@ walk_through(list);
   return rv;
 }
 
-static int checkevict(vlist_t es, void *candidate, int walk_size, int print) {
+/**
+ * @brief Tests if a Candiate-Set is an Eviction-Set for a given candidate. Additionally builds ptr-chain for timedwalk.
+ * 
+ * @param es candidate-set as list (possible Eviction-Set for candidate)
+ * @param candidate candidate (maybe evicted by candidate-set)
+ * @param walk_size Max steps through candidate-set (default is size(candidate-set))
+ * @param print print=1 => Print additional debug output
+ * @return int 
+ */
+int checkevict(vlist_t es, void *candidate, int walk_size, int print) {
   if (vl_len(es) == 0)
     return 0;
   if (walk_size == 0)
     printf_ex("walk_size == 0\n");
   for (int i = 0; i < vl_len(es); i++)
     LNEXT(vl_get(es, i)) = vl_get(es, (i + 1) % vl_len(es));
-  int timecur = timedwalk(vl_get(es, 0), candidate, walk_size, print, es);
+  int timecur = timedwalk(vl_get(es, 0), candidate, walk_size, print);
   // printf_ex("$%i ", timecur);
   // if(timecur > (L3_THRESHOLD + L3_THRESHOLD_OFFSET))
   // printf_ex("timecur %i\n",timecur);
   return timecur;
 }
 
-static int checkevict_safe(vlist_t es, void *candidate, int walk_size,
+/**
+ * @brief repeat eviction-set testing multiple times to reduce possible errors. breaks if the results lead to a contradiction
+ * 
+ * @param es candidate-set as list (possible Eviction-Set for candidate)
+ * @param candidate candidate (maybe evicted by candidate-set)
+ * @param walk_size Max steps through candidate-set (default is size(candidate-set))
+ * @param print print=1 => Print additional debug output
+ * @param proofs Number of tests
+ * @return int 
+ */
+int checkevict_safe(vlist_t es, void *candidate, int walk_size,
                            int print, int proofs) {
   if (proofs <= 0) {
     printf_ex("proofs <= 0. set proofs = 1\n");
@@ -409,8 +278,9 @@ static int checkevict_safe(vlist_t es, void *candidate, int walk_size,
   int counter = 0;
   for (int i = 0; i < proofs; i++) {
     if (checkevict(es, candidate, walk_size, print) <=
-        (L3_THRESHOLD + L3_THRESHOLD_OFFSET))
+        (L3_THRESHOLD + L3_THRESHOLD_OFFSET)) {
       break;
+    }
     counter++;
     if (i >= 1) {
       // checkevict(es, candidate, walk_size, 1);
@@ -419,167 +289,16 @@ static int checkevict_safe(vlist_t es, void *candidate, int walk_size,
   return counter == proofs;
 }
 
-static void access_es(vlist_t es) {
-  if (vl_len(es) == 0)
-    return;
-  for (int i = 0; i < vl_len(es); i++)
-    LNEXT(vl_get(es, i)) = vl_get(es, (i + 1) % vl_len(es));
-  walk(vl_get(es, 0), vl_len(es));
-}
-
-static void expand_test(vlist_t es, void *current) {
-  for (int a = 0; a < 10; a++) {
-    access_es(es);
-    for (int i = 0; i < 2; i++) {
-      printf_ex("diff%i: %" PRIu32 " ", i,
-             memaccesstime_abs_double_access(current));
-    }
-    putchar('\n');
-  }
-}
-
-static void *expand_storefor(vlist_t es, vlist_t candidates) {
-  for(int i=0; vl_len(candidates)>0;i++) {
-    vl_push(es, vl_pop(candidates));
-  }
-  printf_ex("%i\n",vl_len(es));
-
-  for(int i=0; i<vl_len(es);i++) {
-    void* current = vl_del(es,i);
-    if(checkevict_safe(es, current, vl_len(es), 0, EXPAND_ITERATIONS)){
-      printf_ex("found\n");
-      return current;
-    }
-    vl_insert(es, i, current);
-  }
-  return NULL;
-}
-
-static void *expand(vlist_t es, vlist_t candidates) {
-  while (vl_len(candidates) > 0) {
-    void *current = vl_poprand(candidates);
-    if (vl_len(es) > 16 &&
-        vl_len(es) > vl_len(candidates) * EXPAND_START_VALUE_FACTOR &&
-        checkevict_safe(es, current, vl_len(es), 0, EXPAND_ITERATIONS)) {
-      // printf_ex("found es! size:%i\n", vl_len(es));
-      // expand_test(es, current);
-      // checkevict(es, current, vl_len(es), 1);
-      // checkevict(es, current, vl_len(es), 1);
-      // checkevict(es, current, vl_len(es), 1);
-      // exit(1);
-
-      return current;
-    }
-    vl_push(es, current);
-  }
-  return NULL;
-}
-
-static void contract(vlist_t es, vlist_t candidates, void *current) {
-  for (int i = 0; i < vl_len(es);) {
-    void *cand = vl_get(es, i);
-    vl_del(es, i);
-    // why cflush??? we want to check if smaller set still evicts current
-    // we access current beforehand, access smaller set, check if current was
-    // evicted load each element in evection set instead of clflush
-    // access_es(es);
-    // clflush(current);
-    if (checkevict_safe(es, current, vl_len(es), 0, CONTRACT_ITERATIONS))
-      vl_push(candidates, cand);
-    else {
-      vl_insert(es, i, cand);
-      i++;
-    }
-  }
-}
-
-static int contract_multiple(vlist_t es, vlist_t candidates, void *current,
-                             int del_number) {
-  int contract_at_least_once = 0;
-  vlist_t tmp_list = vl_new();
-  for (int i = 0; i < vl_len(es);) {
-    for (int j = 0; j < del_number && i < vl_len(es); j++) {
-      vl_push(tmp_list, vl_del(es, i));
-    }
-    if (checkevict_safe(es, current, vl_len(es), 0, CONTRACT_ITERATIONS)) {
-      while (vl_len(tmp_list) > 0) {
-        vl_push(candidates, vl_pop(tmp_list));
-      }
-    } else {
-      while (vl_len(tmp_list) > 0) {
-        vl_insert(es, i, vl_pop(tmp_list));
-      }
-      i += del_number;
-      contract_at_least_once = 1;
-    }
-  }
-  return contract_at_least_once;
-}
-
-static void contract_advanced(vlist_t es, vlist_t candidates, void *current,
-                              int associativity) {
-  //"perfect" es has 16 elements => therefore split es in vl_len(es)/(17) parts
-  // at least one part can be deleted completly!
-  int boundary = (int)(vl_len(es) / (associativity + 1));
-  // int first_del_number = (int)(vl_len(es) * CONTRACT_FIRST_DEL_FACTOR);
-  int first_del_number = 12;
-  // int second_del_number = (int)(vl_len(es) * CONTRACT_SECOND_DEL_FACTOR);
-  // int second_del_number = 6;
-
-  if (first_del_number > 1) {
-    if (!contract_multiple(es, candidates, current, first_del_number)) {
-      return;
-    }
-    // if(second_del_number > 1) {
-    //   contract_multiple(es, candidates, current, second_del_number);
-    // }
-  }
-
-  for (int i = 0; i < vl_len(es);) {
-    void *cand = vl_get(es, i);
-    vl_del(es, i);
-
-    if (checkevict_safe(es, current, vl_len(es), 0, CONTRACT_ITERATIONS))
-      vl_push(candidates, cand);
-    else {
-      vl_insert(es, i, cand);
-      i++;
-    }
-  }
-}
-
-// do not use collected memory blocks further
-static int collect(vlist_t es, vlist_t candidates /*, vlist_t set*/) {
-  int deleted = 0;
-  for (int i = vl_len(candidates); i--;) {
-    void *p = vl_del(candidates, i);
-    if (checkevict_safe(es, p, vl_len(es), 0, COLLECT_ITERATIONS)) {
-      // vl_push(set, p);
-      //printf_ex("%i ", ((int)p)-2048);
-      deleted++;
-    } else {
-      vl_push(candidates, p);
-    }
-  }
-  return deleted;
-}
-
-void doStuff(){
-  warmuprounds(10000);
-  warmuptimer();
-}
-
-void readjustTimerThreshold(){
-  int newTimerThreshold = mem_access_testing(1000000, 0);
-  L3_THRESHOLD = (newTimerThreshold < 30) ? 30 : newTimerThreshold;
-  L3_THRESHOLD = newTimerThreshold;
-  printf("readjust timer threshold to %i", newTimerThreshold);
-}
-
 #define DEBUG
 
-// get l3 struct and list of addresses with page size gaps
-// tries to find evicitions sets
+/**
+ * @brief Get l3 struct and list of addresses with page size gaps. Tries to find evicitions sets.
+ * 
+ * @param l3 Ptr to l3pp struct
+ * @param lines buffer aka memory-blocks
+ * @param storefor_mode storefor_mode=1 => Optimazations for new eviction-set search
+ * @return vlist_t 
+ */
 vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
 #ifdef DEBUG
   printf_ex("lines aka memory-blocks %d\n", vl_len(lines));
@@ -637,6 +356,10 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
   es_next_it = vl_new();
 #endif
 
+//-------------------------------------------------------------------------------------
+//-----------------------------------EXPAND-PHASE--------------------------------------
+//-------------------------------------------------------------------------------------
+
     before = rdtscp();
     void *c;
     //if(storefor_mode)
@@ -660,13 +383,17 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
       //       d_l2);
 #endif // DEBUG
       fail += 50;
-      //readjustTimerThreshold();
+      //L3_THRESHOLD = readjustTimerThreshold();
       if(storefor_mode){
         fail = FAIL_MAX+1;
       }
       continue;
       time_datahandling += (uint64_t)get_diff(before, rdtscp());
     }
+
+//-------------------------------------------------------------------------------------
+//----------------------------------CONTRACT-PHASE-------------------------------------
+//-------------------------------------------------------------------------------------
 
 #ifdef WASM
 #ifdef DEBUG_CONTRACT
@@ -708,7 +435,7 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
         //break;
       }
       size_old = vl_len(es);
-    }
+    } //end for loop
 #else
     before = rdtscp();
     contract(es, lines, c);
@@ -716,6 +443,10 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
     contract(es, lines, c);
     time_contract += (uint64_t)get_diff(before, rdtscp());
 #endif
+
+//-------------------------------------------------------------------------------------
+//-----------------------TEST RESULTS OF CONTRACT-PHASE--------------------------------
+//-------------------------------------------------------------------------------------
 
     before = rdtscp();
     // if(vl_len(es) < l3->l3info.associativity){
@@ -769,8 +500,6 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
       } else {
         too_small++;
       }
-
-
       
 #ifdef REUSE_CONTRACT_ENTRIES
       //if(too_big > 0){
@@ -804,11 +533,15 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
       fail++;
       if(fail % 3 == 0){
         doStuff();
-        //readjustTimerThreshold();
+        //L3_THRESHOLD = readjustTimerThreshold();
       }      
       continue;
     }
     time_datahandling += (uint64_t)get_diff(before, rdtscp());
+
+//-------------------------------------------------------------------------------------
+//----------------------------------COLLECT-PHASE--------------------------------------
+//-------------------------------------------------------------------------------------
 
     too_small = 0;
     too_big = 0;
@@ -844,7 +577,7 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
           l3->max_es);
       break;
     }
-  }
+  } //end big while-loop
 
   vl_free(es);
   uint64_t time_sum =
@@ -901,7 +634,12 @@ vlist_t expand_groups(vlist_t groups) {
   return all_groups;
 }
 
-// take buffer in l3 struct and try to create eviction sets
+/**
+ * @brief Take buffer from l3 struct and try to create eviction sets
+ * 
+ * @param l3 Ptr to l3pp struct
+ * @return int 
+ */
 int probemap(l3pp_t l3) {
   if ((l3->l3info.flags & L3FLAG_NOPROBE) != 0)
     return 0;
@@ -926,6 +664,15 @@ int probemap(l3pp_t l3) {
   return 1;
 }
 
+/**
+ * @brief Allocate memory for eviction-set search. Init data structures for eviction-sets and starts search afterwards.
+ * 
+ * @param l3info Info about L3-Cache
+ * @param l3_threshold timer threshold (difference between cache hit or miss)
+ * @param max_es Limits the number of "super" eviction-sets (each "super" eviction-set contains 64 evcition-sets)
+ * @param search_methods Select between DEFAULT and STOREFORWARDLEAKAGE
+ * @return l3pp_t 
+ */
 l3pp_t l3_prepare(l3info_t l3info, int l3_threshold, int max_es, enum search_methods search_method) {
   if (ADDRESS_OFFSET == 0) {
     printf_ex("error ADDRESS_OFFSET 0 is used for TLB noise reduction");
@@ -1029,6 +776,14 @@ else if(search_method == STOREFORWARDLEAKAGE){
   return l3;
 }
 
+/**
+ * @brief Experimental l3_prepare for tests.
+ * 
+ * @param l3_threshold timer threshold (difference between cache hit or miss)
+ * @param max_es Limits the number of "super" eviction-sets (each "super" eviction-set contains 64 evcition-sets)
+ * @param bufsize Size of meomry buffer in bytes
+ * @return l3pp_t 
+ */
 l3pp_t l3_create_only(int l3_threshold, int max_es, uint32_t bufsize) {
   if (ADDRESS_OFFSET == 0) {
     printf_ex("error ADDRESS_OFFSET 0 is used for TLB noise reduction");
@@ -1072,6 +827,11 @@ l3pp_t l3_create_only(int l3_threshold, int max_es, uint32_t bufsize) {
   return l3;
 }
 
+/**
+ * @brief Free used memory by l3pp struct
+ * 
+ * @param l3 Ptr to l3pp struct
+ */
 void l3_release(l3pp_t l3) {
   munmap(l3->buffer, l3->l3info.bufsize);
   free(l3->monitoredbitmap);
@@ -1081,6 +841,13 @@ void l3_release(l3pp_t l3) {
   free(l3);
 }
 
+/**
+ * @brief Add a specific cache-set to the monitored-sets
+ * 
+ * @param l3 Ptr to l3pp struct
+ * @param line cache-line in buffer (corresponds to a cache-set)
+ * @return int 
+ */
 int l3_monitor(l3pp_t l3, int line) {
   if (line < 0 || line >= l3->ngroups * l3->groupsize)
     return 0;
@@ -1093,6 +860,13 @@ int l3_monitor(l3pp_t l3, int line) {
   return 1;
 }
 
+/**
+ * @brief Remove a specific cache-set from the monitored-sets
+ * 
+ * @param l3 Ptr to l3pp struct
+ * @param line cache-line in buffer (corresponds to a cache-set)
+ * @return int 
+ */
 int l3_unmonitor(l3pp_t l3, int line) {
   if (line < 0 || line >= l3->ngroups * l3->groupsize)
     return 0;
@@ -1109,6 +883,11 @@ int l3_unmonitor(l3pp_t l3, int line) {
   return 1;
 }
 
+/**
+ * @brief Remove all cache-sets from the monitored-sets
+ * 
+ * @param l3 Ptr to l3pp struct
+ */
 void l3_unmonitorall(l3pp_t l3) {
   bzero(l3->monitoredbitmap,
         l3->ngroups * l3->groupsize / 32 * sizeof(uint32_t));
@@ -1117,6 +896,14 @@ void l3_unmonitorall(l3pp_t l3) {
     l3->monitoredset[i] = 0;
 }
 
+/**
+ * @brief Copy monitored-set to an int array
+ * 
+ * @param l3 Ptr to l3pp struct
+ * @param lines Ptr to int array
+ * @param nlines Number of monitored lines (cache-sets)
+ * @return int 
+ */
 int l3_getmonitoredset(l3pp_t l3, int *lines, int nlines) {
   if (lines == NULL || nlines == 0)
     return l3->nmonitored;
@@ -1126,6 +913,11 @@ int l3_getmonitoredset(l3pp_t l3, int *lines, int nlines) {
   return l3->nmonitored;
 }
 
+/**
+ * @brief Randomsize monitored-set
+ * 
+ * @param l3 Ptr to l3pp struct
+ */
 void l3_randomise(l3pp_t l3) {
   for (int i = 0; i < l3->nmonitored; i++) {
     int p = random() % (l3->nmonitored - i) + i;
@@ -1138,12 +930,35 @@ void l3_randomise(l3pp_t l3) {
   }
 }
 
+/**
+ * @brief prime-spam monitored cache-set (equivalent to optimized probe without time measurement)
+ * 
+ * @param l3 Ptr to l3pp struct
+ */
 void l3_probe_spam(l3pp_t l3) {
   for (int i = 0; i < l3->nmonitored; i++) {
     probe_only_split_2(l3->monitoredhead[i]);
   }
 }
 
+/**
+ * @brief Back probe variant of l3_probe_spam
+ * 
+ * @param l3 Ptr to l3pp struct
+ */
+void l3_bprobe_spam(l3pp_t l3) {
+  for (int i = 0; i < l3->nmonitored; i++) {
+    probe_only_split_2(NEXTPTR(l3->monitoredhead[i]));
+  }
+}
+
+/**
+ * @brief Probe monitored cache-sets
+ * 
+ * @param l3 Ptr to l3pp struct
+ * @param results Ptr to array for timer results
+ * @param probetime Ptr to probe-operation
+ */
 void l3_probe(l3pp_t l3, RES_TYPE *results, uint32_t (*probetime)(void *pp)) {
   for (int i = 0; i < l3->nmonitored; i++) {
     int t = (*probetime)(l3->monitoredhead[i]);
@@ -1151,12 +966,13 @@ void l3_probe(l3pp_t l3, RES_TYPE *results, uint32_t (*probetime)(void *pp)) {
   }
 }
 
-void l3_bprobe_spam(l3pp_t l3) {
-  for (int i = 0; i < l3->nmonitored; i++) {
-    probe_only_split_2(NEXTPTR(l3->monitoredhead[i]));
-  }
-}
-
+/**
+ * @brief Back probe variant of l3_probe
+ * 
+ * @param l3 Ptr to l3pp struct
+ * @param results Ptr to array for timer results
+ * @param probetime Ptr to probe-operation
+ */
 void l3_bprobe(l3pp_t l3, RES_TYPE *results, uint32_t (*probetime)(void *pp)) {
   for (int i = 0; i < l3->nmonitored; i++) {
     int t = bprobetime(l3->monitoredhead[i], probetime);
