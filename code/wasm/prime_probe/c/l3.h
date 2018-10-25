@@ -216,6 +216,7 @@ void l3_bprobecount(l3pp_t l3, RES_TYPE *results);
 int l3_repeatedprobe_spam(l3pp_t l3, int nrecords);
 int l3_repeatedprobe_fast(l3pp_t l3, int nrecords, RES_TYPE *results, int type);
 int l3_repeatedprobe_spam_fast(l3pp_t l3, int nrecords);
+int l3_repeatedprobe_spam_option(l3pp_t l3, int nrecords, int option);
 int l3_repeatedprobe_spam_fast_experimental(l3pp_t l3, int nrecords);
 
 int l3_repeatedprobe(l3pp_t l3, int nrecords, RES_TYPE *results, int slot,

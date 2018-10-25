@@ -465,8 +465,9 @@ void storefor_build_es(void *app_state_ptr, int max_es, int benchmarkruns){
  * 
  * @param app_state_ptr Ptr to global data struct
  * @param duration_sec Duration of prime-spam in secondes
+ * @option option=0 => probe_only_split_2 with bprobe, option=1 => probe_only_split_2 without bprobe, option=2 => ptr_arr with bprobe, option=3 => ptr_arr with bprobe
  */
-void prime_spam_es(void *app_state_ptr, int duration_sec)
+void prime_spam_es(void *app_state_ptr, int duration_sec, int option)
 {
   struct app_state *this_app_state = (struct app_state *)app_state_ptr;
   // 2500 counter iterations ~ 10us
@@ -477,6 +478,9 @@ void prime_spam_es(void *app_state_ptr, int duration_sec)
     return;
   }
   int number_of_samples = 1000000;
+  if(option == 1 || option == 3 || option == 5){
+    number_of_samples *= 2;
+  }
   int nmonitored = this_app_state->l3->nmonitored;
 
   // if (this_app_state->res)
@@ -491,7 +495,16 @@ void prime_spam_es(void *app_state_ptr, int duration_sec)
   {
     if(nmonitored == 1)
     {
-      l3_repeatedprobe_spam_fast(this_app_state->l3, number_of_samples);
+      uint64_t before_2 = get_time_in_ms();
+      //l3_repeatedprobe_spam_option(this_app_state->l3, number_of_samples, option);
+      if(option == 0){
+        l3_repeatedprobe_spam_fast(this_app_state->l3, number_of_samples);
+      }
+      else {
+        l3_repeatedprobe_spam_option(this_app_state->l3, number_of_samples, option);
+      }
+      uint64_t after_2 = get_time_in_ms();
+      printf_ex("time:%" PRIu64 "\n", after_2-before_2);
       //l3_repeatedprobe_spam_fast_experimental(this_app_state->l3, number_of_samples);
     } 
     else 

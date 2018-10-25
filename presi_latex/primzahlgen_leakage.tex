@@ -1,0 +1,61 @@
+%------------------------------------------------
+\section{Leakage in Mozilla NSS}
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Primzahlgenerierung in Mozilla NSS}
+\begin{itemize}
+\item Sieb des Eratosthenes mit Primzahlen $<2^{16}$
+\end{itemize}
+
+
+\SetKwProg{Fn}{Function}{}{}
+\begin{algorithm}[H]
+\DontPrintSemicolon
+\caption{Pseudo-Code für mpp_sieve in Mozilla NSS}
+\label{alg:sievePrimeGenerationNSS}
+\Fn{mpp\_sieve(randomNum, primesTab)}{
+    
+    \ForEach{smallPrime in primesTab} {
+        rem $\leftarrow$ randomNum mod smallPrime\;
+
+        \If{rem = 0}{
+            offset $\leftarrow$ 0\;
+        } 
+        \Else {
+            offset $\leftarrow$ smallPrime - rem\;
+        }
+
+        %\For{i = offset; i < nSieve * 2; i += prime}{
+        %    \If{i mod 2 = 0}{
+        %        sieve[i / 2] $\leftarrow$ 1\;
+        %    }
+        %}
+        \For{i = offset; i < nSieve; i += prime}{
+                sieve[i] $\leftarrow$ 1\;
+        }
+    }
+}
+\end{algorithm}
+\small
+\begin{itemize}
+\item Untersuche Zahlen der Form $randomNum + i$, sofern sieve[i] = 0
+\end{itemize}
+
+\end{frame}
+
+
+%------------------------------------------------
+
+\begin{frame}
+\frametitle{Primzahlgenerierung in Mozilla NSS}
+\begin{align*}
+    \text{\textit{randomNum}} \mod \text{\textit{smallPrime}}_i &\equiv a_i &\text{ mit } a_i \in A_i\\
+    \text{\textit{randomNum}} \mod \prod_i \text{\textit{smallPrime}}_i & < 2^{bits}-1 \\
+    \text{\textit{randomNum}} \mod \prod_i \text{\textit{smallPrime}}_i & > 2^{bits-1}
+\end{align*}
+\begin{itemize}
+\item Komplexität des Problems unbekannt
+\end{itemize}
+
+\end{frame}

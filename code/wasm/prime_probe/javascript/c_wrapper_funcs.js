@@ -36,9 +36,9 @@ sampleEsWrapper =
 }
 
 primeSpamEsWrapper =
-    function(durationSec) {
+    function(durationSec, primeSpamOption) {
   // Module['startTimer']();
-  Module['asm']._prime_spam_es(Module['appStatePtr'], durationSec);
+  Module['asm']._prime_spam_es(Module['appStatePtr'], durationSec, primeSpamOption);
   // Module['stopTimer']();
 }
 

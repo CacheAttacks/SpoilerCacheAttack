@@ -980,6 +980,12 @@ void l3_bprobe(l3pp_t l3, RES_TYPE *results, uint32_t (*probetime)(void *pp)) {
   }
 }
 
+/**
+ * @brief 
+ * 
+ * @param l3 
+ * @param results 
+ */
 void l3_probecount(l3pp_t l3, RES_TYPE *results) {
   for (int i = 0; i < l3->nmonitored; i++)
     results[i] = probecount(l3->monitoredhead[i]);
@@ -1152,6 +1158,76 @@ int l3_repeatedprobe_spam_fast(l3pp_t l3, int nrecords) {
     //even = !even;
   }
   return nrecords;
+}
+
+/**
+ * @brief 
+ * 
+ * @param l3 
+ * @param nrecords 
+ * @param option option=0 => probe_only_split_2 with bprobe, option=1 => probe_only_split_2 without bprobe, option=2 => ptr_arr with bprobe, option=3 => ptr_arr with bprobe, option=4 => probe_only with bprobe, option=5 => probe_only without bprobe
+ * @return int 
+ */
+int l3_repeatedprobe_spam_option(l3pp_t l3, int nrecords, int option) {
+  assert(l3 != NULL);
+
+  if (nrecords == 0)
+    return 0;
+
+  int len = l3->nmonitored;
+  if (len > 1)
+    return -1;
+
+  void *monitoredes1 = l3->monitoredhead[0];
+  void *monitoredes1b = NEXTPTR(monitoredes1);
+  // int monitoredes2 = l3->monitoredhead[1];
+
+  void** ptr_arr = (void**) malloc(sizeof(void*) * 16);
+  void* p = monitoredes1;
+  for(int i=0; i<16; i++){
+    ptr_arr[i] = p;
+    p = *((void **)p);
+  }
+
+  int ptr;
+  if(option == 0){ //probe_only_split_2 with bprobe
+  //int even = 1;
+    for (int i = 0; i < nrecords; i++) {
+      probe_only_split_2(monitoredes1);
+      probe_only_split_2(monitoredes1b);
+    }
+  } else if(option == 1){ //probe_only_split_2 without bprobe
+    for (int i = 0; i < nrecords; i++) {
+      probe_only_split_2(monitoredes1);
+    }
+  } else if(option == 2){ //ptr_arr with bprobe
+    for (int i = 0; i < nrecords; i++) {
+      for(int i=0; i<16; i++){
+        ptr ^= *((int*)ptr_arr[i]);
+      }
+      for(int i=15; i>=0; i--){
+        ptr ^= *((int*)ptr_arr[i]);
+      }
+    }
+  } else if(option == 3){ //ptr_arr without bprobe
+    for (int i = 0; i < nrecords; i++) {
+      for(int i=0; i<16; i++){
+        ptr ^= *((int*)ptr_arr[i]);
+      }
+    }
+  } else if(option == 4){ //probe_only without bprobe
+    for (int i = 0; i < nrecords; i++) {
+      probe_only(monitoredes1);
+      probe_only(monitoredes1b);
+    }
+  } else if(option == 5){ //probe_only without bprobe
+    for (int i = 0; i < nrecords; i++) {
+      probe_only(monitoredes1);
+    }
+  }
+
+  free(ptr_arr);
+  return ptr;
 }
 
 // cycles through all memory-blocks in a eviction-set

@@ -208,7 +208,17 @@
     list es
     <span><input type="text" id="textListEs" value="1,2,3" width="1"></span>
     <span><input type="button" id="btnSetMonitoredEsArr" value="Set monitored es arr"></span>
+    duration:
     <span><input type="number" id="numberPrimeSpamDurationSec" value="10" width="1"></span>
+    option:
+    <select id="selectPrimeSpamOption">
+      <option value="4">Single chain with bprobe</option>
+      <option value="5">Single chain without bprobe</option>
+      <option value="0">Split2 with bprobe</option>
+      <option value="1">Split2 without bprobe</option>
+      <option value="2">Ptr_arr with bprobe</option>
+      <option value="3">Ptr_arr without bprobe</option>
+    </select>
     <span><input type="button" id="btnPrimeSpam" value="Prime Spam"></span>
   </span></br>
   <span id='buildEs'>
@@ -216,8 +226,8 @@
     <span><input type="number" id="numberUpperLimitEs" value="0" width="1"></span>
     Search method:
     <select id="selectSearchMethod">
-      <option value="1">StoreForwardLeakage</option>
       <option value="0">Default</option>
+      <option value="1">StoreForwardLeakage</option>
     </select>
     <span><input type="button" id="btnBuildEs" value="Build es"></span>
     <span><input type="number" id="numberBenchmarksruns" value="20" width="1"></span>
@@ -609,7 +619,7 @@
     //execute prime spam operation for numberPrimeSpamDurationSec
     //use btnSetMonitoredEs and btnSetMonitoredEsArr to set spammed es
     document.getElementById('btnPrimeSpam').onclick = function () {
-      primeSpamEsWrapper(document.getElementById('numberPrimeSpamDurationSec').value);
+      primeSpamEsWrapper(document.getElementById('numberPrimeSpamDurationSec').value, document.getElementById('selectPrimeSpamOption').value);
     }
 
     // document.getElementById('btnTemplateDetection').onclick = function () {

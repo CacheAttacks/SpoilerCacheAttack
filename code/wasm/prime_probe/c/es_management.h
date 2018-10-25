@@ -49,7 +49,7 @@ int build_es_ex(void *app_state_ptr, int max_es, int benchmarkmode,
 uint32_t set_l3pp_t(void *app_state_ptr, int max_es, enum search_methods search_method);
 void storefor_build_es(void *app_state_ptr, int max_es, int benchmarkruns);
 
-void prime_spam_es(void *app_state_ptr, int duration_sec);
+void prime_spam_es(void *app_state_ptr, int duration_sec, int option);
 void sample_es(void *app_state_ptr, int number_of_samples, int slot_time
 #ifdef WASM
                ,
