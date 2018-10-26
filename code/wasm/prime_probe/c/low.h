@@ -45,9 +45,12 @@
 #define PAGE_SIZE_BITS 12
 #define PAGE_SIZE 4096
 
+//type for prime-and-probe measurement results
 #define RES_TYPE uint32_t       // uint16_t
 #define RES_TYPE_MAX UINT32_MAX // UINT16_MAX
 #define RES_TYPE_JS 1           // res_type_js = 0 => uint16, 1 => uint32
+
+//#define TIMER_DEUG_INFO //ifdef output info about timer values
 
 // ifdef => try to find es repeatly
 //#define BENCHMARKMODE
@@ -57,6 +60,14 @@
 //#define BENCHMARKCONTRACT
 
 #ifdef WASM
+/**
+ * @brief access all entries of a memory buffer to flush the l3-cache. This is not working for all cache-set on all Intel-CPUs (see http://blog.stuffedcow.net/2013/01/ivb-cache-replacement/ for more details).
+ * 
+ * @param buffer buffer==NULL=> create new buffer, otherwise use buffer with pages as size
+ * @param pages size of buffer
+ * @param block_size buffer access granularity
+ * @return int 
+ */
 static inline int flush_l3(void *buffer, int pages, int block_size)
 {
   int free_buf = 0;
@@ -82,6 +93,13 @@ static inline int flush_l3(void *buffer, int pages, int block_size)
 }
 #endif
 
+/**
+ * @brief Get the diff between two uint32_t timestamps. Assumes an uint32_t overflow if after <= before
+ * 
+ * @param before 
+ * @param after 
+ * @return uint32_t 
+ */
 static inline uint32_t get_diff(uint32_t before, uint32_t after)
 {
   if (after >= before)
@@ -100,6 +118,12 @@ static inline uint32_t get_diff(uint32_t before, uint32_t after)
   }
 }
 
+/**
+ * @brief Access Ptr *v
+ * 
+ * @param v Ptr to address
+ * @return int 
+ */
 #ifdef WASM
 __attribute__((optnone))
 #endif
@@ -119,21 +143,12 @@ memaccess(void *v)
 #endif
 }
 
-// static inline uint32_t memaccesstime_old(void *v) {
-//   uint32_t rv;
-//   asm volatile (
-//       "mfence\n"
-//       "lfence\n"
-//       "rdtsc\n"
-//       "mov %%eax, %%esi\n"
-//       "mov (%1), %%eax\n"
-//       "rdtsc\n"
-//       "sub %%esi, %%eax\n"
-//       : "=&a" (rv): "r" (v): "ecx", "edx", "esi");
-//   return rv;
-// }
-
 #ifdef WASM
+/**
+ * @brief Waits endless until timer starts counting
+ * 
+ * @param counts Min counted difference
+ */
 static inline void warmup(int counts)
 {
   if (counts >= UINT32_MAX)
@@ -146,6 +161,11 @@ static inline void warmup(int counts)
   }
 }
 
+/**
+ * @brief Get timer value multiple times
+ * 
+ * @param rounds Number of timer calls
+ */
 static inline void warmuprounds(int rounds)
 {
   while (rounds > 0)
@@ -155,6 +175,10 @@ static inline void warmuprounds(int rounds)
   }
 }
 
+/**
+ * @brief Waits endless until timer counts as intended
+ * 
+ */
 static inline void warmuptimer()
 {
   while (1)
@@ -169,10 +193,17 @@ static inline void warmuptimer()
 }
 #endif
 
-// add lfence instructions between rdtsc instructions
-// rdtscp seems not working as intented (i7-4770)
+
+/**
+ * @brief Measures access to *v two times and returns the access time difference
+ * 
+ * @param v Ptr to address
+ * @return uint32_t 
+ */
 static inline uint32_t memaccesstime_abs_double_access(void *v)
 {
+// add lfence instructions between rdtsc instructions
+// rdtscp seems not working as intented (i7-4770)
 #ifdef WASM
 #ifdef WARMUP
   warmuptimer();
@@ -211,10 +242,18 @@ struct timer_info
 };
 typedef struct timer_info *timer_info_p;
 
+//dummy function used as entry point in wasm code
 extern void dummy_for_wat(void);
 
 #ifdef WASM
-__attribute__((optnone)) static inline uint32_t gcc_test_opt(void *v)
+__attribute__((optnone)) 
+/**
+ * @brief Non-opt mem access measurment function for gcc
+ * 
+ * @param v 
+ * @return uint32_t 
+ */
+static inline uint32_t gcc_test_opt(void *v)
 {
   uint32_t before = SAB_lib_get_counter_value();
   uint32_t a = *((uint32_t *)v);
@@ -224,9 +263,16 @@ __attribute__((optnone)) static inline uint32_t gcc_test_opt(void *v)
 }
 #endif
 
-//#ifdef WASM
+// #ifdef WASM
 //    __attribute__((optnone))
-//#endif
+// #endif
+/**
+ * @brief Measures mem access time to *v
+ * 
+ * @param v Ptr to address
+ * @param info 
+ * @return uint32_t 
+ */
 static inline uint32_t memaccesstime(void *v, struct timer_info *info)
 {
 
@@ -235,12 +281,14 @@ static inline uint32_t memaccesstime(void *v, struct timer_info *info)
   warmuptimer();
   // warmuprounds(10);
 #endif
-  // test_find();
+
+  //this code is not working, even __attribute__((optnone)) is active
   // uint32_t before = SAB_lib_get_counter_value();
   // volatile uint32_t a = *((uint32_t*)v);
   // uint32_t after = SAB_lib_get_counter_value();
   // return get_diff(before,after); //+ a - a;
 
+  //instead: create some artificial dependencies to avoid instruction reordering
   uint32_t a;
   uint32_t after;
   uint32_t before = SAB_lib_get_counter_value();
@@ -261,27 +309,28 @@ static inline uint32_t memaccesstime(void *v, struct timer_info *info)
       before--;
   }
   uint32_t ret = get_diff(before, after);
+
+  #ifdef TIMER_DEUG_INFO
+  info->time_arr[info->time_arr_pos] = ret;
+  info->time_arr_sum += ret;
+  info->time_arr_pos = (info->time_arr_pos +1) % TIME_ARR_SIZE;
+  info->time_arr_sum_sum++;
+  if(info->time_arr_pos == 0){
+    int mean = info->time_arr_sum/TIME_ARR_SIZE;
+    printf("mean timer %i, iterations sum %llu\n", mean,
+    info->time_arr_sum_sum); info->time_arr_sum = 0; if(mean < 15){
+      int test_sum = 0;
+      for(int i=0; i<10000; i++){
+      uint32_t before = SAB_lib_get_counter_value();
+      uint32_t after = SAB_lib_get_counter_value();
+      test_sum += (after-before);
+      }
+      printf("mean test %i\n", test_sum/10000);
+    }
+  }
+  #endif
+
   return ret;
-
-  // info->time_arr[info->time_arr_pos] = ret;
-  // info->time_arr_sum += ret;
-  // info->time_arr_pos = (info->time_arr_pos +1) % TIME_ARR_SIZE;
-  // info->time_arr_sum_sum++;
-  // if(info->time_arr_pos == 0){
-  //   int mean = info->time_arr_sum/TIME_ARR_SIZE;
-  //   printf("mean timer %i, iterations sum %llu\n", mean,
-  //   info->time_arr_sum_sum); info->time_arr_sum = 0; if(mean < 15){
-  //     int test_sum = 0;
-  //     for(int i=0; i<10000; i++){
-  //     uint32_t before = SAB_lib_get_counter_value();
-  //     uint32_t after = SAB_lib_get_counter_value();
-  //     test_sum += (after-before);
-  //     }
-  //     printf("mean test %i\n", test_sum/10000);
-  //   }
-  // }
-
-  // return ret;
 
 #else
   uint32_t rv;
@@ -304,6 +353,11 @@ static inline uint32_t memaccesstime(void *v, struct timer_info *info)
 #endif
 }
 
+/**
+ * @brief Flushes cache-line corresponding to v
+ * 
+ * @param v Ptr to address
+ */
 static inline void clflush(void *v)
 {
 #ifdef WASM
@@ -317,6 +371,11 @@ static inline void clflush(void *v)
 #endif
 }
 
+/**
+ * @brief Get timestamp as uint32_t. Ifdef WASM => Uses Counter-Thread as timer value (resolution ~2-4ns). Ifndef WASM => Uses rdtscp as timer value (rdtscp timer frequency eqauls the CPU base clock frequency (on Intel CPUs), e.g. i7-4770 3.4GHz or i5-8600K 3.6GHz)
+ * 
+ * @return uint32_t 
+ */
 static inline uint32_t rdtscp()
 {
 #ifdef WASM
@@ -329,6 +388,11 @@ static inline uint32_t rdtscp()
 #endif
 }
 
+/**
+ * @brief Get timestamp as uint64_t. For more infos look at rdtscp()
+ * 
+ * @return uint64_t 
+ */
 static inline uint64_t rdtscp64()
 {
 
@@ -342,6 +406,10 @@ static inline uint64_t rdtscp64()
 #endif
 }
 
+/**
+ * @brief mefence instruction wrapper
+ * 
+ */
 static inline void mfence() { asm volatile("mfence"); }
 
 // https://wiki.osdev.org/Inline_Assembly
@@ -366,6 +434,12 @@ static inline void mfence() { asm volatile("mfence"); }
 //    );
 
 #ifdef WASM
+/**
+ * @brief Walk through closed ptr-chain until starting ptr is reached again
+ * 
+ * @param volatile ptr for element in ptr-chain
+ * @return void* 
+ */
 //__attribute__((optnone))
 static inline void *walk_through(void *volatile p)
 {
@@ -386,8 +460,14 @@ static inline void *walk_through(void *volatile p)
 }
 #endif
 
-// walks through eviction-set count steps or
-// stopps beforehand if size(eviction-set) < count
+/**
+ * @brief Walks through ptr-chain count steps or
+ * stopps beforehand if size(chain) < count
+ * 
+ * @param p 
+ * @param count 
+ * @return int 
+ */
 #ifdef WASM
 __attribute__((optnone))
 #endif
@@ -445,13 +525,6 @@ struct cpuidRegs
   uint32_t edx;
 };
 
-#define CPUID_CACHEINFO 4
-
-#define CACHETYPE_NULL 0
-#define CACHETYPE_DATA 1
-#define CACHETYPE_INSTRUCTION 2
-#define CACHETYPE_UNIFIED 3
-
 struct cpuidCacheInfo
 {
   uint32_t type : 5;
@@ -479,11 +552,24 @@ union cpuid {
   struct cpuidCacheInfo cacheInfo;
 };
 
-// inline void cpuid(union cpuid *c) {
-//   asm volatile ("cpuid": "+a" (c->regs.eax), "+b" (c->regs.ebx), "+c"
-//   (c->regs.ecx), "+d" (c->regs.edx));
-// }
+#ifndef WASM
+/**
+ * @brief wrapper for cpuid instruction
+ * 
+ * @param cpuid 
+ */
+inline void cpuid(union cpuid *c) {
+  asm volatile ("cpuid": "+a" (c->regs.eax), "+b" (c->regs.ebx), "+c"
+  (c->regs.ecx), "+d" (c->regs.edx));
+}
+#endif
 
+/**
+ * @brief Waits until timer value reached slotend. Retuns 1 if first timer call returns a value greater than slotend and 0 otherwise.
+ * 
+ * @param slotend Timer value which should be reached
+ * @return int 
+ */
 static inline int slotwait(uint32_t slotend)
 {
   if (rdtscp64() > slotend)
@@ -493,6 +579,12 @@ static inline int slotwait(uint32_t slotend)
   return 0;
 }
 
+/**
+ * @brief Waits cycles cycles. Uses rdtscp64 to get passed cycles.
+ * 
+ * @param cycles Number of cycles to wait
+ * @return int 
+ */
 static inline int waitcycles(uint64_t cycles)
 {
   uint64_t slotend = rdtscp64() + cycles;

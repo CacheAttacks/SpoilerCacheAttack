@@ -50,7 +50,14 @@
 int L3_THRESHOLD = 10000;
 int L3_THRESHOLD_OFFSET = 0;
 
-struct timer_info *info;
+//saves debug info about timer values
+struct timer_info *info = 0;
+void set_timer_info(){
+  if(info == 0){
+    info = (struct timer_info *)malloc(sizeof(struct timer_info));
+    bzero(info, sizeof(struct timer_info));
+  }
+}
 
 /**
  * @brief Get infos about the L3-Cache. Fixed values, because there is no CPUID-instruction in the brwoser.
@@ -679,9 +686,6 @@ l3pp_t l3_prepare(l3info_t l3info, int l3_threshold, int max_es, enum search_met
     exit(1);
   }
 
-  info = (struct timer_info *)malloc(sizeof(struct timer_info));
-  bzero(info, sizeof(struct timer_info));
-
   int allocatedMem = sizeof(struct l3pp);
   // Setup
   l3pp_t l3 = (l3pp_t)malloc(sizeof(struct l3pp));
@@ -981,16 +985,22 @@ void l3_bprobe(l3pp_t l3, RES_TYPE *results, uint32_t (*probetime)(void *pp)) {
 }
 
 /**
- * @brief 
+ * @brief Count number of mem accesses which exceed L3_THRESHOLD. (l3->monitoredhead[i] is the starting point of a ptr-chain with x entries. Measure access time for each of these x entries and count the cases where access time > L3_THRESHOLD)
  * 
- * @param l3 
- * @param results 
+ * @param l3 Ptr to l3pp struct
+ * @param results Number of samples aka prime-and-probe iterations
  */
 void l3_probecount(l3pp_t l3, RES_TYPE *results) {
   for (int i = 0; i < l3->nmonitored; i++)
     results[i] = probecount(l3->monitoredhead[i]);
 }
 
+/**
+ * @brief Back probe variant of l3_probecount
+ * 
+ * @param l3 Ptr to l3pp struct 
+ * @param results Number of samples aka prime-and-probe iterations
+ */
 void l3_bprobecount(l3pp_t l3, RES_TYPE *results) {
   for (int i = 0; i < l3->nmonitored; i++)
     results[i] = bprobecount(l3->monitoredhead[i]);
@@ -1005,25 +1015,16 @@ int l3_getSlices(l3pp_t l3) { return l3->l3info.slices; }
 // Returns the LLC associativity
 int l3_getAssociativity(l3pp_t l3) { return l3->l3info.associativity; }
 
-int l3_repeatedprobe_spam(l3pp_t l3, int nrecords) {
-  assert(l3 != NULL);
-
-  if (nrecords == 0)
-    return 0;
-
-  //uint32_t (*probetime)(void *pp) = get_probetime_by_type(type);
-
-  int even = 1;
-  for (int i = 0; i < nrecords; i++) {
-      if (even)
-        l3_probe_spam(l3);
-      else
-        l3_bprobe_spam(l3);
-      even = !even;
-  }
-  return nrecords;
-}
-
+/**
+ * @brief Prime-and-probe each monitored cache-set nrecords times and save the measured times in results.
+ * 
+ * @param l3 Ptr to l3pp struct
+ * @param nrecords Number of samples aka prime-and-probe iterations
+ * @param results Arrays with time measurement results
+ * @param slot Waiting time between two samples
+ * @param type Type of probe-operation (look at get_probetime_by_type for more details)
+ * @return int 
+ */
 int l3_repeatedprobe(l3pp_t l3, int nrecords, RES_TYPE *results, int slot,
                      int type) {
   assert(l3 != NULL);
@@ -1057,6 +1058,15 @@ int l3_repeatedprobe(l3pp_t l3, int nrecords, RES_TYPE *results, int slot,
   return nrecords;
 }
 
+/**
+ * @brief l3_repeatedprobe-version with reduced overhead (only for 1 monitored cache-set)
+ * 
+ * @param l3 Ptr to l3pp struct
+ * @param nrecords Number of samples aka prime-and-probe iterations
+ * @param results Arrays with time measurement results
+ * @param type 
+ * @return int 
+ */
 int l3_repeatedprobe_fast(l3pp_t l3, int nrecords, RES_TYPE *results,
                           int type) {
   assert(l3 != NULL);
@@ -1073,26 +1083,52 @@ int l3_repeatedprobe_fast(l3pp_t l3, int nrecords, RES_TYPE *results,
 
   void *monitoredes1 = l3->monitoredhead[0];
   void *monitoredes1b = NEXTPTR(monitoredes1);
-  // int monitoredes2 = l3->monitoredhead[1];
 
   int even = 1;
-  for (int i = 0; i < nrecords;) { // i++, results+=len) {
+  for (int i = 0; i < nrecords;) {
     if (even) {
-      // for (int i = 0; i < len; i++) {
-      // results[++i] = (RES_TYPE)probetime(monitoredes1);
       results[++i] = (RES_TYPE)(*probetime)(monitoredes1);
-      //}
     } else {
-      // for (int i = 0; i < len; i++) {
-      // results[++i] = (RES_TYPE)probetime(NEXTPTR(monitoredes1));
       results[++i] = (RES_TYPE)(*probetime)(monitoredes1b);
-      //}
     }
     even = !even;
   }
   return nrecords;
 }
 
+/**
+ * @brief Use prime-and-probe operation to slow down code (discard measurement)
+ * 
+ * @param l3 Ptr to l3pp struct 
+ * @param nrecords Number of samples aka prime-and-probe iterations
+ * @return int 
+ */
+int l3_repeatedprobe_spam(l3pp_t l3, int nrecords) {
+  assert(l3 != NULL);
+
+  if (nrecords == 0)
+    return 0;
+
+  //uint32_t (*probetime)(void *pp) = get_probetime_by_type(type);
+
+  int even = 1;
+  for (int i = 0; i < nrecords; i++) {
+      if (even)
+        l3_probe_spam(l3);
+      else
+        l3_bprobe_spam(l3);
+      even = !even;
+  }
+  return nrecords;
+}
+
+/**
+ * @brief Experimental version of prime spam fast
+ * 
+ * @param l3 Ptr to l3pp struct
+ * @param nrecords Number of samples aka prime-and-probe iterations
+ * @return int 
+ */
 int l3_repeatedprobe_spam_fast_experimental(l3pp_t l3, int nrecords) {
   assert(l3 != NULL);
 
@@ -1105,7 +1141,6 @@ int l3_repeatedprobe_spam_fast_experimental(l3pp_t l3, int nrecords) {
 
   void *monitoredes1 = l3->monitoredhead[0];
   void *monitoredes1b = NEXTPTR(monitoredes1);
-  // int monitoredes2 = l3->monitoredhead[1];
 
   void **ptr_arr = (void**)malloc(sizeof(void*) * 16);
   for(int i=0; i<16; i++){
@@ -1114,7 +1149,6 @@ int l3_repeatedprobe_spam_fast_experimental(l3pp_t l3, int nrecords) {
   }
 
   //not working
-  //int even = 1;
   for (int i = 0; i < nrecords; i++) { 
     for(int j=0; j<16; j++){
       volatile void *k = (void*)LNEXT(ptr_arr[j]);
@@ -1126,6 +1160,13 @@ int l3_repeatedprobe_spam_fast_experimental(l3pp_t l3, int nrecords) {
   return nrecords;
 }
 
+/**
+ * @brief Faster version of prim spam (reduced function calling overhead)
+ * 
+ * @param l3 Ptr to l3pp struct
+ * @param nrecords Number of samples aka prime-and-probe iterations
+ * @return int 
+ */
 int l3_repeatedprobe_spam_fast(l3pp_t l3, int nrecords) {
   assert(l3 != NULL);
 
@@ -1138,7 +1179,6 @@ int l3_repeatedprobe_spam_fast(l3pp_t l3, int nrecords) {
 
   void *monitoredes1 = l3->monitoredhead[0];
   void *monitoredes1b = NEXTPTR(monitoredes1);
-  // int monitoredes2 = l3->monitoredhead[1];
 
   //int even = 1;
   for (int i = 0; i < nrecords; i++) { // i++, results+=len) {
@@ -1161,10 +1201,10 @@ int l3_repeatedprobe_spam_fast(l3pp_t l3, int nrecords) {
 }
 
 /**
- * @brief 
+ * @brief Prime spam with different prime types
  * 
- * @param l3 
- * @param nrecords 
+ * @param l3 Ptr to l3pp struct
+ * @param nrecords Number of samples aka prime-and-probe iterations
  * @param option option=0 => probe_only_split_2 with bprobe, option=1 => probe_only_split_2 without bprobe, option=2 => ptr_arr with bprobe, option=3 => ptr_arr with bprobe, option=4 => probe_only with bprobe, option=5 => probe_only without bprobe
  * @return int 
  */
@@ -1180,7 +1220,6 @@ int l3_repeatedprobe_spam_option(l3pp_t l3, int nrecords, int option) {
 
   void *monitoredes1 = l3->monitoredhead[0];
   void *monitoredes1b = NEXTPTR(monitoredes1);
-  // int monitoredes2 = l3->monitoredhead[1];
 
   void** ptr_arr = (void**) malloc(sizeof(void*) * 16);
   void* p = monitoredes1;
@@ -1230,8 +1269,15 @@ int l3_repeatedprobe_spam_option(l3pp_t l3, int nrecords, int option) {
   return ptr;
 }
 
-// cycles through all memory-blocks in a eviction-set
-// access them and count accesses with (accesstime > L3_THRESHOLD)
+/**
+ * @brief Cycles through all memory-blocks in a eviction-set access them and count accesses with (accesstime > L3_THRESHOLD)
+ * 
+ * @param l3 Ptr to l3pp struct
+ * @param nrecords Number of samples aka prime-and-probe iterations
+ * @param results Arrays with time measurement results
+ * @param slot Waiting time between two samples
+ * @return int 
+ */
 int l3_repeatedprobecount(l3pp_t l3, int nrecords, RES_TYPE *results,
                           int slot) {
   assert(l3 != NULL);

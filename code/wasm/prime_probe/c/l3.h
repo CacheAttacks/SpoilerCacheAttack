@@ -178,6 +178,8 @@ struct l3pp
 #define L3FLAG_USEPTE 0x02
 #define L3FLAG_NOPROBE 0x04
 
+void set_timer_info();
+
 typedef uint32_t (*p_probetime)(void *);
 
 enum search_methods { DEFAULT, STOREFORWARDLEAKAGE };

@@ -20,6 +20,7 @@
         "printf_wrapper.h": "c",
         "sabcounter.h": "c",
         "storefor_find_es.h": "c",
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "l3_phases.h": "c"
     }
 }
