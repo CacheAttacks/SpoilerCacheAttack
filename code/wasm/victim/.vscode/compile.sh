@@ -1,2 +1,0 @@
-source ~/MA_2/webassembly/emsdk-portable/emsdk_env.sh
-emcc victim.c SABcounter.c -s WASM=1 -o victim.html -s EXPORTED_FUNCTIONS='["_main", "_int_sqrt", "_wasmMemory_get_buffer", "_read_mem", "_bla"]' --js-library myLibrary.js -s RESERVED_FUNCTION_POINTERS=10

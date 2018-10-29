@@ -1,7 +1,0 @@
-{
-    "files.associations": {
-        "time.h": "c",
-        "limits.h": "c",
-        "io.h": "c"
-    }
-}
