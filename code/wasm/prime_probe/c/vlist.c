@@ -17,6 +17,9 @@
  * along with Mastik.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//This is a c-list implementation
+//Make sure to call vl_free if you don't need the list anymore! 
+
 #include "config.h"
 #include <assert.h>
 #include <stdio.h>

@@ -6,6 +6,7 @@ self.addEventListener('message', (m) => {
   // console.log("worker:" + sharedArray[0]);
 
   while (1) {
+     //uncomment to support firefox
      //if(sharedArray[0] > 2000000000)
      //   sharedArray[0] = 0;
 

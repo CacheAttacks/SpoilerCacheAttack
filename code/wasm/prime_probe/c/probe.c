@@ -16,6 +16,8 @@
 #include "timestats.h"
 #include "printf_wrapper.h"
 
+//this file defines a bunch of different probe methods for testing purposes. There are used in the prime-and-probe operation (e.g. l3_repeatedprobe).
+
 extern int L3_THRESHOLD;
 
 #define BPROBEPTR(p) (OFFSET((p), sizeof(void *)))

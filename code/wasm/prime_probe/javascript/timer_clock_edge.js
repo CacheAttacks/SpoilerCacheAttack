@@ -1,3 +1,5 @@
+//Code from Fantastic Timers and Where to Find Them:High-Resolution Microarchitectural Attacks in JavaScript.
+
 function calibrate() {
   var counter = 0, next;
   for (var i = 0; i < 10; i++) {

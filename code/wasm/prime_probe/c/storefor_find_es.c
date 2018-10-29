@@ -14,32 +14,12 @@
 #include "storefor_find_es.h"
 #include "es_management.h"
 
-// static inline uint32_t memaccesstime(void *v)
-// {
-//     warmuptimer();
-//   uint32_t a;
-//   uint32_t after;
-//   uint32_t before = SAB_lib_get_counter_value();
-//   if (before > 0)
-//   {
-//     before++;
-//     a = *((uint32_t *)v);
-//     a = read_mem_ptr((uint32_t)v);
-//   }
-//   if (a == 0)
-//   {
-//     after = SAB_lib_get_counter_value();
-//     after++;
-//   }
-//   else
-//   {
-//     after = SAB_lib_get_counter_value();
-//     if (before > 0)
-//       before--;
-//   }
-//   return after-before;
-// }
-
+/**
+ * @brief Get mem access time for memory address.
+ * 
+ * @param v Memory address
+ * @return uint32_t 
+ */
 __attribute__((optnone))
 static inline uint32_t memaccesstime_alt(void *v)
 {
@@ -65,7 +45,12 @@ static inline uint32_t memaccesstime_alt(void *v)
   return after-before-val;
 }
 
-
+/**
+ * @brief Get mem access time for memory address.
+ * 
+ * @param memory Memory address
+ * @return uint32_t 
+ */
 uint32_t measure_read(void *memory){
     //printf_ex("%p\n", memory);
     #ifdef WASM
@@ -90,6 +75,13 @@ uint32_t measure_read(void *memory){
     #endif
 }
 
+/**
+ * @brief WASM implementation of colliding address search. Not working! Use js version instead.
+ * 
+ * @param evictionBuffer 
+ * @param window_size 
+ * @param target_add 
+ */
 void measurement_funct(uint8_t * evictionBuffer, int window_size, uint8_t *target_add){
 	uint16_t *measurementBuffer = (uint16_t*) malloc(PAGE_COUNT * sizeof(uint16_t));
     uint16_t *measurementBuffer2 = (uint16_t*) malloc(PAGE_COUNT * sizeof(uint16_t));
@@ -153,17 +145,26 @@ void measurement_funct(uint8_t * evictionBuffer, int window_size, uint8_t *targe
 		//printf_ex("%u ", measurementBuffer[p]);
 	}
     printf_ex("\n");
-
 }
 
+/**
+ * @brief Wrapper for store_for_js_SAB
+ * 
+ */
 void storefor_write_SAB(){
   uint32_t buffer_size = PAGE_COUNT * PAGE_SIZE;
   store_for_js_SAB(buffer_size);
 }
 
+//variables for debug output
 uint64_t time_sum_js = 0, time_sum_wasm = 0;
 
-
+/**
+ * @brief Take buffer from l3 struct and try to create eviction sets. Uses the storeforward leakage
+ * 
+ * @param l3 Ptr to l3pp struct
+ * @return int 
+ */
 int probemap_storeforwardleakage(l3pp_t l3){
 
     uint32_t timer_before = get_time_in_ms();
@@ -180,7 +181,10 @@ int probemap_storeforwardleakage(l3pp_t l3){
     uint32_t buffer_size = l3->l3info.bufsize;
 
     //printf_ex("target_add:%p\n", buffer);
+    
+    //wasm version measurement_funct not working. Use js version store_for_js instead.
     //measurement_funct(buffer, WINDOW_SIZE, buffer);
+
     for(int i=0; i<32; i++){
       for(int j=0; j<10; j++){
         if(store_for_js((WASMPTR)l3->buffer, buffer_size, (WASMPTR)storefor_add_arr, storefor_add_arr_size, (WASMPTR)(l3->buffer+i*PAGE_SIZE), threadholdSearchForEs, WINDOW_SIZE, rounds, (WASMPTR)l3)){
@@ -230,6 +234,12 @@ int probemap_storeforwardleakage(l3pp_t l3){
     return 1;
 }
 
+/**
+ * @brief Only used for storeforward benchmarks and additional tests!
+ * 
+ * @param app_state_ptr Ptr to app state struct
+ * @param benchmarkruns Number of benchmarks runs
+ */
 void storefor_write(void *app_state_ptr, int benchmarkruns){
   //test if allocated buffer is continous physical memory (speed eviction set search by a factor of 2^8)
 	
@@ -322,47 +332,70 @@ void storefor_write(void *app_state_ptr, int benchmarkruns){
 	// measurement_funct(evictionBuffer, WINDOW_SIZE, evictionBuffer+PAGE_SIZE);
 }
 
+
+//#define DEBUG_OUTPUT_COLLIDING_ADDRESS_DIST //output distance between colliding addresses
+
+/**
+ * @brief Tries to create an es from a pool of colliding-addresses (least 20 bit of each address are identical).
+ * Uses the standard eviction-set search method to find the es.
+ * 
+ * @param address_arr Ptr to array with the colliding addresses (filled by js)
+ * @param number_of_storefor_add Number of colliding addresses
+ * @param startTime Start time of the colliding address search (for debug purposes)
+ * @param endTime End time of the colliding address search (for debug purposes)
+ * @param ptr_l3 Ptr to l3 struct
+ * @return int 
+ */
 int try_to_create_es(uint32_t *address_arr, uint32_t number_of_storefor_add, uint32_t startTime, uint32_t endTime, void* ptr_l3){
   l3pp_t l3 = (l3pp_t)ptr_l3;
   time_sum_js += (uint64_t)get_diff(startTime, endTime);
   
   uint32_t startTimeWasm = rdtscp();
   vlist_t lines = vl_new();
+
+#ifdef DEBUG_OUTPUT_COLLIDING_ADDRESS_DIST
   int opt_counter = 0, max_opt=0, opt_sum =0;
+#endif
+
   for(int i=0; i<number_of_storefor_add; i++){
-    // if(i>1){
-    //   printf_ex("%i ", (address_arr[i]-address_arr[i-1])/4096);
-    //   if((address_arr[i]-address_arr[i-1])/4096 == 256){
-    //     opt_counter++;
-    //     opt_sum++;
-    //   }
-    //   else { 
-    //     if(opt_counter > max_opt){
-    //       max_opt = opt_counter;
-    //     }
-    //     opt_counter = 0;
-    //   }
-    // }
+
+#ifdef DEBUG_OUTPUT_COLLIDING_ADDRESS_DIST
+    if(i>1){
+      printf_ex("%i ", (address_arr[i]-address_arr[i-1])/4096);
+      if((address_arr[i]-address_arr[i-1])/4096 == 256){
+        opt_counter++;
+        opt_sum++;
+      }
+      else { 
+        if(opt_counter > max_opt){
+          max_opt = opt_counter;
+        }
+        opt_counter = 0;
+      }
+    }
+#endif
     vl_push(lines, (void*)(address_arr[i]+2048));
   }
-  //printf_ex("max_opt:%i, opt_sum:%i", max_opt, opt_sum);
-  //printf_ex("\n");
-  //vl_free(lines);
+
+
+#ifdef DEBUG_OUTPUT_COLLIDING_ADDRESS_DIST
+  printf_ex("max_opt:%i, opt_sum:%i\n", max_opt, opt_sum);
+#endif
+
   vlist_t groups = map(l3, lines, 0);
   //vl_free(lines);
-  //printf_ex("%i\n",vl_len(lines));
-  //groups = map(l3, lines);
-  //groups = map(l3, lines);
-  //groups = map(l3, lines);
 
   time_sum_wasm += (uint64_t)get_diff(startTimeWasm, rdtscp());
 
+  //4 es should be found!
   if(vl_len(groups) == 4){
     vlist_t es = vl_get(groups, 0);
-    for(int i=0; i<vl_len(es); i++){
+
+    //for(int i=0; i<vl_len(es); i++){
       //printf_ex("%p ",vl_get(es,i));
-    }
+    //}
     //printf_ex("\n");
+
     vlist_t expanded_groups = expand_groups(groups);
     vl_free(groups);
     while(vl_len(expanded_groups) > 0){

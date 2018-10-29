@@ -1,2 +1,0 @@
-http://www.math.unipd.it/~conti/teaching/CNS1314/atpapers/Cloud_Security/sec12-final97.pdf
-http://pages.cs.wisc.edu/~venkatv/pvstudy-usenixsecurity15.pdf

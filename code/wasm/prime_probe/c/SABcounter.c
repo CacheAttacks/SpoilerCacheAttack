@@ -19,6 +19,13 @@ uint32_t *SAB_global_counter_buffer = 0;
 
 struct timer_info *info;
 
+/**
+ * @brief Test counter consistency. Output mean values or every value.
+ * 
+ * @param mean mean=1=> output mean counter value after range iterations, mean=0=> output every counter value
+ * @param counts total number of tests
+ * @param range number of iterations after a mean value is printed
+ */
 void counter_consistency_test(int mean, uint32_t counts, uint32_t range)
 {
   int sum = 0;
@@ -49,6 +56,11 @@ void counter_consistency_test(int mean, uint32_t counts, uint32_t range)
   exit(1);
 }
 
+/**
+ * @brief Get timer resolution in ns
+ * 
+ * @return float 
+ */
 float get_timer_resolution()
 {
   float resolution_ns = 101;
@@ -59,6 +71,13 @@ float get_timer_resolution()
   return resolution_ns;
 }
 
+/**
+ * @brief Prints results of a prime-and-probe measurement
+ * 
+ * @param l3 Ptr to l3 struct
+ * @param res Ptr to measurment results
+ * @param nmonitored Number of monitored es
+ */
 // void print_res(l3pp_t l3, RES_TYPE *res, int nmonitored)
 // {
 //   printf_ex("size of eviction sets\n");
@@ -81,6 +100,12 @@ float get_timer_resolution()
 //   }
 // }
 
+/**
+ * @brief Accepts a measurement function and tests the performance.
+ * 
+ * @param measure_func Function which returns a uint32_t counter value
+ * @param resolution_ns Resolution of the timer in ns to print nice results
+ */
 void SAB_test_resolution(uint32_t (*measure_func)(), float resolution_ns)
 {
   for (int i = 0; i < 20; i++)
@@ -92,6 +117,9 @@ void SAB_test_resolution(uint32_t (*measure_func)(), float resolution_ns)
   }
   putchar('\n');
 }
+
+//different methods to get the counter value. 
+//See SABcounter.h or https://kripken.github.io/emscripten-site/docs/porting/connecting_cpp_and_javascript/Interacting-with-code.html for more details
 
 uint32_t wrapper_SAB_lib_get_counter_value()
 {
@@ -162,6 +190,7 @@ int doSomething()
   return a;
 }
 
+//direct version for SAB_test_resolution without function ptr
 // void SAB_test_resolution_direct(float resolution_ns){
 //   for(int i = 0; i< 20; i++) {
 //     int v1 = shared_array_counter_get_value();
@@ -172,6 +201,11 @@ int doSomething()
 //   putchar('\n');
 // }
 
+/**
+ * @brief Benchmark for different methods to get the counter value. 
+ * See https://kripken.github.io/emscripten-site/docs/porting/connecting_cpp_and_javascript/Interacting-with-code.html for more details.
+ * 
+ */
 void SAB_bench_call_methods()
 {
   float resolution_ns = SAB_get_resolution_ns(100);

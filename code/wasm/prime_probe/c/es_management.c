@@ -448,7 +448,7 @@ uint32_t set_l3pp_t(void *app_state_ptr, int max_es, enum search_methods search_
 }
 
 /**
- * @brief 
+ * @brief Used for storeforwad benchmarks.
  * 
  * @param app_state_ptr Ptr to global data struct
  * @param max_es Break search after max_es es were found

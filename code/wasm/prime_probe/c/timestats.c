@@ -17,6 +17,8 @@
  * along with Mastik.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//Implements some simple median, max, mean operations for arrays
+
 #include "config.h"
 #include <assert.h>
 #include <stdint.h>
