@@ -511,7 +511,11 @@ void prime_spam_es(void *app_state_ptr, int duration_sec, int option)
     {
        //l3_repeatedprobe(this_app_state->l3, number_of_samples, this_app_state->res,
                        //0, this_app_state->type);
-      l3_repeatedprobe_spam(this_app_state->l3, number_of_samples);
+      uint64_t before_2 = get_time_in_ms();
+      l3_repeatedprobe_spam_option(this_app_state->l3, number_of_samples, option);
+      uint64_t after_2 = get_time_in_ms();
+      printf_ex("time:%" PRIu64 "\n", after_2-before_2);
+      //l3_repeatedprobe_spam(this_app_state->l3, number_of_samples);
     }
   }
 }

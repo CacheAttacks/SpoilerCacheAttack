@@ -8,7 +8,7 @@ self.addEventListener('message', (m) => {
   while (1) {
      //uncomment to support firefox
      //if(sharedArray[0] > 2000000000)
-     //   sharedArray[0] = 0;
+     //  sharedArray[0] = 0;
 
     sharedArray[0]++;
     // Atomics.add(sharedArray, 0, 1);

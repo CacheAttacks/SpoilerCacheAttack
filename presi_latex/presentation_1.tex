@@ -116,11 +116,19 @@ Institut für IT-Sicherheit% Your institution for the title page
 
 \begin{frame}
 \titlepage % Print the title page as the first slide
+%Ich möchte im folgenden die Ergebenisse meiner Masterarbeit mit dem Titel Browser-basierte Cache-Angriffe auf die RSA-Schlusselgenerierung vorstellen.
 \end{frame}
 
 \begin{frame}
 \frametitle{Überblick} % Table of contents slide, comment this block out to remove it
 \tableofcontents[hideallsubsections] % Throughout your presentation, if you choose to use \section{} and \subsection{} commands, these will automatically be printed on this slide as an overview of your presentation
+
+%Zunächst einmal ein kleiner Überlick über die Inhalte.
+%Zuerst möchte ich für das Thema motivieren und den Themenschwerpunkt der Arbeit näher vorstellen.
+%Danach möchte ich zeigen wie Angriffe im Browser umgesetzt werden und welche Unterschiede zu nativen Angriffen bestehen.
+%Insebsondere möchte ich dort auf die Initalisierungsphase des Angriffs eingehen und optmieren dieser beschreiben.
+%Nachfolgend möchte ich die Probleme beschrieben, die beim portieren eines nativen Angriffs auftreten und mögliche Lösungen dafür diskutieren.
+%Abschließend gibt es ein Fazit und einen Ausblick auf zukünftige Forschungemöglichkeiten in diesem Bereich.
 \end{frame}
 
 %bis hier max 1 min 30 sec wenn flüssig läuft
@@ -143,6 +151,7 @@ Institut für IT-Sicherheit% Your institution for the title page
 \item Mehr potenzielle Ziele durch Angriff aus dem Browser
 %native Angriffe nur bei Cloud-computing oder Mehrbenutzersystemen sinnvoll,
 %Mit Browserangriffen alle Arten von Endgeräten angreifbar
+\item Portierung nativer Angriffe zu browser-basierten
 \item Im Folgenden: Angriff auf den geteilten L3-Cache von Intel-CPUs
 %nicht von den Gegenmaßnahmen gegen Meltdown und Spectre betroffen
 \item Speicherzugriffe des Opferprogramms durch unterschiedliche Zugriffszeiten bei Cache-Hit und Miss
@@ -194,6 +203,19 @@ Institut für IT-Sicherheit% Your institution for the title page
 \end{itemize}
 %erläutere wie zeitmessung in JS mit Timethread
 \end{frame}
+
+%Nun möchte ich kurz den Prime-and-Probe-Angriff vorstellen der in dieser Arbeit verwendet wird.
+%Mit diesem kann ermittelt werden ob das Opferprogramm auf einen bestimmten Speicheradressen zugegriffen hat.
+%Hierzu wird ein Eviction-Set benötigt, auf dessen Einträge in Zeile 2 und 3 lesend zugegriffen wird.
+%Dies sorgt dafür, dass das Cache-Set ausschließlich mit Einträgen aus dem Eviction-Set belegt ist.
+%Die wait()-Operation soll andeuten, dass das Opferprogramm in dieser Phase Berechnungen ausführt.
+%In den Zeilen 5 bis 8 wird nun gemessen wie lange der Zugriffe auf alle Einträge des Eviction-Sets dauert.
+%Wenn das Opferprogarmm in der wait-phase einträge aus dem Cache-set verdrängt hat, wird eine höhere Zugriffszeit über dem threshold-Wert gemessen.
+%Andernfalls sind noch alle Einträge des Eviction-Sets im Cache und es wird eine niedrige Zugriffszeit gemessen.
+%Diese Unterschiede befinden sich im Nanosekundenbereich, weswegen sehr genaue Timer benötigt werden.
+%Im Browser kann zurzeit nicht direkt auf höchpräsize Timer zurückgegriffen werden, weshalb hier eine Counter-Thread verwendet wird.
+%Dieser inkrementiert in einem zusätzlichen Thread in einer Endlosschleife eine Integer-Variable, die dann als Zeitstempel dient.
+%Solche eine Inkrementierung benötigt nur wenige Taktzyklen, weshalb dieser Workaround ausreichend genau ist.
 
 %------------------------------------------------
 \subsection{Eviction-Set-Suche}
@@ -259,7 +281,7 @@ Institut für IT-Sicherheit% Your institution for the title page
 \draw (438,98) node [scale=0.7] [align=left] {12};
 \draw (134,57) node [scale=0.7] [align=left] {64};
 % Text Node
-\draw (432,118) node [scale=1] [align=left] {Adressbits};
+\draw (435,118) node [scale=1] [align=left] {Adressbits};
 \end{tikzpicture}
 \end{figure}
 
@@ -268,48 +290,41 @@ Institut für IT-Sicherheit% Your institution for the title page
 \item Erzeuge Adresspool durch Allokation eines Buffers
 \item Wähle zufällige Adresse aus dem Pool als Zeugen
 \item Teilmenge des Pools ist Eviction-Set für den Zeugen
+\item Verbesserter Adresspool mittels colliding-addresses
 \end{itemize}
-
-
 
 \end{frame}
 
-%------------------------------------------------
-\subsection{colliding-addresses}
-\begin{frame}
-\frametitle{Beschleunigung der Eviction-Set-Suche}
-\begin{itemize}
-\item Nutzer besucht Website für wenige Minuten
-%schnelle Initaliserung des Angriffs notwendig
-\item Verfeinerung des Addresspools mittels Leakage
-\end{itemize}
+%Im Folgenden möchte ich nun darauf eingehen wie man diese im Prime-and-Probe Angriff benötigten Eviction-Sets finden kann.
+%Zuerst einmal basiert das Mapping einer Speicheradresse auf ein Cache-Set auf physischen Adressen.
+%Diese folgende Zuordnung gilt für die in dieser Arbeit angegriffene L3-Cache der Intel Core-Architektur.
+%In den ersten Zeile sieht man, wie Adressen Cache-Sets zugeordnet werden. Eine Cache-Line hat 64 Byte, d.h. Bit 0 bis 5 sind der Cache-Line Offset. 
+%Die 11 Bit 6 bis 16 bestimmen nun in welchem Cache-Set die Adresse landet.
+%Des Weiteren ist jedem physischen CPU-Kern ein Teil des L3-Caches auch Slice genannt zugeordnet,
+%Und die Bits 17 bis 63 der Adresse bestimmen in welchem Slice die Adresse gemappt wird, wobei dies mit einer Hashfunktion passiert.
+%Aus Programmsicht sind aber nur die Virtuellen Adressen sichtbar bei denen nur die letzten 12 Bits der Adressen mit der physischen übereinstimmen, die sogenannten Page Bits.
+%Im Webkontext kommt noch zusätzlich eine Abstraktionsschicht durch die eigene Adressierung von Web-Assembly hinzu.
+%Hier sind aber auch die letzten 12 Adressbits identisch mit der physischen Adresse.
+%Mit diesen Voraussetzungen sollen jetzt Eviction-Sets gefunden werden.
+%Hierfür benötigt man einen Adresspool, den man durch Allokation eines großen Buffers erhält.
+%In dem Adresspool landen nun nur Adressen der letzten 12 Bit gleich z.b. alle Adressen deren letzten 12 Bits 0 sind.
+%Ziel ist es eine Eviction-Set zu finden indem alle Einträge auf das gleich Cache-Set gemappt werden.
+%Somit landen im Pool nur Adressen deren physischen Adressbits 6 bis 11 bereits gleich sind.
+%Um jetzt ein Eviction-Set zu finden wird eine beliebige Adresse aus dem Pool als Zeugenadresse gewählt.
+%Die soll nun im Folgenden aus dem Cache durch ein Eviction-Set verdrängt werden.
+%Es wird nun so eine Menge gebaut der wiederholt eine Adresse aus dem Pool hinzugefügt wird.
+%Irgendwann wird diese Menge ein Eviction-Set für den Zeugen.
+%Diese Menge hat dann in der Regel mehrere hundert Einträge und muss abschließend noch verkleinert werden, aber so lassen sich in dieser Umgebung Eviction-Sets finden.
+%Wir können dank der Pages garantieren, dass die letzten 12 Bits der Adresse übereinstimmen.
+%Bersser wäre es natürlich wenn beispielweise Adressen hätten, wo wir wüssten, dass die letzten 18 Bit gleich sind.
+%Wie in Zeile 1 zu sehen wäre dann nur noch die Slice unbekannt und die vorhin beschriebene Eviction-Set Suche könnte deutlich beschleunigt werden, da der Adresspool deutlich kleiner ist.
 
-\SetKwProg{Fn}{Function}{}{}
-\small
-\begin{algorithm}[H]
-\DontPrintSemicolon
-\caption{Pseudo-Code für colliding-address-Suche}
-\label{alg:storeForward}
-
-\Fn{$FindCollidingAddresses()$}{
-    addressPool = malloc(PageSize * PageCount)\;
-    
-    \For{p from WindowSize to PageCount-1}{
-        \For{i from WindowSize to 0}{
-            addressPool[(p-i) * PageSize] $\leftarrow$ 0\;
-        }
-        timestampBefore $\leftarrow$ getTimestamp()\;
-        read addressPool[0]\;
-        result[p] $\leftarrow$ getTimestamp() - timestampBefore\;
-    }
-}
-\end{algorithm}
-\end{frame}
 
 %------------------------------------------------
 \subsection{Ergebnisse}
 \begin{frame}
 \begin{itemize}
+\item Nutzer besucht Website für wenige Minuten
 \item Reduzierung der Suchzeit (Median) durch optimierten Standardalgorithmus: 46 s $\rightarrow$ 35 s
 \item Reduzierung der Suchzeit (Median) durch neuen Ansatz:\\ 35 s $\rightarrow$ 11 s
 \item Standardalgorithmus hat Ausreißer von über 100 Sekunden
@@ -319,6 +334,14 @@ Institut für IT-Sicherheit% Your institution for the title page
 \frametitle{Beschleunigung der Initialisierung}
 
 \end{frame}
+
+%Ohne die Eviction-Sets kann keine Angriff stattfinden, d.h. die Suche sollte nicht zu lange dauern.
+%Insbesondere da bei einem Webangriff davon auszugehen ist, das ein Nutzer eine Website mit einer bösartigen Werbeanzeige nicht länger als ein paar Minuten besucht.
+%Deshalb ist es interssant die Eviction-Set-Suche möglichst kurz zu halten.
+%Der Standardsuchalgorithmus, der nur auf Adressen zurückgreifen kann deren letzten 12 Bits gleich sind braucht in der optimierten Version etwas 35 sekunden um alle eviciton-Sets zu finden.
+%Der Ansatz mit den colliding-addresses kann die Suchzeit auf 11sekunden reudzieren.
+%Dies sind median-werte, da der Standardalgo Außreißer von über 200 Sekunden hat. In der Praxis würde man einfach nach 100 Sekunden abbrechen und die Suche erneut starten.
+%der neue algoritmus hat weniger Probleme mit den Außreißern, dort hat der längste Lauf von 37 Sekunden.
 
 %------------------------------------------------
 \section{Portierung eines nativen Angriffs}
@@ -352,6 +375,16 @@ Bitlänge & Shift & Subtraktion  \\
 
 \end{frame}
 
+%Im folgenden möchte ich die Portierung eines nativen Angriffs anhand eines Angriffs auf OpenSSL zeigen.
+%In diesem Angriff wird die Schlüsselerzeugung von OpenSSL angegriffen.
+%Hierzu werden leakages in der Berechnung von gcd(e,p-1) und gcd(e,q-1) ausgenutzt.
+%Diese Prüfungen sind nach der Generierung der Primzahlen p und q notwendig um sicherzustellen, dass das die RSA Entschlüsselung und Verschlüsselung richtig funktioniert.
+%Es gibt eine optimerierte gcd-Fundktion die nur mit Shift- und Subtraktionsoperationen auskommt, d.h. wenn die Shift- und Subtraktionsfunktionen überwacht werden können die Primzahlen p und q rekonstruiert werden.
+%Diese Leakage ist nicht nur in OpenSSL sondern auch in MozillaNSS vorhanden.
+%Jedoch ist die Ausführung der Abfolge der Shift-und Subtraktionen zu schnell um mittels der Prime-and-Probe Variante im Browser überwacht zu werden.
+%Denn eine Ausführung einer Prime-and-Probe-Operation bei AKtivität auf dem Cache-Set dauert etwa 1500 Taktzyklen.
+%In der Tabelle sieht man, dass bei dem heute gängigen RSA-2048 340 Taktzyklen für die Shift und 477 Taktzyklen für die Subtraktion benötigt werden.
+
 %------------------------------------------------
 \subsection{Bremsen von Code}
 \begin{frame}
@@ -359,7 +392,7 @@ Bitlänge & Shift & Subtraktion  \\
 \begin{itemize}
 \item clflush-Instruktion im Browser nicht verfügbar
 \item Prime-and-Probe Operation ohne Zeitmessung ausführen
-\item Welche Cache-Teil soll gebremst werden?
+\item Welcher Code-Teil soll gebremst werden?
 \end{itemize}
 
 \tiny
@@ -391,6 +424,16 @@ Bitlänge & Shift & Subtraktion  \\
 
 \end{itemize}
 \end{frame}
+
+%Bei nativen Angriffen wird auch häufig der Code gebremst, wobei dabei in der Regel die clflush-Instruktion verwendet wird.
+%Diese ist im Browser aber nicht verfügbar, sodass auf andere Mittel zurückgegriffen werden muss.
+%Ziel ist den Code der Shift- bzw. Subtraktionsoperation aus dem Cache zu verdrängen. 
+%Dazu eignen sich die Eviction-Sets die auch im Prime-and-Probe Angriff verwendet werden.
+%Somit kann eine Prime-and-Probe Operation ohne Zeitmessung verwendet werden, um den Code zu bremsen.
+%Da die Zahlen bei RSA-2048 nicht in Register passen, sind die FUnktion für die Shift- bzw. Subtraktion deutlich aufwendiger.
+%Im der Grafik kann man sehen welche Unterfunktionen bei der Ausführung der SHift- bzw. Subtraktion aufgerufen werden.
+%Interessasnt ist hierbei insbesonderer die s_mp_clamp Funktion, da diese von der Shift und der Subtraktion verwendet wird.
+%die hier gezeigten funktionen wie z.b. die s_mp_clamp funktion sind wiederrum größer als 64 Byte oder liegen nicht direkt an einer Cache-Line Grenze, sodass die s_mp_clamp funktion etwa in zwei verschiedenen Cahce-lines liegt.
 
 %------------------------------------------------
 \subsection{Ein Thread}
@@ -433,7 +476,7 @@ $*clamp_1,*rshd_4,*div\_2d_3$ & 623   & 560    \\
 \normalsize
 \begin{itemize}
 \item Opferprogramm, Timer, Messung jeweils einen Thread
-\item Bremsung hat auf 4c/8t CPU nur einen physischen Kern
+\item Bremsung auf 4c/8t CPU mit nur einem physischen Kern
 \end{itemize}
 
 \small
@@ -458,24 +501,6 @@ $*clamp_{1,2}, *rshd_4, *div\_2d_{1,3,4}$ (6 Threads) & 1109 \\
 \begin{itemize}
 \item Besser nur eine Cache-Line pro Bremsthread
 \end{itemize}
-\end{frame}
-
-%------------------------------------------------
-\subsection{Weitere Ansätze}
-\begin{frame}
-\frametitle{Weitere Ansätze}
-
-
-\begin{itemize}
-\item Implementierung von Prime-and-Probe in Javascript bringt ~10\% schnellere Messung
-\item Standard für Prime-and-Probe ist Pointer-Chasing
-\item Aufteilung in zwei Ketten bremst 35\% besser bzw. 50\% mehr Messungen pro Zeitintervall
-\item Aufteilung auf vier Ketten nicht erfolgreich
-%Warum geht das eigentlich nicht
-\item Pointer-Array statt Pointer-Chasing bremst nicht besser
-\item Weglassen von Back-Probing bringt keine Vorteile
-\end{itemize}
-
 \end{frame}
 
 %------------------------------------------------
@@ -2211,7 +2236,7 @@ $*clamp_{1,2}, *rshd_4, *div\_2d_{1,3,4}$ (6 Threads) & 1109 \\
 
 \normalsize
 \begin{itemize}
-\item Bremsung von mindestens 3000 Taktzyklen oder mehr Kerne nötig
+\item Bremsung von mindestens 3000 Taktzyklen oder mehr Kerne zur Unterscheidung nötig
 
 \end{itemize}
 
@@ -2229,10 +2254,10 @@ $*clamp_{1,2}, *rshd_4, *div\_2d_{1,3,4}$ (6 Threads) & 1109 \\
 
 \item Limitierte Möglichkeiten erschweren Portierung von Angriffen im Browser
 
-\item Wiedereinführung hoch-präziser Timer ermöglicht Angriff
+\item Wiedereinführung hoch-präziser Timer ermöglicht Angriffe
 %Chrome führt Time wegen Site Isolation wieder ein, problematisch da keine Fixes gegen L3-Cache-Angriffe
 
-\item Erweiterte Angriffsmöglichkeiten wenn Opfer- und Angriffsprogramm auf gleichem physischen Kern
+%\item Erweiterte Angriffsmöglichkeiten wenn Opfer- und Angriffsprogramm auf gleichem physischen Kern
 
 \item Standard-Webtechnologien ermöglichen Angriffe auf viele Endgeräte
 %
@@ -2242,6 +2267,84 @@ $*clamp_{1,2}, *rshd_4, *div\_2d_{1,3,4}$ (6 Threads) & 1109 \\
 
 \end{itemize}
 \end{frame}
+
+%------------------------------------------------
+%\subsection{Weitere Ansätze}
+\begin{frame}
+\frametitle{Weitere Bremsansätze}
+
+
+\begin{itemize}
+\item Implementierung von Prime-and-Probe in Javascript bringt ~10\% Performancegewinn
+\item Standard für Prime-and-Probe ist Pointer-Chasing
+\item Aufteilung in zwei Ketten erlaubt 50\% mehr Messungen pro Zeitintervall
+%\item Aufteilung auf vier Ketten nicht erfolgreich
+%Warum geht das eigentlich nicht
+\item Pointer-Array statt Pointer-Chasing bremst besser wenn viele Cache-Lines in einem Thread gebremst werden (1 Thread bremst Shift auf ca. 800 Taktzyklen)
+\item Aufteilen des Pointer-Arrays ist nachteilig
+\item Weglassen von Back-Probing bringt nur Vorteile bei Pointer-Array
+\end{itemize}
+
+\end{frame}
+
+%------------------------------------------------
+%\subsection{colliding-addresses}
+\begin{frame}
+\frametitle{Beschleunigung der Eviction-Set-Suche}
+\begin{itemize}
+%schnelle Initaliserung des Angriffs notwendig
+\item Verfeinerung des Adresspools mittels Leakage
+\end{itemize}
+
+\SetKwProg{Fn}{Function}{}{}
+\small
+\begin{algorithm}[H]
+\DontPrintSemicolon
+\caption{Pseudo-Code für colliding-address-Suche}
+\label{alg:storeForward}
+
+%\Fn{$FindCollidingAddresses()$}{
+ %   addressPool = malloc(PageSize * PageCount)\;
+    
+ %       \For{i from 60 to 0}{
+ %           addressPool[(p-i) * PageSize] $\leftarrow$ 0\;
+ %       }
+ %       timestampBefore $\leftarrow$ getTimestamp()\;
+ %       read address\;
+ %       result[p] $\leftarrow$ getTimestamp() - timestampBefore\;
+%    }
+%}
+
+\Fn{$FindCollidingAddresses()$}{
+    buffer = malloc(Size)\;
+    
+    \For{p from 60 to Size-1}{
+        \For{i from 60 to 0}{
+            buffer[p-i] $\leftarrow$ 0\;
+        }
+        timestampBefore $\leftarrow$ getTimestamp()\;
+        read x\;
+        result[p] $\leftarrow$ getTimestamp() - timestampBefore\;
+    }
+}
+\end{algorithm}
+\end{frame}
+
+%Ohne die Eviction-Sets kann keine Angriff stattfinden, d.h. die Suche sollte nicht zu lange dauern.
+%Insbesondere da bei einem Webangriff davon auszugehen ist, das ein Nutzer eine Website mit einer bösartigen Werbeanzeige nicht länger als ein paar Minuten besucht.
+%Deshalb ist es interssant die Eviction-Set-Suche möglichst kurz zu halten. Hierfür möchte ich noch einmal kurz auf die vorherige Folie zurückgehen.
+%Wir können dank der Pages garantieren, dass die letzten 12 Bits der Adresse übereinstimmen.
+%Bersser wäre es natürlich wenn beispielweise Adressen hätten, wo wir wüssten, dass die letzten 18 Bit gleich sind.
+%Wie in Zeile 1 zu sehen wäre dann nur noch die Slice unbekannt und die vorhin beschriebene Eviction-Set Suche könnte deutlich beschleunigt werden, da der Adresspool deutlich kleiner ist.
+%Und genau diese Möglichkeit bietet ein Verhalten von Intel-Prozessoren, was ich kurz beschreiben möchte.
+%Eine colliding-address zu Adresse x soll nun eine Adresse sein deren 20 letzten Adressbits mit x übereinstimmen.
+%Dazu wird in Zeile 2 erstmal ein Buffer allokiert.
+%Im Folgenden wird nun eine pseudo Read-after-Write Abhängigkeit erzeugt.
+%Wir wollen nun erfahren ob p eine colliding-address zu x ist.
+%Dazu fluten wir die CPU zuerst mit Schreibbefehlen, die auf Adressen ungleich p. Das sind die ersten 60 Iterationen der For-Schleife in Zeile 4,5.
+%Abschließend wird noch ein Schreibbefehl auf Adresse p ausgeüfhrt, das ist die letzte Iteration der For-Schleiße in Zeile 4,5
+%Danach wird die Zugriffszeit auf x gemessen. Wenn nun die letzten 20 Bits von x und p gleich sind lässt sich eine erhöhte Zugriffszeit messen, da die CPU eine pseudo-Abhängigkeit zwischen dem Schreiben von p und dem Lesen von x erkennt.
+%Somit kann ein Adresspool gebaut werden bei dem die letzten 20 Bit der Adressen gleich sind und somit die vorhin beschriebene Suche nach Eviction-Set deutlich beschleunigt werden, da bei zufälliger Wahl aus dem Adresspool schneller ein Eviciton-Set gefunden wird.
 
 %------------------------------------------------
 

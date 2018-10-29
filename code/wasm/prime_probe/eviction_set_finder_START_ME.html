@@ -218,6 +218,10 @@
       <option value="1">Split2 without bprobe</option>
       <option value="2">Ptr_arr with bprobe</option>
       <option value="3">Ptr_arr without bprobe</option>
+      <option value="32">Ptr_arr without bprobe double ptr</option>
+      <option value="34">Ptr_arr without bprobe quad ptr</option>
+      <option value="35">Ptr_arr without bprobe quad ptr ex</option>
+      <option value="31">Ptr_arr without bprobe no assignment</option>
     </select>
     <span><input type="button" id="btnPrimeSpam" value="Prime Spam"></span>
   </span></br>
@@ -619,6 +623,9 @@
     //execute prime spam operation for numberPrimeSpamDurationSec
     //use btnSetMonitoredEs and btnSetMonitoredEsArr to set spammed es
     document.getElementById('btnPrimeSpam').onclick = function () {
+      assertAppStatePtr(function () {
+        Module['asm']._set_monitored_es(Module['appStatePtr'], document.getElementById('numberLowerLimitMonitoredEs').value, document.getElementById('numberUpperLimitMonitoredEs').value);
+      });
       primeSpamEsWrapper(document.getElementById('numberPrimeSpamDurationSec').value, document.getElementById('selectPrimeSpamOption').value);
     }
 

@@ -941,7 +941,7 @@ void l3_randomise(l3pp_t l3) {
  */
 void l3_probe_spam(l3pp_t l3) {
   for (int i = 0; i < l3->nmonitored; i++) {
-    probe_only_split_2(l3->monitoredhead[i]);
+    probe_only(l3->monitoredhead[i]);
   }
 }
 
@@ -952,7 +952,7 @@ void l3_probe_spam(l3pp_t l3) {
  */
 void l3_bprobe_spam(l3pp_t l3) {
   for (int i = 0; i < l3->nmonitored; i++) {
-    probe_only_split_2(NEXTPTR(l3->monitoredhead[i]));
+    probe_only(NEXTPTR(l3->monitoredhead[i]));
   }
 }
 
@@ -1214,21 +1214,40 @@ int l3_repeatedprobe_spam_option(l3pp_t l3, int nrecords, int option) {
   if (nrecords == 0)
     return 0;
 
-  int len = l3->nmonitored;
-  if (len > 1)
-    return -1;
+  if (l3->nmonitored > 1)
+  {
+    // if(option != 2 && option != 3){
+    //   option = 3;
+    //   printf_ex("set option to 3!\n");
+    // }
+  }
 
   void *monitoredes1 = l3->monitoredhead[0];
   void *monitoredes1b = NEXTPTR(monitoredes1);
 
-  void** ptr_arr = (void**) malloc(sizeof(void*) * 16);
-  void* p = monitoredes1;
-  for(int i=0; i<16; i++){
-    ptr_arr[i] = p;
-    p = *((void **)p);
+  int asso = 16;
+  int ptr_arr_size = asso * l3->nmonitored;
+  void** ptr_arr = (void**) malloc(sizeof(void*) * ptr_arr_size);
+  for (int i = 0; i < l3->nmonitored; i++) {
+      void* p = l3->monitoredhead[i];
+      for(int j=0; j<asso; j++){
+        ptr_arr[i*asso + j] = p;
+        p = *((void **)p);
+      }
   }
 
-  int ptr;
+  void* p_next;
+  for (int i = 0; i < l3->nmonitored; i++) {
+      void* p = l3->monitoredhead[i];
+      //get last ptr in chain
+      for(int j=0; j<asso-1; j++){
+        p = *((void **)p);
+      }
+      LNEXT(p) = l3->monitoredhead[(i+1)%l3->nmonitored];
+  }
+  //l3_monitor should be called afterwards
+
+  int ptr,ptr2,ptr3,ptr4;
   if(option == 0){ //probe_only_split_2 with bprobe
   //int even = 1;
     for (int i = 0; i < nrecords; i++) {
@@ -1241,20 +1260,20 @@ int l3_repeatedprobe_spam_option(l3pp_t l3, int nrecords, int option) {
     }
   } else if(option == 2){ //ptr_arr with bprobe
     for (int i = 0; i < nrecords; i++) {
-      for(int i=0; i<16; i++){
+      for(int i=0; i<ptr_arr_size; i++){
         ptr ^= *((int*)ptr_arr[i]);
       }
-      for(int i=15; i>=0; i--){
+      for(int i=ptr_arr_size-1; i>=0; i--){
         ptr ^= *((int*)ptr_arr[i]);
       }
     }
   } else if(option == 3){ //ptr_arr without bprobe
     for (int i = 0; i < nrecords; i++) {
-      for(int i=0; i<16; i++){
+      for(int i=0; i<ptr_arr_size; i++){
         ptr ^= *((int*)ptr_arr[i]);
       }
     }
-  } else if(option == 4){ //probe_only without bprobe
+  } else if(option == 4){ //probe_only with bprobe
     for (int i = 0; i < nrecords; i++) {
       probe_only(monitoredes1);
       probe_only(monitoredes1b);
@@ -1263,10 +1282,47 @@ int l3_repeatedprobe_spam_option(l3pp_t l3, int nrecords, int option) {
     for (int i = 0; i < nrecords; i++) {
       probe_only(monitoredes1);
     }
+  } else if(option == 32){ //ptr_arr without bprobe
+    for (int i = 0; i < nrecords; i++) {
+      for(int i=0; i<ptr_arr_size/2; i++){
+        ptr ^= *((int*)ptr_arr[i]);
+        ptr2 ^= *((int*)ptr_arr[ptr_arr_size/2+i]);
+      }
+    }
+  }
+  else if(option == 34){ //ptr_arr without bprobe
+    for (int i = 0; i < nrecords; i++) {
+      for(int i=0; i<ptr_arr_size/2; i++){
+        ptr ^= *((int*)ptr_arr[i]);
+        ptr2 ^= *((int*)ptr_arr[ptr_arr_size/4+i]);
+        ptr3 ^= *((int*)ptr_arr[ptr_arr_size/2+i]);
+        ptr4 ^= *((int*)ptr_arr[ptr_arr_size*3/4+i]);
+      }
+    }
+  }
+    else if(option == 35){ //ptr_arr without bprobe
+    for (int i = 0; i < nrecords; i++) {
+      void** ptr_arr2 = ptr_arr + ptr_arr_size/4;
+      void** ptr_arr3 = ptr_arr + ptr_arr_size/2;
+      void** ptr_arr4 = ptr_arr + ptr_arr_size*3/4;
+      for(int i=0; i<ptr_arr_size/2; i++){
+        ptr ^= *((int*)ptr_arr[i]);
+        ptr2 ^= *((int*)ptr_arr2[i]);
+        ptr3 ^= *((int*)ptr_arr3[i]);
+        ptr4 ^= *((int*)ptr_arr4[i]);
+      }
+    }
+  }
+  else if(option == 31){ //ptr_arr without bprobe
+    for (int i = 0; i < nrecords; i++) {
+      for(int i=0; i<ptr_arr_size/2; i++){
+        *((int*)ptr_arr[i]);
+      }
+    }
   }
 
   free(ptr_arr);
-  return ptr;
+  return ptr^ptr2^ptr3^ptr4;
 }
 
 /**

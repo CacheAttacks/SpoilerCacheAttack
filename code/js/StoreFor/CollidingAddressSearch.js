@@ -76,7 +76,7 @@ function findCollidingAdd(pageCount, SABCounterArray, rounds = 20, windowSize = 
 
         //insert some useless incrementations to get "superior" peaks
         //this incrementations stuff might not be needed on every system
-        val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;
+        val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;
 
         var after = val;
 
@@ -103,7 +103,7 @@ function findCollidingAdd(pageCount, SABCounterArray, rounds = 20, windowSize = 
         }
 
         output += " " + uint16MeasurementArr[p];
-        if(uint16MeasurementArr[p] > 30){
+        if(uint16MeasurementArr[p] > 50){
             output += "##";
         }
     }
