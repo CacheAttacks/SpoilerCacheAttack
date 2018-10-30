@@ -436,48 +436,10 @@ Bitlänge & Shift & Subtraktion  \\
 %die hier gezeigten funktionen wie z.b. die s_mp_clamp funktion sind wiederrum größer als 64 Byte oder liegen nicht direkt an einer Cache-Line Grenze, sodass die s_mp_clamp funktion etwa in zwei verschiedenen Cahce-lines liegt.
 
 %------------------------------------------------
-\subsection{Ein Thread}
+\subsection{Ergebnisse}
 \begin{frame}
-\frametitle{Ein Thread}
+\frametitle{Ergebnisse}
 
-%TODO clamp_1 erste Zeile sub-wert untersuchen
-
-\small
-\begin{table}[h]
-\label{tbl:PerformanceDegShift}
-\begin{tabular}{cclccc}
-\toprule
-Funktion & Shift & Sub \\
-\midrule
-Referenz      & 340   & 477        \\
-$*clamp_1$  & 541   & 608           \\
-$*rshd_2$  & 451   & 542    \\
-$mp\_sub_7$            & 359   & 766    \\
-$*clamp_{1,2}$ & 542   & 557     \\
-$*clamp_1,*rshd_4$   & 643   & 549     \\
-$*clamp_1,*rshd_4,*div\_2d_3$ & 623   & 560    \\
-
-\bottomrule
-\end{tabular}
-\end{table}
-
-\normalsize
-\begin{itemize}
-\item Unterschiedliche Cache-Lines bremsen unterschiedlich gut
-\item Besser mehrere Cache-Lines abwechselnd bremsen
-%tebelle einfügen mit bester bremsung bei einer cache-line und bester bei mehreren cache-lines
-\end{itemize}
-\end{frame}
-
-%------------------------------------------------
-\subsection{Mehrere Threads}
-\begin{frame}
-\frametitle{Mehrere Threads}
-\normalsize
-\begin{itemize}
-\item Opferprogramm, Timer, Messung jeweils einen Thread
-\item Bremsung auf 4c/8t CPU mit nur einem physischen Kern
-\end{itemize}
 
 \small
 \begin{table}[h]
@@ -487,6 +449,10 @@ $*clamp_1,*rshd_4,*div\_2d_3$ & 623   & 560    \\
 Funktion & Shift \\
 \midrule
 Referenz      & 340          \\
+$*clamp_1$  & 541           \\
+$*clamp_1,*rshd_4$   & 643     \\
+$*clamp_1,*rshd_4,*div\_2d_3$ & 623    \\
+\midrule
 $*clamp_1$ \& $*clamp_1$ & 623     \\
 $*clamp_1$ \& $*rshd_4$  & 959      \\
 $*clamp_1$ \& $*rshd_4$,$*div\_2d_3$ & 880        \\
@@ -498,9 +464,12 @@ $*clamp_{1,2}, *rshd_4, *div\_2d_{1,3,4}$ (6 Threads) & 1109 \\
 \end{table}
 %letzten beiden zeilen nicht wirklich besser da über 4 threads verwendet werden
 
+\normalsize
 \begin{itemize}
-\item Besser nur eine Cache-Line pro Bremsthread
+\item Opferprogramm, Timer, Messung jeweils einen Thread
+\item Bremsung auf 4c/8t CPU mit nur einem physischen Kern
 \end{itemize}
+
 \end{frame}
 
 %------------------------------------------------
@@ -2328,6 +2297,40 @@ $*clamp_{1,2}, *rshd_4, *div\_2d_{1,3,4}$ (6 Threads) & 1109 \\
     }
 }
 \end{algorithm}
+\end{frame}
+
+%------------------------------------------------
+%\subsection{Ein Thread}
+\begin{frame}
+\frametitle{Ein Thread}
+
+%TODO clamp_1 erste Zeile sub-wert untersuchen
+
+\small
+\begin{table}[h]
+\label{tbl:PerformanceDegShift}
+\begin{tabular}{cclccc}
+\toprule
+Funktion & Shift & Sub \\
+\midrule
+Referenz      & 340   & 477        \\
+$*clamp_1$  & 541   & 608           \\
+$*rshd_2$  & 451   & 542    \\
+$mp\_sub_7$            & 359   & 766    \\
+$*clamp_{1,2}$ & 542   & 557     \\
+$*clamp_1,*rshd_4$   & 643   & 549     \\
+$*clamp_1,*rshd_4,*div\_2d_3$ & 623   & 560    \\
+
+\bottomrule
+\end{tabular}
+\end{table}
+
+\normalsize
+\begin{itemize}
+\item Unterschiedliche Cache-Lines bremsen unterschiedlich gut
+\item Besser mehrere Cache-Lines abwechselnd bremsen
+%tebelle einfügen mit bester bremsung bei einer cache-line und bester bei mehreren cache-lines
+\end{itemize}
 \end{frame}
 
 %Ohne die Eviction-Sets kann keine Angriff stattfinden, d.h. die Suche sollte nicht zu lange dauern.
