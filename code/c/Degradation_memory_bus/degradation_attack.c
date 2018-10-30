@@ -87,6 +87,11 @@ void second_test(){
 
 #define N 10000
 
+/**
+ * @brief Wrapper for the atomic xchg command. Changes contents from ecx and %[unaligned_addr].
+ * 
+ * @param my_unaligned_addr Ptr to data exchanged with ecx.
+ */
 inline void xchg(char *my_unaligned_addr){
       asm volatile (
       "xchg (%[unaligned_addr]), %%ecx;"
@@ -96,12 +101,23 @@ inline void xchg(char *my_unaligned_addr){
     ); 
 }
 
+/**
+ * @brief Mesaure time for xchg execution
+ * 
+ * @param my_unaligned_addr Ptr to data exchanged with ecx.
+ * @return uint32_t 
+ */
 uint32_t measure_xchg(char *my_unaligned_addr){
   uint32_t t1 = rdtscp32();
   xchg(my_unaligned_addr);
   return rdtscp32()-t1;
 }
 
+/**
+ * @brief Search for memory locking addresses via the xchg command.
+ * 
+ * @param unaligned_addr 
+ */
 void risenpart_loop(char *unaligned_addr){
   uint32_t *times = (uint32_t*)calloc(N,sizeof(uint32_t));
     //loop i from (1..N):
@@ -129,8 +145,6 @@ void risenpart_loop(char *unaligned_addr){
         }
         break;
       }
-
-      
 
       if(start_pos == 0){
         start_pos = i;

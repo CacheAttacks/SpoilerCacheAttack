@@ -9,7 +9,11 @@
 
 #include "storefor_find_es.h"
 
-
+/**
+ * @brief Sleep in ms
+ * 
+ * @param milliseconds 
+ */
 void sleep_ms(int milliseconds) // cross-platform sleep function
 {
 #ifdef WIN32
@@ -24,6 +28,11 @@ void sleep_ms(int milliseconds) // cross-platform sleep function
 #endif
 }
 
+/**
+ * @brief Sleep in us
+ * 
+ * @param us 
+ */
 void sleep_us(int us) // cross-platform sleep function
 {
 #ifdef _POSIX_C_SOURCE >= 199309L
@@ -36,6 +45,12 @@ void sleep_us(int us) // cross-platform sleep function
 #endif
 }
 
+/**
+ * @brief Spam write commands. Test if different threads effects the store queue of other cores (no see comments below!)
+ * 
+ * @param arg ptr to window_size value
+ * @return void* 
+ */
 void *thread_spam(void *arg){
     int window_size = *((int*)arg);
     printf("window_size=%i\n",window_size);
@@ -50,9 +65,15 @@ void *thread_spam(void *arg){
 	}
 }
 
+/**
+ * @brief Search for colliding-addresses.
+ * 
+ * @param evictionBuffer Ptr to buffer. Used for colliding-address search
+ * @param window_size Size of isssued store commands
+ * @param target_add Not used
+ */
 void measurement_funct_thread(uint8_t * evictionBuffer, int window_size, uint8_t *target_add){
 	uint16_t *measurementBuffer = (uint16_t*) malloc(PAGE_COUNT * sizeof(uint16_t));
-    //vlist_t es = vl_new();
 
 	for (int p = window_size; p < PAGE_COUNT; p++)
 	{
@@ -114,6 +135,11 @@ void measurement_funct_thread(uint8_t * evictionBuffer, int window_size, uint8_t
    // printf("\n");
 }
 
+/**
+ * @brief Spawn new threads which constantly issuing write commands. Test if store-queue of this core is affected (no see details below).
+ * 
+ * @param num_of_threads 
+ */
 void thread_attack(int num_of_threads){
 
     int window_size = 64;

@@ -10,12 +10,22 @@ using namespace std;
 
 timespec diff(timespec start, timespec end);
 
+/**
+ * @brief Wrapper for rdtsc
+ * 
+ * @return uint64_t 
+ */
 static inline uint64_t rdtscp64() {
   uint32_t low, high;
   asm volatile ("rdtsc": "=a" (low), "=d" (high) :: "ecx");
   return (((uint64_t)high) << 32) | low;
 }
 
+/**
+ * @brief Calc frequency of the rdtscp timer in GHz.
+ * 
+ * @return int 
+ */
 int main()
 {
     timespec time1, time2;
@@ -37,6 +47,13 @@ int main()
     return 0;
 }
 
+/**
+ * @brief Calc difference between to timespec values.
+ * 
+ * @param start Start timestamp
+ * @param end End timestamp
+ * @return timespec 
+ */
 timespec diff(timespec start, timespec end)
 {
     timespec temp;

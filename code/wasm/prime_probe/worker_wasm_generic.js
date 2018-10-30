@@ -95,8 +95,9 @@ onmessage = function(m) {
   } else if (command === 'primeSpam') {
     assertAppStatePtr(function() {
       var duration = m.data[1];
+      var option = m.data[2];
       consoleLogEx("primeSpam for " + duration + "sec");
-      primeSpamEsWrapper(duration);
+      primeSpamEsWrapper(duration, option);
       consoleLogEx("primeSpam finished");
       returnMessage = 'Finished primeSpam';
     });

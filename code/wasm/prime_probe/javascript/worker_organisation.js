@@ -110,6 +110,7 @@ function nextWorkerPostMessage() {
 
     document.getElementById('btnWorkerWasmPrimeSpam').onclick = function () {
         var duration = document.getElementById('numberWorkerWasmPrimeSpamDurationSec').value;
+        var option = document.getElementById('selectPrimeSpamOption').value;
         var workerIdsString = document.getElementById('textWorkerWasmPrimeSpamWorkers').value;
         var workerIdsArr = workerIdsString.split(',');
         for(var i=0; i<workerIdsArr.length; i++){
@@ -119,7 +120,7 @@ function nextWorkerPostMessage() {
             }
         }
 
-        workerWasmPostMessageParallel(workerIdsArr, ['primeSpam',duration]);
+        workerWasmPostMessageParallel(workerIdsArr, ['primeSpam',duration, option]);
     }
 
     document.getElementById('btnWorkerSampleEsMerged').onclick = function () {

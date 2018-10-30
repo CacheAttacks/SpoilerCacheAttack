@@ -10,6 +10,12 @@
 // #include "printf_wrapper.h"
 #include "storefor_find_es.h"
 
+/**
+ * @brief Measure time for read of *memory
+ * 
+ * @param memory 
+ * @return uint32_t 
+ */
 uint32_t measure_read(void *memory){
     #ifdef WASM
         return memaccesstime(memory, 0);
@@ -39,12 +45,22 @@ uint32_t measure_read(void *memory){
     #endif
 }
 
+/**
+ * @brief Wrapper for rdtscp
+ * 
+ * @return uint64_t 
+ */
 static inline uint64_t rdtscp() {
   uint32_t low, high;
   asm volatile ("rdtscp": "=a" (low), "=d" (high) :: "ecx");
   return (((uint64_t)high) << 32) | low;
 }
 
+/**
+ * @brief Wrapper for rdtsc
+ * 
+ * @return uint64_t 
+ */
 static inline uint64_t rdtsc() {
   uint32_t low, high;
   asm volatile ("rdtsc": "=a" (low), "=d" (high) :: "ecx");
@@ -59,6 +75,10 @@ int bla(uint32_t *val){
 }
 
 
+/**
+ * @brief Alternative methods to measure read time
+ * 
+ */
 uint32_t __attribute__((optimize("O0"))) measure_read_alt(void *memory){
 	uint32_t before, after, val;
 	asm volatile ("rdtsc": "=a" (before) :: "ecx");
@@ -108,6 +128,13 @@ int permutation65[] = {29, 24, 4, 42, 21, 23, 10, 28, 53, 20, 1, 61, 51, 54, 33,
 
 int rand65[] = {1578, 2912, 2738, 399, 2965, 1070, 3108, 1865, 425, 1370, 3792, 1917, 3061, 3876, 1205, 2294, 280, 3113, 1022, 1754, 1834, 3066, 4069, 2985, 941, 3854, 15, 757, 995, 2235, 1087, 495, 3231, 18, 1126, 3218, 3789, 112, 1809, 1114, 2272, 1773, 3255, 1913, 380, 2623, 1991, 2, 2548, 316, 1171, 3749, 440, 3121, 1555, 2754, 1949, 685, 2162, 1536, 3491, 969, 3547, 3806, 884};
 
+/**
+ * @brief Methods to find colliding-addresses
+ * 
+ * @param evictionBuffer Ptr to buffer. Used for colliding-address search
+ * @param window_size Size of isssued store commands
+ * @param target_add Not used 
+ */
 void measurement_funct(uint8_t * evictionBuffer, int window_size, uint8_t *target_add){
 	uint16_t *measurementBuffer = (uint16_t*) malloc(PAGE_COUNT * sizeof(uint16_t));
     //vlist_t es = vl_new();
@@ -217,6 +244,13 @@ void measurement_funct(uint8_t * evictionBuffer, int window_size, uint8_t *targe
    	free(pseudoBuffer);
 }
 
+/**
+ * @brief Alternative method to find colliding-addresses
+ * 
+ * @param evictionBuffer Ptr to buffer. Used for colliding-address search
+ * @param window_size Size of isssued store commands
+ * @param target_add Not used 
+ */
 void measurement_funct_alt(uint8_t * evictionBuffer, int window_size, uint8_t *target_add){
 	uint16_t *measurementBuffer = (uint16_t*) malloc(PAGE_COUNT * sizeof(uint16_t));
     //vlist_t es = vl_new();
@@ -282,7 +316,10 @@ void measurement_funct_alt(uint8_t * evictionBuffer, int window_size, uint8_t *t
    // printf("\n");
 }
 
-
+/**
+ * @brief Allocates buffer and starts eviction-set search.
+ * 
+ */
 void storefor_write(){
 	
 	// 8MB Buffer

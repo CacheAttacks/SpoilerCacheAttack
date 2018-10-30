@@ -7,12 +7,21 @@
 #include "storefor_find_es.h"
 #include "multithread.h"
 
+/**
+ * @brief Wrapper for rdtscp
+ * 
+ * @return uint64_t 
+ */
 static inline uint64_t rdtscp() {
   uint32_t low, high;
   asm volatile ("rdtsc": "=a" (low), "=d" (high) :: "ecx");
   return (((uint64_t)high) << 32) | low;
 }
 
+/**
+ * @brief Macro to measure read access time
+ * 
+ */
 #define measure_old(_memory, _time)\
 do{\
    register uint32_t _delta;\
@@ -32,6 +41,13 @@ do{\
 }while(0)
 
 #define LNEXT(t) (*(void **)(t))
+
+/**
+ * @brief Measures access time to read all entries from a ptr-chain
+ * 
+ * @param pp Begin of the ptr-chain
+ * @return uint64_t 
+ */
 uint64_t probetime(void *pp) {
   if (pp == NULL)
     return 0;
@@ -46,10 +62,23 @@ uint64_t probetime(void *pp) {
 
 //void dummy(){}
 
+/**
+ * @brief Dummy calc method.
+ * 
+ * @param i 
+ * @return int 
+ */
 int calc(int i){
   return i*3+5-(i*3+5);
 }
 
+/**
+ * @brief Search for colliding-addresses.
+ * 
+ * @param evictionBuffer Ptr to buffer. Used for colliding-address search
+ * @param window_size Size of isssued store commands
+ * @param target_add Not used
+ */
 void measurement_funct_old(uint8_t * evictionBuffer, int window_size, uint8_t *target_add){
 	uint16_t *measurementBuffer = (uint16_t*) malloc(PAGE_COUNT * sizeof(uint16_t));
 	for (int p = window_size; p < PAGE_COUNT; p++)
@@ -91,6 +120,10 @@ void measurement_funct_old(uint8_t * evictionBuffer, int window_size, uint8_t *t
 	}
 }
 
+/**
+ * @brief Allocates buffer and starts eviction-set search.
+ * 
+ */
 void storefor_write_old(){
 	
 	// 8MB Buffer
@@ -113,10 +146,8 @@ static inline uint64_t rdtscp64(){
 
 int main()
 {
-//storefor_write_old();
-
+	//storefor_write_old();
 	//storefor_write();
-	//storefor_read();
 	
 	thread_attack(4);
 	
