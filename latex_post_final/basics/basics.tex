@@ -1,0 +1,352 @@
+\chapter{Grundlagen}
+\label{chapter:basics}
+
+Im Folgenden sollen Verfahren und Techniken %hier thmea nochmal angreifen ,techniken wofür etc.
+erläutert werden, welche für das Verständnis der späteren Kapitel essenziell sind.
+Dafür werden die relevanten Hardwarekomponenten und Vorausetzungen an die Caches erklärt.
+Zudem werden grundlegende Cache-Angriffe wie Prime-and-Probe sowie Flush-and-Reload vorgestellt.
+Weiterhin werden die mathematischen Grundlagen für die spätere Leakage-Analyse von RSA beschrieben.
+
+%\todo[size=\footnotesize]{Hier sollte mehr stehen als ein Satz, ergibt sich vielleicht später. Hier gehört die Erklärung des Themas hin sowie eine Bestimmung der Rewlevanz des Themas für die Forschung.} 
+%\todo[size=\footnotesize]{Generell: Du tendierst zu verschachtelten und langen Sätzen. Versuche, Simplere Sätze mit höchstens einem Komma und ohne Zwischeneinschübe zu verwenden. }
+\section{Virtuelle Speicherverwaltung}
+
+%Quelle von Tannenbaum eingefügt
+%\todo[size=\footnotesize]{Ein Quelle in Absatz einfügen?}
+
+Virtuelle Speicherverwaltung stellt eine Abstraktion für die vorhandenen physischen Speichermedien wie etwa den Hauptspeicher oder die Festplatte bereit \cite{tanenbaumVirtualMemory}.
+Das Betriebssystem übersetzt virtuelle Adressen, welche von Prozessen genutzt werden, mit Hilfe der Hardware in physische Adressen. 
+Jedem Prozess steht der gleiche virtuelle Adressraum zur Verfügung, wobei das Betriebssystem dafür Sorge trägt, dass für jeden Prozess die richtige Zuordnung von virtueller zu physischer Adresse sichergestellt wird.
+Ein Vorteil der virtuellen Speicherverwaltung ist eine erhöhte Sicherheit durch die Speicherisolierung aller Prozesse, da ein Prozess keinen Zugriff auf das Adressmapping eines anderen hat.
+So kann eine fehlerhafte Schreiboperation eines Prozesses keinen Fehler in anderen Prozessen verursachen, da gleiche virtuelle Adressen vom Betriebssystem auf unterschiedliche physische Adressen abgebildet werden.
+%Des Weiteren kann ein Prozess mehr Hauptspeicher nutzen als physisch vorhanden ist, indem Daten vom Betriebssystem auf andere Speichermedien wie die Festplatte ausgelagert werden. Hiermit werden beispielsweise Anwendungsentwickler entlastet, da sie ihre Software nicht für Systeme mit weniger Hauptspeicher gesondert anpassen müssen. 
+
+%Speicher-Deduplizierung wird in der Arbeit nicht weiter erwähnt, deswegen würde ich es hier auch nicht beschreiben.
+%\todo[size=\footnotesize]{ggf. Speicher-Deduplizierung, wo du dann plötzlich doch das gleiche Mapping hast. }
+
+\section{Caches}
+
+Die Geschwindigkeitsentwicklung des Hauptspeichers konnte in den letzten Jahren nicht mit der des Prozessors Schritt halten \cite{speedGapCPUandRAM}. Der Cache ist ein im Vergleich zum Hauptspeicher kleinerer, aber schnellerer Pufferspeicher, welcher im aktuellen Kontext häufig benötigte Daten vorhält. Diese Daten zeichnen sich auch häufig dadurch aus, dass sie räumlich nah beieinander liegen.
+Ohne Caches wäre ein Prozessor häufig gezwungen, auf Daten des langsamen Hauptspeichers zu warten, und würde in seiner Verarbeitungsgeschwindigkeit gebremst. %\todo[size=\footnotesize]{positiv formulieren: Mit cache muss man nicht warten, dadurch wirds schneller} Ist die Aussage nicht wirkungsgleich beziehungsweise genauso Pro-Caches vormuliert?
+Weiter liegt der Fokus der Arbeit auf der im Desktopbereich weit verbreiteten x86-Architektur. Deshalb werden mit Intel-Prozessoren der Core-Architektur bestückte Testrechner verwendet, da Intels Core-Architektur im x86-Desktopsegment zurzeit den höchsten Marktanteil besitzt \cite{AMDIntelMarketShare}. Aus diesem Grund werden Erklärungen im Folgenden häufig mit Beispielen der Intel Core-Architektur veranschaulicht.
+
+Ein Cache der Core-Architektur lagert nicht einzelne Bytes, sondern immer gleich 64 Bytes, Cache-Line genannt, auf einmal ein. Dabei werden die 64 Bytes beginnend ab der größten Adresse, welche zugleich kleiner als die Zieladresse und ein Vielfaches von 64 ist, angefragt.
+Angenommen 4 Bytes Daten an Adresse \lstinline!0b10110111!
+werden angefordert, dann lagert der Cache die 64 Bytes beginnend mit der Adresse \lstinline!0b10000000! ein.
+Heutige Arbeitsspeichermodule liefern 8 Bytes zeitgleich, wobei die CPU mit einem einzigen Befehl einen Burst von 8 Übertragungen initiieren kann, die das Lesen und Schreiben einer gesamten 64-Bytes-Cache-Line ermöglichen.
+Das Vorausladen von aktuell nicht benötigten Daten liegt in der Lokalitätseigenschaft typischer Programme begründet \cite{tanenbaumLocality}. So besagt die zeitliche Lokalität, dass aktuell verwendete Daten mit hoher Wahrscheinlichkeit in naher Zukunft erneut benötigt werden. Räumliche Lokalität hingegen besagt, dass beim Zugriff einer bestimmten Speicheradresse benachbarte Speicheradressen in naher Zukunft mit hoher Wahrscheinlichkeit benötigt werden.
+Somit ist es von Vorteil, gleichzeitig 64 Bytes zu laden, da die zusätzlich geladenen Bytes mit hoher Wahrscheinlichkeit in den nächsten Zyklen ebenfalls benötigt werden. Der Performancenachteil, welcher durch ein Laden von gleichzeitig 64 Bytes entsteht, ist im Gegensatz dazu vernachlässigbar.
+
+Ein Prozessorcache besteht üblicherweise aus mehreren Ebenen, Cache-Levels genannt, wobei die Core-Architektur etwa 3 Cache-Levels besitzt, welche absteigend größer und langsamer werden. Ein Intel i7-4770 besitzt pro physischem Kern beispielsweise einen 32 KiB-L1-Datencache mit einer Zugriffslatenz von 4 bis 5 Taktzyklen und einen 256 KiB-L2-Cache mit einer Latenz von 12 Taktzyklen \cite{CacheStatsHaswell}.
+Im Unterschied zu den beiden ersten Cache-Levels teilen sich in der Core-Architektur alle Kerne den L3-Cache. 
+Dies bedeutet aus Sicht der Angreiferin einen großen Vorteil, da jedes Programm den Zustand des L3-Caches beeinflusst, und zwar unabhängig davon, auf welchem Kern es ausgeführt wird.
+Dagegen muss die Angreiferin bei einem Angriff auf den L1- beziehungsweise L2-Cache sicherstellen, dass ihr Code und das angegriffene Programm auf demselben physischen Kern ausgeführt werden.
+
+Die Ersetzungsstrategie legt fest, welcher Eintrag aus dem Cache verdrängt wird, sofern alle Einträge des zugehörigen Cache-Sets belegt sind. 
+Intels Core-Prozessoren verdrängen typischerweise den Eintrag, welcher bezogen auf die letzte Zugriffszeit am ältesten ist, auch least-recently-used-Strategie (LRU) genannt. 
+Ab der Ivy-Bridge-Generation passt Intel diese Strategie situationsbedingt an \cite{CacheReplacementPolicy} und verwendet ebenfalls  die bimodul insertion policy (BIP), welche häufig den zuletzt hinzugefügten Eintrag löscht. 
+Dies kann von Vorteil sein, wenn das Working-Set des Programms die Größe des Caches übersteigt und die LRU-Strategie zu keinen Cache-Hits führen würde.
+Bei Ivy-Bridge Prozessoren stellten die Autoren des Papers fest, dass manche Cache-Sets die LRU-Strategie und manche die BIP-Strategie verfolgen. 
+Es wird daher ein Echtzeitvergleich zwischen beiden Strategien vermutet, um herauszufinden, welche Strategie weniger Cache-Misses produziert. 
+Bei den Nachfolger- Generationen Haswell und Broadwell stellten die Autoren fest, dass zwischen beiden Strategien mit hoher Frequenz gewechselt wird, wobei der Algorithmus hinter den Ersetzungsstrategien ebenfalls nicht öffentlich zugänglich ist.
+
+\subsection{Assoziativität}
+
+%\newtext
+
+Sofern die Auswahl des Cache-Eintrags für die Daten einer bestimmten Hauptspeicheradresse keinerlei Beschränkungen unterliegt, wird von einem voll-assoziativen Cache gesprochen. 
+Das andere Extrem wäre ein einfach-assoziativer Cache beziehungsweise eine direkte Abbildung, wobei die Adresse des Hauptspeichers, von der die Daten stammen, den zu wählenden Cache-Eintrag eindeutig festlegt.
+Der Mittelweg ist die n-Wege-Assoziativität, bei der die Daten nur an n Cache-Einträgen liegen können (siehe auch Abb. \ref{fig:CacheAsso}).
+
+%\todo{Tabellen haben Überschriften, Abbildungen haben Unterschriften. Bitte für alle Abbildungen unter das Bild schieben.}
+\label{fig:CacheAsso}
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.8\textwidth]{basics/Cache_Asso.png}
+\caption{Links ist ein direkt abgebildeter Cache zu sehen, bei dem die Hauptspeicheradresse den Cache-Index vollumfänglich festlegt. Rechts ist ein 2-Wege assoziativer Cache zu sehen bei dem etwa die Hauptspeicheradresse 0 sowohl auf \textit{Index 0, Way 0} als auch auf \textit{Index 0, Way 1} im Cache abgebildet werden kann \cite{CacheAssoWiki}.}
+\end{figure}
+
+%\newtextend
+
+Der L3-Cache eines Intel i7-4770 ist beispielsweise 8 MiB groß und verfügt daher über 131072 ($2^{17}$) Cache-Einträge in der Größe einer Cache-Line. 
+Wäre dieser Cache nun voll-assoziativ, müsste er bei jeder Anfrage komplett durchsucht werden. Aus diesem Grund ist der Cache in Cache-Sets unterteilt, wobei Daten einer spezifischen Hauptspeicheradresse nur in genau ein Cache-Set eingelagert werden können. 
+Der i7-4770 besitzt 8192 dieser Cache-Sets, womit sich eine Assoziativität von 16 ergibt, das heißt man teilt die Anzahl der Cache-Einträge durch Anzahl der Cache-Sets. Dies bedeutet, dass die Suche nach den Daten einer Hauptspeicheradresse im Cache auf 16 Einträge begrenzt ist. 
+%Die Zuordnung der physischen Hauptspeicheradressen zu den Cache-Sets ist nicht öffentlich dokumentiert.
+Des Weiteren wird der Cache in \textit{Slices} unterteilt, wobei jede Slice einem Kern zugeordnet wird. Die Slices sind mittels eines Ringbuses verbunden, so dass jeder Kern auf Daten jeder Slice zugreifen kann. Die Zugriffslatenz erhöht sich mit der Anzahl der benötigten Hops, jedoch ist diese Erhöhung im Bereich von etwa 10 ns pro Hop. Diese Latenzunterschiede sind daher zu gering, um die Erkennung zwischen Cache-Hit und Cache-Miss zu gefährden, welche bei ca. 60 ns liegen \cite{TheSpyInTheSandbox}. Bei i7-4770 sind jedem der 4 Slices 2048 Cache-Sets zugeordnet. Die Zuordnung der Cache-Sets innerhalb der Slices sind fest an die untersten 18 Bit der pysischen Adresse gekoppelt. Zu welchem Slice eine Adresse gemappt wird, wird durch eine nicht dokumentierte Hashfunktion bestimmt.
+
+%Im Rahmen dieser Arbeit sind Slices daher vernachlässigbar, so dass etwa bei Cache-Spezifikationen Slices nicht gesondert erwähnt werden.
+%\todo[size=\footnotesize]{Eventuell Slices doch nicht so vernachlässigbar, da store forward eviction set Suche Slices einbezieht)}
+
+
+
+%\todo[size=\footnotesize]{Hier fehlt wieder Mapping durch letzte Bits der Adresse (Beschrieben in Abschnitt Prime-and-Probe)}
+
+%Ein CPU-Cache enthält mehrere Einträge, welche folgende Bestandteile besitzen:
+%\begin{enum}
+%\item Cache-Line: Die gecacheten Daten, wobei die Länge in der Core-Architektur etwa 64 Bytes beträgt.
+%\item Address-Tag: Die Adresse im Hauptspeicher von der die Daten in der Cache-Line stammen.
+%\item Flag-Bits: Etwa das "Dirty"-Bit welches anzeigt ob die Daten der Cache-Line noch mit denen im Hauptspeicher übereinstimmen.
+%\end{enum}
+
+\subsection{\textit{Inclusive} und \textit{exclusive}}
+Ein Cache wird als \textit{inclusive} bezeichnet, falls alle Daten, die in einem niedrigen Cache-Level vorliegen, zusätzlich auch in den höheren Cache-Levels eingelagert sind. 
+So besitzen die Caches aller Desktop-Versionen der Intel Core-Architektur diese inclusive-Eigenschaft (Stand Juni 2018).
+Die Caches der Desktop-Prozessoren des Konkurrenten AMD haben zum Beispiel die Zen-Architektur \cite{CacheRyzen}, während jene der aktuellen Skylake-X-Prozessoren \cite{CacheSkylakeX} für Intels High-Performance-Plattform diese Eigenschaft hingegen nicht besitzen.
+Wegen des großen Marktanteils von Intel-CPUs kann festgehalten werden, dass der Großteil der sich im Einsatz befindlichen Prozessoren mit \textit{Inclusive}-Caches ausgestattet ist.
+
+\section{Cache-Angriffe}
+
+Cache-Angriffe beschreiben eine generelle Klasse von Mikro\-architektur-Seiten\-kanal\-angriffen, welche den Cache verwenden, um Informationen abzugreifen, wobei der Cache als geteilte Ressource zwischen verschiedenen Prozessen fungiert. Durch diesen Angriff können sichere und unsichere Prozesse über den geteilten Cache trotz höher liegender Schutzmechanismen wie virtualisiertem Speicher oder Hypervisor-Systemen kommunizieren. 
+Eine Angreiferin könnte ein Programm entwickeln, welches Informationen über den inneren Zustand eines anderen Prozesses sammelt, und so AES-Schlüssel \cite{BernsteinAES} sowie RSA-Schlüssel \cite{CacheAttackRSA} abgreifen auch über die Grenzen von virtuellen Maschinen hinweg.
+
+%\newtext
+
+\subsection{Flush-and-Reload}
+
+Diese Angriffstechnik wurde 2014 von Yuval Yarom
+und Katrina Falkner veröffentlicht \cite{FlushReload}.
+Ausgang dieses Angriffs ist ein architekturspezifischer Flush-Befehl wie etwa der x86-Assemblerbefehl \textit{clflush}, welcher eine Adresse entgegennimmt und die dazugehörige Cache-Line invalidiert. 
+Dadurch müssen die Daten beim nächsten Zugriff aus dem Hauptspeicher geladen werden. Dies ist die erste Phase des Angriffs und wird als Flush bezeichnet. 
+
+Nach dem Flush folgt die Wait-Phase, in welcher die Angreiferin eine bestimmte Zeitperiode wartet und anschließend die Zugriffszeit auf die geflushte Adressse misst. 
+
+Zu guter Letzt folgt die Reload-Phase, in welcher die Angreiferin auf die Adresse zugreift. Sofern das Opferprogramm in der Wait-Phase auf die Adresse zugegriffen hat, ist die Zugriffszeit gering, da die Daten bereits im Cache vorliegen.
+Im anderen Fall müssen die Daten erst aus dem Hauptspeicher geladen werden, womit eine messbar erhöhte Zugriffszeit einhergeht \cite{FlushReload}. Eine Übersicht der eben beschriebenen Schritte als Pseudocode findet sich in Algorithmus \ref{alg:flush_and_reload}.
+
+Ein Nachteil dieser Angriffsmethode ist die Notwendigkeit, dass sich der Opferprozess Speicherseiten mit dem Prozess der Angreiferin teilen muss. 
+Ein typisches Beispiel hierfür sind geteilte Bibliotheken, zum Beispiel .so Dateien unter Linux oder .dll Dateien unter Windows, welche etwa Kryptofunktionen bereitstellen. Des Weiteren ist der clflush-Befehl nicht in jeder Umgebung verfügbar. So ist etwa ein Angriff aus dem Browser heraus mit dieser Methode nicht möglich. 
+%\todo[size=\footnotesize]{Du hast ja schon geschrieben todo. Hier vielleicht auch eine kleine abbildung, aber defintiv irgendwas über flush WAIT reload und zeitmessungen}
+
+
+%\todo{Ok, ich sehe du benutzt keine listing-Umgebung, sondern das alogrithm(2) Paket. Dann habe ich keine Ahnung, wie du die Schriftgröße anpassen kannst. Musst du dann selber rausfinden.}
+\SetKwProg{Fn}{Function}{}{}
+
+\begin{algorithm}[h]
+\DontPrintSemicolon
+\caption{Pseudo-Code für Flush-and-Reload}
+\label{alg:flush_and_reload}
+\SetAlgoNlRelativeSize{-2}
+
+\Fn{$flushAndReload(address)$}{
+    clflush(address)\;
+    wait()\;
+	timestampBefore <- getTimestamp()\;
+	readMem(address)\;
+	timestampAfter <- getTimestamp()\;
+	\Return timestampAfter - timestampBefore > threshold
+}
+
+%\newtextend
+
+\end{algorithm}
+
+\subsection{Prime-and-Probe}
+
+Ein erfolgreicher Prime-and-Probe Angriff auf den L3-Cache wurde 2015 von Liu et al. veröffentlicht \cite{LiuPrimeAndProbe}.
+Er unterscheidet sich von Prime-and-Probe Angriffen auf niedrigere Cache-Level durch die aufwendigere Eviction-Set Suche.
+
+Ein \textit{Eviction-Set} sei eine Menge Adressen, welche einen Cache-Eintrag aus einem Cache verdrängen kann. D.h. ein Eviction-Set, welches einen Eintrag aus dem L3-Cache löscht, würde den gleichen Zweck wie der \textit {clflush}-Assemblerbefehl im Flush-and-Reload-Angriff erfüllen. 
+Um einen Eintrag aus dem Cache zu verdrängen, müssen mehrere Adressen der Daten aus dem Eviction-Set von der CPU auf das gleiche Cache-Set wie der zu verdrängende Eintrag abgebildet werden, so dass die Größe eines Eviction-Sets mindestens die Assoziativität des Caches erreichen muss.
+
+Die Idee beim Prime-and-Probe Angriff besteht darin, in einer sich wiederholenden Abfolge zuerst den Cache zu primen, dann das Opferprogramm rechnen zu lassen und anschließend zu proben.
+In der Priming-Phase werden mittels der Eviction-Sets gezielt Cache-Sets vollständig mit den Daten aus dem Eviction-Set belegt.
+In der anschließenden Berechnungsphase werden einige Einträge aus den geprimten Cache-Sets vom Opferprogramm verdrängt. Abschließend berechnet die Angreiferin die Summe der Zugriffszeiten auf alle Einträge in einem Eviction-Set.
+Sofern das Opferprogramm in dem zum Eviction-Set korrelierenden Cache-Set Einträge verdrängt hat, kann die Angreiferin eine Abweichung nach oben in ihrer Messung feststellen, da die verdrängten Einträge eine erhöhte Zugriffszeit verursachen. Somit kann aus den Zugriffszeiten der Eviction-Sets auf die Speicherzugriffe des Opferprogramms geschlossen werden.
+
+Die Eviction-Sets, die zur Durchführung eines Cache-Angriffs notwendig sind, lassen sich nicht immer leicht finden, da das Mapping der virtuellen auf die physischen Adressen in manchen Umgebungen nur eingeschränkt zugänglich ist.
+So ist aber in der Regel das Mapping der virtuellen und physischen Adressen bei den Adressbits der Speicher-Pages identisch, welche etwa unter Windows und Linux zur Zeit 4096 Bytes groß sind. Somit ist in diesem Fall garantiert, dass die untersten 12 virtuellen Adressbits mit den physischen Adressbits identisch sind. 
+
+%Der L3-Caches des Intel i7-4770 ist etwa 8 Mib groß, sodass 11 Bits des Mapping auf die physischen Adressen unbekannt sind.
+%In solchen Fällen müssen die Eviction-Sets in einem Trial-and-Error-Verfahren ermittelt werden, wie es der Algorithmus TODO %\ref[alg:evictionSet} beschreibt.
+
+\begin{algorithm}[h]
+\DontPrintSemicolon
+\caption{Pseudo-Code für Prime-and-Probe}
+\label{alg:prime_and_pribe}
+
+\Fn{$flushAndReload(address)$}{
+    \ForEach{address in evictionSet}{
+        readMem(address)\;
+    }
+    wait()\;
+	timestampBefore <- getTimestamp()\;
+	\ForEach{address in evictionSet}{
+        readMem(address)\;
+    }
+	timestampAfter <- getTimestamp()\;
+	\Return timestampAfter - timestampBefore > threshold
+}
+
+\end{algorithm}
+
+
+%Beschreibe Algorithmus
+%Hierfür werden zuerst wiederholt Speicherblöcke angefordert, wobei solche in einer Menge gesammelt werden, welche 
+
+%\newtext
+
+\subsection{Timer}
+
+Beide eben beschriebenen Angriffsmethoden setzen voraus, dass die Angreiferin Laufzeitunterschiede zwischen dem Ladevorgang aus dem Cache und dem Hauptspeicher zuverlässig unterscheiden kann. Beim AIDA64-Benchmark mit einem aktuellen Intel i7-8700K ist die L3-Cache-Latenz im Mittel bei 12 ns, wobei gepaart mit DDR4-3200 CL16 RAM die Hauptspeicherlatenz im Mittel 49 ns beträgt \cite{i78700kLatency}. Somit ist eine Timer-Auflösung von unter 30 ns Voraussetzung für einen erfolgreichen Angriff. Anschaulich ist dies auch im Diagramm \ref{fig:RAMCacheLatency} zu sehen. Die Autoren verwendeten einen i7-4960HQ und haben Zugriffszeitdifferenzen für Cache-Miss und Hit von etwa 70 ns festgestellt. 
+Auf dem Testsystem mit einem Intel i7-4770 und DDR3-1600 RAM konnten mittels \textit{rdtscp} durchschnittliche Zugriffswerte von 66 Taktzyklen bei einem Hit und von 248 Taktzyklen bei einen Miss festgestellt werden.
+
+Im Folgenden wird Zeit oft in Taktzyklen gemessen, wobei sich damit immer auf die \textit{rdtscp}-Instruktion bezogen wird.
+Zu beachten ist hierbei, dass der im Testsystem verbaute i7-4770 je nach Kern und Gegebenheiten wie Last, Temperatur und so weiter von seinem 3,4 GHz Basistakt abweicht.
+Der Takt des \textit{rdtscp}-Timers ist jedoch immer auf den gleichen Takt \cite{IntelManualRDTSCP}, im Fall des Testsystems auf 3,4 GHz, fixiert.
+Somit ergibt die Differenz von 182 Taktzyklen zwischen einem Hit und Miss auf dem Testsystem einen Zeitunterschied von 54 ns.
+
+\label{fig:RAMCacheLatency}
+\begin{figure}[h]
+\centering
+\begin{scaletikzpicturetowidth}{\textwidth}
+\input{basics/cache_hit_miss_density.tex}
+\end{scaletikzpicturetowidth}
+\caption{Wahrscheinlichkeitsverteilung der Zugriffszeiten für eine aus dem Cache verdrängte und dort vorliegende Variable.}
+\end{figure}
+
+\section{RSA}
+
+RSA (Rivest–Shamir–Adleman) ist ein 1978 veröffentlichtes und weitverbreitetes Public-Key-Kryptosystem \cite{RSAPaper}.
+Das grundlegende Prinzip hinter RSA ist es,  große positive natürliche Zahlen $e,d,n$ zu finden, so dass $(m^d)^e \equiv m \mod n$ gilt, aber schwer ein $d$ zu finden ist, wenn nur $e$ und $n$ gegeben sind.
+
+Der RSA-Algorithmus besteht aus vier Schritten: Der Schlüsselgenerierung, der Schlüsselverteilung, der Verschlüsselung und Entschlüsselung.
+
+Für die Schlüsselgenerierung werden zwei Primzahlen $p$ und $q$ benötigt, und anschließend wird $n = pq$ berechnet. Die Länge $n$ wird auch als Schlüssellänge bezeichnet.
+
+Eine heute gängige Schlüssellänge ist 2048 Bit, so dass die Bitlänge jeder Primzahl in etwa 1024 Bit beträgt. 
+Um derart große Primzahlen in akzeptabler Zeit zu finden, werden probabilistische Primzahltests eingesetzt, welche mit einer hohen Wahrscheinlichkeit garantieren, dass die gefundenen Zahlen prim sind.
+
+Des Weiteren wird $\lambda(n) = kgV(\lambda(p),\lambda(q)) = kgV(p-1, q-1)$ berechnet, wobei $\lambda$ die Carmichael-Funktion beschreibt.
+Diese liefert zu jeder natürlichen Zahl $n$ die kleinste Zahl $\lambda(n)$, sodass $a^m \equiv 1 \mod n$ für jedes $a$ gilt.
+
+Sei $e$ eine natürliche Zahl mit $1<e<\lambda(n)$ und teilerfremd zu $\lambda(n)$, d.h. es gilt $ggT(e,\lambda(n)) = 1$. Weiter sei $d \equiv e^{-1} \mod \lambda(n)$.
+
+Im Rahmen dieser Arbeit liegt der Fokus darauf, während der Schlüsselgenerierung Informationen über die generierten Primzahlen p und q abzugreifen.
+
+%\todo{verschlüsseln und entschlüsseln ist irrelevant für diese Arbeit. Statt es zu beschreiben einfach "im rahmen dieser Arbeit wurde versucht, während der Schlüsselgenerierung Informationen über die generierten Primzahlen p und q abzugreifen" oder so. Da wir jetzt ja ein "Idenifikation von Angriffszielen" kapitel haben, passt RSA vielleicht da besser statt in die Grundlagen}
+
+%Der öffentliche Schlüssel besteht nun aus $n$ und dem Exponenten $e$ und muss Personen bekannt sein, welche Nachrichten verschlüsseln möchten.
+
+%Um eine Nachricht $m$ mit $0 \leq m < n$ zu verschlüsseln, berechnet der Sender $c \equiv m^e \mod n$ mit dem $e$ aus dem öffentlichen Schlüssel des Empfängers und sendet den Chiffretext $c$ an den Empfänger.
+
+%Der geheime Schlüssel ist der Exponent $d$, wobei die Zahlen $p,q,\lambda(n)$ ebenfalls geheim bleiben müssen, da andernfalls $d$ leicht berechnet werden könnte.
+
+%Der Empfänger wiederum nutzt sein $d$ aus dem privaten Schlüssel, um $c^d \equiv (m^e)^d \equiv m \mod n$, die ursprüngliche Nachricht, zu berechnen.
+
+
+
+
+%RSA Key Gen, RSA Verschlüsselung Entschlüsselung
+
+\section{Chinesischer Restsatz}
+\label{chinese_remainder}
+
+Beschrieben sei ein System linearer Kongruenzen \cite{CRTref}:
+\begin{align*}
+x \equiv a_1 &(\mod m_1)\\
+x \equiv a_2 &(\mod m_2)\\
+\vdots\\
+x \equiv a_3 &(\mod m_3)
+\end{align*}
+Für dieses System sollen alle $x$ bestimmt werden, welche alle Gleichungen erfüllen.
+Wenn alle $m_1,m_2,...,m_n$ paarweise teilerfremde natürliche Zahlen sind, so existiert für jedes ganzzahlige Tupel $a_1, ..., a_n$ genau eine Lösung $x \in \{0,1,...,kgV(m_1,m_2,...,m_n)\}$ \cite{CRTwiki}.
+
+Sofern alle Moduli $m_i$ Primzahlen sind vereinfacht sich $kgV(m_1,m_2,...,m_n)$ zu $\prod_i m_i$.
+
+Eine konkrete Lösung für $x$ ist etwa mit Hilfe des erweiterten euklidischen Algorithmus berechenbar.
+
+
+\section{Javascript und Webassembly}
+
+Javascript ist eine interpretierte Hochsprache, welche zusammen mit HTML und CSS die wichtigsten Komponenten für das World Wide Web bildet. 
+Interaktive Webseiten und Applikationen werden erst mit Hilfe von Javascript möglich, weshalb jeder moderne Browser eine Javascript-Engine mitbringt.
+
+Webanwendungen mit Javascript sollen auf unterschiedlichsten Endgeräten vom Laptop über das Smartphone bis zur Heimkonsole laufen, so dass ein Vorhalten von kompilierten Binärdateien für jedes dieser Geräte schwierig ist. 
+Dennoch soll die Webanwendung beim Anwender ohne lange Ladezeiten auskommen, womit die Kompilierung auf dem Anwendungsgerät als Lösung entfällt.
+
+Unter anderem deshalb ist Javascript eine interpretierte Sprache, welche jedoch einen Geschwindigkeitsnachteil gegenüber vorkompilierten Sprachen wie C oder Java hat.
+Es wurden viele Anstrengungen unternommen, diesen designbedingten Performancenachteil auszugleichen. 
+So erkennt etwa Googles Javascript-Engine V8 häufig genutzte, langsam laufende Codeteile und optimiert diese während der Laufzeit \cite{GoogleTurboFan}.
+
+WebAssembly ist ein W3C-Webstandard, welcher ein binäres Format für ausführbaren Code in Webseiten definiert. 
+Dieser Standard wurde 2017 ins Leben gerufen, um den Performancenachteil von Javascript gegenüber nativem Code zu reduzieren, sowie eine kompakte Code-Repräsentation zu bieten, und wird von allen gängigen Webbrowsern unterstützt.
+
+Des Weiteren ermöglicht WebAssembly die Entwicklungen von Webanwendungen in anderen Sprachen wie etwa C, dessen Code abschließend in ein binäres Format, Wasm-Modul genannt, kompiliert wird.
+Dieser ist aber weiterhin maschinenunabhängig, sodass nur ein Wasm-Modul vorgehalten werden muss.
+Diese Module können von Javascript als Bibliotheken geladen und verwendet werden.
+
+\section{Drive-by Attacks}
+
+Die große Herausforderung eines Angriffs auf ein Endgerät ist es, den Schadcode auf dem Gerät des Opfers zur Ausführung zu bringen. Eine beliebte Methode ist das so genannte Social-Engineering, welches darauf abzielt, bei Anwendern bestimmte Reaktionen wie etwa das Öffnen eines E-Mail-Anhangs hervorzurufen. Allerdings muss hier das Opfer selbst aktiv mitwirken, um dem Angriff zum Erfolg zu verhelfen.
+
+Im Gegensatz dazu steht die Drive-by-Attack \cite{DriveByAttacksGeneric}, bei dem das Opfer bereits durch den Besuch einer Website angegriffen wird. Zum einen ist es möglich, durch Lücken im Browser beliebigen Code auf dem Gerät des Opfers auszuführen. Zum anderen, wie in der vorliegenden Arbeit dargestellt, können die vorhandenen Mittel wie Scriptsprachen für einen Angriff genutzt werden.
+Die Erfolgswahrscheinlichkeit eines Angriffs ist im letzteren Fall bedeutend größer, da bereits die von der Angreiferin geschalteten Werbeanzeigen auf häufig aufgerufenen Webseiten für einen umfangreichen Pool von Opfern sorgen.
+Hinzu kommt, dass die meisten Opfer den Angriff nicht zu ihrem Ursprung zurückverfolgen können, da sie die Website mit der bösartigen Werbeanzeige regelmäßig besuchen.
+
+Somit ist das Schreiben von Drive-by-Angriffen zunächst aufwändiger und setzt in der Regel die Kenntnis unbekannter oder nicht gepatchter Sicherheitslücken voraus, verspricht dafür aber eine deutlich höhere Erfolgswahrscheinlichkeit als Angriffe bei denen das Opfer, etwa durch die aktive Ausführung von Code, mitwirken muss.
+
+%Mit der zunehmenden Wandlung vieler Applikationen weg von der lokalen Desktopanwendung hin zur endgerätunabhängigen Webanwendung
+
+%\todo[size=\footnotesize]{Fehlt: irgendwas in Richtung Drive-by, JIT-Environments, WebAssembly}
+
+%\todo{was soll das ständige newtextend denn tun?}
+%das markiert für nicht latex- beziehungsweise versionskontrollenaffine Nutzer farblich Textstellen die ich geändert habe
+%\newtextend
+
+\section{Speicher-Disambiguierung}
+
+Heutige Prozessoren, wie etwa die Intel-Core-Reihe, führen Store- und Load-Befehle Out-of-Order aus und stehen damit vor der Aufgabe, auf Datenabhängigkeiten 
+%(Was ist das denn?) In diesem Kontext klar
+zu reagieren \cite{memoryDisambiguationBlog}.
+Die Techniken für eine Speicher-Disambiguierung erkennen echte Abhängigkeiten zwischen Speicheroperationen während der Ausführung und erlauben es der CPU, zu einem vorherigen Zustand zurückzukehren, sobald eine Abhängigkeit verletzt wurde.
+
+Die Möglichkeit, Load- und Store-Befehle Out-of-Order auszuführen, sorgt für eine erhöhte Parallelität auf Instruktionsebene und eine damit verbesserte Single-Thread-Performance.
+Grafik \ref{fig:MemoryDisambiguation} zeigt ein Beispiel für die Speicher-Disambiguierung. 
+
+\label{fig:MemoryDisambiguation}
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.6\textwidth]{methods/grayscale_memory_disambiguation.pdf}
+\caption{Beispiel für eine Speicher-Disambiguierung. Die Nummern in den Kreisen geben die chronologische und der weiße Pfeil am linken Rand die logische Ausführungsreihenfolge an. Load 2 kann nicht früher ausgeführt werden, da er von Store 1 abhängig ist. Load 4 hingegen ist von den anderen Operationen unabhängig und kann daher vor Store 1 und Store 3 ausgeführt werden. Durch diese vorgezogene Ausführung können Instruktionen, die den Wert von X benötigen, im Folgenden von einer geringen Zugriffslatenz profitieren. \cite{CacheAssoWiki}.}
+\end{figure}
+
+Um diese Techniken umzusetzen, werden Store-Instruktionen bei der Ausführung nicht direkt an das Speichersystem, in diesem Fall den CPU-Cache, übermittelt.
+Stattdessen werden die Store-Instrukionen inklusive der Speicheradressen und Daten in einer Store-Queue gepuffert.
+Die Werte werden erst an das Speichersystem übergeben, wenn alle vorherigen Befehle im Code komplett abgeschlossen wurden.
+Dies vermeidet Write-after-Read(WAR)-Konflikte, bei denen ansonsten ein früheres LOAD einen inkorrekten Wert vom Speichersystem lesen würde, weil die Ausführung eines späteren STORES vorgezogen wurde.
+Auch Write-after-Write(WAW)-Konflikte werden dadurch gelöst, da keine früheren STORES ihre Werte nach späteren STORES in das Speichersystem übermitteln, wie es ohne STORE-Queue bei der Out-Of-Order-Ausführung der Fall wäre. 
+
+Des Weiteren ermöglicht die Store-Queue die spekulative Ausführung von bedingten Verzweigungen, deren Richtung zum Ausführungszeitpunkt noch nicht bekannt ist.
+Wenn ein Pfad falsch geraten wurde, muss der berechnete Pfad verworfen und alle STORES rückabgewickelt werden.
+Ohne die Store-Queue wäre dies nicht möglich, da in der Zwischenzeit die geschriebenen Werte von anderen Cores gelesen sein könnten und somit der Systemzustand korrumpiert wäre.
+
+Jedoch schafft die Store-Queue auch ein neues Problem.
+Angenommen ein STORE wird ausgeführt und seine Adresse und seine Daten werden in der Store-Queue gepuffert. Kurz danach liest ein LOAD von derselben Adresse, auf die der STORE geschrieben hat.
+Würde der LOAD den Wert vom Speichersystem lesen, wäre der Wert veraltet, da der im Code vorher stehende STORE noch nicht übermittelt wurde.
+
+Um diesem Problem zu begegnen, nutzen Prozessoren in der Store-Queue die store-to-load-forwarding-Technik.
+Diese veranlasst die Store-Queue, abgeschlossene STORES, die noch nicht an den Speicher übermittelt wurden, zu späteren LOADS weiterzuleiten.
+Bei der Ausführung eines LOADS wird die als assoziativer Speicher umgesetzte Store-Queue nach STORES auf derselben Adresse durchsucht, welche in der logischen Ausführungsreihenfolge vorher auftauchen.
+Sofern es einen Treffer gibt, wird der Wert des abgeschlossenen STORES aus der Store-Queue anstatt des veralteten Wertes aus dem Speichersystem verwendet.
+
+Die verbesserte Eviction-Set-Suche in Abschnitt \ref{StoreFor} nutzt ein Verhalten der Speicher-Disambiguierung von Intel-Prozessoren aus.
+
+\section{Angegriffene Hardware und Software}
+
+Der Testrechner war ein Dell Precision T1700 mit einem Intel Core i7-4770, dessen 4 physischen Kerne beziehungsweise 8 virtuellen Kerne einen Grundtakt von 3,4GHz bieten.
+Der geteilte L3-Cache ist 8 MiB groß, besitzt eine Assoziativität von 16, eine Cache-Line-Größe von 64 Byte und 8192 Cache-Sets, die in 4 Slices aufgeteilt sind.
+Weiterhin ist ein Intel C226 Chipsatz und 8GB DDR3-1600 verbaut. 
+Als Betriebssystem \todo{F bssy} wird Ubuntu 16.04.5 LTS (GNU/Linux 4.4.0-131-generic x86_64) verwendet. 
+Die getesteten Browser sind Chromium 68.0.3440.106, Firefox 62 sowie Firefox Developer Edition 63.
+
+
+%Nuc i3-5... 2C4T, 
+
+Mozilla Network Security Services(NSS) \cite{MozillaNSS} ist eine Menge von Bibliotheken, welche eine plattformübergreifende Entwicklung von sicheren Client- und Server-Anwendungen anstrebt. Dabei wird unter anderem TLS oder S/MIME implementiert. Mozilla NSS wird etwa im Firefox-Browser und der Mail-Anwendung Thunderbird eingesetzt.
+Der Quellcode ist unter der Mozilla Public License verfügbar und kann online etwa im Firefox-Repository \cite{MozillaDXR} eingesehen werden.
+
+OpenPGP ist ein Standard für das Signieren, Ver- und Entschlüsseln von Daten, welcher im RFC 4880 \cite{rfc4880} definiert wird.
+OpenPGP.js \cite{OpenPGPjs} ist eine Opensource-Implementierung des OpenPGP-Protokolls in Javascript, welche sich zum Ziel gesetzt hat, OpenPGP auf einer breiten Palette von Endgeräten zu ermöglichen.
+%So wird OpenPGP.js etwa vom E-Mail-Dienst Protonmail \cite{Protonmail} genutzt.
+
+%\todo{Besser in Implementierung aufgehoben?}

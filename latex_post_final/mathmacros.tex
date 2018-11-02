@@ -1,0 +1,41 @@
+% This file contains various useful definitions
+% You may also add your own macros here
+
+% Theorem environments
+\newtheorem{definition}{Definition}[chapter]
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{corollary}[definition]{Corollary}
+\newtheorem{conjecture}[definition]{Conjecture}
+\newtheorem{lemma}[definition]{Lemma}
+\renewenvironment{proof}{\textbf{Proof.}}{%
+  \nopagebreak{\par\hfill\textbf{\qed}}\par%
+}
+
+% Math structures
+\newcommand{\with}{{\ |\ }}
+\newcommand{\set}[1]{\left\{#1\right\}}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\norm}[1]{\left\|#1\right\|}
+\newcommand{\floor}[1]{\left\lfloor#1\right\rfloor}
+\newcommand{\ceil}[1]{\left\lceil#1\right\rceil}
+\newcommand{\id}[1]{\text{#1}}
+\newcommand{\isdef}{:=}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+% Math symbols
+\newcommand{\E}{\mathbb E} % Expected value
+\newcommand{\N}{\mathbb N} % Natural numbers
+\newcommand{\Z}{\mathbb Z} % Integer numbers
+\newcommand{\R}{\mathbb R} % Real numbers
+\newcommand{\C}{\mathbb C} % Complex numbers
+\newcommand{\Q}{\mathbb Q} % Rational numbers
+\newcommand{\B}{\mathbb B} % Boolean values
+
+\newcommand{\X}{\textbf{X\ }}
+\newcommand{\U}{\textbf{\ U\ }}
+\newcommand{\F}{\textbf{F\ }}
+\newcommand{\G}{\textbf{G\ }}
+\newcommand{\true}{\textbf{true}}
+\newcommand{\false}{\textbf{false}}

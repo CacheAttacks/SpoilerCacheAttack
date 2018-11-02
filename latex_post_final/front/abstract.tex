@@ -1,0 +1,37 @@
+%\chapter*{Abstract}
+\chapter*{Kurzzusammenfassung}
+
+%Einleitungssatz (zu thema hinführen):
+%\todo{ja, du brauchst einen Einleitungssatz, aber ohne Meltdown/Spectre. Irgendwas in Richtung: Mikroarchitekturangriffe haben sich als sehr mächtig erwiesen, erfordern aber meist ausführung von code auf der Opfermaschine. Allerdings wurde durch PAPER gezeigt, dass auch aus Browser möglich. Solche Angriffe werden in Skriptsprachen usw. und sind besonders verherend, weil... . }
+%Browserbasierte Seitenkanalangriffe auf die Mikroarchitektur der CPU sind besonders verheerend (falsches Adjektiv. Hier muss so etwas wie "einfach" oder "leicht machbar" stehen), da bereits der Besuch einer Webseite für das Opfer ausreicht, um einen Angriff erfolgreich zu starten. [Wichtig ist hier die Perspektive: Schreibst du aus Sicht des Opfers oder aus Sicht des Angreifers.]
+
+Mikroarchitekturangriffe haben sich als sehr mächtig erwiesen, erfordern aber meist die Ausführung von einem nativen Code auf dem System des Opfers.
+Im Jahr 2015 wurde gezeigt \cite{TheSpyInTheSandbox}, dass Browser-basierte Angriffe, bei denen bereits der Besuch einer Webseite durch das Opfer ausreicht, möglich sind.
+%kurz näher beschreiben wie das in etwa funktionert:
+Ein solcher Angriff wird in Scriptsprachen wie Javascript implementiert und nutzt den geteilten L3-Cache der CPU aus, um Informationen über die Speicherzugriffe des Opferprogramms zu erhalten.
+Der Angriff ist weder auf einen Exploit im Browser noch auf fahrlässiges Verhalten der Nutzer angewiesen.
+
+
+%was passiert in dieser Arbeit/Was sind wesentliche Ergenisse?
+%-Neue potenzielle gefährliche leakage in NSS und OpenPGP.js
+%-versuchte Portierung eines nativen RSA-Schlüsselgenerierungsangriff auf OpenSSL zu Browser-basierten Angriff auf NSS
+%-Probleme bei Portierung wie Bremsen, verminderte Angriffsgeschwindigkeit im Browser werden analysiert
+%-Eviction-Set-Suchalgorithmus wird verbessert, neue Variante beschrieben und mit altem Algorithmus vergleichen
+
+%\todo{wurde der Drive by angriff nachimplementiert und es wurde versucht, den nativen Angriff auf RSA-Primzahlgenerierung (QUELLE) in den Browser zu portieren. Zusätzlich wurden} 
+
+In dieser Arbeit wird ein Browser-basierter Prime-and-Probe-Angriff implementiert und die Portierung eines nativen Angriffs auf die RSA-Primzahlgenerierung \cite{RSAKeyGeneration2} in OpenSSL hin zu einem Browser-basierten Angriff auf Mozilla NSS untersucht.
+Zusätzlich werden neue Leakages in der RSA-Primzahlgenerierung von Mozilla NSS und OpenPGP.js beschrieben und analysiert.
+Des Weiteren wird ein verbesserter Algorithmus zum Finden von Eviction-Sets vorgestellt, der die in der Praxis wichtige Initalisierungsphase eines Angriffs beschleunigt. 
+
+%(Hier fehlt ein 2. Satzteil wie etwa: "und damit den Zugriff auf die Opferdateien sicher ermöglicht.") 
+
+{\let\cleardoublepage\relax \chapter*{Abstract}}
+
+It is evident that microarchitectural attacks are very powerful, but they mostly need the original native code of the victim's system. 
+In 2015 it was shown that browser-based attacks are even possible if the victim has only visited a website \cite{TheSpyInTheSandbox}. Such an attack is implemented in scripting languages such as Javascript and uses the shared CPU's L3 cache to obtain information about the victim's memory accesses.
+The attack neither requires an exploit in the browser nor a user's negligent behavior.%(amerikanische Schreibweise!!).
+
+This work implements a browser-based prime-and-probe-attack and examines the porting of a native attack on RSA prime generation \cite{RSAKeyGeneration2} in OpenSSL to a browser-based attack on Mozilla NSS.
+New leakages in the RSA prime number generation of Mozilla NSS and OpenPGP.js are also described and analyzed.
+Furthermore an improved algorithm for finding eviction sets is presented which accelerates the important initialization phase of an attack.
