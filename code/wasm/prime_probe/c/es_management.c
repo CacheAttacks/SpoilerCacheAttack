@@ -347,7 +347,7 @@ void build_es(void *app_state_ptr, int max_es, enum search_methods search_method
  * @brief es search
  * 
  * @param app_state_ptr Ptr to global data struct
- * @param max_es Break search after max_es es were found
+ * @param max_es Break search after max_es "super es" were found. Each "super es" is extended to 64 es.
  * @param benchmarkmode benchmarkmode=1 => activates benchmarkmode (parameter could be merged with benchmarkruns)
  * @param benchmarkruns Define number of runs (set benchmarkmode=1)
  * @param search_methods Select between DEFAULT and STOREFORWARDLEAKAGE

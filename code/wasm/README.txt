@@ -7,3 +7,8 @@ Use the script "prime_probe/.vscode/compile.sh" to compile the code in the "prim
 
 It is advisable to use the local webserver from emscripten to avoid some browser origin restrictions. To start the webserver with "prime_probe" as the root directory execute "WORKINGDIR/emsdk-portable/emscripten/1.38.11/emrun --no_browser --port 8080 REPOS/code/wasm/prime_probe".
 To start the App execute "http://localhost:8080/eviction_set_finder_START_ME.html" in Google Chrome or Firefox. The attack relies on SharedArrayBuffers, therefore make sure your browser configuration supports this feature (for more information read "enable_SAB_browser.txt").
+
+If you want to use R to plot the observed mem accesses install the package plumber via the command "install.packages("plumber")".
+Afterwards you should set your working directory with "setwd("REPOS/code/r/prime_probe/")" first.
+Now you can start the plumber server with the command "plumber::plumb("plumber.R")$run(port=8000)".
+The server is now waiting for incoming requests (in our case from JS).

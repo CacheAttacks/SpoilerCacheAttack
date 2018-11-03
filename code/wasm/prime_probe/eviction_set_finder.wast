@@ -235,18 +235,18 @@
   (set_local $$3
    (get_local $$1)
   )
-  ;;@ c/eviction_set_finder.c:27:0
+  ;;@ c/main.c:27:0
   (set_local $$6
    (call $_calloc
     (i32.const 56)
     (i32.const 1)
    )
   )
-  ;;@ c/eviction_set_finder.c:26:0
+  ;;@ c/main.c:26:0
   (set_local $$4
    (get_local $$6)
   )
-  ;;@ c/eviction_set_finder.c:28:0
+  ;;@ c/main.c:28:0
   (set_local $$7
    (get_local $$4)
   )
@@ -256,7 +256,7 @@
   (call $_set_app_state_ptr
    (get_local $$8)
   )
-  ;;@ c/eviction_set_finder.c:29:0
+  ;;@ c/main.c:29:0
   (set_local $$9
    (get_local $$4)
   )
@@ -270,7 +270,7 @@
    (get_local $$10)
    (i32.const 0)
   )
-  ;;@ c/eviction_set_finder.c:30:0
+  ;;@ c/main.c:30:0
   (set_local $$11
    (get_local $$4)
   )
@@ -284,7 +284,7 @@
    (get_local $$12)
    (i32.const 0)
   )
-  ;;@ c/eviction_set_finder.c:31:0
+  ;;@ c/main.c:31:0
   (set_local $$13
    (get_local $$4)
   )
@@ -298,16 +298,16 @@
    (get_local $$14)
    (i32.const 0)
   )
-  ;;@ c/eviction_set_finder.c:35:0
+  ;;@ c/main.c:35:0
   (set_local $$15
    (call $_get_timer_resolution)
   )
   (set_local $$5
    (get_local $$15)
   )
-  ;;@ c/eviction_set_finder.c:37:0
+  ;;@ c/main.c:37:0
   (call $_set_timer_info)
-  ;;@ c/eviction_set_finder.c:45:0
+  ;;@ c/main.c:45:0
   (set_local $$16
    (call $_mem_access_testing
     (i32.const 100000)
@@ -327,7 +327,7 @@
    (get_local $$18)
    (get_local $$16)
   )
-  ;;@ c/eviction_set_finder.c:50:0
+  ;;@ c/main.c:50:0
   (set_local $$19
    (get_local $$4)
   )
@@ -341,7 +341,7 @@
    (get_local $$20)
    (i32.const 38)
   )
-  ;;@ c/eviction_set_finder.c:57:0
+  ;;@ c/main.c:57:0
   (drop
    (call $_printf_ex
     (i32.const 4044)
@@ -351,7 +351,7 @@
   (set_global $STACKTOP
    (get_local $sp)
   )
-  ;;@ c/eviction_set_finder.c:64:0
+  ;;@ c/main.c:64:0
   (return
    (i32.const 0)
   )
