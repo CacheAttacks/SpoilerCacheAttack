@@ -142,7 +142,7 @@ Ein typisches Beispiel hierfür sind geteilte Bibliotheken, zum Beispiel .so Dat
 
 \subsection{Prime-and-Probe}
 
-Ein erfolgreicher Prime-and-Probe Angriff auf den L3-Cache wurde 2015 von Liu et al. veröffentlicht \cite{LiuPrimeAndProbe}.
+Ein erfolgreicher Prime-and-Probe Angriff auf den L3-Cache wurde 2015 etwa von Irazoqui et al. veröffentlicht \cite{ITSPrimeAndProbe}.
 Er unterscheidet sich von Prime-and-Probe Angriffen auf niedrigere Cache-Level durch die aufwendigere Eviction-Set Suche.
 
 Ein \textit{Eviction-Set} sei eine Menge Adressen, welche einen Cache-Eintrag aus einem Cache verdrängen kann. D.h. ein Eviction-Set, welches einen Eintrag aus dem L3-Cache löscht, würde den gleichen Zweck wie der \textit {clflush}-Assemblerbefehl im Flush-and-Reload-Angriff erfüllen. 
@@ -336,7 +336,7 @@ Die verbesserte Eviction-Set-Suche in Abschnitt \ref{StoreFor} nutzt ein Verhalt
 Der Testrechner war ein Dell Precision T1700 mit einem Intel Core i7-4770, dessen 4 physischen Kerne beziehungsweise 8 virtuellen Kerne einen Grundtakt von 3,4GHz bieten.
 Der geteilte L3-Cache ist 8 MiB groß, besitzt eine Assoziativität von 16, eine Cache-Line-Größe von 64 Byte und 8192 Cache-Sets, die in 4 Slices aufgeteilt sind.
 Weiterhin ist ein Intel C226 Chipsatz und 8GB DDR3-1600 verbaut. 
-Als Betriebssystem \todo{F bssy} wird Ubuntu 16.04.5 LTS (GNU/Linux 4.4.0-131-generic x86_64) verwendet. 
+Als Betriebssystem wird Ubuntu 16.04.5 LTS (GNU/Linux 4.4.0-131-generic x86_64) verwendet. 
 Die getesteten Browser sind Chromium 68.0.3440.106, Firefox 62 sowie Firefox Developer Edition 63.
 
 

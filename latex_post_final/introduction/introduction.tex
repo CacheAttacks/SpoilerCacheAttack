@@ -126,11 +126,12 @@ Durch die Freiheiten des Javascript-Compilers ist es möglich, je nach Eingabe u
 
 \subsection{Cache-Angriffe auf RSA}
 
-Viele Paper haben gezeigt \cite{CacheBleed, FlushReload, DriveByPaper}, dass sich der RSA-Schlüssel oder Teile davon mittels Cache-Angriffen extrahieren lassen. Das Angriffsziel waren dabei Komponenten der Ver- und Entschlüsselung, beispielsweise die modulare Exponentiationsfunktion \cite{CacheBleed, DriveByPaper, DriveByPaper}. 
+Viele Paper haben gezeigt \cite{RSAITSCHES2016, CacheBleed, FlushReload, DriveByPaper}, dass sich der RSA-Schlüssel oder Teile davon mittels Cache-Angriffen extrahieren lassen. Das Angriffsziel waren dabei Komponenten der Ver- und Entschlüsselung, beispielsweise die modulare Exponentiationsfunktion \cite{CacheBleed, DriveByPaper, DriveByPaper}. 
 
 %\todo{Hier vielleicht noch ein bisschen mehr darüber, wie diese Angriffe ablaufen? Traces von Multiplier-Tabellen sammeln, dann auswerten? Muss auch nicht, wäre nur Masse}
 
 Weniger Aufmerksamkeit wurde der RSA-Schlüsselgenerierung geschenkt, da diese im Gegensatz zur Ver- und Entschlüsselung nur einmal ausgeführt wird und damit schwieriger anzugreifen ist.
+Das BSI stellte 2009 ein Paper vor \cite{BSIRSAKeyGeneration} in dem ein Angriff auf die RSA-Schlüsselgenerierung mit Hilfe einer Leistungsaufnahmemessung gezeigt wurde.
 In der 2018 verfassten Arbeit \cite{RSAKeyGeneration2} wird ein Angriff auf die RSA-Schlüsselgenerierung in OpenSSL beschrieben.
 Hierfür wird die Funktion zum Finden des größten gemeinsamen Teilers angegriffen, welche die Teilerfremdheit der beiden erzeugten Primzahlen $p$ und $q$ zu dem Exponenten $e$ überprüft.
 

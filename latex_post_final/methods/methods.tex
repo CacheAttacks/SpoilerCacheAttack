@@ -176,10 +176,11 @@ Der i7-4770 besitzt 8192 Cache-Sets, die auf 4 Slices aufgeteilt sind, wobei fü
 \begin{scaletikzpicturetowidth}{\textwidth}
 \input{methods/address_layout.tex}
 \end{scaletikzpicturetowidth}
-\caption{Physischer, virtueller und Webassembly's Adressraum auf dem Intel i7-4770 mit vier Slices und insgesamt 8192 Cache-Sets im Vergleich \cite{DriveByPaper}. Die letzten 12 Bits einer Adresse stimmen in allen drei Adressräumen überein.}
+\caption{Physischer, virtueller und Webassembly's Adressraum auf dem Intel i7-4770 mit vier Slices und insgesamt 8192 Cache-Sets im Vergleich \cite{DriveByPaper}. Die letzten 12 Bits einer Adresse stimmen in allen drei Adressräumen überein. Die }
 \end{figure}
 
-In welchem der 4 Slices die Daten landen, wird anhand der Adressbits 18 bis 63 bestimmt.
+Die Adressbits 18 bis 63 sind ausreichend um das Slice zu bestimmen, in welchem die Daten landen.
+Dies gilt nur wenn die Anzahl der Slices wie beim i7-4770 als Zweierpotenz dargestellt werden kann, ansonsten sind die restlichen Bits der physischen Adresse ebenfalls für die Bestimmung des Slice relevant \cite{RSAITSCHES2016}. 
 Durch die Kenntnis der untersten 12 Bits der physischen Adresse sind gleichzeitig 6 Bits (6 bis 11) bekannt, welche für die Zuordnung zu den Cache-Sets verantwortlich sind.
 
 Angenommen, im Pool sind ausschließlich Adressen, bei denen die letzten 12 Bits auf 0 gesetzt sind. 
