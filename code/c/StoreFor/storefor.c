@@ -147,9 +147,9 @@ static inline uint64_t rdtscp64(){
 int main()
 {
 	//storefor_write_old();
-	//storefor_write();
+	storefor_write();
 	
-	thread_attack(4);
+	//thread_attack(4);
 	
 	fgetc(stdin);
 }

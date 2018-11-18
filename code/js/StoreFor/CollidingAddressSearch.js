@@ -49,7 +49,7 @@ function getNewSABCounter(){
 }
 
 //5 round is prob enough
-function findCollidingAdd(pageCount, SABCounterArray, rounds = 20, windowSize = 50){
+function findCollidingAdd(pageCount, SABCounterArray, rounds = 100, windowSize = 64){
     var pageSize = 4096;
     var uint32Buffer = new Uint32Array(pageCount * (pageSize/4));
     var uint32Buffer2 = new Uint32Array(pageCount * (pageSize/4));
@@ -103,7 +103,7 @@ function findCollidingAdd(pageCount, SABCounterArray, rounds = 20, windowSize = 
         }
 
         output += " " + uint16MeasurementArr[p];
-        if(uint16MeasurementArr[p] > 50){
+        if(uint16MeasurementArr[p] > 45){
             output += "##";
         }
     }

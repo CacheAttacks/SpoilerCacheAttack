@@ -721,6 +721,26 @@ __attribute__((optnone))
 __attribute__((optimize("O0")))
 #endif
 void
+probe_only_split_2_count(void *pp, int count)
+{
+  if (pp == NULL)
+    return;
+  // void *p = (void *)pp;
+  void *bp = NEXTPTR((void *)pp);
+
+  for (int i = 0; i < count; i++)
+  {
+    pp = LNEXT(pp);
+    bp = LNEXT(bp);
+  }
+}
+
+#ifdef WASM
+__attribute__((optnone))
+#else
+__attribute__((optimize("O0")))
+#endif
+void
 probe_only_split_4(void *pp)
 {
   if (pp == NULL)

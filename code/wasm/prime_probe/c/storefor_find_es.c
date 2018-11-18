@@ -32,9 +32,10 @@ static inline uint32_t memaccesstime_alt(void *v)
 
   val = *((uint32_t *)v);
 
-  for(int i=0; i<10; i++)
-  val*=2;
+  // for(int i=0; i<10; i++)
+  // val*=2;
 
+val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;
 	//val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;	val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;	val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;
 
   after = val;
@@ -99,8 +100,8 @@ void measurement_funct(uint8_t * evictionBuffer, int window_size, uint8_t *targe
 			}
       uint32_t val;
       uint32_t before = SAB_lib_get_counter_value_storefor();
-      for(int i=0; i<100; i++)
-        before = SAB_lib_get_counter_value_storefor();
+      // for(int i=0; i<100; i++)
+      //   before = SAB_lib_get_counter_value_storefor();
 
       val = *((uint32_t *)evictionBuffer);
 
@@ -131,8 +132,10 @@ void measurement_funct(uint8_t * evictionBuffer, int window_size, uint8_t *targe
 	}
 
 	for(int p = window_size; p < PAGE_COUNT; p++) {
-        printf_ex("%u ", measurementBuffer[p]);
-        printf_ex("(%u)",  measurementBuffer2[p]);
+        //printf_ex("%u", measurementBuffer[p]);
+        printf_ex("%u",  measurementBuffer2[p]);
+        if(p < PAGE_COUNT-1 && measurementBuffer2[p]>measurementBuffer2[p-1]+5 && measurementBuffer2[p+1]>measurementBuffer2[p-1]+5)
+          printf_ex("?");
        printf_ex(" ");
 
 		// if(p < PAGE_COUNT-1 && measurementBuffer[p] > 150 && measurementBuffer[p+1] > 130){
@@ -174,8 +177,8 @@ int probemap_storeforwardleakage(l3pp_t l3){
     uint32_t storefor_add_arr_size = 116;
     uint8_t * storefor_add_arr = (uint8_t*) calloc(sizeof(uint32_t), storefor_add_arr_size);	
 
-    int WINDOW_SIZE = 60;
-    int rounds = 20;
+    int WINDOW_SIZE = 64;
+    int rounds = 50;
     int threadholdSearchForEs = 115;
     int failed = 0;
     uint32_t buffer_size = l3->l3info.bufsize;
@@ -183,10 +186,13 @@ int probemap_storeforwardleakage(l3pp_t l3){
     //printf_ex("target_add:%p\n", buffer);
     
     //wasm version measurement_funct not working. Use js version store_for_js instead.
-    //measurement_funct(buffer, WINDOW_SIZE, buffer);
+    //measurement_funct(l3->buffer, WINDOW_SIZE, l3->buffer);
 
     for(int i=0; i<32; i++){
       for(int j=0; j<10; j++){
+        //assumes that the least 20 physical address bits for address l3->buffer+i*PAGE_SIZE (i from 0 to 31) are different
+        //can test this by measuring the prob for a colliding address occuring in any of the next 31 addresses (address+i*PAGE_SIZE with i from 1 to 31)
+        //tests shows a low prob for this problem, therefore the addresspool is not filtered after each iteration
         if(store_for_js((WASMPTR)l3->buffer, buffer_size, (WASMPTR)storefor_add_arr, storefor_add_arr_size, (WASMPTR)(l3->buffer+i*PAGE_SIZE), threadholdSearchForEs, WINDOW_SIZE, rounds, (WASMPTR)l3)){
           //printf_ex("success!\n");
           failed = 0;
@@ -259,8 +265,7 @@ void storefor_write(void *app_state_ptr, int benchmarkruns){
                     -1, 0);
 
     uint32_t storefor_add_arr_size = 116;
-    uint8_t * storefor_add_arr = (uint8_t*) calloc(sizeof(uint32_t), storefor_add_arr_size);
-    //memset(storefor_add_arr, 0, sizeof(uint32_t) * storefor_add_arr_size);	
+    uint8_t * storefor_add_arr = (uint8_t*) calloc(sizeof(uint32_t), storefor_add_arr_size);	
 
     int WINDOW_SIZE = 60;
     int rounds = 20;
@@ -272,7 +277,9 @@ void storefor_write(void *app_state_ptr, int benchmarkruns){
     l3->collect_groups = vl_new();
 
     //printf_ex("target_add:%p\n", buffer);
-    //measurement_funct(buffer, WINDOW_SIZE, buffer);
+    measurement_funct(buffer, WINDOW_SIZE, buffer);
+    exit(1);
+
     for(int i=0; i<32; i++){
       for(int j=0; j<10; j++){
         if(store_for_js((WASMPTR)buffer, buffer_size, (WASMPTR)storefor_add_arr, storefor_add_arr_size, (WASMPTR)(buffer+i*PAGE_SIZE), threadholdSearchForEs, WINDOW_SIZE, rounds, (WASMPTR)this_app_state->l3)){

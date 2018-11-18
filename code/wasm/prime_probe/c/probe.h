@@ -38,6 +38,7 @@ void probe_only_adv_14(void *pp);
 void probe_only_adv_15(void *pp);
 void probe_only_adv_16(void *pp);
 void probe_only_split_2(void *pp);
+void probe_only_split_2_count(void *pp, int count);
 void probe_only_split_4(void *pp);
 void probe_only_split_8(void *pp);
 

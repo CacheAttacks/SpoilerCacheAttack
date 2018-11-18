@@ -623,9 +623,6 @@
     //execute prime spam operation for numberPrimeSpamDurationSec
     //use btnSetMonitoredEs and btnSetMonitoredEsArr to set spammed es
     document.getElementById('btnPrimeSpam').onclick = function () {
-      assertAppStatePtr(function () {
-        Module['asm']._set_monitored_es(Module['appStatePtr'], document.getElementById('numberLowerLimitMonitoredEs').value, document.getElementById('numberUpperLimitMonitoredEs').value);
-      });
       primeSpamEsWrapper(document.getElementById('numberPrimeSpamDurationSec').value, document.getElementById('selectPrimeSpamOption').value);
     }
 

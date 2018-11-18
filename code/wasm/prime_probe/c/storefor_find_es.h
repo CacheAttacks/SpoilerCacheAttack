@@ -1,5 +1,5 @@
-#define ROUNDS 100		// For averaging the timings
-#define PAGE_COUNT 1024*64
+#define ROUNDS 50		// For averaging the timings
+#define PAGE_COUNT 1024*8//1024*64
 #define PAGE_SIZE 4096
 
 #define WASMPTR uint32_t

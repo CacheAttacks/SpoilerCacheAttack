@@ -123,6 +123,8 @@ void *sethead_ex(l3pp_t l3, int set,
         int cacheline_offset = offset + (add_off + 1) * sizeof(void *);
         LNEXT(OFFSET(vl_get(list, list_index), cacheline_offset)) = OFFSET(
             vl_get(list, (list_index + count - 1) % count), cacheline_offset);
+
+        //printf_ex("bp(add_off=%i): %i[%i] -> %i[%i]\n", add_off, list_index, (add_off + 1),  (list_index + count - 1) % count, (add_off + 1));
       }
       // LNEXT(OFFSET(vl_get(list, i), offset+sizeof(void*))) =
       // OFFSET(vl_get(list, (i + count - 1) % count), offset+sizeof(void *));
@@ -134,10 +136,45 @@ void *sethead_ex(l3pp_t l3, int set,
       int cacheline_offset = offset + add_off * sizeof(void *);
       LNEXT(OFFSET(vl_get(list, list_index), cacheline_offset)) =
           OFFSET(vl_get(list, (list_index + 1) % count), cacheline_offset);
+
+      //printf_ex("(add_off=%i): %i[%i] -> %i[%i]\n", add_off, list_index, add_off,  (list_index + 1) % count, add_off);
     }
   }
 
   return OFFSET(vl_get(list, 0), offset);
+}
+
+/**
+ * @brief Creates a "long" Ptr-chain for prime spam with multiple eviction sets (with bprobe option)
+ * 
+ * @param l3 Ptr to l3pp struct
+ * @param ptr_arr Array to all ptr
+ * @param ptr_arr_size Size of ptr_arr
+ * @return void* 
+ */
+void *sethead_prime_spam(l3pp_t l3, void** ptr_arr, int ptr_arr_size){
+  for(int j = 0; j < ptr_arr_size; j++){
+    //make sure ptr_arr points to begin of the cache-line
+    int p = (((int)ptr_arr[j] >> 6) << 6);
+
+    for (int add_off = 0; add_off < 16; add_off += 2) {
+      int cacheline_offset = (add_off + 1) * sizeof(void *);
+      int new_p = (((int)ptr_arr[(j + ptr_arr_size - (add_off + 1)) % ptr_arr_size] >> 6) << 6);
+      LNEXT(OFFSET(p, cacheline_offset)) = OFFSET(new_p, cacheline_offset);
+
+      //printf_ex("bp(add_off=%i): %i[%i] -> %i[%i]\n", add_off, j, (add_off + 1),  (j + ptr_arr_size - (add_off + 1)) % ptr_arr_size, (add_off + 1));
+    }
+
+    for (int add_off = 0; add_off < 16; add_off += 2) {
+      int cacheline_offset = (add_off) * sizeof(void *);
+      int new_p = (((int)ptr_arr[(j + (add_off + 1)) % ptr_arr_size] >> 6) << 6);
+      LNEXT(OFFSET(p, cacheline_offset)) = OFFSET(new_p, cacheline_offset);
+
+      //printf_ex("(add_off=%i): %i[%i] -> %i[%i]\n", add_off, j, add_off,  (j + (add_off + 1)) % ptr_arr_size, add_off);
+    }
+  }
+
+  return (void*)(((int)ptr_arr[0] >> 6) << 6);
 }
 
 /**
@@ -1236,7 +1273,6 @@ int l3_repeatedprobe_spam_option(l3pp_t l3, int nrecords, int option) {
       }
   }
 
-  void* p_next;
   for (int i = 0; i < l3->nmonitored; i++) {
       void* p = l3->monitoredhead[i];
       //get last ptr in chain
@@ -1244,20 +1280,37 @@ int l3_repeatedprobe_spam_option(l3pp_t l3, int nrecords, int option) {
         p = *((void **)p);
       }
       LNEXT(p) = l3->monitoredhead[(i+1)%l3->nmonitored];
+      //shortcut
+      //LNEXT(NEXTPTR(p)) = l3->monitoredhead[(i+1)%l3->nmonitored];
+      //LNEXT(p) = NEXTPTR(l3->monitoredhead[(i-1+l3->nmonitored)%l3->nmonitored]);      
   }
   //l3_monitor should be called afterwards
+
+  //sethead_prime_spam(l3, ptr_arr, ptr_arr_size);
 
   int ptr,ptr2,ptr3,ptr4;
   if(option == 0){ //probe_only_split_2 with bprobe
   //int even = 1;
-    for (int i = 0; i < nrecords; i++) {
-      probe_only_split_2(monitoredes1);
-      probe_only_split_2(monitoredes1b);
-    }
+    //if(l3->nmonitored == 1){
+      for (int i = 0; i < nrecords; i++) {
+        
+        probe_only_split_2(monitoredes1);
+        probe_only_split_2(monitoredes1b);
+      }
+    // } else{
+    //   l3_repeatedprobe_spam(l3, nrecords);
+    // }
   } else if(option == 1){ //probe_only_split_2 without bprobe
-    for (int i = 0; i < nrecords; i++) {
-      probe_only_split_2(monitoredes1);
-    }
+      //if(l3->nmonitored == 1){
+        for (int i = 0; i < nrecords; i++) {
+          probe_only_split_2_count(monitoredes1, ptr_arr_size/2);
+          //probe_only_split_2(monitoredes1);
+        }
+      // } else{
+      //   for (int i = 0; i < nrecords; i++) {
+      //     l3_probe_spam(l3);
+      //   }
+      // }
   } else if(option == 2){ //ptr_arr with bprobe
     for (int i = 0; i < nrecords; i++) {
       for(int i=0; i<ptr_arr_size; i++){

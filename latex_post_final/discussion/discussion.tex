@@ -571,10 +571,10 @@ Dieses anfängliche Rauschen der Javascript-Implementierung ist in der Praxis je
 Zusammenfassend betrachtet, bringt die Implementierung in Javascript einen Performance-Vorteil von ca. 10\% ohne in der Praxis relevante Nachteile zu bieten.
 Da die Umsetzung von Multithreading in Webassembly geplant ist \cite{WebassemblyThreads}, kann bei dieser Implementierung in Zukunft mit einem Performancegewinn gerechnet werden, da dann die Javascript-Funktionsaufrufe bezüglich der Zählvariable entfallen.
 
-\subsection{Verschiedene Varianten von Prime-and-Probe}
+\subsection{Varianten der Prime-and-Probe-Implementierung}
 \label{SplitProbeType}
 
-Die Standardimplementierung für die Prime-and-Probe-Operation verwendet die Point-Chasing-Methode (siehe Pseudocode \ref{alg:pointerChasing}). 
+Die Standardimplementierung für die Prime-and-Probe-Operation verwendet die Pointer-Chasing-Methode (siehe Pseudocode \ref{alg:pointerChasing}). 
 In dieser wird einer Kette von 16 Einträgen gefolgt, wobei der Prozessor immer erst die Adresse des vorherigen Eintrags bestimmen muss, um die des nächsten Eintrags laden zu können.
 Um eine Prime-and-Probe Operation zu beschleunigen wären zwei Ketten mit jeweils acht Einträgen, beziehungsweise vier Ketten mit jeweils vier Einträgen denkbar.
 Dadurch würde eine Parallelisierung auf Instruktionsebene möglich und der Prozessor könnte weiterhin keine Folgeadressen innerhalb der Ketten im Voraus laden.
@@ -582,13 +582,64 @@ Dadurch würde eine Parallelisierung auf Instruktionsebene möglich und der Proz
 Anhand der unterschiedlichen Sampleanzahl für die gleiche Shift-Folge in Abbildung \ref{fig:ObserveShiftDifferentProbeTypes} ist erkennbar, dass sich durch die Aufspaltung in zwei Ketten mit jeweils acht Einträgen ein Performancevorteil von etwa 50\% ergibt.
 Mit einer Aufteilung auf vier Ketten mit jeweils vier Einträgen konnten hingegen keine erfolgreichen Messungen durchgeführt werden.
 
-Die Aufteilung in zwei Ketten kann auch bei der Prime-Spam-Bremsmethode eingesetzt werden, um dort die Bremsleistung zu erhöhen. 
-Wenn die Cache-Lines $V1_1$ und $V2_4$ (siehe Tabelle \ref{tbl:PerformanceDegShift}) mittels Prime-Spam in einem Thread und der Prime-and-Probe-Operation mit einer Kette gebremst wurden, konnte die Shift-Operation von ca. 350 auf 420 Taktzyklen verlangsamt werden. 
-Unter den gleichen Bedingungen, aber einer Prime-and-Probe-Operation mit zwei Ketten, konnte die Shift-Operation auf etwa 565 Taktzyklen gebremst werden. 
-Damit kann bei der Prime-Spam-Methode ein Performance-Vorteil von ca. 35\% erzielt werden.
-Angemerkt sei, dass der Code um die Bremsfunktionen in diesen Tests nicht optimiert war, weswegen die absoluten Werte nicht mit den Bremsergebnissen aus Abschnitt \ref{PerformanceDegSingleThread} und \ref{MoreIsBetter} verglichen werden können.
+Im folgenden sollen verschiedene Abwandlungen der Prime-and-Probe-Implementierung auf ihre Performance hin untersucht werden. Es werden folgende Varianten untersucht:
 
-Hiermit steigert die Aufteilung in zwei Ketten die Performance der Prime-and-Probe-Operation merklich und ist der Implementierung mit einer Kette vorzuziehen.
+\begin{description}
+\item[Single chain mit back probe]
+Die Kette beim Pointer-Chasing wird abwechselnd vom ersten zum letzten und vom letzten zum ersten Eintrag (back probe) gelesen (Bsp: 1,2,..,n und dann n,n-1,...,1).
+\item[Single chain ohne back probe]
+Die Kette beim Pointer-Chasing wird in jeder Iteration ausschließlich vom ersten zum letzten Eintrag gelesen. 
+\item[Double chain mit back probe]
+Das Pointer-Chasing wird mit zwei Ketten und back probing durchgeführt.
+\item[Double chain ohne back probe]
+Das Pointer-Chasing wird mit zwei Ketten und ohne back probing durchgeführt (Lesen ausschließlich vom ersten zum letzten Eintrag).
+\item[Ptr array mit back probe]
+Auf die Einträge des Eviction-Sets wird nicht mittels Pointer-Chasing zugegriffen, sondern mittels eines Arrays in dem die Pointer gespeichert sind (Ptr array). Wie oben beschrieben kann der Prozessor in diesem Fall Adressen im Voraus laden.
+\item[Ptr array ohne back probe]
+Verwendung eines Pointer-Arrays ohne back probing.
+\item[Ptr array ohne back probe double ptr]
+Analog zu den zwei Ketten beim Pointer-Chasing kann das Pointer-Array zweigeteilt werden um eine Parallelisierung der Zugriffe auf Instruktionsebene zu ermöglichen. Es wird kein back probing durchgeführt.
+\item[Ptr array ohne back probe quad ptr]
+Aufteilen des Pointer-Arrays in vier Teile und ohne back probing.
+\end{description}
+
+Die Ergebnisse in Tabelle \ref{tbl:PerformanceDegDifferentVariants} zeigen, dass ein Weglassen des back probings bei einer Kette (Pointer-Chasing) keine Vorteile bringt, sondern sich im Gegenteil leicht nachteilig auswirkt.
+
+
+%Die Aufteilung in zwei Ketten kann auch bei der Prime-Spam-Bremsmethode eingesetzt werden, um dort die Bremsleistung zu erhöhen. 
+%Wenn die Cache-Lines $V1_1$ und $V2_4$ (siehe Tabelle \ref{tbl:PerformanceDegShift}) mittels Prime-Spam in einem Thread und der Prime-and-Probe-Operation mit einer Kette gebremst wurden, konnte die Shift-Operation von ca. 350 auf 420 Taktzyklen verlangsamt werden. 
+%Unter den gleichen Bedingungen, aber einer Prime-and-Probe-Operation mit zwei Ketten, konnte die Shift-Operation auf etwa 565 Taktzyklen gebremst werden. 
+%Damit kann bei der Prime-Spam-Methode ein Performance-Vorteil von ca. 35\% erzielt werden.
+%Angemerkt sei, dass der Code um die Bremsfunktionen in diesen Tests nicht optimiert war, weswegen die absoluten Werte nicht mit den Bremsergebnissen aus Abschnitt \ref{PerformanceDegSingleThread} und \ref{MoreIsBetter} verglichen werden können.
+
+%Hiermit steigert die Aufteilung in zwei Ketten die Performance der Prime-and-Probe-Operation merklich und ist der Implementierung mit einer Kette vorzuziehen.
+
+
+\begin{table}[h]
+\caption{RSA-2048 Performance-Degradation-Attack mittels Prime-Spam auf mehrere Cache-Lines mittels unterschiedlicher Techniken. Für die Auflösung der Cache-Line IDs siehe Tabelle \ref{tbl:PerformanceDegShift}. Für die Erklärungen der verschiedenen Techniken siehe Abschnitt \ref{SplitProbeType}.}
+\label{tbl:PerformanceDegDifferentVariants}
+\begin{tabular}{llccc}
+\toprule
+ Cache-Line IDs & Technik    & Shift & Sub & mp\_gcd \\
+\midrule
+$V1_1$,$V1_2$,$V2_4$ & Single chain mit back probe & 691   & 578  & 598k    \\
+$V1_1$,$V1_2$,$V2_4$ & Single chain ohne back probe & 664   & 558 & 606k    \\
+$V1_1$,$V1_2$,$V2_4$ & Double chain mit back probe & 673 & 580 & 596k    \\
+$V1_1$,$V1_2$,$V2_4$ & Double chain ohne back probe & 684 & 596 & 590k    \\
+$V1_1$,$V1_2$,$V2_4$ & Ptr array mit back probe & 664   & 558 & 606k    \\
+$V1_1$,$V1_2$,$V2_4$ & Ptr array ohne back probe & 704   & 598 & 637k    \\
+$V1_1$,$V1_2$,$V2_4$ & Ptr array ohne back probe double ptr & 685 & 590 & 618k    \\
+$V1_1$,$V1_2$,$V2_4$ & Ptr array ohne back probe quad ptr & 698 & 590 & 644k    \\
+\midrule
+$V1_1$ & Single chain mit back probe & 531 & 643 & 618k    \\
+$V1_1$ & Ptr array ohne back probe & 585 & 626 & 647k    \\
+\midrule
+$V1_1$,$V1_2$,$V2_4,V4_3$ & Single chain mit back probe & 713 & 601 & 586k    \\
+$V1_1$,$V1_2$,$V2_4,V4_3$ & Ptr array ohne back probe & 798 & 707 & 708k    \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 
 %Somit ist die
 
