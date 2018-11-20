@@ -582,7 +582,7 @@ Dadurch würde eine Parallelisierung auf Instruktionsebene möglich und der Proz
 Anhand der unterschiedlichen Sampleanzahl für die gleiche Shift-Folge in Abbildung \ref{fig:ObserveShiftDifferentProbeTypes} ist erkennbar, dass sich durch die Aufspaltung in zwei Ketten mit jeweils acht Einträgen ein Performancevorteil von etwa 50\% ergibt.
 Mit einer Aufteilung auf vier Ketten mit jeweils vier Einträgen konnten hingegen keine erfolgreichen Messungen durchgeführt werden.
 
-Im folgenden sollen verschiedene Abwandlungen der Prime-and-Probe-Implementierung auf ihre Performance hin untersucht werden. Es werden folgende Varianten untersucht:
+Im Folgenden sollen verschiedene Abwandlungen der Prime-and-Probe-Implementierung auf ihre Performance hin untersucht werden. Es werden folgende Varianten untersucht:
 
 \begin{description}
 \item[Single chain mit back probe]
@@ -604,6 +604,7 @@ Aufteilen des Pointer-Arrays in vier Teile und ohne back probing.
 \end{description}
 
 Die Ergebnisse in Tabelle \ref{tbl:PerformanceDegDifferentVariants} zeigen, dass ein Weglassen des back probings bei einer Kette (Pointer-Chasing) keine Vorteile bringt, sondern sich im Gegenteil leicht nachteilig auswirkt.
+Beim Ptr-Array wirkt sich das Weglassen des back probings hingegen postiv auf die Perforamnce aus, wobei sich das Ptr-Array allgemein als die bessere Implementierung zum Bremsen herrausstellt.
 
 
 %Die Aufteilung in zwei Ketten kann auch bei der Prime-Spam-Bremsmethode eingesetzt werden, um dort die Bremsleistung zu erhöhen. 
@@ -624,8 +625,8 @@ Die Ergebnisse in Tabelle \ref{tbl:PerformanceDegDifferentVariants} zeigen, dass
 \midrule
 $V1_1$,$V1_2$,$V2_4$ & Single chain mit back probe & 691   & 578  & 598k    \\
 $V1_1$,$V1_2$,$V2_4$ & Single chain ohne back probe & 664   & 558 & 606k    \\
-$V1_1$,$V1_2$,$V2_4$ & Double chain mit back probe & 673 & 580 & 596k    \\
-$V1_1$,$V1_2$,$V2_4$ & Double chain ohne back probe & 684 & 596 & 590k    \\
+%$V1_1$,$V1_2$,$V2_4$ & Double chain mit back probe & 673 & 580 & 596k    \\ buggy
+%$V1_1$,$V1_2$,$V2_4$ & Double chain ohne back probe & 684 & 596 & 590k    \\
 $V1_1$,$V1_2$,$V2_4$ & Ptr array mit back probe & 664   & 558 & 606k    \\
 $V1_1$,$V1_2$,$V2_4$ & Ptr array ohne back probe & 704   & 598 & 637k    \\
 $V1_1$,$V1_2$,$V2_4$ & Ptr array ohne back probe double ptr & 685 & 590 & 618k    \\
