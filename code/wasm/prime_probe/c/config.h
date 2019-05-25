@@ -18,9 +18,11 @@
 
 //If a memory access takes less than L3_THRESHOLD units, the algorithm will assume a cache-hit.
 //Some example values (be aware that ram clocks and timings are also important):
-//E.g. 38 seems a good value for the i5-5300U (broadwell)
-//36 seems a good value for i7-2600 DDR3-1333 (sandy bridge)
-//31 seems a good value for i7-4770 DDR3-1600 (haswell)
+//35 seems a good value for a i5-5300U with DDR3-1600 (11-11-11-28) (broadwell)
+//48 seems a good value for a i7-7500U with DDR3-1866 (14-17-17-40) (kaby-lake)
+//36 seems a good value for i7-2600 DDR3-1333 latency unknown (sandy bridge)
+//31 seems a good value for i7-4770 DDR3-1600 latency unknown (haswell)
+//A general rule: Slow RAM or/and high RAM-timings makes the cache-hit/miss detection easier.
 //If you set L3_THRESHOLD <= 0, the algorithm will try to detect a value
 //It is advisable to expirment with some values and set a fix value afterwards.
 //
@@ -31,7 +33,7 @@
 //>>  mean:23
 //>>  threshold: 35
 //A value around 35 seems appropriate.
-#define L3_THRESHOLD 38
+#define L3_THRESHOLD 35
 
 //---------------------------------------------------
 //L3 cache parameters

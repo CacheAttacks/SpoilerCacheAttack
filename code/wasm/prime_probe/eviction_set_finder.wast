@@ -339,7 +339,7 @@
   )
   (i32.store
    (get_local $$20)
-   (i32.const 38)
+   (i32.const 35)
   )
   ;;@ c/main.c:57:0
   (drop
