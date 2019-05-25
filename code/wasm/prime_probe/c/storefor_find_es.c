@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <sys/mman.h>
 
+#include "config.h"
 #include "low.h"
 #include "vlist.h"
 #include "SABcounter.h"
@@ -174,14 +175,15 @@ int probemap_storeforwardleakage(l3pp_t l3){
 
     l3->collect_groups = vl_new();
 
-    uint32_t storefor_add_arr_size = 116;
-    uint8_t * storefor_add_arr = (uint8_t*) calloc(sizeof(uint32_t), storefor_add_arr_size);	
-
-    int WINDOW_SIZE = 64;
-    int rounds = 50;
-    int threadholdSearchForEs = 115;
+    int WINDOW_SIZE = STOREFOR_WINDOW_SIZE;
+    int rounds = STOREFOR_ROUNDS;
+    int threadholdSearchForEs = STOREFOR_THRESHOLD_SEARCH_FOR_ES;
     int failed = 0;
     uint32_t buffer_size = l3->l3info.bufsize;
+
+    uint32_t storefor_add_arr_size = threadholdSearchForEs+1;
+    uint8_t * storefor_add_arr = (uint8_t*) calloc(sizeof(uint32_t), storefor_add_arr_size);	
+    printf_ex("storefor_write buffer size: %i MB\n", buffer_size/1024/1024);
 
     //printf_ex("target_add:%p\n", buffer);
     
@@ -189,7 +191,7 @@ int probemap_storeforwardleakage(l3pp_t l3){
     //measurement_funct(l3->buffer, WINDOW_SIZE, l3->buffer);
 
     for(int i=0; i<32; i++){
-      for(int j=0; j<10; j++){
+      for(int j=0; j < STOREFOR_MAX_ITERATIONS; j++){
         //assumes that the least 20 physical address bits for address l3->buffer+i*PAGE_SIZE (i from 0 to 31) are different
         //can test this by measuring the prob for a colliding address occuring in any of the next 31 addresses (address+i*PAGE_SIZE with i from 1 to 31)
         //tests shows a low prob for this problem, therefore the addresspool is not filtered after each iteration
@@ -263,6 +265,7 @@ void storefor_write(void *app_state_ptr, int benchmarkruns){
     uint32_t buffer_size = PAGE_COUNT * PAGE_SIZE;
     uint8_t* buffer = mmap(NULL, buffer_size, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE,
                     -1, 0);
+    printf_ex("storefor_write buffer size: %i MB\n", buffer_size/1024/1024);
 
     uint32_t storefor_add_arr_size = 116;
     uint8_t * storefor_add_arr = (uint8_t*) calloc(sizeof(uint32_t), storefor_add_arr_size);	
@@ -394,8 +397,8 @@ int try_to_create_es(uint32_t *address_arr, uint32_t number_of_storefor_add, uin
 
   time_sum_wasm += (uint64_t)get_diff(startTimeWasm, rdtscp());
 
-  //4 es should be found!
-  if(vl_len(groups) == 4){
+  //number of found es should be equal with L3_CACHE_SLICES!
+  if(vl_len(groups) == L3_CACHE_SLICES){
     vlist_t es = vl_get(groups, 0);
 
     //for(int i=0; i<vl_len(es); i++){

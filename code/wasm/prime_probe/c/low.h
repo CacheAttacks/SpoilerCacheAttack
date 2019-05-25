@@ -35,8 +35,6 @@
 
 #include <sys/mman.h>
 
-#define L3_CACHELINE_BITS 6
-#define L3_CACHELINE 64
 //#define L3_THRESHOLD 50
 
 #ifdef PAGE_SIZE

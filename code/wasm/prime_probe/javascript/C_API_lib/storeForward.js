@@ -23,7 +23,7 @@ if (typeof mergeInto !== 'undefined')
         return sum / windowSize;
       }
 
-      //var output = "";
+      var output = "";
       
       function checkForStoreFor(MeasurementArr, p, movingWindowSize) {      
         var movingWindowAverage = subArrayAverage(
@@ -40,6 +40,7 @@ if (typeof mergeInto !== 'undefined')
         return false;
       }
 
+      console.log("iterate through " + pageCount + " pages...");
       for (var p = windowSize; p < pageCount; p++) {
         var total = 0;
 
@@ -86,6 +87,7 @@ if (typeof mergeInto !== 'undefined')
           }
           //size of AddressArr is limited
           if(numberOfStoreForAdd == addressArrSize){
+            console.log("numberOfStoreForAdd == addressArrSize");
             return false;
           }
           //do not detect colliding addresses for the next 10 blocks
@@ -95,6 +97,8 @@ if (typeof mergeInto !== 'undefined')
         }
         lock--;
       }
+      console.log("buffer exceeded and only numberOfStoreForAdd:" + numberOfStoreForAdd + " found! (need threadholdSearchForEs:" + threadholdSearchForEs + ")");
+      console.log("try to increase PAGE_COUNT (storefor_find_es.h)");
       return false;
     }
   });

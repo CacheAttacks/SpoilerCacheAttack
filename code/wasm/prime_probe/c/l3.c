@@ -70,13 +70,14 @@ static void fillL3Info(l3pp_t l3) {
   // 4096sets, 3MiB like 16-way-ass and 4MiB => 4(ass)+12(sets)+6(line)=22bits
   // (4MiB) works also for other CPUs
 
-  l3->l3info.associativity = 16;
-  l3->cpuidInfo.cacheInfo.sets = 8192;
-  l3->l3info.slices = 4;
+  l3->l3info.associativity = L3_CACHE_ASSOCIATIVITY;
+  l3->cpuidInfo.cacheInfo.sets = 4096;
+  l3->l3info.slices = L3_CACHE_SLICES;
   l3->l3info.setsperslice = l3->cpuidInfo.cacheInfo.sets / l3->l3info.slices;
   l3->l3info.bufsize = l3->l3info.associativity * l3->l3info.slices *
-                       l3->l3info.setsperslice * L3_CACHELINE *
+                       l3->l3info.setsperslice * L3_CACHE_LINE_SIZE *
                        CACHE_SIZE_MULTI;
+  printf_ex("l3->l3info.bufsize: %i MB\n", l3->l3info.bufsize/1024/1024);
 }
 
 
@@ -98,7 +99,7 @@ void *sethead_ex(l3pp_t l3, int set,
   if (count == 0 || vl_len(list) < count)
     count = vl_len(list);
 
-  int offset = (set % l3->groupsize) * L3_CACHELINE;
+  int offset = (set % l3->groupsize) * L3_CACHE_LINE_SIZE;
 
   // pseudocode for following code:
   // enables to cycle through memory_blocks with preferred offset
@@ -538,7 +539,7 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
 
     // rewind if size(es) do not match associativity
     if (vl_len(es) > l3->l3info.associativity + MAX_L3_ASSOCIATIVITY_DIFF ||
-        vl_len(es) < l3->l3info.associativity - 4 || test_failed) {
+        vl_len(es) < l3->l3info.associativity - 0 || test_failed) {
       if (vl_len(es) > l3->l3info.associativity + MAX_L3_ASSOCIATIVITY_DIFF) {
         too_big++;
       } else {
@@ -650,8 +651,8 @@ vlist_t expand_groups(vlist_t groups) {
   vlist_t all_groups = vl_new();
   for (int group_index = 0; group_index < vl_len(groups); group_index++) {
     vlist_t cur_group = (vlist_t)vl_get(groups, group_index);
-    for (int offset = 0; offset < PAGE_SIZE / L3_CACHELINE; offset++) {
-      int inner_page_add = offset << L3_CACHELINE_BITS;
+    for (int offset = 0; offset < PAGE_SIZE / L3_CACHE_LINE_SIZE; offset++) {
+      int inner_page_add = offset << L3_CACHE_LINE_SIZE_BITS;
       vlist_t inner_page_group = vl_new();
       for (int add_index = 0; add_index < vl_len(cur_group); add_index++) {
         void *add = vl_get(cur_group, add_index);
@@ -689,9 +690,9 @@ int probemap(l3pp_t l3) {
     return 0;
   printf_ex("l3info.bufsize:%i\n", l3->l3info.bufsize);
   printf_ex("l3->groupsize: %i\n", l3->groupsize);
-  printf_ex("L3_CACHELINE: %i\n", L3_CACHELINE);
+  printf_ex("L3_CACHE_LINE_SIZE: %i\n", L3_CACHE_LINE_SIZE);
   vlist_t pages = vl_new();
-  for (int i = 0; i < l3->l3info.bufsize; i += l3->groupsize * L3_CACHELINE)
+  for (int i = 0; i < l3->l3info.bufsize; i += l3->groupsize * L3_CACHE_LINE_SIZE)
     vl_push(pages, l3->buffer + i + ADDRESS_OFFSET);
   vlist_t groups = map(l3, pages, 0);
   vlist_t all_groups = expand_groups(groups);
