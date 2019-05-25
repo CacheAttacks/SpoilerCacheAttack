@@ -45,8 +45,8 @@
 #include "l3_test.h"
 #include "storefor_find_es.h"
 
-int L3_THRESHOLD = 10000;
-int L3_THRESHOLD_OFFSET = 0;
+int L3_THRESHOLD_GLOBAL = 10000;
+int L3_THRESHOLD_GLOBAL_OFFSET = 0;
 
 //saves debug info about timer values
 struct timer_info *info = 0;
@@ -297,7 +297,7 @@ int checkevict(vlist_t es, void *candidate, int walk_size, int print) {
     LNEXT(vl_get(es, i)) = vl_get(es, (i + 1) % vl_len(es));
   int timecur = timedwalk(vl_get(es, 0), candidate, walk_size, print);
   // printf_ex("$%i ", timecur);
-  // if(timecur > (L3_THRESHOLD + L3_THRESHOLD_OFFSET))
+  // if(timecur > (L3_THRESHOLD_GLOBAL + L3_THRESHOLD_GLOBAL_OFFSET))
   // printf_ex("timecur %i\n",timecur);
   return timecur;
 }
@@ -321,7 +321,7 @@ int checkevict_safe(vlist_t es, void *candidate, int walk_size,
   int counter = 0;
   for (int i = 0; i < proofs; i++) {
     if (checkevict(es, candidate, walk_size, print) <=
-        (L3_THRESHOLD + L3_THRESHOLD_OFFSET)) {
+        (L3_THRESHOLD_GLOBAL + L3_THRESHOLD_GLOBAL_OFFSET)) {
       break;
     }
     counter++;
@@ -365,14 +365,14 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
     if (too_big > TOO_BIG_TRIGGER_VALUE ||
         too_small > TOO_SMALL_TRIGGER_VALUE) {
       if (too_big > TOO_BIG_TRIGGER_VALUE) {
-        // L3_THRESHOLD_OFFSET--;
+        // L3_THRESHOLD_GLOBAL_OFFSET--;
       } else {
-        // L3_THRESHOLD_OFFSET++;
+        // L3_THRESHOLD_GLOBAL_OFFSET++;
       }
 #ifdef DEBUG_CHANGE_THRESHOLD
       // printf_ex("toobig %i, toosmall %i\n", too_big, too_small);
-      // printf_ex("L3_THRESHOLD + L3_THRESHOLD_OFFSET now: %i\n", L3_THRESHOLD +
-      // L3_THRESHOLD_OFFSET);
+      // printf_ex("L3_THRESHOLD_GLOBAL + L3_THRESHOLD_GLOBAL_OFFSET now: %i\n", L3_THRESHOLD_GLOBAL +
+      // L3_THRESHOLD_GLOBAL_OFFSET);
 #endif
       too_big = 0;
       too_small = 0;
@@ -426,7 +426,7 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
       //       d_l2);
 #endif // DEBUG
       fail += 50;
-      //L3_THRESHOLD = readjustTimerThreshold();
+      //L3_THRESHOLD_GLOBAL = readjustTimerThreshold();
       if(storefor_mode){
         fail = FAIL_MAX+1;
       }
@@ -505,7 +505,7 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
       printf_ex("evict ");
 #endif
       for (int i = 0; i < 10; i++) {
-        if (checkevict(es, c, vl_len(es), DEBUG_TEST_PRINT) <= L3_THRESHOLD)
+        if (checkevict(es, c, vl_len(es), DEBUG_TEST_PRINT) <= L3_THRESHOLD_GLOBAL)
           test_failed = 1;
 #if DEBUG_TEST_PRINT == 1
         printf_ex("%i ", checkevict(es, c, vl_len(es), 0));
@@ -519,7 +519,7 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
 #endif
       for (int i = 0; i < vl_len(es); i++) {
         void *element = vl_del(es, i);
-        if (checkevict(es, c, vl_len(es), DEBUG_TEST_PRINT) > L3_THRESHOLD)
+        if (checkevict(es, c, vl_len(es), DEBUG_TEST_PRINT) > L3_THRESHOLD_GLOBAL)
           oneouttest_failed++;
         vl_insert(es, i, element);
       }
@@ -576,7 +576,7 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
       fail++;
       if(fail % 3 == 0){
         doStuff();
-        //L3_THRESHOLD = readjustTimerThreshold();
+        //L3_THRESHOLD_GLOBAL = readjustTimerThreshold();
       }      
       continue;
     }
@@ -733,8 +733,8 @@ l3pp_t l3_prepare(l3info_t l3info, int l3_threshold, int max_es, enum search_met
   // if (l3info != NULL)
   //  bcopy(l3info, &l3->l3info, sizeof(struct l3info));
   fillL3Info(l3);
-  l3->l3info.l3_threshold = L3_THRESHOLD;
-  L3_THRESHOLD = l3_threshold;
+  l3->l3info.l3_threshold = L3_THRESHOLD_GLOBAL;
+  L3_THRESHOLD_GLOBAL = l3_threshold;
 
   printf_ex("associativity:%i\n", l3->l3info.associativity);
   printf_ex("slices:%i\n", l3->l3info.slices);
@@ -842,7 +842,7 @@ l3pp_t l3_create_only(int l3_threshold, int max_es, uint32_t bufsize) {
   printf_ex("l3->max_es %i\n", l3->max_es);
 
   fillL3Info(l3);
-  L3_THRESHOLD = l3_threshold;
+  L3_THRESHOLD_GLOBAL = l3_threshold;
 
   printf_ex("associativity:%i\n", l3->l3info.associativity);
   printf_ex("slices:%i\n", l3->l3info.slices);
@@ -1021,7 +1021,7 @@ void l3_bprobe(l3pp_t l3, RES_TYPE *results, uint32_t (*probetime)(void *pp)) {
 }
 
 /**
- * @brief Count number of mem accesses which exceed L3_THRESHOLD. (l3->monitoredhead[i] is the starting point of a ptr-chain with x entries. Measure access time for each of these x entries and count the cases where access time > L3_THRESHOLD)
+ * @brief Count number of mem accesses which exceed L3_THRESHOLD_GLOBAL. (l3->monitoredhead[i] is the starting point of a ptr-chain with x entries. Measure access time for each of these x entries and count the cases where access time > L3_THRESHOLD_GLOBAL)
  * 
  * @param l3 Ptr to l3pp struct
  * @param results Number of samples aka prime-and-probe iterations
@@ -1378,7 +1378,7 @@ int l3_repeatedprobe_spam_option(l3pp_t l3, int nrecords, int option) {
 }
 
 /**
- * @brief Cycles through all memory-blocks in a eviction-set access them and count accesses with (accesstime > L3_THRESHOLD)
+ * @brief Cycles through all memory-blocks in a eviction-set access them and count accesses with (accesstime > L3_THRESHOLD_GLOBAL)
  * 
  * @param l3 Ptr to l3pp struct
  * @param nrecords Number of samples aka prime-and-probe iterations

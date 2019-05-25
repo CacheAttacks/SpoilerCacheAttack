@@ -18,7 +18,7 @@
 
 //this file defines a bunch of different probe methods for testing purposes. There are used in the prime-and-probe operation (e.g. l3_repeatedprobe).
 
-extern int L3_THRESHOLD;
+extern int L3_THRESHOLD_GLOBAL;
 
 #define BPROBEPTR(p) (OFFSET((p), sizeof(void *)))
 #define PROBE_PTR_OFFSET2(p) (OFFSET((p), 2 * sizeof(void *)))
@@ -511,7 +511,7 @@ p_probetime get_probetime_by_type(int type)
 }
 
 // cycles through all memory-blocks in a eviction-set
-// access them and count accesses with (accesstime > L3_THRESHOLD)
+// access them and count accesses with (accesstime > L3_THRESHOLD_GLOBAL)
 #ifdef WASM
 __attribute__((optnone))
 #else
@@ -532,7 +532,7 @@ probecount(void *pp)
     uint32_t s = rdtscp();
     p = LNEXT(p);
     s = rdtscp() - s;
-    if (s > L3_THRESHOLD)
+    if (s > L3_THRESHOLD_GLOBAL)
       rv++;
   } while (p != (void *)pp);
   return rv;

@@ -15,6 +15,24 @@
 
 #define WASM
 
+
+//If a memory access takes less than L3_THRESHOLD units, the algorithm will assume a cache-hit.
+//Some example values (be aware that ram clocks and timings are also important):
+//E.g. 38 seems a good value for the i5-5300U (broadwell)
+//36 seems a good value for i7-2600 DDR3-1333 (sandy bridge)
+//31 seems a good value for i7-4770 DDR3-1600 (haswell)
+//If you set L3_THRESHOLD <= 0, the algorithm will try to detect a value
+//It is advisable to expirment with some values and set a fix value afterwards.
+//
+//Use the console output to get an appropriate value, e.g. for the i5-5300U with Win 10 v1803 and Google Chrome 74.0.3729.131:
+//>>  random access 100000 rounds
+//>>  mean:47
+//>>  linear access
+//>>  mean:23
+//>>  threshold: 35
+//A value around 35 seems appropriate.
+#define L3_THRESHOLD 38
+
 //---------------------------------------------------
 //L3 cache parameters
 //examples:

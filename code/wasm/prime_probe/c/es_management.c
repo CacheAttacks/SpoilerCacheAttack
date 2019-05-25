@@ -137,7 +137,7 @@ int mem_access_testing(int rounds, int print)
   }
 
   int threshold = mean_linear + (((mean_random - mean_linear) / 2));
-  printf_ex("random/linear threshold: %i\n", threshold);
+  printf_ex("auto-detected random/linear threshold: %i\n", threshold);
   return threshold;
 }
 

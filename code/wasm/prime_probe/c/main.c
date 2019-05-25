@@ -44,10 +44,10 @@ int main(int ac, char **av)
 
   this_app_state->l3_threshold = mem_access_testing(100000, 0);
 
-  //fix l3_threshold values for known CPU-architecture
-  //sandy 36
-  //haswell 31
-  this_app_state->l3_threshold = 38;
+  if(L3_THRESHOLD > 0)
+  {
+    this_app_state->l3_threshold = L3_THRESHOLD;
+  }
 
   //doubled mem_access testing
   //flush_l3(0,0,0);
