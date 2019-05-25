@@ -20,8 +20,6 @@
 /*
 * Modified 2018 for ITS
 */
-
-#include "config.h"
 #include <assert.h>
 #include <fcntl.h>
 #include <inttypes.h>
@@ -71,13 +69,13 @@ static void fillL3Info(l3pp_t l3) {
   // (4MiB) works also for other CPUs
 
   l3->l3info.associativity = L3_CACHE_ASSOCIATIVITY;
-  l3->cpuidInfo.cacheInfo.sets = 4096;
+  l3->cpuidInfo.cacheInfo.sets = L3_CACHE_SETS;
   l3->l3info.slices = L3_CACHE_SLICES;
   l3->l3info.setsperslice = l3->cpuidInfo.cacheInfo.sets / l3->l3info.slices;
   l3->l3info.bufsize = l3->l3info.associativity * l3->l3info.slices *
                        l3->l3info.setsperslice * L3_CACHE_LINE_SIZE *
                        CACHE_SIZE_MULTI;
-  printf_ex("l3->l3info.bufsize: %i MB\n", l3->l3info.bufsize/1024/1024);
+  printf_ex("l3->l3info.bufsize: %i MiB\n", l3->l3info.bufsize/1024/1024);
 }
 
 
@@ -652,7 +650,7 @@ vlist_t expand_groups(vlist_t groups) {
   for (int group_index = 0; group_index < vl_len(groups); group_index++) {
     vlist_t cur_group = (vlist_t)vl_get(groups, group_index);
     for (int offset = 0; offset < PAGE_SIZE / L3_CACHE_LINE_SIZE; offset++) {
-      int inner_page_add = offset << L3_CACHE_LINE_SIZE_BITS;
+      int inner_page_add = offset << L3_CACHELINE_BITS;
       vlist_t inner_page_group = vl_new();
       for (int add_index = 0; add_index < vl_len(cur_group); add_index++) {
         void *add = vl_get(cur_group, add_index);
@@ -749,7 +747,7 @@ l3pp_t l3_prepare(l3info_t l3info, int l3_threshold, int max_es, enum search_met
   if (buffer == MAP_FAILED) {
     bufsize = l3->l3info.bufsize;
     if(search_method == STOREFORWARDLEAKAGE){
-      bufsize = PAGE_COUNT * PAGE_SIZE;
+      bufsize = STOREFOR_BUFFER_SIZE;
     }
     l3->groupsize = L3_SETS_PER_PAGE; // cause 4096/64 = 64
 

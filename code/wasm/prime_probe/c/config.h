@@ -24,7 +24,7 @@
 //---------------------------------------------------
 
 //Number of the bits for a cache line. Should be always 6 (for all Intel desktop CPUs with the core-architecture).
-#define L3_CACHELINE_BITS_SIZE 6
+#define L3_CACHELINE_BITS 6
 //Size of a cache line. Equals 2^L3_CACHELINE_BITS_SIZE
 #define L3_CACHE_LINE_SIZE 64
 
@@ -43,11 +43,30 @@
 //E.g. i5-5300U 3MiB L3-Cache => 3145728 / 12 / 64 = 4096
 #define L3_CACHE_SETS 4096
 
+#ifdef PAGE_SIZE
+#undef PAGE_SIZE
+#endif
+//Number of the bits for the page size. Should be 12 in a typcial desktop env.
+#define PAGE_SIZE_BITS 12
+//Size of a page. Equals 2^PAGE_SIZE_BITS
+#define PAGE_SIZE 4096
+
+// buffer for memoryblocks is a multiple of the L3-cache size
+// 2 seems a good value. A higher value will increase the search time but makes it also more likely to find all es.
+#define CACHE_SIZE_MULTI 2
+
 //---------------------------------------------------
 //Store forward aka colliding addresses configuration
 //Please note: A high error rate during the colliding address search makes it only more likely that the subsequent es search will fail. 
 //In other words, the influence of a high error rate for the "correctness" of the subsequent es search is negligible. 
 //---------------------------------------------------
+
+//Buffer size for the colliding address search in bytes
+//E.g. 256MiB = 2^28 => 2^16 pages
+//Be aware to adapt the parameter -s TOTAL_MEMORY=512MB accordingly (.vscode/compile.sh)
+#define STOREFOR_BUFFER_SIZE 256 * 1024 * 1024
+
+#define STOREFOR_PAGE_COUNT STOREFOR_BUFFER_SIZE / PAGE_SIZE
 
 //Number of validations for a colliding address search.
 //A higher value will increase the search time but also lower the error rate.
@@ -64,3 +83,6 @@
 
 //If the es search step fails, we will repeat the colliding address search up to STOREFOR_MAX_ITERATIONS times.
 #define STOREFOR_MAX_ITERATIONS 10
+
+//Number of store for iterations, e.g. i7-4770 8192 cache-sets / 4 slices / 64 = 2^(13-2-6) = 2^5 = 32
+#define STOREFOR_SEARCHES L3_CACHE_SETS / L3_CACHE_SLICES / L3_CACHE_LINE_SIZE

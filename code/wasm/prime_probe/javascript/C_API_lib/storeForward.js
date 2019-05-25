@@ -87,7 +87,7 @@ if (typeof mergeInto !== 'undefined')
           }
           //size of AddressArr is limited
           if(numberOfStoreForAdd == addressArrSize){
-            console.log("numberOfStoreForAdd == addressArrSize");
+            console.log("Internal error: numberOfStoreForAdd == addressArrSize");
             return false;
           }
           //do not detect colliding addresses for the next 10 blocks
@@ -97,8 +97,8 @@ if (typeof mergeInto !== 'undefined')
         }
         lock--;
       }
-      console.log("buffer exceeded and only numberOfStoreForAdd:" + numberOfStoreForAdd + " found! (need threadholdSearchForEs:" + threadholdSearchForEs + ")");
-      console.log("try to increase PAGE_COUNT (storefor_find_es.h)");
+      console.log("Buffer exceeded and only numberOfStoreForAdd:" + numberOfStoreForAdd + " found! (need threadholdSearchForEs:" + threadholdSearchForEs + ")");
+      console.log("Try to increase STOREFOR_PAGE_COUNT (config.h)");
       return false;
     }
   });

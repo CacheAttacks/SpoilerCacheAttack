@@ -37,12 +37,6 @@
 
 //#define L3_THRESHOLD 50
 
-#ifdef PAGE_SIZE
-#undef PAGE_SIZE
-#endif
-#define PAGE_SIZE_BITS 12
-#define PAGE_SIZE 4096
-
 //type for prime-and-probe measurement results
 #define RES_TYPE uint32_t       // uint16_t
 #define RES_TYPE_MAX UINT32_MAX // UINT16_MAX

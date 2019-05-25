@@ -55,18 +55,14 @@ struct timer_info *info;
  * default for the more common size.  If we learn how to probe
  * the slice size we can get rid of this mess.
  */
-#define L3_SETS_PER_SLICE 2048
+#define L3_SETS_PER_SLICE L3_CACHE_SETS / L3_CACHE_SLICES
 
 // The number of cache sets in each page
-#define L3_SETS_PER_PAGE 64
+#define L3_SETS_PER_PAGE PAGE_SIZE / L3_CACHE_LINE_SIZE
 
 // offset for each address in the memory pool
 // between 0 and 4000
 #define ADDRESS_OFFSET 2048
-
-// buffer for memoryblocks is multiple of cache size
-// 2 size enough, remember virtual
-#define CACHE_SIZE_MULTI 2
 
 // size(es) <= L3_ASSOCIATIVITY * MAX_L3_ASSOCIATIVITY_DIFF
 #define MAX_L3_ASSOCIATIVITY_DIFF 0

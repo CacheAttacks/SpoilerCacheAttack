@@ -1737,7 +1737,7 @@ var ASM_CONSTS = [];
 
 STATIC_BASE = GLOBAL_BASE;
 
-STATICTOP = STATIC_BASE + 7744;
+STATICTOP = STATIC_BASE + 7792;
 /* global initializers */  __ATINIT__.push();
 
 
@@ -1746,7 +1746,7 @@ STATICTOP = STATIC_BASE + 7744;
 
 
 
-var STATIC_BUMP = 7744;
+var STATIC_BUMP = 7792;
 Module["STATIC_BASE"] = STATIC_BASE;
 Module["STATIC_BUMP"] = STATIC_BUMP;
 
@@ -5261,7 +5261,7 @@ function copyTempDouble(ptr) {
             }
             //size of AddressArr is limited
             if(numberOfStoreForAdd == addressArrSize){
-              console.log("numberOfStoreForAdd == addressArrSize");
+              console.log("Internal error: numberOfStoreForAdd == addressArrSize");
               return false;
             }
             //do not detect colliding addresses for the next 10 blocks
@@ -5271,8 +5271,8 @@ function copyTempDouble(ptr) {
           }
           lock--;
         }
-        console.log("buffer exceeded and only numberOfStoreForAdd:" + numberOfStoreForAdd + " found! (need threadholdSearchForEs:" + threadholdSearchForEs + ")");
-        console.log("try to increase PAGE_COUNT (storefor_find_es.h)");
+        console.log("Buffer exceeded and only numberOfStoreForAdd:" + numberOfStoreForAdd + " found! (need threadholdSearchForEs:" + threadholdSearchForEs + ")");
+        console.log("Try to increase STOREFOR_PAGE_COUNT (config.h)");
         return false;
       }
 FS.staticInit();__ATINIT__.unshift(function() { if (!Module["noFSInit"] && !FS.init.initialized) FS.init() });__ATMAIN__.push(function() { FS.ignorePermissions = false });__ATEXIT__.push(function() { FS.quit() });;

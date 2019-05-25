@@ -85,15 +85,15 @@ uint32_t measure_read(void *memory){
  * @param target_add 
  */
 void measurement_funct(uint8_t * evictionBuffer, int window_size, uint8_t *target_add){
-	uint16_t *measurementBuffer = (uint16_t*) malloc(PAGE_COUNT * sizeof(uint16_t));
-    uint16_t *measurementBuffer2 = (uint16_t*) malloc(PAGE_COUNT * sizeof(uint16_t));
+	uint16_t *measurementBuffer = (uint16_t*) malloc(STOREFOR_PAGE_COUNT * sizeof(uint16_t));
+    uint16_t *measurementBuffer2 = (uint16_t*) malloc(STOREFOR_PAGE_COUNT * sizeof(uint16_t));
     vlist_t es = vl_new();
 
-	for (int p = window_size; p < PAGE_COUNT; p++)
+	for (int p = window_size; p < STOREFOR_PAGE_COUNT; p++)
 	{
 		uint64_t total = 0;
 	
-		for (int r = 0; r < ROUNDS; r++)		
+		for (int r = 0; r < STOREFOR_ROUNDS; r++)		
 		{
 			// Stores
 			for(int i = window_size; i >= 0; i--){
@@ -113,14 +113,14 @@ void measurement_funct(uint8_t * evictionBuffer, int window_size, uint8_t *targe
 			// Measuring load
 			//total += measure_read(evictionBuffer);
 		}
-		measurementBuffer[p] = total / ROUNDS;
+		measurementBuffer[p] = total / STOREFOR_ROUNDS;
 	}
 
-    for (int p = window_size; p < PAGE_COUNT; p++)
+    for (int p = window_size; p < STOREFOR_PAGE_COUNT; p++)
 	{
 		uint64_t total = 0;
 	
-		for (int r = 0; r < ROUNDS; r++)		
+		for (int r = 0; r < STOREFOR_ROUNDS; r++)		
 		{
 			// Stores
 			for(int i = window_size; i >= 0; i--){
@@ -129,17 +129,17 @@ void measurement_funct(uint8_t * evictionBuffer, int window_size, uint8_t *targe
 			// Measuring load
 			total += measure_read(evictionBuffer);
 		}
-		measurementBuffer2[p] = total / ROUNDS;
+		measurementBuffer2[p] = total / STOREFOR_ROUNDS;
 	}
 
-	for(int p = window_size; p < PAGE_COUNT; p++) {
+	for(int p = window_size; p < STOREFOR_PAGE_COUNT; p++) {
         //printf_ex("%u", measurementBuffer[p]);
         printf_ex("%u",  measurementBuffer2[p]);
-        if(p < PAGE_COUNT-1 && measurementBuffer2[p]>measurementBuffer2[p-1]+5 && measurementBuffer2[p+1]>measurementBuffer2[p-1]+5)
+        if(p < STOREFOR_PAGE_COUNT-1 && measurementBuffer2[p]>measurementBuffer2[p-1]+5 && measurementBuffer2[p+1]>measurementBuffer2[p-1]+5)
           printf_ex("?");
        printf_ex(" ");
 
-		// if(p < PAGE_COUNT-1 && measurementBuffer[p] > 150 && measurementBuffer[p+1] > 130){
+		// if(p < STOREFOR_PAGE_COUNT-1 && measurementBuffer[p] > 150 && measurementBuffer[p+1] > 130){
 		// 	printf("%s", KRED);
 			
 		// }
@@ -156,7 +156,7 @@ void measurement_funct(uint8_t * evictionBuffer, int window_size, uint8_t *targe
  * 
  */
 void storefor_write_SAB(){
-  uint32_t buffer_size = PAGE_COUNT * PAGE_SIZE;
+  uint32_t buffer_size = STOREFOR_PAGE_COUNT * PAGE_SIZE;
   store_for_js_SAB(buffer_size);
 }
 
@@ -183,15 +183,16 @@ int probemap_storeforwardleakage(l3pp_t l3){
 
     uint32_t storefor_add_arr_size = threadholdSearchForEs+1;
     uint8_t * storefor_add_arr = (uint8_t*) calloc(sizeof(uint32_t), storefor_add_arr_size);	
-    printf_ex("storefor_write buffer size: %i MB\n", buffer_size/1024/1024);
+    printf_ex("storefor_write buffer size: %i MiB\n", buffer_size/1024/1024);
 
     //printf_ex("target_add:%p\n", buffer);
     
     //wasm version measurement_funct not working. Use js version store_for_js instead.
     //measurement_funct(l3->buffer, WINDOW_SIZE, l3->buffer);
 
-    for(int i=0; i<32; i++){
-      for(int j=0; j < STOREFOR_MAX_ITERATIONS; j++){
+    printf_ex("STOREFOR_SEARCHES:%i, STOREFOR_MAX_ITERATIONS:%i\n", STOREFOR_SEARCHES, STOREFOR_MAX_ITERATIONS);
+    for(int i = 0; i < STOREFOR_SEARCHES; i++){
+      for(int j = 0; j < STOREFOR_MAX_ITERATIONS; j++){
         //assumes that the least 20 physical address bits for address l3->buffer+i*PAGE_SIZE (i from 0 to 31) are different
         //can test this by measuring the prob for a colliding address occuring in any of the next 31 addresses (address+i*PAGE_SIZE with i from 1 to 31)
         //tests shows a low prob for this problem, therefore the addresspool is not filtered after each iteration
@@ -255,17 +256,17 @@ void storefor_write(void *app_state_ptr, int benchmarkruns){
 
 	// 8MB Buffer
 	// uint8_t * evictionBuffer;
-	// evictionBuffer = (uint8_t*) malloc(PAGE_COUNT * PAGE_SIZE);
-	// memset(evictionBuffer, 0, PAGE_COUNT * PAGE_SIZE);	
+	// evictionBuffer = (uint8_t*) malloc(STOREFOR_PAGE_COUNT * PAGE_SIZE);
+	// memset(evictionBuffer, 0, STOREFOR_PAGE_COUNT * PAGE_SIZE);	
 
   while(benchmarkruns){
 
     uint32_t timer_before = get_time_in_ms();
 
-    uint32_t buffer_size = PAGE_COUNT * PAGE_SIZE;
+    uint32_t buffer_size = STOREFOR_BUFFER_SIZE;
     uint8_t* buffer = mmap(NULL, buffer_size, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE,
                     -1, 0);
-    printf_ex("storefor_write buffer size: %i MB\n", buffer_size/1024/1024);
+    printf_ex("storefor_write buffer size: %i MiB\n", buffer_size/1024/1024);
 
     uint32_t storefor_add_arr_size = 116;
     uint8_t * storefor_add_arr = (uint8_t*) calloc(sizeof(uint32_t), storefor_add_arr_size);	
