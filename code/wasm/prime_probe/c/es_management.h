@@ -11,7 +11,10 @@ struct app_state
   int l3_cache_sets;
   int l3_cache_slices;
   int l3_cache_line_size;
+  int l3_cache_line_bits;
   int l3_cache_size_multi;
+  int l3_page_size;
+  int l3_page_bits;
 
   int number_of_samples_old;
   int monitored_es_changed;
@@ -27,6 +30,7 @@ struct app_state
   int *current_mean_values;
   int *interesting_cache_sets; // index vector for cache sets
 
+  int storefor_buffer_size_bytes;
   int storefor_window_size;
   int storefor_rounds;
   int storefor_threshold_search_for_es;
@@ -78,6 +82,6 @@ void get_idle_times(void *app_state_ptr, int min_index, int max_index,
 void find_interesting_eviction_sets(void *app_state_ptr, float threshold_factor,
                                     int number_of_samples);
 
-void set_storefor_parameters(void *app_state_ptr, int storefor_window_size, int storefor_rounds, int storefor_threshold_search_for_es);
+void set_storefor_parameters(void *app_state_ptr, int storefor_buffer_size_bytes,  int storefor_window_size, int storefor_rounds, int storefor_threshold_search_for_es);
 
-void set_l3_cache_parameters(void *app_state_ptr, int l3_cache_associativity, int l3_cache_sets, int l3_cache_slices, int l3_cache_line_size, int l3_cache_size_multi);
+void set_l3_cache_parameters(void *app_state_ptr, int l3_cache_associativity, int l3_cache_sets, int l3_cache_slices, int l3_cache_line_bits, int l3_cache_size_multi, int page_bits);

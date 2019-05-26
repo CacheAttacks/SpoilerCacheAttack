@@ -762,22 +762,32 @@ void find_interesting_eviction_sets(void *app_state_ptr, float threshold_factor,
   // putchar('\n');
 }
 
-void set_storefor_parameters(void *app_state_ptr, int storefor_window_size, int storefor_rounds, int storefor_threshold_search_for_es)
+void set_storefor_parameters(void *app_state_ptr, int storefor_buffer_size_bytes, int storefor_window_size, int storefor_rounds, int storefor_threshold_search_for_es)
 {
   struct app_state *this_app_state = (struct app_state *)app_state_ptr;
 
+  this_app_state->storefor_buffer_size_bytes = storefor_buffer_size_bytes;
   this_app_state->storefor_window_size = storefor_window_size;
   this_app_state->storefor_rounds = storefor_rounds;
   this_app_state->storefor_threshold_search_for_es = storefor_threshold_search_for_es;
 }
 
-void set_l3_cache_parameters(void *app_state_ptr, int l3_cache_associativity, int l3_cache_sets, int l3_cache_slices, int l3_cache_line_size, int l3_cache_size_multi)
+void set_l3_cache_parameters(void *app_state_ptr, int l3_cache_associativity, int l3_cache_sets, int l3_cache_slices, int l3_cache_line_bits, int l3_cache_size_multi, int page_bits)
 {
+  printf_ex("get called\n");
+  printf_ex("%i\n", l3_cache_associativity);
+
   struct app_state *this_app_state = (struct app_state *)app_state_ptr;
 
   this_app_state->l3_cache_associativity = l3_cache_associativity;
   this_app_state->l3_cache_sets = l3_cache_sets;
   this_app_state->l3_cache_slices = l3_cache_slices;
-  this_app_state->l3_cache_line_size = l3_cache_line_size;
+
+  this_app_state->l3_cache_line_bits = l3_cache_line_bits;
+  this_app_state->l3_cache_line_size = 1 << l3_cache_line_bits;
+
   this_app_state->l3_cache_size_multi = l3_cache_size_multi;
+
+  this_app_state->l3_page_bits = page_bits;
+  this_app_state->l3_page_size = 1 << page_bits;
 }

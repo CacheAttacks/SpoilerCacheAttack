@@ -78,9 +78,16 @@ static void fillL3Info(void *app_state_ptr, l3pp_t l3) {
                        l3->l3info.setsperslice * this_app_state->l3_cache_line_size *
                        this_app_state->l3_cache_size_multi;
   printf_ex("l3->l3info.bufsize: %i MiB\n", l3->l3info.bufsize/1024/1024);
+  print_parameters(app_state_ptr);
 }
 
+void print_parameters(void *app_state_ptr)
+{
+  struct app_state *this_app_state = (struct app_state *)app_state_ptr;
 
+  printf_ex("l3_cache_associativity: %i, l3_cache_sets: %i, l3_cache_slices: %i, l3_cache_line_size: %i, l3_cache_line_bits: %i, l3_cache_size_multi: %i\n", 
+  this_app_state->l3_cache_associativity, this_app_state->l3_cache_sets, this_app_state->l3_cache_slices, this_app_state->l3_cache_line_size, this_app_state->l3_cache_line_bits, this_app_state->l3_cache_size_multi);
+}
 
 /**
  * @brief extend version: change between no bprobe and direct access to all 16 add or bprobe and access to 8 add with distance 2
@@ -652,7 +659,7 @@ vlist_t expand_groups(vlist_t groups) {
   for (int group_index = 0; group_index < vl_len(groups); group_index++) {
     vlist_t cur_group = (vlist_t)vl_get(groups, group_index);
     for (int offset = 0; offset < PAGE_SIZE / L3_CACHE_LINE_SIZE; offset++) {
-      int inner_page_add = offset << L3_CACHELINE_BITS;
+      int inner_page_add = offset << L3_CACHE_LINE_BITS;
       vlist_t inner_page_group = vl_new();
       for (int add_index = 0; add_index < vl_len(cur_group); add_index++) {
         void *add = vl_get(cur_group, add_index);

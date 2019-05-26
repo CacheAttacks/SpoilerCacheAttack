@@ -25,6 +25,22 @@ sampleEsWorkerWrapper =
     }
 }
 
+setStoreforParametersWrapper =
+    function(storefor_buffer_size_bytes, storefor_window_size, storefor_rounds, storefor_threshold_search_for_es)
+{
+    Module['asm']._set_storefor_parameters(
+        Module['appStatePtr'], 
+        storefor_buffer_size_bytes, storefor_window_size, storefor_rounds, storefor_threshold_search_for_es);
+}
+
+setL3CacheParametersWrapper =
+    function(l3_cache_associativity, l3_cache_sets, l3_cache_slices, l3_cache_line_bits, l3_cache_size_multi, l3_page_bits)
+{
+    Module['asm']._set_l3_cache_parameters(
+        Module['appStatePtr'], 
+        l3_cache_associativity, l3_cache_sets, l3_cache_slices, l3_cache_line_bits, l3_cache_size_multi, l3_page_bits);
+}
+
 sampleEsWrapper =
     function(
         numberOfSamples, slotTime, printToBrowser) {

@@ -31,10 +31,10 @@ int main(int ac, char **av)
   this_app_state->monitored_es_index_vec = 0;
 
   //could be changed by js
-  set_l3_cache_parameters(this_app_state, L3_CACHE_ASSOCIATIVITY, L3_CACHE_SETS, L3_CACHE_SLICES, L3_CACHE_LINE_SIZE, L3_CACHE_SIZE_MULTI);
+  set_l3_cache_parameters(this_app_state, L3_CACHE_ASSOCIATIVITY, L3_CACHE_SETS, L3_CACHE_SLICES, L3_CACHE_LINE_BITS, L3_CACHE_SIZE_MULTI, PAGE_BITS);
 
   //could be changed by js
-  set_storefor_parameters(this_app_state, STOREFOR_WINDOW_SIZE, STOREFOR_ROUNDS, STOREFOR_THRESHOLD_SEARCH_FOR_ES);
+  set_storefor_parameters(this_app_state, STOREFOR_BUFFER_SIZE, STOREFOR_WINDOW_SIZE, STOREFOR_ROUNDS, STOREFOR_THRESHOLD_SEARCH_FOR_ES);
 
   // l3-cache i7-4770: 16-way-ass, 8192sets => 4+13+6=23bits (8MiB)
 
@@ -48,7 +48,7 @@ int main(int ac, char **av)
 
   // counter_consistency_test(1, 5000000, 1000000);
 
-  this_app_state->l3_threshold = mem_access_testing(200000, 0);
+  this_app_state->l3_threshold = mem_access_testing(100000, 0);
 
   if(L3_THRESHOLD > 0)
   {

@@ -645,6 +645,18 @@
     //set numberUpperLimitEs>0 to limit the number
     document.getElementById('btnBuildEs').onclick = function () {
       assertAppStatePtr(function () {
+        setStoreforParametersWrapper(document.getElementById('numberStoreForBufferSize').value * 1024 * 1024,
+        document.getElementById('numberStoreForWindowSize').value,
+        document.getElementById('numberStoreForRounds').value,
+        document.getElementById('numberStoreForThresholdSearchForEs').value);
+
+        setL3CacheParametersWrapper(document.getElementById('numberL3CacheAssociativity').value,
+        document.getElementById('numberL3CacheSets').value,
+        document.getElementById('numberL3CacheSlices').value,
+        6, //default value for the cache line bits
+        document.getElementById('numberCacheSizeMulti').value,
+        12); //deafult value for the page bits
+
         buildEsWrapper(document.getElementById('numberUpperLimitEs').value, document.getElementById('selectSearchMethod').value);
         document.getElementById('btnBuildEs').value = "Rebuild es";
       });

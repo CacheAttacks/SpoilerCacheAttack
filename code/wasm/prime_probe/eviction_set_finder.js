@@ -1737,7 +1737,7 @@ var ASM_CONSTS = [];
 
 STATIC_BASE = GLOBAL_BASE;
 
-STATICTOP = STATIC_BASE + 7808;
+STATICTOP = STATIC_BASE + 7968;
 /* global initializers */  __ATINIT__.push();
 
 
@@ -1746,7 +1746,7 @@ STATICTOP = STATIC_BASE + 7808;
 
 
 
-var STATIC_BUMP = 7808;
+var STATIC_BUMP = 7968;
 Module["STATIC_BASE"] = STATIC_BASE;
 Module["STATIC_BUMP"] = STATIC_BUMP;
 
@@ -5466,6 +5466,12 @@ var real__sbrk = asm["_sbrk"]; asm["_sbrk"] = function() {
   return real__sbrk.apply(null, arguments);
 };
 
+var real__set_l3_cache_parameters = asm["_set_l3_cache_parameters"]; asm["_set_l3_cache_parameters"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return real__set_l3_cache_parameters.apply(null, arguments);
+};
+
 var real__set_monitored_es = asm["_set_monitored_es"]; asm["_set_monitored_es"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
@@ -5482,6 +5488,12 @@ var real__set_monitored_es_lower_half = asm["_set_monitored_es_lower_half"]; asm
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return real__set_monitored_es_lower_half.apply(null, arguments);
+};
+
+var real__set_storefor_parameters = asm["_set_storefor_parameters"]; asm["_set_storefor_parameters"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return real__set_storefor_parameters.apply(null, arguments);
 };
 
 var real__try_to_create_es = asm["_try_to_create_es"]; asm["_try_to_create_es"] = function() {
@@ -5604,6 +5616,10 @@ var _sbrk = Module["_sbrk"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return Module["asm"]["_sbrk"].apply(null, arguments) };
+var _set_l3_cache_parameters = Module["_set_l3_cache_parameters"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["_set_l3_cache_parameters"].apply(null, arguments) };
 var _set_monitored_es = Module["_set_monitored_es"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
@@ -5616,6 +5632,10 @@ var _set_monitored_es_lower_half = Module["_set_monitored_es_lower_half"] = func
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return Module["asm"]["_set_monitored_es_lower_half"].apply(null, arguments) };
+var _set_storefor_parameters = Module["_set_storefor_parameters"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["_set_storefor_parameters"].apply(null, arguments) };
 var _try_to_create_es = Module["_try_to_create_es"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');

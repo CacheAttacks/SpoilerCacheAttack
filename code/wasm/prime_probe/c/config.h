@@ -44,7 +44,7 @@
 //---------------------------------------------------
 
 //Number of the bits for a cache line. Should be always 6 (for all Intel desktop CPUs with the core-architecture).
-#define L3_CACHELINE_BITS 6
+#define L3_CACHE_LINE_BITS 6
 //Size of a cache line. Equals 2^L3_CACHELINE_BITS_SIZE
 #define L3_CACHE_LINE_SIZE 64
 
@@ -67,7 +67,7 @@
 #undef PAGE_SIZE
 #endif
 //Number of the bits for the page size. Should be 12 in a typcial desktop env.
-#define PAGE_SIZE_BITS 12
+#define PAGE_BITS 12
 //Size of a page. Equals 2^PAGE_SIZE_BITS
 #define PAGE_SIZE 4096
 
