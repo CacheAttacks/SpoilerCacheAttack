@@ -152,7 +152,9 @@
   Advanced: <input type="checkbox" id="checkboxDisplayAdvanced" onclick="displayAdvanced()"></br>
 
   Use the file config.js to set the following variables permanently.</br>
-
+  
+  L3-Cache Hit Threshold:
+  <span><input type="number" id="numberL3Threshold" value="35" width="1"></span>
   L3-Cache slices:
   <span><input type="number" id="numberL3CacheSlices" value="2" width="1"></span>
   L3-Cache associativity:
@@ -650,7 +652,8 @@
         document.getElementById('numberStoreForRounds').value,
         document.getElementById('numberStoreForThresholdSearchForEs').value);
 
-        setL3CacheParametersWrapper(document.getElementById('numberL3CacheAssociativity').value,
+        setL3CacheParametersWrapper(document.getElementById('numberL3Threshold').value,
+        document.getElementById('numberL3CacheAssociativity').value,
         document.getElementById('numberL3CacheSets').value,
         document.getElementById('numberL3CacheSlices').value,
         6, //default value for the cache line bits

@@ -62,13 +62,14 @@ void set_timer_info(){
  * 
  * @param l3 Ptr to l3pp struct
  */
-static void fillL3Info(void *app_state_ptr, l3pp_t l3) {
+static void fillL3Info(void *app_state_ptr) {
   // l3-cache i7-4770: 16-way-ass, 8192sets, 4slices =>
   // 4(ass)+13(sets)+6(line)=23bits (8MiB) l3-cache i3-5010U: 12-way-ass,
   // 4096sets, 3MiB like 16-way-ass and 4MiB => 4(ass)+12(sets)+6(line)=22bits
   // (4MiB) works also for other CPUs
 
   struct app_state *this_app_state = (struct app_state *)app_state_ptr;
+  l3pp_t l3 = this_app_state->l3;
 
   l3->l3info.associativity = this_app_state->l3_cache_associativity;
   l3->cpuidInfo.cacheInfo.sets = this_app_state->l3_cache_sets;
@@ -85,8 +86,8 @@ void print_parameters(void *app_state_ptr)
 {
   struct app_state *this_app_state = (struct app_state *)app_state_ptr;
 
-  printf_ex("l3_cache_associativity: %i, l3_cache_sets: %i, l3_cache_slices: %i, l3_cache_line_size: %i, l3_cache_line_bits: %i, l3_cache_size_multi: %i\n", 
-  this_app_state->l3_cache_associativity, this_app_state->l3_cache_sets, this_app_state->l3_cache_slices, this_app_state->l3_cache_line_size, this_app_state->l3_cache_line_bits, this_app_state->l3_cache_size_multi);
+  printf_ex("l3_cache_threshold: %i, l3_cache_associativity: %i, l3_cache_sets: %i, l3_cache_slices: %i, l3_cache_line_size: %i, l3_cache_line_bits: %i, l3_cache_size_multi: %i\n", 
+  this_app_state->l3_threshold, this_app_state->l3_cache_associativity, this_app_state->l3_cache_sets, this_app_state->l3_cache_slices, this_app_state->l3_cache_line_size, this_app_state->l3_cache_line_bits, this_app_state->l3_cache_size_multi);
 }
 
 /**
@@ -736,13 +737,14 @@ l3pp_t l3_prepare(void *app_state_ptr, l3info_t l3info, int l3_threshold, int ma
   // Setup
   l3pp_t l3 = (l3pp_t)malloc(sizeof(struct l3pp));
   bzero(l3, sizeof(struct l3pp));
+  this_app_state->l3 = l3;
   l3->max_es = max_es;
 
   printf_ex("l3->max_es %i\n", l3->max_es);
 
   // if (l3info != NULL)
   //  bcopy(l3info, &l3->l3info, sizeof(struct l3info));
-  fillL3Info(app_state_ptr, l3);
+  fillL3Info(app_state_ptr);
   l3->l3info.l3_threshold = L3_THRESHOLD_GLOBAL;
   L3_THRESHOLD_GLOBAL = l3_threshold;
 
@@ -757,7 +759,7 @@ l3pp_t l3_prepare(void *app_state_ptr, l3info_t l3info, int l3_threshold, int ma
   if (buffer == MAP_FAILED) {
     bufsize = l3->l3info.bufsize;
     if(search_method == STOREFORWARDLEAKAGE){
-      bufsize = STOREFOR_BUFFER_SIZE;
+      bufsize = this_app_state->storefor_buffer_size_bytes;
     }
     l3->groupsize = L3_SETS_PER_PAGE; // cause 4096/64 = 64
 
@@ -777,7 +779,7 @@ l3pp_t l3_prepare(void *app_state_ptr, l3info_t l3info, int l3_threshold, int ma
 #endif
 
 if(search_method == DEFAULT){
-  printf_ex("default seach method\n");
+  printf_ex("default search method\n");
   // Create the cache map
   if (!probemap(l3)) {
     free(l3->buffer);
@@ -786,7 +788,7 @@ if(search_method == DEFAULT){
   }
 }
 else if(search_method == STOREFORWARDLEAKAGE){
-  printf_ex("STOREFORWARDLEAKAGE seach method\n");
+  printf_ex("STOREFORWARDLEAKAGE search method\n");
   if (!probemap_storeforwardleakage(app_state_ptr)) {
     free(l3->buffer);
     free(l3);
@@ -839,6 +841,7 @@ l3pp_t l3_create_only(void *app_state_ptr, int l3_threshold, int max_es, uint32_
     printf_ex("error ADDRESS_OFFSET 0 is used for TLB noise reduction");
     exit(1);
   }
+    struct app_state *this_app_state = (struct app_state *)app_state_ptr;
 
   info = (struct timer_info *)malloc(sizeof(struct timer_info));
   bzero(info, sizeof(struct timer_info));
@@ -847,11 +850,12 @@ l3pp_t l3_create_only(void *app_state_ptr, int l3_threshold, int max_es, uint32_
   // Setup
   l3pp_t l3 = (l3pp_t)malloc(sizeof(struct l3pp));
   bzero(l3, sizeof(struct l3pp));
+  this_app_state->l3 = l3;
   l3->max_es = max_es;
 
   printf_ex("l3->max_es %i\n", l3->max_es);
 
-  fillL3Info(app_state_ptr, l3);
+  fillL3Info(app_state_ptr);
   L3_THRESHOLD_GLOBAL = l3_threshold;
 
   printf_ex("associativity:%i\n", l3->l3info.associativity);

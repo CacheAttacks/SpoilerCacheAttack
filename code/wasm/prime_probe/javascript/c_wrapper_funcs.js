@@ -34,11 +34,11 @@ setStoreforParametersWrapper =
 }
 
 setL3CacheParametersWrapper =
-    function(l3_cache_associativity, l3_cache_sets, l3_cache_slices, l3_cache_line_bits, l3_cache_size_multi, l3_page_bits)
+    function(l3_cache_threshold, l3_cache_associativity, l3_cache_sets, l3_cache_slices, l3_cache_line_bits, l3_cache_size_multi, l3_page_bits)
 {
     Module['asm']._set_l3_cache_parameters(
         Module['appStatePtr'], 
-        l3_cache_associativity, l3_cache_sets, l3_cache_slices, l3_cache_line_bits, l3_cache_size_multi, l3_page_bits);
+        l3_cache_threshold, l3_cache_associativity, l3_cache_sets, l3_cache_slices, l3_cache_line_bits, l3_cache_size_multi, l3_page_bits);
 }
 
 sampleEsWrapper =
