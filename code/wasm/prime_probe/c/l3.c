@@ -62,19 +62,21 @@ void set_timer_info(){
  * 
  * @param l3 Ptr to l3pp struct
  */
-static void fillL3Info(l3pp_t l3) {
+static void fillL3Info(void *app_state_ptr, l3pp_t l3) {
   // l3-cache i7-4770: 16-way-ass, 8192sets, 4slices =>
   // 4(ass)+13(sets)+6(line)=23bits (8MiB) l3-cache i3-5010U: 12-way-ass,
   // 4096sets, 3MiB like 16-way-ass and 4MiB => 4(ass)+12(sets)+6(line)=22bits
   // (4MiB) works also for other CPUs
 
-  l3->l3info.associativity = L3_CACHE_ASSOCIATIVITY;
-  l3->cpuidInfo.cacheInfo.sets = L3_CACHE_SETS;
-  l3->l3info.slices = L3_CACHE_SLICES;
+  struct app_state *this_app_state = (struct app_state *)app_state_ptr;
+
+  l3->l3info.associativity = this_app_state->l3_cache_associativity;
+  l3->cpuidInfo.cacheInfo.sets = this_app_state->l3_cache_sets;
+  l3->l3info.slices = this_app_state->l3_cache_slices;
   l3->l3info.setsperslice = l3->cpuidInfo.cacheInfo.sets / l3->l3info.slices;
   l3->l3info.bufsize = l3->l3info.associativity * l3->l3info.slices *
-                       l3->l3info.setsperslice * L3_CACHE_LINE_SIZE *
-                       CACHE_SIZE_MULTI;
+                       l3->l3info.setsperslice * this_app_state->l3_cache_line_size *
+                       this_app_state->l3_cache_size_multi;
   printf_ex("l3->l3info.bufsize: %i MiB\n", l3->l3info.bufsize/1024/1024);
 }
 
@@ -716,11 +718,12 @@ int probemap(l3pp_t l3) {
  * @param search_methods Select between DEFAULT and STOREFORWARDLEAKAGE
  * @return l3pp_t 
  */
-l3pp_t l3_prepare(l3info_t l3info, int l3_threshold, int max_es, enum search_methods search_method) {
+l3pp_t l3_prepare(void *app_state_ptr, l3info_t l3info, int l3_threshold, int max_es, enum search_methods search_method) {
   if (ADDRESS_OFFSET == 0) {
     printf_ex("error ADDRESS_OFFSET 0 is used for TLB noise reduction");
     exit(1);
   }
+  struct app_state *this_app_state = (struct app_state *)app_state_ptr;
 
   int allocatedMem = sizeof(struct l3pp);
   // Setup
@@ -732,7 +735,7 @@ l3pp_t l3_prepare(l3info_t l3info, int l3_threshold, int max_es, enum search_met
 
   // if (l3info != NULL)
   //  bcopy(l3info, &l3->l3info, sizeof(struct l3info));
-  fillL3Info(l3);
+  fillL3Info(app_state_ptr, l3);
   l3->l3info.l3_threshold = L3_THRESHOLD_GLOBAL;
   L3_THRESHOLD_GLOBAL = l3_threshold;
 
@@ -824,7 +827,7 @@ else if(search_method == STOREFORWARDLEAKAGE){
  * @param bufsize Size of meomry buffer in bytes
  * @return l3pp_t 
  */
-l3pp_t l3_create_only(int l3_threshold, int max_es, uint32_t bufsize) {
+l3pp_t l3_create_only(void *app_state_ptr, int l3_threshold, int max_es, uint32_t bufsize) {
   if (ADDRESS_OFFSET == 0) {
     printf_ex("error ADDRESS_OFFSET 0 is used for TLB noise reduction");
     exit(1);
@@ -841,7 +844,7 @@ l3pp_t l3_create_only(int l3_threshold, int max_es, uint32_t bufsize) {
 
   printf_ex("l3->max_es %i\n", l3->max_es);
 
-  fillL3Info(l3);
+  fillL3Info(app_state_ptr, l3);
   L3_THRESHOLD_GLOBAL = l3_threshold;
 
   printf_ex("associativity:%i\n", l3->l3info.associativity);

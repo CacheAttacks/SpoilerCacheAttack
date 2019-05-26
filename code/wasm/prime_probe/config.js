@@ -62,6 +62,9 @@ var CACHE_SIZE_MULTI = 2;
 //In other words, the influence of a high error rate for the "correctness" of the subsequent es search is negligible. 
 //---------------------------------------------------
 
+//auto select the storeFor search (only important for html file)
+var PREFER_STOREFOR_SEARCH_METHOD = false;
+
 //Buffer size for the colliding address search in bytes
 //E.g. 256MiB = 2^28 => 2^16 pages
 //Be aware to adapt the parameter -s TOTAL_MEMORY=512MB accordingly (.vscode/compile.sh)

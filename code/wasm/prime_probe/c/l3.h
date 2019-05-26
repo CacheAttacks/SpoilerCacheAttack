@@ -183,8 +183,8 @@ enum search_methods { DEFAULT, STOREFORWARDLEAKAGE };
 int checkevict_safe(vlist_t es, void *candidate, int walk_size,
                            int print, int proofs);
 
-l3pp_t l3_prepare(l3info_t l3info, int l3_threshold, int max_es, enum search_methods search_method);
-l3pp_t l3_create_only(int l3_threshold, int max_es, uint32_t bufsize);
+l3pp_t l3_prepare(void *app_state_ptr, l3info_t l3info, int l3_threshold, int max_es, enum search_methods search_method);
+l3pp_t l3_create_only(void *app_state_ptr, int l3_threshold, int max_es, uint32_t bufsize);
 void l3_release(l3pp_t l3);
 
 vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode);

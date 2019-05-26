@@ -30,6 +30,12 @@ int main(int ac, char **av)
   this_app_state->idle_mean_values = 0;
   this_app_state->monitored_es_index_vec = 0;
 
+  //could be changed by js
+  set_l3_cache_parameters(this_app_state, L3_CACHE_ASSOCIATIVITY, L3_CACHE_SETS, L3_CACHE_SLICES, L3_CACHE_LINE_SIZE, L3_CACHE_SIZE_MULTI);
+
+  //could be changed by js
+  set_storefor_parameters(this_app_state, STOREFOR_WINDOW_SIZE, STOREFOR_ROUNDS, STOREFOR_THRESHOLD_SEARCH_FOR_ES);
+
   // l3-cache i7-4770: 16-way-ass, 8192sets => 4+13+6=23bits (8MiB)
 
   float resolution_ns = get_timer_resolution();

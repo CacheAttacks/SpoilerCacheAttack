@@ -3,7 +3,7 @@
 uint32_t measure_read(void *memory);
 void storefor_write_SAB();
 
-int probemap_storeforwardleakage(l3pp_t l3);
+int probemap_storeforwardleakage(void *app_state_ptr);
 void storefor_write(void *app_state_ptr, int benchmarkruns);
 int try_to_create_es(uint32_t *address_arr, uint32_t number_of_storefor_add, uint32_t startTime, uint32_t endTime, void* ptr_l3);
 

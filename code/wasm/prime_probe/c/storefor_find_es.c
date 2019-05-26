@@ -169,19 +169,23 @@ uint64_t time_sum_js = 0, time_sum_wasm = 0;
  * @param l3 Ptr to l3pp struct
  * @return int 
  */
-int probemap_storeforwardleakage(l3pp_t l3){
+int probemap_storeforwardleakage(void *app_state_ptr){
+    struct app_state *this_app_state = (struct app_state *)app_state_ptr;
+    l3pp_t l3 = this_app_state->l3;
 
     uint32_t timer_before = get_time_in_ms();
 
     l3->collect_groups = vl_new();
 
-    int WINDOW_SIZE = STOREFOR_WINDOW_SIZE;
-    int rounds = STOREFOR_ROUNDS;
-    int threadholdSearchForEs = STOREFOR_THRESHOLD_SEARCH_FOR_ES;
+    int window_size = this_app_state->storefor_window_size;
+    int rounds = this_app_state->storefor_rounds;
+    int threshold_search_for_es = this_app_state->storefor_threshold_search_for_es;
+    int number_of_searches = this_app_state->l3_cache_sets / this_app_state->l3_cache_slices / this_app_state->l3_cache_line_size;
+
     int failed = 0;
     uint32_t buffer_size = l3->l3info.bufsize;
 
-    uint32_t storefor_add_arr_size = threadholdSearchForEs+1;
+    uint32_t storefor_add_arr_size = threshold_search_for_es+1;
     uint8_t * storefor_add_arr = (uint8_t*) calloc(sizeof(uint32_t), storefor_add_arr_size);	
     printf_ex("storefor_write buffer size: %i MiB\n", buffer_size/1024/1024);
 
@@ -190,13 +194,13 @@ int probemap_storeforwardleakage(l3pp_t l3){
     //wasm version measurement_funct not working. Use js version store_for_js instead.
     //measurement_funct(l3->buffer, WINDOW_SIZE, l3->buffer);
 
-    printf_ex("STOREFOR_SEARCHES:%i, STOREFOR_MAX_ITERATIONS:%i\n", STOREFOR_SEARCHES, STOREFOR_MAX_ITERATIONS);
-    for(int i = 0; i < STOREFOR_SEARCHES; i++){
+    printf_ex("number_of_searches:%i, STOREFOR_MAX_ITERATIONS:%i\n", number_of_searches, STOREFOR_MAX_ITERATIONS);
+    for(int i = 0; i < number_of_searches; i++){
       for(int j = 0; j < STOREFOR_MAX_ITERATIONS; j++){
         //assumes that the least 20 physical address bits for address l3->buffer+i*PAGE_SIZE (i from 0 to 31) are different
         //can test this by measuring the prob for a colliding address occuring in any of the next 31 addresses (address+i*PAGE_SIZE with i from 1 to 31)
         //tests shows a low prob for this problem, therefore the addresspool is not filtered after each iteration
-        if(store_for_js((WASMPTR)l3->buffer, buffer_size, (WASMPTR)storefor_add_arr, storefor_add_arr_size, (WASMPTR)(l3->buffer+i*PAGE_SIZE), threadholdSearchForEs, WINDOW_SIZE, rounds, (WASMPTR)l3)){
+        if(store_for_js((WASMPTR)l3->buffer, buffer_size, (WASMPTR)storefor_add_arr, storefor_add_arr_size, (WASMPTR)(l3->buffer+i*PAGE_SIZE), threshold_search_for_es, window_size, rounds, (WASMPTR)l3)){
           //printf_ex("success!\n");
           failed = 0;
           break;
@@ -224,12 +228,12 @@ int probemap_storeforwardleakage(l3pp_t l3){
     if(!failed){
       printf_ex("half increments\n");
       printf_ex("rounds:%i\n", rounds);
-      printf_ex("windowSize:%i\n", WINDOW_SIZE);
-      printf_ex("threadholdSearchForEs:%i\n", threadholdSearchForEs);
+      printf_ex("window_size:%i\n", window_size);
+      printf_ex("threshold_search_for_es:%i\n", threshold_search_for_es);
       printf_ex("time StoreFor:%u\n", (timer_after - timer_before) / 1000);
       printf_ex("time sum js:%f\n", (double)time_sum_js / time_sum);
       printf_ex("time sum wasm:%f\n", (double)time_sum_wasm / time_sum);
-      printf_ex("max additional colliding addresses:%f\n", storefor_add_arr_size-threadholdSearchForEs);
+      printf_ex("max additional colliding addresses:%f\n", storefor_add_arr_size-threshold_search_for_es);
     } else {
       printf_ex("----------------------------------------\n");
       printf_ex("---------------FAILED-------------------\n");
@@ -275,7 +279,7 @@ void storefor_write(void *app_state_ptr, int benchmarkruns){
     int rounds = 20;
     int threadholdSearchForEs = 115;
 
-    l3pp_t l3 = l3_create_only(31, 5, buffer_size);
+    l3pp_t l3 = l3_create_only(app_state_ptr, 31, 5, buffer_size);
     this_app_state->l3 = l3;
     int failed = 0;
     l3->collect_groups = vl_new();

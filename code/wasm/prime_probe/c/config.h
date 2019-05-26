@@ -73,7 +73,7 @@
 
 // buffer for memoryblocks is a multiple of the L3-cache size
 // 2 seems a good value. A higher value will increase the search time but makes it also more likely to find all es.
-#define CACHE_SIZE_MULTI 2
+#define L3_CACHE_SIZE_MULTI 2
 
 //---------------------------------------------------
 //Store forward aka colliding addresses configuration
@@ -105,4 +105,4 @@
 #define STOREFOR_MAX_ITERATIONS 10
 
 //Number of store for iterations, e.g. i7-4770 8192 cache-sets / 4 slices / 64 = 2^(13-2-6) = 2^5 = 32
-#define STOREFOR_SEARCHES L3_CACHE_SETS / L3_CACHE_SLICES / L3_CACHE_LINE_SIZE
+//#define STOREFOR_SEARCHES L3_CACHE_SETS / L3_CACHE_SLICES / L3_CACHE_LINE_SIZE

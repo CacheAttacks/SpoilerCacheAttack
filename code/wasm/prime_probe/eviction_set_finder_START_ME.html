@@ -151,6 +151,8 @@
 
   Advanced: <input type="checkbox" id="checkboxDisplayAdvanced" onclick="displayAdvanced()"></br>
 
+  Use the file config.js to set the following variables permanently.</br>
+
   L3-Cache slices:
   <span><input type="number" id="numberL3CacheSlices" value="2" width="1"></span>
   L3-Cache associativity:
@@ -332,8 +334,13 @@
   <script type="text/javascript" src="config.js"></script>
   <script type='text/javascript'>
 
-    document.getElementById("storeForOptions").style.display= 'none';
-    document.getElementById("advancedOptions").style.display= 'none';
+    if(PREFER_STOREFOR_SEARCH_METHOD)
+    {
+      document.getElementById("selectSearchMethod").value = "1";
+    }
+
+    displayAdvanced();
+    displayStoreForOptions();
 
     function displayAdvanced() {
       var checkBox = document.getElementById("checkboxDisplayAdvanced");
@@ -345,8 +352,7 @@
       }
     }
 
-    function displayStoreForOptions(obj) {
-      var selectBox = obj;
+    function displayStoreForOptions() {
       var selected = document.getElementById("selectSearchMethod").value;
       var textarea = document.getElementById("storeForOptions");
 
