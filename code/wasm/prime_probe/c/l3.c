@@ -787,7 +787,7 @@ if(search_method == DEFAULT){
 }
 else if(search_method == STOREFORWARDLEAKAGE){
   printf_ex("STOREFORWARDLEAKAGE seach method\n");
-  if (!probemap_storeforwardleakage(l3)) {
+  if (!probemap_storeforwardleakage(app_state_ptr)) {
     free(l3->buffer);
     free(l3);
     return NULL;
