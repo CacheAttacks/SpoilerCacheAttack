@@ -4,10 +4,33 @@
 // disabled by default, enable firefox => about:config =>
 // javascript.options.shared_memory;true
 
+function get_worker(){
+  //https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browser
+  if(!!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime))
+  { 
+    //isChrome
+    console.log("Chrome detected! Use worker.js");
+    return new Worker('javascript/worker.js');
+  } 
+  else 
+  {
+      if (typeof InstallTrigger !== 'undefined')
+      { 
+        /*isFirefox*/ 
+        console.log("Firefox detected! Use worker_firefox.js");
+      } 
+      else 
+      {
+          console.log("Could not detect browser! Use worker_firefox.js");
+      }
+      return new Worker('javascript/worker_firefox.js');
+  }
+}
+
 function shared_array_counter_init(sharedBuffer) {
   // const sharedBuffer = new SharedArrayBuffer(Uint32Array.BYTES_PER_ELEMENT);
   // const sharedArray = new Uint32Array(sharedBuffer);
-  const counterWorker = new Worker('javascript/worker.js');
+  const counterWorker = get_worker();
   counterWorker.postMessage(sharedBuffer);
   return counterWorker;
 }
@@ -20,7 +43,7 @@ function shared_array_counter_test(fnc) {
   console.log('call shared_array_counter_test');
   const sharedBuffer = new SharedArrayBuffer(Uint32Array.BYTES_PER_ELEMENT);
   const arr = new Uint32Array(sharedBuffer);
-  const counter = new Worker('javascript/worker.js');
+  const counter = get_worker();
   counter.postMessage(sharedBuffer);
 
   // const test = new Worker("test_worker.js");
@@ -55,7 +78,7 @@ function get_resolution_shared_array_buffer(count_arr, samples) {
 
 
 function shared_test() {
-  const worker = new Worker('javascript/worker.js')
+  const worker = get_worker();
   const length = 10;
 
   // Creating a shared buffer

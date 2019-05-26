@@ -42,7 +42,7 @@ int main(int ac, char **av)
 
   // counter_consistency_test(1, 5000000, 1000000);
 
-  this_app_state->l3_threshold = mem_access_testing(100000, 0);
+  this_app_state->l3_threshold = mem_access_testing(200000, 0);
 
   if(L3_THRESHOLD > 0)
   {

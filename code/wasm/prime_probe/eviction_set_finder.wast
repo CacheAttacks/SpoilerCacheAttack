@@ -10,7 +10,7 @@
  (type $FUNCSIG$iii (func (param i32 i32) (result i32)))
  (type $FUNCSIG$v (func))
  (type $FUNCSIG$iiiiiiiiii (func (param i32 i32 i32 i32 i32 i32 i32 i32 i32) (result i32)))
- (import "env" "memory" (memory $0 16000 16000))
+ (import "env" "memory" (memory $0 8192 8192))
  (import "env" "table" (table 65 65 anyfunc))
  (import "env" "memoryBase" (global $memoryBase i32))
  (import "env" "tableBase" (global $tableBase i32))
@@ -310,7 +310,7 @@
   ;;@ c/main.c:45:0
   (set_local $$16
    (call $_mem_access_testing
-    (i32.const 100000)
+    (i32.const 200000)
     (i32.const 0)
    )
   )

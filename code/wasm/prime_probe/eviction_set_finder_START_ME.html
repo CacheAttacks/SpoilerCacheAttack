@@ -143,11 +143,54 @@
   <span id='controls'>
     <!--<span><input type="checkbox" id="resize">Resize canvas</span>
   <span><input type="checkbox" id="pointerLock" checked>Lock/hide mouse pointer &nbsp;&nbsp;&nbsp;</span>-->
-    <span><input type="button" id="btnPrint" value="Print (new tab)"></span>
+    
     <!--<span><input type="button" value="Fullscreen" onclick="Module.requestFullscreen(document.getElementById('pointerLock').checked, 
                                                                               document.getElementById('resize').checked)">
   </span>-->
-  </span></br>
+  </span>
+
+  Advanced: <input type="checkbox" id="checkboxDisplayAdvanced" onclick="displayAdvanced()"></br>
+
+  L3-Cache slices:
+  <span><input type="number" id="numberL3CacheSlices" value="2" width="1"></span>
+  L3-Cache associativity:
+  <span><input type="number" id="numberL3CacheAssociativity" value="12" width="1"></span>
+  L3-Cache sets:
+  <span><input type="number" id="numberL3CacheSets" value="4096" width="1"></span>
+  Cache size multi:
+  <span><input type="number" id="numberCacheSizeMulti" value="2" width="1"></span></br>
+
+  <div id="storeForOptions">
+   Store forward options: 
+    Buffer size MiB:
+    <span><input type="number" id="numberStoreForBufferSize" value="256" width="1"></span>
+    Rounds: 
+    <span><input type="number" id="numberStoreForRounds" value="20" width="1"></span>
+    Window size:
+    <span><input type="number" id="numberStoreForWindowSize" value="64" width="1"></span>
+    Threshold for es search:
+    <span><input type="number" id="numberStoreForThresholdSearchForEs" value="115" width="1"></span></br>
+  </div>
+
+  <span id='buildEs'>
+    upper limit es
+    <span><input type="number" id="numberUpperLimitEs" value="0" width="1"></span>
+    Search method:
+    <select id="selectSearchMethod" onchange="displayStoreForOptions()">
+      <option value="0">Default</option>
+      <option value="1">StoreForwardLeakage</option>
+    </select>
+    <span><input type="button" id="btnBuildEs" value="Build es"></span>
+  </span>
+
+<div id="advancedOptions">
+  <span><input type="number" id="numberBenchmarksruns" value="20" width="1"></span>
+  <span><input type="button" id="btnBenchmarkmode" value="Benchmark es"></span>
+  <span><input type="button" id="btnPrint" value="Print (new tab)"></span></br>
+  ------------------------------------------------------------------------------------------------------------------
+  </br>
+
+
   <span id='changeType'>
     <select id="selectType">
       <option value="0">Default Prime</option>
@@ -225,18 +268,7 @@
     </select>
     <span><input type="button" id="btnPrimeSpam" value="Prime Spam"></span>
   </span></br>
-  <span id='buildEs'>
-    upper limit es
-    <span><input type="number" id="numberUpperLimitEs" value="0" width="1"></span>
-    Search method:
-    <select id="selectSearchMethod">
-      <option value="0">Default</option>
-      <option value="1">StoreForwardLeakage</option>
-    </select>
-    <span><input type="button" id="btnBuildEs" value="Build es"></span>
-    <span><input type="number" id="numberBenchmarksruns" value="20" width="1"></span>
-    <span><input type="button" id="btnBenchmarkmode" value="Benchmark es"></span>
-  </span></br>
+
   <span id='findInterestingCacheSets'>
     lower limit monitored es
     <span><input type="number" id="numberLowerLimitMonitoredEsInteresting" value="-1" width="1"></span>
@@ -282,6 +314,7 @@
     <span><input type="button" id="btnWorkerWasmPrimeSpam" value="Prime Spam"></span>
   </br> <span><input type="button" id="btnWorkerSampleEsMerged" value="Sample es merged"></span>
   </span>
+</div>
 
 
   <div class="emscripten">
@@ -296,7 +329,68 @@
   <script type="text/javascript" src="javascript/c_wrapper_funcs.js"></script>
   <script type="text/javascript" src="javascript/timer_SAB.js"></script>
   <script type="text/javascript" src="javascript/timer_clock_edge.js"></script>
+  <script type="text/javascript" src="config.js"></script>
   <script type='text/javascript'>
+
+    document.getElementById("storeForOptions").style.display= 'none';
+    document.getElementById("advancedOptions").style.display= 'none';
+
+    function displayAdvanced() {
+      var checkBox = document.getElementById("checkboxDisplayAdvanced");
+      var text = document.getElementById("advancedOptions");
+      if (checkBox.checked == true){
+        text.style.display = "";
+      } else {
+        text.style.display = "none";
+      }
+    }
+
+    function displayStoreForOptions(obj) {
+      var selectBox = obj;
+      var selected = document.getElementById("selectSearchMethod").value;
+      var textarea = document.getElementById("storeForOptions");
+
+      if(selected === '1'){
+          textarea.style.display = "";
+      }
+      else{
+          textarea.style.display = "none";
+      }
+    }
+
+    if (L3_CACHE_SLICES != undefined)
+    {
+      document.getElementById('numberL3CacheSlices').value = L3_CACHE_SLICES;
+    }
+    if (L3_CACHE_ASSOCIATIVITY != undefined)
+    {
+      document.getElementById('numberL3CacheAssociativity').value = L3_CACHE_ASSOCIATIVITY;
+    }
+    if (L3_CACHE_SETS != undefined)
+    {
+      document.getElementById('numberL3CacheSets').value = L3_CACHE_SETS;
+    }
+    if (CACHE_SIZE_MULTI != undefined)
+    {
+      document.getElementById('numberCacheSizeMulti').value = CACHE_SIZE_MULTI;
+    }
+    if (STOREFOR_BUFFER_SIZE != undefined)
+    {
+      document.getElementById('numberStoreForBufferSize').value = STOREFOR_BUFFER_SIZE / 1024 / 1024;
+    }
+    if (STOREFOR_ROUNDS != undefined)
+    {
+      document.getElementById('numberStoreForRounds').value = STOREFOR_ROUNDS;
+    }
+    if (STOREFOR_WINDOW_SIZE != undefined)
+    {
+      document.getElementById('numberStoreForWindowSize').value = STOREFOR_WINDOW_SIZE;
+    }
+    if (STOREFOR_THRESHOLD_SEARCH_FOR_ES != undefined)
+    {
+      document.getElementById('numberStoreForThresholdSearchForEs').value = STOREFOR_THRESHOLD_SEARCH_FOR_ES;
+    }
+
     var textColor = 'color: black';
     var textBuffer = "";
     function consoleLogExNoNewLine(str) {

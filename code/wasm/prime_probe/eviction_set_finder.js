@@ -1140,7 +1140,7 @@ function enlargeMemory() {
 
 
 var TOTAL_STACK = Module['TOTAL_STACK'] || 5242880;
-var TOTAL_MEMORY = Module['TOTAL_MEMORY'] || 1048576000;
+var TOTAL_MEMORY = Module['TOTAL_MEMORY'] || 536870912;
 if (TOTAL_MEMORY < TOTAL_STACK) err('TOTAL_MEMORY should be larger than TOTAL_STACK, was ' + TOTAL_MEMORY + '! (TOTAL_STACK=' + TOTAL_STACK + ')');
 
 // Initialize the runtime's memory
