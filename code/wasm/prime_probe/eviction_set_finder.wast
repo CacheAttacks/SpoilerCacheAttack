@@ -74,7 +74,7 @@
  (global $tempFloat (mut f32) (f32.const 0))
  (global $f0 (mut f32) (f32.const 0))
  (elem (get_global $tableBase) $b0 $___stdio_close $b0 $b0 $b0 $_probetime $_probetime_split_2 $_probetime_split_4 $_probetime_adv_1 $_probetime_adv_2 $_probetime_adv_3 $_probetime_adv_4 $_probetime_adv_5 $_probetime_adv_6 $_probetime_adv_7 $_probetime_adv_8 $_probetime_adv_9 $_probetime_adv_10 $_probetime_adv_11 $_probetime_adv_12 $_probetime_adv_13 $_probetime_adv_14 $_probetime_adv_15 $_probetime_adv_16 $b0 $b0 $b0 $b0 $b0 $b0 $b0 $b0 $b1 $b1 $___stdout_write $___stdio_seek $_sn_write $b1 $b1 $b1 $b1 $b1 $b1 $b1 $b1 $b1 $b1 $b1 $b1 $b1 $b1 $b1 $b1 $b1 $b1 $b1 $___stdio_write $b1 $b1 $b1 $b1 $b1 $b1 $b1 $b2)
- (data (i32.const 1024) "\11\00\n\00\11\11\11\00\00\00\00\05\00\00\00\00\00\00\t\00\00\00\00\0b\00\00\00\00\00\00\00\00\11\00\0f\n\11\11\11\03\n\07\00\01\13\t\0b\0b\00\00\t\06\0b\00\00\0b\00\06\11\00\00\00\11\11\11\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\0b\00\00\00\00\00\00\00\00\11\00\n\n\11\11\11\00\n\00\00\02\00\t\0b\00\00\00\t\00\0b\00\00\0b\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\0c\00\00\00\00\00\00\00\00\00\00\00\0c\00\00\00\00\0c\00\00\00\00\t\0c\00\00\00\00\00\0c\00\00\0c\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\0e\00\00\00\00\00\00\00\00\00\00\00\0d\00\00\00\04\0d\00\00\00\00\t\0e\00\00\00\00\00\0e\00\00\0e\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\10\00\00\00\00\00\00\00\00\00\00\00\0f\00\00\00\00\0f\00\00\00\00\t\10\00\00\00\00\00\10\00\00\10\00\00\12\00\00\00\12\12\12\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\12\00\00\00\12\12\12\00\00\00\00\00\00\t\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\0b\00\00\00\00\00\00\00\00\00\00\00\n\00\00\00\00\n\00\00\00\00\t\0b\00\00\00\00\00\0b\00\00\0b\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\0c\00\00\00\00\00\00\00\00\00\00\00\0c\00\00\00\00\0c\00\00\00\00\t\0c\00\00\00\00\00\0c\00\00\0c\00\000123456789ABCDEFT!\"\19\0d\01\02\03\11K\1c\0c\10\04\0b\1d\12\1e\'hnopqb \05\06\0f\13\14\15\1a\08\16\07($\17\18\t\n\0e\1b\1f%#\83\82}&*+<=>?CGJMXYZ[\\]^_`acdefgijklrstyz{|\00\00\00\00\00\00\00\00\00Illegal byte sequence\00Domain error\00Result not representable\00Not a tty\00Permission denied\00Operation not permitted\00No such file or directory\00No such process\00File exists\00Value too large for data type\00No space left on device\00Out of memory\00Resource busy\00Interrupted system call\00Resource temporarily unavailable\00Invalid seek\00Cross-device link\00Read-only file system\00Directory not empty\00Connection reset by peer\00Operation timed out\00Connection refused\00Host is down\00Host is unreachable\00Address in use\00Broken pipe\00I/O error\00No such device or address\00Block device required\00No such device\00Not a directory\00Is a directory\00Text file busy\00Exec format error\00Invalid argument\00Argument list too long\00Symbolic link loop\00Filename too long\00Too many open files in system\00No file descriptors available\00Bad file descriptor\00No child process\00Bad address\00File too large\00Too many links\00No locks available\00Resource deadlock would occur\00State not recoverable\00Previous owner died\00Operation canceled\00Function not implemented\00No message of desired type\00Identifier removed\00Device not a stream\00No data available\00Device timeout\00Out of streams resources\00Link has been severed\00Protocol error\00Bad message\00File descriptor in bad state\00Not a socket\00Destination address required\00Message too large\00Protocol wrong type for socket\00Protocol not available\00Protocol not supported\00Socket type not supported\00Not supported\00Protocol family not supported\00Address family not supported by protocol\00Address not available\00Network is down\00Network unreachable\00Connection reset by network\00Connection aborted\00No buffer space available\00Socket is connected\00Socket not connected\00Cannot send after socket shutdown\00Operation already in progress\00Operation in progress\00Stale file handle\00Remote I/O error\00Quota exceeded\00No medium found\00Wrong medium type\00No error information\00\00\00\00\00\00\00\00\00\00-\f4QX\cf\8c\b1\c0F\f6\b5\cb)1\03\c7\04[p0\b4]\fd x\7f\8b\9a\d8Y)PhH\89\ab\a7V\03l\ff\b7\cd\88?\d4w\b4+\a5\a3p\f1\ba\e4\a8\fcA\83\fd\d9o\e1\8az/-t\96\07\1f\0d\t^\03v,p\f7@\a5,\a7oWA\a8\aat\df\a0Xd\03J\c7\c4<S\ae\af_\18\04\15\b1\e3m(\86\ab\0c\a4\bfC\f0\e9P\819W\16R7\10\'\00\00\d8\0d\00\00\05\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\02\00\00\00\03\00\00\00\b8\18\00\00\00\04\00\00\00\00\00\00\00\00\00\00\01\00\00\00\00\00\00\00\00\00\00\00\00\00\00\n\ff\ff\ff\ff\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\d8\0d\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\04\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\ff\ff\ff\ff\ff\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\f8\1e\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\03\00\00\00----------------TESTS FINISHED------------------\n\00vl != NULL\00c/vlist.h\00vl_get\00ind < vl->len\00vl_len\00c/vlist.c\00vl_free\00dat != NULL\00vl_push\00vl->len < vl->size\00vl_setsize\00size >= vl->len\00vl_pop\00vl_del\00vl_poprand\00vl_insert\00ind <= vl->len\00resolution SAB-timer: %f ns\n\00bufsize to big!\00index: %p ,\00%u, %u, \00flush L3, \00%u, %u\n\00random access %i rounds\n\00mean:%i\n\00linear access\n\00cannot differ random/linear accesses!\n\00mean_random - mean_linear < 10\n\00auto-detected random/linear threshold: %i\n\00app_state_ptr->l3 is null! Already called build_es?\n\00l3_repeatedprobe %llums (primeprobe_js:%i, opt:%i) per primeprobe op: %f ns\n\00type changed to %i\n\00type not found! type still %i\n\00add: %p\n\00cur: %i\n\00%i < 0\n\00%i >= number_of_es\n\00min_index < 0\n\00max_index >= number_of_es\n\00max_index < min_index\n\00l3_threshold not set!\n\00warm-up finished\n\00%u \00\n\00nmonitored: %i\n\00ncol: %i\n\00Eviction set total time: %u sec\n\00warmup value to high!\00%i\n\00l3_cache_threshold: %i, l3_cache_associativity: %i, l3_cache_sets: %i, l3_cache_slices: %i, l3_cache_line_size: %i, l3_cache_line_bits: %i, l3_cache_size_multi: %i\n\00walk_size == 0\n\00mean:%i \00proofs <= 0. set proofs = 1\n\00lines aka memory-blocks %d\n\00---------------------INFO END--------------------------\n\00vl_len(es) == 0\00c/l3.c\00map\00set %3d: lines: %4d expanded: %4d contracted: %2d collected: %d\n\00forced break in map function, cause vl_len(group) >= max_es(%i)\n\00runtime expand: %f, contract: %f, collect %f, datahandling %f(%lld)\n\00iterations: %i\n\00iterations contract failed: %i\n\00l3info.bufsize:%i\n\00l3->groupsize: %i\n\00L3_CACHE_LINE_SIZE: %i\n\00l3->max_es %i\n\00associativity:%i\n\00slices:%i\n\00setsperslice:%i\n\00default search method\n\00STOREFORWARDLEAKAGE search method\n\00ngroups:%i\n\00allocated %i Bytes\n\00l3->l3info.bufsize: %i MiB\n\00l3 != NULL\00l3_repeatedprobe\00results != NULL\00l3_repeatedprobe_fast\00l3_repeatedprobe_spam_fast\00l3_repeatedprobe_spam_option\00type unknown!\n\00storefor_write buffer size: %i MiB\n\00number_of_searches:%i, STOREFOR_MAX_ITERATIONS:%i\n\00es serach failed!\n\00half increments\n\00rounds:%i\n\00window_size:%i\n\00threshold_search_for_es:%i\n\00time StoreFor:%u\n\00time sum js:%f\n\00time sum wasm:%f\n\00max additional colliding addresses:%f\n\00----------------------------------------\n\00---------------FAILED-------------------\n\00-+   0X0x\00(null)\00-0X+0X 0X-0x+0x 0x\00inf\00INF\00nan\00NAN\00.")
+ (data (i32.const 1024) "\11\00\n\00\11\11\11\00\00\00\00\05\00\00\00\00\00\00\t\00\00\00\00\0b\00\00\00\00\00\00\00\00\11\00\0f\n\11\11\11\03\n\07\00\01\13\t\0b\0b\00\00\t\06\0b\00\00\0b\00\06\11\00\00\00\11\11\11\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\0b\00\00\00\00\00\00\00\00\11\00\n\n\11\11\11\00\n\00\00\02\00\t\0b\00\00\00\t\00\0b\00\00\0b\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\0c\00\00\00\00\00\00\00\00\00\00\00\0c\00\00\00\00\0c\00\00\00\00\t\0c\00\00\00\00\00\0c\00\00\0c\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\0e\00\00\00\00\00\00\00\00\00\00\00\0d\00\00\00\04\0d\00\00\00\00\t\0e\00\00\00\00\00\0e\00\00\0e\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\10\00\00\00\00\00\00\00\00\00\00\00\0f\00\00\00\00\0f\00\00\00\00\t\10\00\00\00\00\00\10\00\00\10\00\00\12\00\00\00\12\12\12\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\12\00\00\00\12\12\12\00\00\00\00\00\00\t\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\0b\00\00\00\00\00\00\00\00\00\00\00\n\00\00\00\00\n\00\00\00\00\t\0b\00\00\00\00\00\0b\00\00\0b\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\0c\00\00\00\00\00\00\00\00\00\00\00\0c\00\00\00\00\0c\00\00\00\00\t\0c\00\00\00\00\00\0c\00\00\0c\00\000123456789ABCDEFT!\"\19\0d\01\02\03\11K\1c\0c\10\04\0b\1d\12\1e\'hnopqb \05\06\0f\13\14\15\1a\08\16\07($\17\18\t\n\0e\1b\1f%#\83\82}&*+<=>?CGJMXYZ[\\]^_`acdefgijklrstyz{|\00\00\00\00\00\00\00\00\00Illegal byte sequence\00Domain error\00Result not representable\00Not a tty\00Permission denied\00Operation not permitted\00No such file or directory\00No such process\00File exists\00Value too large for data type\00No space left on device\00Out of memory\00Resource busy\00Interrupted system call\00Resource temporarily unavailable\00Invalid seek\00Cross-device link\00Read-only file system\00Directory not empty\00Connection reset by peer\00Operation timed out\00Connection refused\00Host is down\00Host is unreachable\00Address in use\00Broken pipe\00I/O error\00No such device or address\00Block device required\00No such device\00Not a directory\00Is a directory\00Text file busy\00Exec format error\00Invalid argument\00Argument list too long\00Symbolic link loop\00Filename too long\00Too many open files in system\00No file descriptors available\00Bad file descriptor\00No child process\00Bad address\00File too large\00Too many links\00No locks available\00Resource deadlock would occur\00State not recoverable\00Previous owner died\00Operation canceled\00Function not implemented\00No message of desired type\00Identifier removed\00Device not a stream\00No data available\00Device timeout\00Out of streams resources\00Link has been severed\00Protocol error\00Bad message\00File descriptor in bad state\00Not a socket\00Destination address required\00Message too large\00Protocol wrong type for socket\00Protocol not available\00Protocol not supported\00Socket type not supported\00Not supported\00Protocol family not supported\00Address family not supported by protocol\00Address not available\00Network is down\00Network unreachable\00Connection reset by network\00Connection aborted\00No buffer space available\00Socket is connected\00Socket not connected\00Cannot send after socket shutdown\00Operation already in progress\00Operation in progress\00Stale file handle\00Remote I/O error\00Quota exceeded\00No medium found\00Wrong medium type\00No error information\00\00\00\00\00\00\00\00\00\00-\f4QX\cf\8c\b1\c0F\f6\b5\cb)1\03\c7\04[p0\b4]\fd x\7f\8b\9a\d8Y)PhH\89\ab\a7V\03l\ff\b7\cd\88?\d4w\b4+\a5\a3p\f1\ba\e4\a8\fcA\83\fd\d9o\e1\8az/-t\96\07\1f\0d\t^\03v,p\f7@\a5,\a7oWA\a8\aat\df\a0Xd\03J\c7\c4<S\ae\af_\18\04\15\b1\e3m(\86\ab\0c\a4\bfC\f0\e9P\819W\16R7\10\'\00\00\d8\0d\00\00\05\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\02\00\00\00\03\00\00\00\b8\18\00\00\00\04\00\00\00\00\00\00\00\00\00\00\01\00\00\00\00\00\00\00\00\00\00\00\00\00\00\n\ff\ff\ff\ff\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\d8\0d\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\04\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\ff\ff\ff\ff\ff\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\f8\1e\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\03\00\00\00----------------TESTS FINISHED------------------\n\00vl != NULL\00c/vlist.h\00vl_get\00ind < vl->len\00vl_len\00c/vlist.c\00vl_free\00dat != NULL\00vl_push\00vl->len < vl->size\00vl_setsize\00size >= vl->len\00vl_pop\00vl_del\00vl_poprand\00vl_insert\00ind <= vl->len\00resolution SAB-timer: %f ns\n\00bufsize to big!\00index: %p ,\00%u, %u, \00flush L3, \00%u, %u\n\00random access %i rounds\n\00mean:%i\n\00linear access\n\00cannot differ random/linear accesses!\n\00mean_random - mean_linear < 10\n\00auto-detected random/linear threshold: %i\n\00app_state_ptr->l3 is null! Already called build_es?\n\00l3_repeatedprobe %llums (primeprobe_js:%i, opt:%i) per primeprobe op: %f ns\n\00type changed to %i\n\00type not found! type still %i\n\00add: %p\n\00cur: %i\n\00%i < 0\n\00%i >= number_of_es\n\00min_index < 0\n\00max_index >= number_of_es\n\00max_index < min_index\n\00l3_threshold not set!\n\00warm-up finished\n\00%u \00\n\00nmonitored: %i\n\00ncol: %i\n\00Eviction set total time: %u sec\n\00warmup value to high!\00l3_cache_threshold: %i, l3_cache_associativity: %i, l3_cache_sets: %i, l3_cache_slices: %i, l3_cache_line_size: %i, l3_cache_line_bits: %i, l3_cache_size_multi: %i\n\00walk_size == 0\n\00mean:%i \00proofs <= 0. set proofs = 1\n\00lines aka memory-blocks %d\n\00---------------------INFO END--------------------------\n\00vl_len(es) == 0\00c/l3.c\00map\00set %3d: lines: %4d expanded: %4d contracted: %2d collected: %d\n\00forced break in map function, cause vl_len(group) >= max_es(%i)\n\00runtime expand: %f, contract: %f, collect %f, datahandling %f(%lld)\n\00iterations: %i\n\00iterations contract failed: %i\n\00l3info.bufsize:%i\n\00l3->groupsize: %i\n\00L3_CACHE_LINE_SIZE: %i\n\00l3->max_es %i\n\00associativity:%i\n\00slices:%i\n\00setsperslice:%i\n\00default search method\n\00STOREFORWARDLEAKAGE search method\n\00ngroups:%i\n\00allocated %i Bytes\n\00l3->l3info.bufsize: %i MiB\n\00l3 != NULL\00l3_repeatedprobe\00results != NULL\00l3_repeatedprobe_fast\00l3_repeatedprobe_spam_fast\00l3_repeatedprobe_spam_option\00type unknown!\n\00storefor_write buffer size: %i MiB\n\00number_of_searches:%i, STOREFOR_MAX_ITERATIONS:%i\n\00es serach failed!\n\00half increments\n\00rounds:%i\n\00window_size:%i\n\00threshold_search_for_es:%i\n\00time StoreFor:%u\n\00time sum js:%f\n\00time sum wasm:%f\n\00max additional colliding addresses:%f\n\00----------------------------------------\n\00---------------FAILED-------------------\n\00-+   0X0x\00(null)\00-0X+0X 0X-0x+0x 0x\00inf\00INF\00nan\00NAN\00.")
  (export "___errno_location" (func $___errno_location))
  (export "_build_es" (func $_build_es))
  (export "_build_es_ex" (func $_build_es_ex))
@@ -10991,13 +10991,11 @@
   (local $$21 i32)
   (local $$22 i32)
   (local $$23 i32)
-  (local $$24 i32)
   (local $$5 i32)
   (local $$6 i32)
   (local $$7 i32)
   (local $$8 i32)
   (local $$9 i32)
-  (local $$vararg_buffer i32)
   (local $label i32)
   (local $sp i32)
   (set_local $sp
@@ -11017,9 +11015,6 @@
    (call $abortStackOverflow
     (i32.const 32)
    )
-  )
-  (set_local $$vararg_buffer
-   (get_local $sp)
   )
   (set_local $$5
    (get_local $$0)
@@ -11047,88 +11042,74 @@
   (set_local $$12
    (get_local $$6)
   )
-  (i32.store
-   (get_local $$vararg_buffer)
-   (get_local $$12)
-  )
-  (drop
-   (call $_printf_ex
-    (i32.const 4945)
-    (get_local $$vararg_buffer)
-   )
-  )
-  ;;@ c/es_management.c:771:0
   (set_local $$13
-   (get_local $$6)
-  )
-  (set_local $$14
    (get_local $$10)
   )
-  (set_local $$15
+  (set_local $$14
    (i32.add
-    (get_local $$14)
+    (get_local $$13)
     (i32.const 88)
    )
   )
   (i32.store
-   (get_local $$15)
-   (get_local $$13)
+   (get_local $$14)
+   (get_local $$12)
   )
-  ;;@ c/es_management.c:772:0
-  (set_local $$16
+  ;;@ c/es_management.c:770:0
+  (set_local $$15
    (get_local $$7)
   )
-  (set_local $$17
+  (set_local $$16
    (get_local $$10)
   )
-  (set_local $$18
+  (set_local $$17
    (i32.add
-    (get_local $$17)
+    (get_local $$16)
     (i32.const 92)
    )
   )
   (i32.store
-   (get_local $$18)
-   (get_local $$16)
+   (get_local $$17)
+   (get_local $$15)
   )
-  ;;@ c/es_management.c:773:0
-  (set_local $$19
+  ;;@ c/es_management.c:771:0
+  (set_local $$18
    (get_local $$8)
   )
-  (set_local $$20
+  (set_local $$19
    (get_local $$10)
   )
-  (set_local $$21
+  (set_local $$20
    (i32.add
-    (get_local $$20)
+    (get_local $$19)
     (i32.const 96)
    )
   )
   (i32.store
-   (get_local $$21)
-   (get_local $$19)
+   (get_local $$20)
+   (get_local $$18)
   )
-  ;;@ c/es_management.c:774:0
-  (set_local $$22
+  ;;@ c/es_management.c:772:0
+  (set_local $$21
    (get_local $$9)
   )
-  (set_local $$23
+  (set_local $$22
    (get_local $$10)
   )
-  (set_local $$24
+  (set_local $$23
    (i32.add
-    (get_local $$23)
+    (get_local $$22)
     (i32.const 100)
    )
   )
   (i32.store
-   (get_local $$24)
-   (get_local $$22)
+   (get_local $$23)
+   (get_local $$21)
   )
   (set_global $STACKTOP
    (get_local $sp)
   )
-  ;;@ c/es_management.c:775:0
+  ;;@ c/es_management.c:773:0
   (return)
  )
  (func $_set_l3_cache_parameters (; 81 ;) (param $$0 i32) (param $$1 i32) (param $$2 i32) (param $$3 i32) (param $$4 i32) (param $$5 i32) (param $$6 i32) (param $$7 i32)
@@ -11215,14 +11196,14 @@
   (set_local $$15
    (get_local $$7)
   )
-  ;;@ c/es_management.c:779:0
+  ;;@ c/es_management.c:777:0
   (set_local $$17
    (get_local $$8)
   )
   (set_local $$16
    (get_local $$17)
   )
-  ;;@ c/es_management.c:781:0
+  ;;@ c/es_management.c:779:0
   (set_local $$18
    (get_local $$9)
   )
@@ -11239,7 +11220,7 @@
    (get_local $$20)
    (get_local $$18)
   )
-  ;;@ c/es_management.c:782:0
+  ;;@ c/es_management.c:780:0
   (set_local $$21
    (get_local $$10)
   )
@@ -11256,7 +11237,7 @@
    (get_local $$23)
    (get_local $$21)
   )
-  ;;@ c/es_management.c:783:0
+  ;;@ c/es_management.c:781:0
   (set_local $$24
    (get_local $$11)
   )
@@ -11273,7 +11254,7 @@
    (get_local $$26)
    (get_local $$24)
   )
-  ;;@ c/es_management.c:784:0
+  ;;@ c/es_management.c:782:0
   (set_local $$27
    (get_local $$12)
   )
@@ -11290,7 +11271,7 @@
    (get_local $$29)
    (get_local $$27)
   )
-  ;;@ c/es_management.c:786:0
+  ;;@ c/es_management.c:784:0
   (set_local $$30
    (get_local $$13)
   )
@@ -11307,7 +11288,7 @@
    (get_local $$32)
    (get_local $$30)
   )
-  ;;@ c/es_management.c:787:0
+  ;;@ c/es_management.c:785:0
   (set_local $$33
    (get_local $$13)
   )
@@ -11330,7 +11311,7 @@
    (get_local $$36)
    (get_local $$34)
   )
-  ;;@ c/es_management.c:789:0
+  ;;@ c/es_management.c:787:0
   (set_local $$37
    (get_local $$14)
   )
@@ -11347,7 +11328,7 @@
    (get_local $$39)
    (get_local $$37)
   )
-  ;;@ c/es_management.c:791:0
+  ;;@ c/es_management.c:789:0
   (set_local $$40
    (get_local $$15)
   )
@@ -11364,7 +11345,7 @@
    (get_local $$42)
    (get_local $$40)
   )
-  ;;@ c/es_management.c:792:0
+  ;;@ c/es_management.c:790:0
   (set_local $$43
    (get_local $$15)
   )
@@ -11390,7 +11371,7 @@
   (set_global $STACKTOP
    (get_local $sp)
   )
-  ;;@ c/es_management.c:793:0
+  ;;@ c/es_management.c:791:0
   (return)
  )
  (func $_set_timer_info (; 82 ;)
@@ -11679,7 +11660,7 @@
   )
   (drop
    (call $_printf_ex
-    (i32.const 4949)
+    (i32.const 4945)
     (get_local $$vararg_buffer)
    )
   )
@@ -12621,7 +12602,7 @@
    ;;@ c/l3.c:305:0
    (drop
     (call $_printf_ex
-     (i32.const 5114)
+     (i32.const 5110)
      (get_local $$vararg_buffer)
     )
    )
@@ -13073,7 +13054,7 @@
     )
     (drop
      (call $_printf_ex
-      (i32.const 5130)
+      (i32.const 5126)
       (get_local $$vararg_buffer)
      )
     )
@@ -13815,7 +13796,7 @@
     ;;@ c/l3.c:328:0
     (drop
      (call $_printf_ex
-      (i32.const 5139)
+      (i32.const 5135)
       (get_local $$vararg_buffer)
      )
     )
@@ -14366,14 +14347,14 @@
   )
   (drop
    (call $_printf_ex
-    (i32.const 5168)
+    (i32.const 5164)
     (get_local $$vararg_buffer)
    )
   )
   ;;@ c/l3.c:358:0
   (drop
    (call $_printf_ex
-    (i32.const 5196)
+    (i32.const 5192)
     (get_local $$vararg_buffer4)
    )
   )
@@ -15550,7 +15531,7 @@
         )
         (drop
          (call $_printf_ex
-          (i32.const 5280)
+          (i32.const 5276)
           (get_local $$vararg_buffer6)
          )
         )
@@ -15923,10 +15904,10 @@
    )
    ;;@ c/l3.c:391:0
    (call $___assert_fail
-    (i32.const 5253)
-    (i32.const 5269)
+    (i32.const 5249)
+    (i32.const 5265)
     (i32.const 391)
-    (i32.const 5276)
+    (i32.const 5272)
    )
    (if
     (i32.eq
@@ -15956,7 +15937,7 @@
      )
      (drop
       (call $_printf_ex
-       (i32.const 5345)
+       (i32.const 5341)
        (get_local $$vararg_buffer13)
       )
      )
@@ -16146,7 +16127,7 @@
   )
   (drop
    (call $_printf_ex
-    (i32.const 5410)
+    (i32.const 5406)
     (get_local $$vararg_buffer16)
    )
   )
@@ -16160,7 +16141,7 @@
   )
   (drop
    (call $_printf_ex
-    (i32.const 5479)
+    (i32.const 5475)
     (get_local $$vararg_buffer23)
    )
   )
@@ -16174,7 +16155,7 @@
   )
   (drop
    (call $_printf_ex
-    (i32.const 5495)
+    (i32.const 5491)
     (get_local $$vararg_buffer26)
    )
   )
@@ -16746,7 +16727,7 @@
   )
   (drop
    (call $_printf_ex
-    (i32.const 5527)
+    (i32.const 5523)
     (get_local $$vararg_buffer)
    )
   )
@@ -16771,7 +16752,7 @@
   )
   (drop
    (call $_printf_ex
-    (i32.const 5546)
+    (i32.const 5542)
     (get_local $$vararg_buffer1)
    )
   )
@@ -16782,7 +16763,7 @@
   )
   (drop
    (call $_printf_ex
-    (i32.const 5565)
+    (i32.const 5561)
     (get_local $$vararg_buffer4)
    )
   )
@@ -17493,7 +17474,7 @@
   )
   (drop
    (call $_printf_ex
-    (i32.const 5589)
+    (i32.const 5585)
     (get_local $$vararg_buffer)
    )
   )
@@ -17546,7 +17527,7 @@
   )
   (drop
    (call $_printf_ex
-    (i32.const 5604)
+    (i32.const 5600)
     (get_local $$vararg_buffer1)
    )
   )
@@ -17571,7 +17552,7 @@
   )
   (drop
    (call $_printf_ex
-    (i32.const 5622)
+    (i32.const 5618)
     (get_local $$vararg_buffer4)
    )
   )
@@ -17596,7 +17577,7 @@
   )
   (drop
    (call $_printf_ex
-    (i32.const 5633)
+    (i32.const 5629)
     (get_local $$vararg_buffer7)
    )
   )
@@ -17787,7 +17768,7 @@
     ;;@ c/l3.c:782:0
     (drop
      (call $_printf_ex
-      (i32.const 5650)
+      (i32.const 5646)
       (get_local $$vararg_buffer10)
      )
     )
@@ -17870,7 +17851,7 @@
       ;;@ c/l3.c:791:0
       (drop
        (call $_printf_ex
-        (i32.const 5673)
+        (i32.const 5669)
         (get_local $$vararg_buffer12)
        )
       )
@@ -17960,7 +17941,7 @@
   )
   (drop
    (call $_printf_ex
-    (i32.const 5708)
+    (i32.const 5704)
     (get_local $$vararg_buffer14)
    )
   )
@@ -18339,7 +18320,7 @@
   )
   (drop
    (call $_printf_ex
-    (i32.const 5720)
+    (i32.const 5716)
     (get_local $$vararg_buffer17)
    )
   )
@@ -18844,7 +18825,7 @@
   )
   (drop
    (call $_printf_ex
-    (i32.const 5740)
+    (i32.const 5736)
     (get_local $$vararg_buffer)
    )
   )
@@ -20388,10 +20369,10 @@
     (get_local $$19)
    )
    (call $___assert_fail
-    (i32.const 5768)
-    (i32.const 5269)
+    (i32.const 5764)
+    (i32.const 5265)
     (i32.const 1080)
-    (i32.const 5779)
+    (i32.const 5775)
    )
   )
   ;;@ c/l3.c:1081:0
@@ -20409,10 +20390,10 @@
     (get_local $$21)
    )
    (call $___assert_fail
-    (i32.const 5796)
-    (i32.const 5269)
+    (i32.const 5792)
+    (i32.const 5265)
     (i32.const 1081)
-    (i32.const 5779)
+    (i32.const 5775)
    )
   )
   ;;@ c/l3.c:1083:0
@@ -20997,10 +20978,10 @@
     (get_local $$16)
    )
    (call $___assert_fail
-    (i32.const 5768)
-    (i32.const 5269)
+    (i32.const 5764)
+    (i32.const 5265)
     (i32.const 1122)
-    (i32.const 5812)
+    (i32.const 5808)
    )
   )
   ;;@ c/l3.c:1123:0
@@ -21018,10 +20999,10 @@
     (get_local $$18)
    )
    (call $___assert_fail
-    (i32.const 5796)
-    (i32.const 5269)
+    (i32.const 5792)
+    (i32.const 5265)
     (i32.const 1123)
-    (i32.const 5812)
+    (i32.const 5808)
    )
   )
   ;;@ c/l3.c:1125:0
@@ -21411,10 +21392,10 @@
     (get_local $$10)
    )
    (call $___assert_fail
-    (i32.const 5768)
-    (i32.const 5269)
+    (i32.const 5764)
+    (i32.const 5265)
     (i32.const 1221)
-    (i32.const 5834)
+    (i32.const 5830)
    )
   )
   ;;@ c/l3.c:1223:0
@@ -22016,10 +21997,10 @@
     (get_local $$43)
    )
    (call $___assert_fail
-    (i32.const 5768)
-    (i32.const 5269)
+    (i32.const 5764)
+    (i32.const 5265)
     (i32.const 1262)
-    (i32.const 5861)
+    (i32.const 5857)
    )
   )
   ;;@ c/l3.c:1264:0
@@ -28586,7 +28567,7 @@
        ;;@ c/probe.c:509:0
        (drop
         (call $_printf_ex
-         (i32.const 5890)
+         (i32.const 5886)
          (get_local $$vararg_buffer)
         )
        )
@@ -29644,7 +29625,7 @@
   )
   (drop
    (call $_printf_ex
-    (i32.const 5905)
+    (i32.const 5901)
     (get_local $$vararg_buffer)
    )
   )
@@ -29668,7 +29649,7 @@
   )
   (drop
    (call $_printf_ex
-    (i32.const 5941)
+    (i32.const 5937)
     (get_local $$vararg_buffer1)
    )
   )
@@ -29900,7 +29881,7 @@
    ;;@ c/storefor_find_es.c:211:0
    (drop
     (call $_printf_ex
-     (i32.const 5992)
+     (i32.const 5988)
      (get_local $$vararg_buffer5)
     )
    )
@@ -30134,21 +30115,21 @@
     ;;@ c/storefor_find_es.c:238:0
     (drop
      (call $_printf_ex
-      (i32.const 6174)
+      (i32.const 6170)
       (get_local $$vararg_buffer30)
      )
     )
     ;;@ c/storefor_find_es.c:239:0
     (drop
      (call $_printf_ex
-      (i32.const 6216)
+      (i32.const 6212)
       (get_local $$vararg_buffer32)
      )
     )
     ;;@ c/storefor_find_es.c:240:0
     (drop
      (call $_printf_ex
-      (i32.const 6174)
+      (i32.const 6170)
       (get_local $$vararg_buffer34)
      )
     )
@@ -30171,7 +30152,7 @@
     ;;@ c/storefor_find_es.c:229:0
     (drop
      (call $_printf_ex
-      (i32.const 6011)
+      (i32.const 6007)
       (get_local $$vararg_buffer7)
      )
     )
@@ -30185,7 +30166,7 @@
     )
     (drop
      (call $_printf_ex
-      (i32.const 6028)
+      (i32.const 6024)
       (get_local $$vararg_buffer9)
      )
     )
@@ -30199,7 +30180,7 @@
     )
     (drop
      (call $_printf_ex
-      (i32.const 6039)
+      (i32.const 6035)
       (get_local $$vararg_buffer12)
      )
     )
@@ -30213,7 +30194,7 @@
     )
     (drop
      (call $_printf_ex
-      (i32.const 6055)
+      (i32.const 6051)
       (get_local $$vararg_buffer15)
      )
     )
@@ -30245,7 +30226,7 @@
     )
     (drop
      (call $_printf_ex
-      (i32.const 6083)
+      (i32.const 6079)
       (get_local $$vararg_buffer18)
      )
     )
@@ -30280,7 +30261,7 @@
     )
     (drop
      (call $_printf_ex
-      (i32.const 6101)
+      (i32.const 6097)
       (get_local $$vararg_buffer21)
      )
     )
@@ -30315,7 +30296,7 @@
     )
     (drop
      (call $_printf_ex
-      (i32.const 6117)
+      (i32.const 6113)
       (get_local $$vararg_buffer24)
      )
     )
@@ -30338,7 +30319,7 @@
     )
     (drop
      (call $_printf_ex
-      (i32.const 6135)
+      (i32.const 6131)
       (get_local $$vararg_buffer27)
      )
     )
@@ -56052,7 +56033,7 @@
                             (i32.const 0)
                            )
                            (set_local $$$1238
-                            (i32.const 6258)
+                            (i32.const 6254)
                            )
                            (set_local $$$2256
                             (get_local $$spec$select295)
@@ -56099,7 +56080,7 @@
                             (i32.const 1)
                            )
                            (set_local $$$0237
-                            (i32.const 6258)
+                            (i32.const 6254)
                            )
                            (set_local $$212
                             (get_local $$205)
@@ -56137,15 +56118,15 @@
                            (set_local $$$
                             (if (result i32)
                              (get_local $$209)
-                             (i32.const 6258)
-                             (i32.const 6260)
+                             (i32.const 6254)
+                             (i32.const 6256)
                             )
                            )
                            (set_local $$spec$select296
                             (if (result i32)
                              (get_local $$207)
                              (get_local $$$)
-                             (i32.const 6259)
+                             (i32.const 6255)
                             )
                            )
                            (set_local $$210
@@ -56193,7 +56174,7 @@
                          (i32.const 0)
                         )
                         (set_local $$$0237
-                         (i32.const 6258)
+                         (i32.const 6254)
                         )
                         (set_local $$212
                          (get_local $$$pre366)
@@ -56229,7 +56210,7 @@
                         (i32.const 0)
                        )
                        (set_local $$$2239
-                        (i32.const 6258)
+                        (i32.const 6254)
                        )
                        (set_local $$$5
                         (i32.const 1)
@@ -56281,7 +56262,7 @@
                      (set_local $$232
                       (if (result i32)
                        (get_local $$231)
-                       (i32.const 6268)
+                       (i32.const 6264)
                        (get_local $$230)
                       )
                      )
@@ -56399,7 +56380,7 @@
            (i32.const 0)
           )
           (set_local $$$2239
-           (i32.const 6258)
+           (i32.const 6254)
           )
           (set_local $$$5
            (get_local $$$0254)
@@ -56473,14 +56454,14 @@
           )
           (set_local $$193
            (i32.add
-            (i32.const 6258)
+            (i32.const 6254)
             (get_local $$192)
            )
           )
           (set_local $$spec$select293
            (if (result i32)
             (get_local $$or$cond278)
-            (i32.const 6258)
+            (i32.const 6254)
             (get_local $$193)
            )
           )
@@ -56614,7 +56595,7 @@
              (i32.const 0)
             )
             (set_local $$$2239
-             (i32.const 6258)
+             (i32.const 6254)
             )
             (set_local $$$5
              (get_local $$$3257)
@@ -60556,7 +60537,7 @@
      (i32.const 1)
     )
     (set_local $$$0523
-     (i32.const 6275)
+     (i32.const 6271)
     )
     (set_local $$$pre$phiZ2D
      (get_local $$$pre715)
@@ -60590,15 +60571,15 @@
     (set_local $$$
      (if (result i32)
       (get_local $$18)
-      (i32.const 6276)
-      (i32.const 6281)
+      (i32.const 6272)
+      (i32.const 6277)
      )
     )
     (set_local $$spec$select565
      (if (result i32)
       (get_local $$16)
       (get_local $$$)
-      (i32.const 6278)
+      (i32.const 6274)
      )
     )
     (set_local $$19
@@ -60664,8 +60645,8 @@
      (set_local $$25
       (if (result i32)
        (get_local $$24)
+       (i32.const 6290)
        (i32.const 6294)
-       (i32.const 6298)
       )
      )
      (set_local $$26
@@ -60683,8 +60664,8 @@
      (set_local $$27
       (if (result i32)
        (get_local $$24)
+       (i32.const 6298)
        (i32.const 6302)
-       (i32.const 6306)
       )
      )
      (set_local $$$0512
@@ -63994,7 +63975,7 @@
         )
         (call $_out
          (get_local $$0)
-         (i32.const 6310)
+         (i32.const 6306)
          (i32.const 1)
         )
        )
@@ -64349,7 +64330,7 @@
               )
               (call $_out
                (get_local $$0)
-               (i32.const 6310)
+               (i32.const 6306)
                (i32.const 1)
               )
               (set_local $$$2

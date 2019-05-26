@@ -766,8 +766,6 @@ void set_storefor_parameters(void *app_state_ptr, int storefor_buffer_size_bytes
 {
   struct app_state *this_app_state = (struct app_state *)app_state_ptr;
 
-  printf_ex("%i\n",storefor_buffer_size_bytes);
-
   this_app_state->storefor_buffer_size_bytes = storefor_buffer_size_bytes;
   this_app_state->storefor_window_size = storefor_window_size;
   this_app_state->storefor_rounds = storefor_rounds;
