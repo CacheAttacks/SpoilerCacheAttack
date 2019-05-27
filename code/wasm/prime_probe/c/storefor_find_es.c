@@ -200,7 +200,7 @@ int probemap_storeforwardleakage(void *app_state_ptr){
         //assumes that the least 20 physical address bits for address l3->buffer+i*PAGE_SIZE (i from 0 to 31) are different
         //can test this by measuring the prob for a colliding address occuring in any of the next 31 addresses (address+i*PAGE_SIZE with i from 1 to 31)
         //tests shows a low prob for this problem, therefore the addresspool is not filtered after each iteration
-        if(store_for_js((WASMPTR)l3->buffer, buffer_size, (WASMPTR)storefor_add_arr, storefor_add_arr_size, (WASMPTR)(l3->buffer+i*PAGE_SIZE), threshold_search_for_es, window_size, rounds, (WASMPTR)l3)){
+        if(store_for_js((WASMPTR)l3->buffer, buffer_size, (WASMPTR)storefor_add_arr, storefor_add_arr_size, (WASMPTR)(l3->buffer+i*PAGE_SIZE), threshold_search_for_es, window_size, rounds, (WASMPTR)app_state_ptr)){
           //printf_ex("success!\n");
           failed = 0;
           break;
@@ -290,7 +290,7 @@ void storefor_write(void *app_state_ptr, int benchmarkruns){
 
     for(int i=0; i<32; i++){
       for(int j=0; j<10; j++){
-        if(store_for_js((WASMPTR)buffer, buffer_size, (WASMPTR)storefor_add_arr, storefor_add_arr_size, (WASMPTR)(buffer+i*PAGE_SIZE), threadholdSearchForEs, WINDOW_SIZE, rounds, (WASMPTR)this_app_state->l3)){
+        if(store_for_js((WASMPTR)buffer, buffer_size, (WASMPTR)storefor_add_arr, storefor_add_arr_size, (WASMPTR)(buffer+i*PAGE_SIZE), threadholdSearchForEs, WINDOW_SIZE, rounds, (WASMPTR)app_state_ptr)){
           //printf_ex("success!\n");
           failed = 0;
           break;
@@ -358,11 +358,12 @@ void storefor_write(void *app_state_ptr, int benchmarkruns){
  * @param number_of_storefor_add Number of colliding addresses
  * @param startTime Start time of the colliding address search (for debug purposes)
  * @param endTime End time of the colliding address search (for debug purposes)
- * @param ptr_l3 Ptr to l3 struct
+ * @param app_state_ptr Ptr to app_state_ptr struct
  * @return int 
  */
-int try_to_create_es(uint32_t *address_arr, uint32_t number_of_storefor_add, uint32_t startTime, uint32_t endTime, void* ptr_l3){
-  l3pp_t l3 = (l3pp_t)ptr_l3;
+int try_to_create_es(uint32_t *address_arr, uint32_t number_of_storefor_add, uint32_t startTime, uint32_t endTime, void* app_state_ptr){
+  struct app_state *this_app_state = (struct app_state *)app_state_ptr;
+  l3pp_t l3 = (l3pp_t)this_app_state->l3;
   time_sum_js += (uint64_t)get_diff(startTime, endTime);
   
   uint32_t startTimeWasm = rdtscp();
@@ -402,8 +403,8 @@ int try_to_create_es(uint32_t *address_arr, uint32_t number_of_storefor_add, uin
 
   time_sum_wasm += (uint64_t)get_diff(startTimeWasm, rdtscp());
 
-  //number of found es should be equal with L3_CACHE_SLICES!
-  if(vl_len(groups) == L3_CACHE_SLICES){
+  //number of found es should be equal with this_app_state->l3_cache_slices!
+  if(vl_len(groups) == this_app_state->l3_cache_slices){
     vlist_t es = vl_get(groups, 0);
 
     //for(int i=0; i<vl_len(es); i++){

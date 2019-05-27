@@ -1,6 +1,6 @@
 if (typeof mergeInto !== 'undefined')
   mergeInto(LibraryManager.library, {
-    store_for_js: function(uint8ptrBuffer, bufferSize, uint8ptrAddressArr, addressArrSize, uint8ptrCandidate, threadholdSearchForEs, windowSize, rounds, ptrl3) {
+    store_for_js: function(uint8ptrBuffer, bufferSize, uint8ptrAddressArr, addressArrSize, uint8ptrCandidate, threadholdSearchForEs, windowSize, rounds, appStatePtr) {
       var startTime = Module['sharedArrayCounter'][0];
 
       var pageSize = 4096;
@@ -79,7 +79,7 @@ if (typeof mergeInto !== 'undefined')
           numberOfStoreForAdd++;
 
           if(numberOfStoreForAdd >= threadholdSearchForEs){ //try to create es
-            if(Module['asm']._try_to_create_es(uint8ptrAddressArr, numberOfStoreForAdd, startTime, Module['sharedArrayCounter'][0], ptrl3) != 0){
+            if(Module['asm']._try_to_create_es(uint8ptrAddressArr, numberOfStoreForAdd, startTime, Module['sharedArrayCounter'][0], appStatePtr) != 0){
               //console.log(output);
               return true;
             }
@@ -87,7 +87,7 @@ if (typeof mergeInto !== 'undefined')
           }
           //size of AddressArr is limited
           if(numberOfStoreForAdd == addressArrSize){
-            console.log("Internal error: numberOfStoreForAdd == addressArrSize");
+            console.error("_try_to_create_es failed");
             return false;
           }
           //do not detect colliding addresses for the next 10 blocks
@@ -97,8 +97,8 @@ if (typeof mergeInto !== 'undefined')
         }
         lock--;
       }
-      console.log("Buffer exceeded and only numberOfStoreForAdd:" + numberOfStoreForAdd + " found! (need threadholdSearchForEs:" + threadholdSearchForEs + ")");
-      console.log("Try to increase STOREFOR_PAGE_COUNT (config.h)");
+      console.warn("Buffer exceeded and only numberOfStoreForAdd:" + numberOfStoreForAdd + " found! (need threadholdSearchForEs:" + threadholdSearchForEs + ")");
+      console.info("Try to increase STOREFOR_PAGE_COUNT (config.h)");
       return false;
     }
   });
