@@ -2,7 +2,7 @@ int checkevict(vlist_t es, void *candidate, int walk_size, int print);
 int checkevict_safe(vlist_t es, void *candidate, int walk_size,
                            int print, int proofs);
 
-void *expand(vlist_t es, vlist_t candidates);
+void *expand(l3pp_t l3, vlist_t es, vlist_t candidates);
 void contract(vlist_t es, vlist_t candidates, void *current);
 int contract_multiple(vlist_t es, vlist_t candidates, void *current,
                              int del_number);

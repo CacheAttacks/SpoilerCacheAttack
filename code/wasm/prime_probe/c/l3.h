@@ -80,7 +80,7 @@ struct timer_info *info;
 #define MAX_CONTRACT_CALLS 3
 
 // choose percentage of availible mem blocks in the pool before first es testing
-#define EXPAND_START_VALUE_FACTOR 0.3
+#define EXPAND_START_VALUE_FACTOR 0.6
 
 // try to delete mulipte elements from es in contract before es testing
 // e.g. vl_len(es) = 1000 & CONTRACT_FIRST_DEL_FACTOR=0.02 => del 20 elements at
@@ -139,6 +139,7 @@ struct l3info
   l3progressNotification_t progressNotification;
   void *progressNotificationData;
   int l3_threshold;
+  int l3_cache_size_multi;
 };
 
 typedef struct l3pp *l3pp_t;

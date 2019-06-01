@@ -27,11 +27,18 @@
  * @param candidates list of candidates aka memory-blocks
  * @return void* 
  */
-void *expand(vlist_t es, vlist_t candidates) {
+void *expand(l3pp_t l3, vlist_t es, vlist_t candidates) {
+  int min_es_size =  vl_len(candidates) * EXPAND_START_VALUE_FACTOR / l3->l3info.l3_cache_size_multi;
+  if(min_es_size > vl_len(candidates))
+  {
+    min_es_size = 16;
+    printf_ex("warning: The size of the candidate set seems very low! Check your cache parmeters or try to adjust the Cache size multi.\n");
+  }
+
   while (vl_len(candidates) > 0) {
     void *current = vl_poprand(candidates);
     if (vl_len(es) > 16 &&
-        vl_len(es) > vl_len(candidates) * EXPAND_START_VALUE_FACTOR &&
+        vl_len(es) > min_es_size &&
         checkevict_safe(es, current, vl_len(es), 0, EXPAND_ITERATIONS)) {
       // printf_ex("found es! size:%i\n", vl_len(es));
       // expand_test(es, current);
@@ -39,7 +46,7 @@ void *expand(vlist_t es, vlist_t candidates) {
       // checkevict(es, current, vl_len(es), 1);
       // checkevict(es, current, vl_len(es), 1);
       // exit(1);
-
+      //printf_ex("expand_tests: %i\n",  vl_len(es)-min_es_size);
       return current;
     }
     vl_push(es, current);

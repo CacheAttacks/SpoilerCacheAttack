@@ -78,6 +78,7 @@ static void fillL3Info(void *app_state_ptr) {
   l3->l3info.bufsize = l3->l3info.associativity * l3->l3info.slices *
                        l3->l3info.setsperslice * this_app_state->l3_cache_line_size *
                        this_app_state->l3_cache_size_multi;
+  l3->l3info.l3_cache_size_multi = this_app_state->l3_cache_size_multi;
   printf_ex("l3->l3info.bufsize: %i MiB\n", l3->l3info.bufsize/1024/1024);
   print_parameters(app_state_ptr);
 }
@@ -370,6 +371,10 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
   int nlines = vl_len(lines);
   int fail = 0, too_big = 0, too_small = 0;
   int iterations = 0, iterations_contract_failed = 0;
+
+  int last_es_sizes_arr_index = 0;
+  int *last_es_sizes_arr = (int*)calloc(TOO_BIG_TRIGGER_VALUE + TOO_SMALL_TRIGGER_VALUE + 2, sizeof(int));
+
   while (vl_len(lines)) {
 
     if (too_big > TOO_BIG_TRIGGER_VALUE ||
@@ -386,6 +391,7 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
 #endif
       too_big = 0;
       too_small = 0;
+      last_es_sizes_arr_index = 0;
     }
 
     assert(vl_len(es) == 0);
@@ -418,7 +424,7 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
     //if(storefor_mode)
     //  c = expand_storefor(es, lines);
     //else
-      c = expand(es, lines);
+      c = expand(l3, es, lines);
     time_expand += (uint64_t)get_diff(before, rdtscp());
 
 #ifdef DEBUG
@@ -432,8 +438,8 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
       while (vl_len(es))
         vl_push(lines, vl_del(es, 0));
 #ifdef DEBUG
-      //printf_ex("set %3d: lines: %4d expanded: %4d c=NULL\n", vl_len(groups), d_l1,
-      //       d_l2);
+      printf_ex("set %3d: lines: %4d expanded: %4d c=NULL\n", vl_len(groups), d_l1,
+             d_l2);
 #endif // DEBUG
       fail += 50;
       //L3_THRESHOLD_GLOBAL = readjustTimerThreshold();
@@ -500,6 +506,9 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
 //-------------------------------------------------------------------------------------
 //-----------------------TEST RESULTS OF CONTRACT-PHASE--------------------------------
 //-------------------------------------------------------------------------------------
+    //check whether the es size matches the constrains
+    int es_size_is_valid = vl_len(es) <= l3->l3info.associativity + MAX_L3_ASSOCIATIVITY_DIFF &&
+        vl_len(es) >= l3->l3info.associativity;
 
     before = rdtscp();
     // if(vl_len(es) < l3->l3info.associativity){
@@ -507,16 +516,19 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
     //   l3->l3info.associativity);
     // }
     int test_failed = 0;
-    if (vl_len(es) <= l3->l3info.associativity + MAX_L3_ASSOCIATIVITY_DIFF &&
-        vl_len(es) >= l3->l3info.associativity) {
+    if (es_size_is_valid) {
 #ifdef AFTERCONTRACTTEST
 #if DEBUG_TEST_PRINT == 1
       printf_ex("after contract es size:%i\n", vl_len(es));
       printf_ex("evict ");
 #endif
+      //test the es with candidate 10 more times to validate the correctness
       for (int i = 0; i < 10; i++) {
         if (checkevict(es, c, vl_len(es), DEBUG_TEST_PRINT) <= L3_THRESHOLD_GLOBAL)
+        {
+          printf_ex("Validation test failed! Multiple occurrences of this warning could indicate a problem with the l3-cache hit threshold.\n");
           test_failed = 1;
+        }
 #if DEBUG_TEST_PRINT == 1
         printf_ex("%i ", checkevict(es, c, vl_len(es), 0));
 #endif
@@ -527,14 +539,19 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
 #if DEBUG_TEST_PRINT == 1
       printf_ex("\n 1 out test \n");
 #endif
+      //deletes one element from the es and tests the reduced set against the candidate
+      //the result should always be negative (es without one entry should never be an es for the candiate)
       for (int i = 0; i < vl_len(es); i++) {
         void *element = vl_del(es, i);
         if (checkevict(es, c, vl_len(es), DEBUG_TEST_PRINT) > L3_THRESHOLD_GLOBAL)
           oneouttest_failed++;
         vl_insert(es, i, element);
       }
-      if (oneouttest_failed > 3)
+      if (oneouttest_failed > 1)
+      {
+        printf_ex("One out test failed! Multiple occurrences of this warning could indicate a problem with the l3-cache hit threshold.\n");
         test_failed = 1;
+      }
 #if DEBUG_TEST_PRINT == 1
       putchar('\n');
 #endif
@@ -546,13 +563,29 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
 #endif // DEBUG
 
     // rewind if size(es) do not match associativity
-    if (vl_len(es) > l3->l3info.associativity + MAX_L3_ASSOCIATIVITY_DIFF ||
-        vl_len(es) < l3->l3info.associativity - 0 || test_failed) {
+    if (!es_size_is_valid || test_failed) {
       if (vl_len(es) > l3->l3info.associativity + MAX_L3_ASSOCIATIVITY_DIFF) {
         too_big++;
       } else {
         too_small++;
       }
+
+      last_es_sizes_arr[last_es_sizes_arr_index++] = vl_len(es);
+
+      if(too_big > TOO_BIG_TRIGGER_VALUE || too_small > TOO_SMALL_TRIGGER_VALUE)
+      {
+        printf_ex("The es size after the contract phase does not matches the given associativity (%i).\n", l3->l3info.associativity);
+        printf_ex("The last es size after the contract phase are: ");
+        for(int i=0; i<last_es_sizes_arr_index; i++)
+        {
+          printf_ex("%i, ", last_es_sizes_arr[i]);
+        }
+        printf_ex("\n");
+        if(too_small > TOO_SMALL_TRIGGER_VALUE)
+        {
+          printf_ex("The es size after the contract phase (%i) seems to low. Try to increase the L3-cache hit threshold (also check the associativity).\n", vl_len(es));
+        }
+      } 
       
 #ifdef REUSE_CONTRACT_ENTRIES
       //if(too_big > 0){
@@ -587,7 +620,7 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
       if(fail % 3 == 0){
         doStuff();
         //L3_THRESHOLD_GLOBAL = readjustTimerThreshold();
-      }      
+      }
       continue;
     }
     time_datahandling += (uint64_t)get_diff(before, rdtscp());
@@ -598,6 +631,7 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
 
     too_small = 0;
     too_big = 0;
+    last_es_sizes_arr_index = 0;
     fail = 0;
     vlist_t set = vl_new();
     // do not add collected memory blocks to es
@@ -631,6 +665,8 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
       break;
     }
   } //end big while-loop
+
+  free(last_es_sizes_arr);
 
   vl_free(es);
   uint64_t time_sum =
