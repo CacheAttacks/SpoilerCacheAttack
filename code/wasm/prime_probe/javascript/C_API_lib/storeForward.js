@@ -40,16 +40,37 @@ if (typeof mergeInto !== 'undefined')
         return false;
       }
 
-      console.log("iterate through " + pageCount + " pages...");
-      for (var p = windowSize; p < pageCount; p++) {
-        var total = 0;
+      function measureAccessTimeAlt(uint32ptrCandidate) {
+        // Measuring load
+        var before = Module['sharedArrayCounter'][0];
+        var after = 0, val = 0;
 
-        for (var r = 0; r < rounds; r++) {
-          // Stores
-          for (var i = windowSize; i >= 0; i--) {
-            uint32wasmMem[uint32ptrBuffer + (p - i) * 1024] = 0;
-            // evictionBuffer[(p-i)*PAGE_SIZE] = 0;
-          }
+        if (before > 0)
+        {
+          before++;
+          val = uint32wasmMem[uint32ptrCandidate];
+          val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;
+          val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;
+          
+        }
+        
+
+        if(val == 0)
+        {
+          after = Module['sharedArrayCounter'][0];
+          after++;
+        }
+        else
+        {
+          after = Module['sharedArrayCounter'][0];
+          if (before > 0)
+            before--;
+        }
+
+        return (after - before);
+    }
+
+      function measureAccessTime(uint32ptrCandidate) {
           // Measuring load
           var before = Module['sharedArrayCounter'][0];
 
@@ -61,7 +82,20 @@ if (typeof mergeInto !== 'undefined')
           var after = val;
 
           after += Module['sharedArrayCounter'][0];
-          total += (after - before) - val;
+          return (after - before) - val;
+      }
+
+      console.log("iterate through " + pageCount + " pages...");
+      for (var p = windowSize; p < pageCount; p++) {
+        var total = 0;
+
+        for (var r = 0; r < rounds; r++) {
+          // Stores
+          for (var i = windowSize; i >= 0; i--) {
+            uint32wasmMem[uint32ptrBuffer + (p - i) * 1024] = 0;
+            // evictionBuffer[(p-i)*PAGE_SIZE] = 0;
+          }
+          total += measureAccessTimeAlt(uint32ptrCandidate);
         }
         uint16MeasurementArr[p] = total / rounds;
 

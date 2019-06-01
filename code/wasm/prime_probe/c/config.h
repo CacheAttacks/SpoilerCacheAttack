@@ -84,7 +84,7 @@
 //Buffer size for the colliding address search in bytes
 //E.g. 256MiB = 2^28 => 2^16 pages
 //Be aware to adapt the parameter -s TOTAL_MEMORY=512MB accordingly (.vscode/compile.sh)
-#define STOREFOR_BUFFER_SIZE 256 * 1024 * 1024
+#define STOREFOR_BUFFER_SIZE 64 * 1024 * 1024
 
 #define STOREFOR_PAGE_COUNT STOREFOR_BUFFER_SIZE / PAGE_SIZE
 

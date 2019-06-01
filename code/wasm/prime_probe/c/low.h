@@ -250,7 +250,7 @@ static inline uint32_t gcc_test_opt(void *v)
   uint32_t before = SAB_lib_get_counter_value();
   uint32_t a = *((uint32_t *)v);
   uint32_t after = SAB_lib_get_counter_value();
-  dummy_for_wat();
+  //dummy_for_wat();
   return after - before;
 }
 #endif
@@ -284,11 +284,11 @@ static inline uint32_t memaccesstime(void *v, struct timer_info *info)
   uint32_t a;
   uint32_t after;
   uint32_t before = SAB_lib_get_counter_value();
-  if (before > 0)
-  {
-    before++;
+  //if (before > 0)
+  //{
+    //before++;
     a = *((uint32_t *)v);
-  }
+  //}
   if (a == 0)
   {
     after = SAB_lib_get_counter_value();
@@ -297,9 +297,15 @@ static inline uint32_t memaccesstime(void *v, struct timer_info *info)
   else
   {
     after = SAB_lib_get_counter_value();
-    if (before > 0)
-      before--;
+    //if (before > 0)
+    //  before--;
   }
+
+  if (a == 0)
+  {
+    after--;
+  }
+
   uint32_t ret = get_diff(before, after);
 
   #ifdef TIMER_DEUG_INFO

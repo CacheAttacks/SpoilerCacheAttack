@@ -28,15 +28,15 @@ static inline uint32_t memaccesstime_alt(void *v)
   volatile uint32_t val;
   uint32_t after;
   uint32_t before = SAB_lib_get_counter_value_storefor();
-  for(int i=0; i<100; i++)
-    before = SAB_lib_get_counter_value_storefor();
+  // for(int i=0; i<100; i++)
+  //   before = SAB_lib_get_counter_value_storefor();
 
   val = *((uint32_t *)v);
 
-  // for(int i=0; i<10; i++)
-  // val*=2;
+  for(int i=0; i<10; i++)
+   val*=2;
 
-val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;
+//val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;
 	//val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;	val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;	val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;
 
   after = val;
@@ -56,7 +56,7 @@ val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;va
 uint32_t measure_read(void *memory){
     //printf_ex("%p\n", memory);
     #ifdef WASM
-        return memaccesstime_alt(memory);
+        return memaccesstime(memory, 0);
     #else
 		register uint32_t _delta;
         do{
@@ -116,7 +116,7 @@ void measurement_funct(uint8_t * evictionBuffer, int window_size, uint8_t *targe
 		measurementBuffer[p] = total / STOREFOR_ROUNDS;
 	}
 
-    for (int p = window_size; p < STOREFOR_PAGE_COUNT; p++)
+  for (int p = window_size; p < STOREFOR_PAGE_COUNT; p++)
 	{
 		uint64_t total = 0;
 	
@@ -124,7 +124,7 @@ void measurement_funct(uint8_t * evictionBuffer, int window_size, uint8_t *targe
 		{
 			// Stores
 			for(int i = window_size; i >= 0; i--){
-				evictionBuffer[(p-i)*PAGE_SIZE] = 0;
+				evictionBuffer[(p-i)*PAGE_SIZE] = i;
 			}
 			// Measuring load
 			total += measure_read(evictionBuffer);
@@ -132,12 +132,21 @@ void measurement_funct(uint8_t * evictionBuffer, int window_size, uint8_t *targe
 		measurementBuffer2[p] = total / STOREFOR_ROUNDS;
 	}
 
+  int lock = 0;
 	for(int p = window_size; p < STOREFOR_PAGE_COUNT; p++) {
-        //printf_ex("%u", measurementBuffer[p]);
+        //printf_ex("(%u)", measurementBuffer[p]);
         printf_ex("%u",  measurementBuffer2[p]);
-        if(p < STOREFOR_PAGE_COUNT-1 && measurementBuffer2[p]>measurementBuffer2[p-1]+5 && measurementBuffer2[p+1]>measurementBuffer2[p-1]+5)
+
+        if(p < STOREFOR_PAGE_COUNT-1 && 
+        measurementBuffer2[p]>measurementBuffer2[p-1]+7 && 
+        measurementBuffer2[p+1]>measurementBuffer2[p-1]+5 &&
+        lock < 0)
+        {
           printf_ex("?");
+          lock = 10;
+        }
        printf_ex(" ");
+       lock--;
 
 		// if(p < STOREFOR_PAGE_COUNT-1 && measurementBuffer[p] > 150 && measurementBuffer[p+1] > 130){
 		// 	printf("%s", KRED);
@@ -192,7 +201,8 @@ int probemap_storeforwardleakage(void *app_state_ptr){
     //printf_ex("target_add:%p\n", buffer);
     
     //wasm version measurement_funct not working. Use js version store_for_js instead.
-    //measurement_funct(l3->buffer, WINDOW_SIZE, l3->buffer);
+    //measurement_funct(l3->buffer, window_size, l3->buffer);
+    //return 1;
 
     printf_ex("number_of_searches:%i, STOREFOR_MAX_ITERATIONS:%i\n", number_of_searches, STOREFOR_MAX_ITERATIONS);
     for(int i = 0; i < number_of_searches; i++){
