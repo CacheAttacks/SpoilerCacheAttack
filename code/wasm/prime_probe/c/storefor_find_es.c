@@ -398,7 +398,7 @@ int try_to_create_es(uint32_t *address_arr, uint32_t number_of_storefor_add, uin
   printf_ex("max_opt:%i, opt_sum:%i\n", max_opt, opt_sum);
 #endif
 
-  vlist_t groups = map(l3, lines, 0);
+  vlist_t groups = map(l3, lines, 1);
   //vl_free(lines);
 
   time_sum_wasm += (uint64_t)get_diff(startTimeWasm, rdtscp());

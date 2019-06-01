@@ -79,6 +79,7 @@ static void fillL3Info(void *app_state_ptr) {
                        l3->l3info.setsperslice * this_app_state->l3_cache_line_size *
                        this_app_state->l3_cache_size_multi;
   l3->l3info.l3_cache_size_multi = this_app_state->l3_cache_size_multi;
+
   printf_ex("l3->l3info.bufsize: %i MiB\n", l3->l3info.bufsize/1024/1024);
   print_parameters(app_state_ptr);
 }
@@ -369,7 +370,7 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
   vlist_t es = vl_new();
   
   int nlines = vl_len(lines);
-  int fail = 0, too_big = 0, too_small = 0;
+  int fail = 0, too_big = 0, too_small = 0, consecutive_expand_fails = 0;
   int iterations = 0, iterations_contract_failed = 0;
 
   int last_es_sizes_arr_index = 0;
@@ -426,6 +427,7 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
     //else
       c = expand(l3, es, lines);
     time_expand += (uint64_t)get_diff(before, rdtscp());
+    //printf_ex("%i\n", vl_len(es));
 
 #ifdef DEBUG
     int d_l2 = vl_len(es);
@@ -440,14 +442,27 @@ vlist_t map(l3pp_t l3, vlist_t lines, int storefor_mode) {
 #ifdef DEBUG
       printf_ex("set %3d: lines: %4d expanded: %4d c=NULL\n", vl_len(groups), d_l1,
              d_l2);
+
+      int number_of_expected_super_es = l3->cpuidInfo.cacheInfo.sets / (PAGE_SIZE / L3_CACHE_LINE_SIZE);
+
+      if(consecutive_expand_fails > 3 && 
+      vl_len(groups) < number_of_expected_super_es && //do not print this warning on the end of the es search
+      !storefor_mode)
+      {
+        printf_ex("Try to decrease the L3-cache hit threshold.\n");
+      }
 #endif // DEBUG
       fail += 50;
       //L3_THRESHOLD_GLOBAL = readjustTimerThreshold();
-      if(storefor_mode){
-        fail = FAIL_MAX+1;
-      }
-      continue;
+      // if(storefor_mode){
+      //   fail = FAIL_MAX+1;
+      // }
+
+      consecutive_expand_fails++;
       time_datahandling += (uint64_t)get_diff(before, rdtscp());
+      continue;
+    } else {
+      consecutive_expand_fails = 0;
     }
 
 //-------------------------------------------------------------------------------------
