@@ -33,14 +33,30 @@ if (typeof mergeInto !== 'undefined')
           MeasurementArr[p] > movingWindowAverage + 5 &&
           MeasurementArr[p-1] > movingWindowAverage + 10 &&
           MeasurementArr[p-1] > MeasurementArr[p-2] + 10) {
-           //output += "? " + MeasurementArr[p];
+           output += "<? " + MeasurementArr[p];
           return true;
         }
-        //output += " " + MeasurementArr[p];
+        output += " " + MeasurementArr[p];
         return false;
       }
 
-      function measureAccessTimeAlt(uint32ptrCandidate) {
+      function measureAccessTimeExperimentalFirefox(uint32ptrCandidate)
+      {
+        var before = Atomics.load(Module['sharedArrayCounter'], 0);
+
+        var val = uint32wasmMem[uint32ptrCandidate];
+
+        //insert some useless incrementations to get "superior" peaks
+        //this incrementations stuff might not be needed on every system
+        val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;
+
+        var after = val;
+
+        after += Atomics.load(Module['sharedArrayCounter'], 0);
+        return (after - before) - val;
+      }
+
+      function measureAccessTimeExperimental(uint32ptrCandidate) {
         // Measuring load
         var before = Module['sharedArrayCounter'][0];
         var after = 0, val = 0;
@@ -51,9 +67,7 @@ if (typeof mergeInto !== 'undefined')
           val = uint32wasmMem[uint32ptrCandidate];
           val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;
           val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;
-          
         }
-        
 
         if(val == 0)
         {
@@ -63,8 +77,14 @@ if (typeof mergeInto !== 'undefined')
         else
         {
           after = Module['sharedArrayCounter'][0];
+
           if (before > 0)
             before--;
+        }
+
+        while((after - before) == 0)
+        {
+          after = Module['sharedArrayCounter'][0];
         }
 
         return (after - before);
@@ -95,14 +115,9 @@ if (typeof mergeInto !== 'undefined')
             uint32wasmMem[uint32ptrBuffer + (p - i) * 1024] = 0;
             // evictionBuffer[(p-i)*PAGE_SIZE] = 0;
           }
-          total += measureAccessTimeAlt(uint32ptrCandidate);
+          total += measureAccessTimeExperimental(uint32ptrCandidate);
         }
         uint16MeasurementArr[p] = total / rounds;
-
-        // if(p % 1000 == 999){
-        //   console.log(output);
-        //   output = "";
-        // }
 
         // check for new storefor address
         if (p > windowSize + movingWindowSize && lock < 0 &&
@@ -114,9 +129,9 @@ if (typeof mergeInto !== 'undefined')
 
           if(numberOfStoreForAdd >= threadholdSearchForEs){ //try to create es
             if(Module['asm']._try_to_create_es(uint8ptrAddressArr, numberOfStoreForAdd, startTime, Module['sharedArrayCounter'][0], appStatePtr) != 0){
-              //console.log(output);
               return true;
             }
+            //console.log(output);
             startTime = Module['sharedArrayCounter'][0];
           }
           //size of AddressArr is limited
@@ -127,10 +142,12 @@ if (typeof mergeInto !== 'undefined')
           //do not detect colliding addresses for the next 10 blocks
           lock = 10;
         } else {
-          //output += " " + uint16MeasurementArr[p];
+          output += " " + uint16MeasurementArr[p];
         }
         lock--;
       }
+      console.log("memory access values:")
+      console.log(output);
       console.warn("Buffer exceeded and only numberOfStoreForAdd:" + numberOfStoreForAdd + " found! (need threadholdSearchForEs:" + threadholdSearchForEs + ")");
       console.info("Try to increase STOREFOR_PAGE_COUNT (config.h)");
       return false;
