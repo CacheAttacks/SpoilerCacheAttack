@@ -85,3 +85,5 @@ void find_interesting_eviction_sets(void *app_state_ptr, float threshold_factor,
 void set_storefor_parameters(void *app_state_ptr, int storefor_buffer_size_bytes,  int storefor_window_size, int storefor_rounds, int storefor_threshold_search_for_es);
 
 void set_l3_cache_parameters(void *app_state_ptr, int l3_cache_threshold, int l3_cache_associativity, int l3_cache_sets, int l3_cache_slices, int l3_cache_line_bits, int l3_cache_size_multi, int page_bits);
+
+uint32_t memaccesstime_for_js(void *v);

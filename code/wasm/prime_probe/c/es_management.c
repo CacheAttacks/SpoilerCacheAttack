@@ -789,3 +789,44 @@ void set_l3_cache_parameters(void *app_state_ptr, int l3_cache_threshold, int l3
   this_app_state->l3_page_bits = page_bits;
   this_app_state->l3_page_size = 1 << page_bits;
 }
+
+uint32_t memaccesstime_for_js(void *v)
+{
+  #ifdef WARMUP
+  warmuptimer();
+  #endif
+
+  //this code is not working, even __attribute__((optnone)) is active
+  // uint32_t before = SAB_lib_get_counter_value();
+  // volatile uint32_t a = *((uint32_t*)v);
+  // uint32_t after = SAB_lib_get_counter_value();
+  // return get_diff(before,after); //+ a - a;
+
+  //instead: create some artificial dependencies to avoid instruction reordering
+  uint32_t a;
+  uint32_t after;
+  uint32_t before = SAB_lib_get_counter_value();
+  //if (before > 0)
+  //{
+    //before++;
+    a = *((uint32_t *)v);
+  //}
+  if (a == 0)
+  {
+    after = SAB_lib_get_counter_value();
+    after++;
+  }
+  else
+  {
+    after = SAB_lib_get_counter_value();
+    //if (before > 0)
+    //  before--;
+  }
+
+  if (a == 0)
+  {
+    after--;
+  }
+
+  return get_diff(before, after);
+}

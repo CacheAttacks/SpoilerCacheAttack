@@ -5277,6 +5277,14 @@ function copyTempDouble(ptr) {
         function checkForStoreFor(MeasurementArr, p, movingWindowSize) {      
           var movingWindowAverage = subArrayAverage(
             MeasurementArr, p - movingWindowSize - 1, movingWindowSize);
+  
+            //simple detection
+            // if (MeasurementArr[p] < 100 && MeasurementArr[p-1] < 100 &&
+            //   MeasurementArr[p] > MeasurementArr[p-1] + 6)
+            // {
+            //   output += "? " + MeasurementArr[p];
+            //   return true;
+            // }
           
           if (MeasurementArr[p] < 100 && MeasurementArr[p-1] < 100 && 
             MeasurementArr[p] > movingWindowAverage + 5 &&
@@ -5354,6 +5362,12 @@ function copyTempDouble(ptr) {
             return (after - before) - val;
         }
   
+        //seems
+        function measureAccessTimeWasm(uint32ptrCandidate) {
+          var uint8ptrCandidate = uint32ptrCandidate * 4;
+          return Module['asm']._memaccesstime_for_js(uint8ptrCandidate);
+        }
+  
         console.log("iterate through " + pageCount + " pages...");
         for (var p = windowSize; p < pageCount; p++) {
           var total = 0;
@@ -5364,7 +5378,7 @@ function copyTempDouble(ptr) {
               uint32wasmMem[uint32ptrBuffer + (p - i) * 1024] = 0;
               // evictionBuffer[(p-i)*PAGE_SIZE] = 0;
             }
-            total += measureAccessTimeExperimental(uint32ptrCandidate);
+            total += measureAccessTime(uint32ptrCandidate);
           }
           uint16MeasurementArr[p] = total / rounds;
   
@@ -5568,6 +5582,12 @@ var real__measure_mean_access_time = asm["_measure_mean_access_time"]; asm["_mea
   return real__measure_mean_access_time.apply(null, arguments);
 };
 
+var real__memaccesstime_for_js = asm["_memaccesstime_for_js"]; asm["_memaccesstime_for_js"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return real__memaccesstime_for_js.apply(null, arguments);
+};
+
 var real__memalign = asm["_memalign"]; asm["_memalign"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
@@ -5722,6 +5742,10 @@ var _measure_mean_access_time = Module["_measure_mean_access_time"] = function()
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
   return Module["asm"]["_measure_mean_access_time"].apply(null, arguments) };
+var _memaccesstime_for_js = Module["_memaccesstime_for_js"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["_memaccesstime_for_js"].apply(null, arguments) };
 var _memalign = Module["_memalign"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');

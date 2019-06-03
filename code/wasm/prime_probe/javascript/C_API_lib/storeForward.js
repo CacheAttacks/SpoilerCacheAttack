@@ -28,6 +28,14 @@ if (typeof mergeInto !== 'undefined')
       function checkForStoreFor(MeasurementArr, p, movingWindowSize) {      
         var movingWindowAverage = subArrayAverage(
           MeasurementArr, p - movingWindowSize - 1, movingWindowSize);
+
+          //simple detection
+          // if (MeasurementArr[p] < 100 && MeasurementArr[p-1] < 100 &&
+          //   MeasurementArr[p] > MeasurementArr[p-1] + 6)
+          // {
+          //   output += "? " + MeasurementArr[p];
+          //   return true;
+          // }
         
         if (MeasurementArr[p] < 100 && MeasurementArr[p-1] < 100 && 
           MeasurementArr[p] > movingWindowAverage + 5 &&
@@ -105,6 +113,12 @@ if (typeof mergeInto !== 'undefined')
           return (after - before) - val;
       }
 
+      //seems
+      function measureAccessTimeWasm(uint32ptrCandidate) {
+        var uint8ptrCandidate = uint32ptrCandidate * 4;
+        return Module['asm']._memaccesstime_for_js(uint8ptrCandidate);
+      }
+
       console.log("iterate through " + pageCount + " pages...");
       for (var p = windowSize; p < pageCount; p++) {
         var total = 0;
@@ -115,7 +129,7 @@ if (typeof mergeInto !== 'undefined')
             uint32wasmMem[uint32ptrBuffer + (p - i) * 1024] = 0;
             // evictionBuffer[(p-i)*PAGE_SIZE] = 0;
           }
-          total += measureAccessTimeExperimental(uint32ptrCandidate);
+          total += measureAccessTime(uint32ptrCandidate);
         }
         uint16MeasurementArr[p] = total / rounds;
 

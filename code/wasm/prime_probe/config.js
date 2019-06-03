@@ -15,7 +15,7 @@
 //>>  mean:23
 //>>  threshold: 35
 //A value around 35 seems appropriate.
-var L3_THRESHOLD = 56;
+var L3_THRESHOLD = 31;
 
 //---------------------------------------------------
 //L3 cache parameters
@@ -45,7 +45,7 @@ var L3_CACHE_ASSOCIATIVITY = 16;
 //L3_CACHE_LINE_SIZE = 64
 //L3_CACHE_SETS = L3_CACHE_SIZE / L3_CACHE_ASSOCIATIVITY / L3_CACHE_LINE_SIZE
 //E.g. i5-5300U 3MiB L3-Cache => 3145728 / 12 / 64 = 4096
-var L3_CACHE_SETS = 4096;
+var L3_CACHE_SETS = 8192;
 
 //Number of the bits for the page size. Should be 12 in a typcial desktop env.
 var PAGE_SIZE_BITS = 12;
