@@ -48,6 +48,18 @@ if (typeof mergeInto !== 'undefined')
         return false;
       }
 
+      function checkForStoreForSimple(MeasurementArr, p, movingWindowSize) {      
+          //simple detection
+          if (MeasurementArr[p] < 150 && MeasurementArr[p-1] < 150 &&
+            MeasurementArr[p-1] > MeasurementArr[p-2] + 6)
+          {
+            //output += "? " + MeasurementArr[p];
+            return true;
+          }
+          //output += " " + MeasurementArr[p];
+        return false;
+      }
+
       function measureAccessTimeExperimentalFirefox(uint32ptrCandidate)
       {
         var before = Atomics.load(Module['sharedArrayCounter'], 0);
@@ -100,16 +112,17 @@ if (typeof mergeInto !== 'undefined')
 
       function measureAccessTime(uint32ptrCandidate) {
           // Measuring load
-          var before = Module['sharedArrayCounter'][0];
+          var before = Atomics.load(Module['sharedArrayCounter'], 0);
 
           var val = uint32wasmMem[uint32ptrCandidate];
           //insert some useless commands to avoid instruction reordering
           //this seems to work quite well, but there should exist better stuff
-          val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;
-          val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;
+          val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;
+          val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;
+          val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;val++;
           var after = val;
 
-          after += Module['sharedArrayCounter'][0];
+          after += Atomics.load(Module['sharedArrayCounter'], 0);
           return (after - before) - val;
       }
 
@@ -132,16 +145,19 @@ if (typeof mergeInto !== 'undefined')
           total += measureAccessTime(uint32ptrCandidate);
         }
         uint16MeasurementArr[p] = total / rounds;
+      }
 
+      for(var p = windowSize; p < pageCount; p++) {
         // check for new storefor address
         if (p > windowSize + movingWindowSize && lock < 0 &&
-          checkForStoreFor(uint16MeasurementArr, p, movingWindowSize)) {
+          checkForStoreForSimple(uint16MeasurementArr, p, movingWindowSize)) {
             //console.log((p-1) + ": " + ((p-1)-savedp));
           var uint8ptrStoreForAdd = (uint8ptrBuffer + (p-1) * pageSize);
           uint32wasmMem[uint32ptrAdressArr + numberOfStoreForAdd] = uint8ptrStoreForAdd;
           numberOfStoreForAdd++;
 
           if(numberOfStoreForAdd >= threadholdSearchForEs){ //try to create es
+            //console.log(output);
             if(Module['asm']._try_to_create_es(uint8ptrAddressArr, numberOfStoreForAdd, startTime, Module['sharedArrayCounter'][0], appStatePtr) != 0){
               return true;
             }
@@ -160,8 +176,8 @@ if (typeof mergeInto !== 'undefined')
         }
         lock--;
       }
-      console.log("memory access values:")
-      console.log(output);
+      console.log("memory access valuess:")
+      //console.log(output);
       console.warn("Buffer exceeded and only numberOfStoreForAdd:" + numberOfStoreForAdd + " found! (need threadholdSearchForEs:" + threadholdSearchForEs + ")");
       console.info("Try to increase STOREFOR_PAGE_COUNT (config.h)");
       return false;

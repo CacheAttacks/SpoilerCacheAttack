@@ -15,7 +15,7 @@
 //>>  mean:23
 //>>  threshold: 35
 //A value around 35 seems appropriate.
-var L3_THRESHOLD = 31;
+var L3_THRESHOLD = 51;
 
 //---------------------------------------------------
 //L3 cache parameters
@@ -33,7 +33,7 @@ var L3_CACHE_LINE_SIZE = Math.pow(2, L3_CACHELINE_BITS);
 //Number of L3-cache slices. 
 //If you not sure try the number of physical cores ,e.g. i7-4770(4c/8t) => 4 slices, i5-5300U(2c/4t) => 2 slices
 //Counterexample: i7-7500U(2c/4t) => 4 slices
-var L3_CACHE_SLICES = 4;
+var L3_CACHE_SLICES = 12;
 
 //L3-cache associativity. E.g. i7-4770 8MiB L3-Cache 16-way, i5-5300U 3MiB L3-Cache 12-way
 //You could use tools like CPU-Z to get your L3-associativity or look up your CPU at cpu-world.com, e.g. http://www.cpu-world.com/CPUs/Core_i7/Intel-Core%20i7-4770.html
@@ -45,7 +45,7 @@ var L3_CACHE_ASSOCIATIVITY = 16;
 //L3_CACHE_LINE_SIZE = 64
 //L3_CACHE_SETS = L3_CACHE_SIZE / L3_CACHE_ASSOCIATIVITY / L3_CACHE_LINE_SIZE
 //E.g. i5-5300U 3MiB L3-Cache => 3145728 / 12 / 64 = 4096
-var L3_CACHE_SETS = 8192;
+var L3_CACHE_SETS = 12288;
 
 //Number of the bits for the page size. Should be 12 in a typcial desktop env.
 var PAGE_SIZE_BITS = 12;
@@ -68,22 +68,22 @@ var PREFER_STOREFOR_SEARCH_METHOD = false;
 //Buffer size for the colliding address search in bytes
 //E.g. 256MiB = 2^28 => 2^16 pages
 //Be aware to adapt the parameter -s TOTAL_MEMORY=512MB accordingly (.vscode/compile.sh)
-var STOREFOR_BUFFER_SIZE = 350 * 1024 * 1024;
+var STOREFOR_BUFFER_SIZE = 600 * 1024 * 1024;
 
 var STOREFOR_PAGE_COUNT = STOREFOR_BUFFER_SIZE / PAGE_SIZE;
 
 //Number of validations for a colliding address search.
 //A higher value will increase the search time but also lower the error rate.
-var STOREFOR_ROUNDS = 30;
+var STOREFOR_ROUNDS = 50;
 
 //Size of the window for the colliding address search. Higher values slow down the search but lower the error rate. 
 //64 seems a good value overall, because our tests show that values >64 barely lower the error rate compared to a value of 64.
-var STOREFOR_WINDOW_SIZE = 64;
+var STOREFOR_WINDOW_SIZE = 128;
 
 //The search will stop if STOREFOR_THRESHOLD_SEARCH_FOR_ES collding addresses are found.
 //A higher value will increase the search time but also lower the error rate.
 //This should be set with values L3_CACHE_SLICES
-var STOREFOR_THRESHOLD_SEARCH_FOR_ES = 115;
+var STOREFOR_THRESHOLD_SEARCH_FOR_ES = 600;
 
 //If the es search step fails, we will repeat the colliding address search up to STOREFOR_MAX_ITERATIONS times.
 var STOREFOR_MAX_ITERATIONS = 10;
