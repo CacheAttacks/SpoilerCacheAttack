@@ -152,6 +152,17 @@
   Advanced: <input type="checkbox" id="checkboxDisplayAdvanced" onclick="displayAdvanced()"></br>
 
   Use the file config.js to set the following variables permanently.</br>
+
+  Configs for:     <select id="selectCpuConfig" onchange="setCpuConfig()">
+    <option value="config.js">config.js</option>
+    <option value="i3-5010U DDR unknown">i3-5010U DDR unknown</option>
+    <option value="i5-5300U DDR3-1600 (11-11-11-28)">i5-5300U DDR3-1600 (11-11-11-28)</option>
+    <option value="i7-8700 DDR unknown">i7-8700 DDR unknown</option>
+    <option value="i7-2600 DDR3-1333 latency unknown">i7-2600 DDR3-1333 latency unknown</option>
+    <option value="i7-4770 DDR3-1600 latency unknown">i7-4770 DDR3-1600 latency unknown</option>
+    <option value="i7-7500U DDR3-1866 (14-17-17-40)">i7-7500U DDR3-1866 (14-17-17-40)</option>
+  </select></br>
+
   
   L3-Cache Hit Threshold:
   <span><input type="number" id="numberL3Threshold" value="35" width="1"></span>
@@ -342,6 +353,7 @@
     }
 
     displayAdvanced();
+    setCpuConfig();
     displayStoreForOptions();
 
     function displayAdvanced() {
@@ -351,6 +363,69 @@
         text.style.display = "";
       } else {
         text.style.display = "none";
+      }
+    }
+
+    function setCpuConfig() {
+      var selected = document.getElementById("selectCpuConfig").value;
+
+      if(selected == "i7-4770 DDR3-1600 latency unknown")
+      {
+        document.getElementById('numberL3Threshold').value = 42;
+        document.getElementById('numberL3CacheSlices').value = 4;
+        document.getElementById('numberL3CacheAssociativity').value = 16;
+        document.getElementById('numberL3CacheSets').value = 8192;
+        document.getElementById('numberStoreForRounds').value = 50;
+        document.getElementById('numberStoreForWindowSize').value = 64;
+      }
+      else if(selected == "i7-8700 DDR unknown")
+      {
+        document.getElementById('numberL3Threshold').value = 52;
+        document.getElementById('numberL3CacheSlices').value = 12;
+        document.getElementById('numberL3CacheAssociativity').value = 16;
+        document.getElementById('numberL3CacheSets').value = 12288;
+        document.getElementById('numberStoreForRounds').value = 50;
+        document.getElementById('numberStoreForWindowSize').value = 128;
+      }
+      else if(selected == "i7-2600 DDR3-1333 latency unknown")
+      {
+        document.getElementById('numberL3Threshold').value = 45;
+        document.getElementById('numberL3CacheSlices').value = 4;
+        document.getElementById('numberL3CacheAssociativity').value = 16;
+        document.getElementById('numberL3CacheSets').value = 8192;
+        document.getElementById('numberStoreForRounds').value = 50;
+        document.getElementById('numberStoreForWindowSize').value = 64;
+      }
+      else if(selected == "i5-5300U DDR3-1600 (11-11-11-28)")
+      {
+        document.getElementById('numberL3Threshold').value = 35;
+        document.getElementById('numberL3CacheSlices').value = 2;
+        document.getElementById('numberL3CacheAssociativity').value = 12;
+        document.getElementById('numberL3CacheSets').value = 4096;
+        document.getElementById('numberStoreForRounds').value = 50;
+        document.getElementById('numberStoreForWindowSize').value = 64;
+      }      
+      else if(selected == "i7-7500U DDR3-1866 (14-17-17-40)")
+      {
+        document.getElementById('numberL3Threshold').value = 48;
+        document.getElementById('numberL3CacheSlices').value = 4;
+        document.getElementById('numberL3CacheAssociativity').value = 12;
+        document.getElementById('numberL3CacheSets').value = 4096;
+        document.getElementById('numberStoreForRounds').value = 50;
+        document.getElementById('numberStoreForWindowSize').value = 64;
+      }
+      else if(selected == "i3-5010U DDR unknown")
+      {
+        document.getElementById('numberL3Threshold').value = 40;
+        document.getElementById('numberL3CacheSlices').value = 4;
+        document.getElementById('numberL3CacheAssociativity').value = 12;
+        document.getElementById('numberL3CacheSets').value = 4096;
+        document.getElementById('numberStoreForRounds').value = 50;
+        document.getElementById('numberStoreForWindowSize').value = 64;
+      }
+      else if(selected == "config.js")
+      {
+        displayStoreForOptions();
       }
     }
 
